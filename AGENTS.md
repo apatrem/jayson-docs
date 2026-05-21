@@ -15,11 +15,28 @@ working in this repository.
 ├── docs/                           ← all design/spec docs
 │   ├── DOCUMENT_SYSTEM_ARCHITECTURE.md  — the "why" memo
 │   ├── BUILD_BRIEF.md                   — milestones M0–M6 + acceptance
-│   ├── DECISIONS.md                     — 33 settled decisions + roadmap + open items
+│   ├── DECISIONS.md                     — settled decisions + roadmap + open items
 │   ├── TYPES.md                         — all shared TypeScript types
 │   ├── BLOCK_IMPLEMENTATION_GUIDE.md    — copy-pattern for the 15 blocks
 │   ├── SETUP_PIPELINE.md                — AI ingestion + code-gen pipeline spec
+│   ├── SETUP_INSTALL_FLOW.md            — per-consultant install CLI wizard
+│   ├── TAURI_IPC.md                     — JS↔Rust command list with signatures
+│   ├── YAML_FORMAT.md                   — byte-stable serialization rules
+│   ├── UI_REVIEW_PANEL.md               — wireframe for the comment-review panel
+│   ├── UI_LIBRARY.md                    — wireframe for the doc library
 │   └── TASKS.md                         — ~112 atomic tasks ≤4h each
+├── starter/                        ← drop-in project configs (M0 starter pack)
+│   ├── package.json                — pinned dependency versions
+│   ├── tsconfig.json               — strict TS + path aliases
+│   ├── vite.config.ts              — Tauri-aware build config
+│   ├── vitest.config.ts            — happy-dom test config
+│   ├── .eslintrc.cjs               — arch-invariant lint rules
+│   ├── .prettierrc                 — formatting
+│   └── src-tauri/
+│       ├── tauri.conf.json         — CSP + asset-scope + bundle settings
+│       ├── Cargo.toml              — Rust deps incl. keyring
+│       ├── src/lib.rs              — IPC command registration
+│       └── src/main.rs             — native binary entry point
 ├── examples/                       ← valid + invalid YAML/JSON fixtures
 │   ├── sample-proposal.yaml
 │   ├── sample-deck.yaml
@@ -28,8 +45,11 @@ working in this repository.
 │   ├── sample-llm-batch-request.json
 │   ├── sample-llm-batch-response.json
 │   └── invalid/                    ← each one fails validation in a documented way
-└── reference/
-    └── callout/                    ← one fully-worked block: schema + renderer + node + test
+└── reference/                      ← fully-worked code patterns to copy
+    ├── primitives/                 — block-primitives: BrandProvider, ProseRenderer, helpers
+    ├── callout/                    — reference block: schema + renderer + node + test
+    ├── chart/                      — second worked block: ECharts + side panel
+    └── mapping/                    — DocModel ⇄ editor orchestrator with losslessness invariant
 ```
 
 ## Required reading
@@ -44,13 +64,30 @@ If the brief and the memo conflict, the memo's §2 principle and §3 requirement
 
 ## Reference reading (consult as needed)
 
+### Specifications
 - [docs/TYPES.md](docs/TYPES.md) — every shared TypeScript type lives here. No type is defined twice.
 - [docs/TASKS.md](docs/TASKS.md) — atomic backlog. Use task IDs (`T-NN`) in commit messages and PRs.
-- [docs/BLOCK_IMPLEMENTATION_GUIDE.md](docs/BLOCK_IMPLEMENTATION_GUIDE.md) — the copy-pattern for the 15 blocks; the canonical example is `reference/callout/`.
-- [docs/SETUP_PIPELINE.md](docs/SETUP_PIPELINE.md) — full spec of the setup AI pipeline including the constrained code-gen scaffold and lint rules.
-- [examples/](examples/) — use as test fixtures and few-shot context.
-- [reference/callout/](reference/callout/) — copy this pattern, do not invent a new one.
-- [blocks.catalogue.yaml](blocks.catalogue.yaml) and [brand.example.yaml](brand.example.yaml) — the data specs the schema validates against.
+- [docs/BLOCK_IMPLEMENTATION_GUIDE.md](docs/BLOCK_IMPLEMENTATION_GUIDE.md) — copy-pattern for the 15 blocks.
+- [docs/SETUP_PIPELINE.md](docs/SETUP_PIPELINE.md) — setup AI pipeline (ingestion + code-gen + lint).
+- [docs/SETUP_INSTALL_FLOW.md](docs/SETUP_INSTALL_FLOW.md) — per-consultant install CLI prompts.
+- [docs/TAURI_IPC.md](docs/TAURI_IPC.md) — every JS↔Rust command with signatures.
+- [docs/YAML_FORMAT.md](docs/YAML_FORMAT.md) — formatter rules that guarantee byte-stable round-trips.
+- [docs/UI_REVIEW_PANEL.md](docs/UI_REVIEW_PANEL.md) — wireframe + state model for the comment-review panel.
+- [docs/UI_LIBRARY.md](docs/UI_LIBRARY.md) — wireframe + state model for the doc library.
+
+### Worked code (copy these patterns; do not invent new ones)
+- [reference/primitives/](reference/primitives/) — block-primitives. **Foundation — every block depends on these.**
+- [reference/callout/](reference/callout/) — the canonical simple block (4-file pattern).
+- [reference/chart/](reference/chart/) — second worked block introducing cross-field schema, atom nodes, JSON-encoded payload, side panel, SSR render path.
+- [reference/mapping/](reference/mapping/) — top-level DocModel ⇄ editor orchestrator with losslessness invariant.
+
+### Drop-in scaffolding
+- [starter/](starter/) — pinned configs for `npm init`, Tauri 2.x setup, ESLint, Prettier, Vitest.
+
+### Data specs
+- [blocks.catalogue.yaml](blocks.catalogue.yaml) — the 15 pre-built block specs.
+- [brand.example.yaml](brand.example.yaml) — brand-token reference shape.
+- [examples/](examples/) — valid + invalid YAML/JSON fixtures (use as test inputs and few-shot LLM context).
 
 ## Planning workflow
 

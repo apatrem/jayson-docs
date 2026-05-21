@@ -12,8 +12,17 @@
 - `TYPES.md` — type definitions referenced by tasks
 - `BLOCK_IMPLEMENTATION_GUIDE.md` — copy-pattern for block tasks
 - `SETUP_PIPELINE.md` — full spec for setup pipeline tasks
-- `reference/callout/` — worked example of a block implementation
-- `examples/` — fixtures for acceptance tests
+- `SETUP_INSTALL_FLOW.md` — per-consultant install CLI flow (T-73)
+- `TAURI_IPC.md` — JS↔Rust command surface (T-02, T-60, fs commands)
+- `YAML_FORMAT.md` — byte-stable formatter config (T-40)
+- `UI_REVIEW_PANEL.md` — review-panel design (T-92 onwards)
+- `UI_LIBRARY.md` — library UI design (T-84)
+- `../starter/` — drop-in configs for T-01 through T-09
+- `../reference/primitives/` — block-primitives every renderer depends on
+- `../reference/callout/` — worked simple block (copy 14 times)
+- `../reference/chart/` — worked complex block (cross-field schema + side panel + SSR)
+- `../reference/mapping/` — worked top-level DocModel ⇄ editor orchestrator
+- `../examples/` — fixtures for acceptance tests
 
 **Conventions:**
 - Tasks prefixed `T-NN`. NN is ordering, not strict; cross-phase deps are noted.
@@ -26,16 +35,16 @@
 Foundation. Nothing else compiles until this is done.
 
 ### T-01 · Initialize repo and Vite + React + TypeScript app
-- **Inputs:** none
-- **Outputs:** `package.json`, `vite.config.ts`, `tsconfig.json`, `index.html`, `src/main.tsx`, `src/App.tsx`
+- **Inputs:** `starter/package.json`, `starter/tsconfig.json`, `starter/vite.config.ts`, `starter/vitest.config.ts` — copy these in
+- **Outputs:** `package.json`, `vite.config.ts`, `tsconfig.json`, `vitest.config.ts`, `index.html`, `src/main.tsx`, `src/App.tsx`
 - **Acceptance:** `npm install && npm run dev` opens a blank app at localhost; `tsc --noEmit` passes.
-- **est.** 1h
+- **est.** 0.5h (drop-in from `starter/`; was 1h without scaffolding)
 
 ### T-02 · Set up Tauri 2.x desktop shell
-- **Inputs:** Vite app from T-01
-- **Outputs:** `src-tauri/` (Cargo.toml, main.rs, tauri.conf.json), build scripts
-- **Acceptance:** `npm run tauri dev` opens the Vite app in a native window on macOS/Windows/Linux; `npm run tauri build` produces an unsigned binary.
-- **est.** 3h
+- **Inputs:** Vite app from T-01; `starter/src-tauri/{tauri.conf.json,Cargo.toml,build.rs,capabilities/,src/main.rs,src/lib.rs,src/ipc/}` — copy these in; `docs/TAURI_IPC.md` for the command surface
+- **Outputs:** `src-tauri/` (Cargo.toml, main.rs, lib.rs, tauri.conf.json, build script, capabilities); stubs for each IPC command in `src-tauri/src/ipc/{fs,keychain,config,cost,pdf}.rs`
+- **Acceptance:** `npm run tauri:dev` opens the Vite app in a native window on macOS/Windows/Linux; `npm run tauri:build` produces an unsigned binary; all IPC command stubs registered (even if not yet implemented — they appear in the `generate_handler!` macro).
+- **est.** 2h (drop-in from `starter/` + stub registration; was 3h)
 
 ### T-03 · Pin exact dependency versions
 - **Inputs:** none
@@ -178,8 +187,14 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 **Estimation guide:** simple blocks (heading, prose, image, divider) ~4h each. Medium (callout, bullet/numbered list, kpi-cards, timeline, team) ~6h. Complex (chart, table, risk-matrix, roadmap, diagram) ~10–12h.
 
-### T-23 · Reference block: validate `reference/callout/` against the production pattern
-- **Inputs:** `reference/callout/*`
+### T-23 · Move `reference/primitives/` to `src/brand-tokens/` + `src/block-primitives/`
+- **Inputs:** `reference/primitives/{BrandProvider,useBrandTokens,resolve,resolve-asset,ProseRenderer,block-primitives}.{ts,tsx}`
+- **Outputs:** files moved to production paths per `reference/primitives/README.md`; tests in `tests/primitives/`
+- **Acceptance:** `BrandProvider` provides tokens; `useBrandTokens` throws outside it; `resolveBrandToken` resolves direct + alias paths; `resolveAssetPath` accepts the two schemes and rejects `..`; `ProseRenderer` renders allowed marks and drops disallowed ones (no `dangerouslySetInnerHTML` anywhere); primitives consume brand tokens.
+- **est.** 3h
+
+### T-23b · Reference block: move `reference/callout/` to production paths
+- **Inputs:** `reference/callout/*`, primitives from T-23
 - **Outputs:** files moved to `src/schema/blocks/callout.ts`, `src/renderer/blocks/Callout.tsx`, `src/editor/nodes/CalloutNode.tsx`, `tests/blocks/callout.test.ts`; imports updated to clean paths
 - **Acceptance:** all five test layers pass; the reference's tests pass unmodified after path updates.
 - **est.** 2h
@@ -215,10 +230,11 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **est.** 10h
 - **Note:** Wrap `@tiptap/extension-table` with a constrained custom node. Cells must be `ProseMirrorFragment`.
 
-### T-32 · Implement `chart` block (4 files)
-- **Inputs:** BLOCK_IMPLEMENTATION_GUIDE §3 (chart notes), ECharts docs
-- **Outputs:** also `src/editor/panels/ChartDataPanel.tsx` (the side panel from D-24)
-- **est.** 12h (split into 3 PRs: schema+renderer, node+side-panel, tests)
+### T-32 · Implement `chart` block (4 files + side panel)
+- **Inputs:** **`reference/chart/*` — copy these in; they are the worked example.** BLOCK_IMPLEMENTATION_GUIDE §3 (chart notes), ECharts docs.
+- **Outputs:** `src/schema/blocks/chart.ts`, `src/renderer/blocks/Chart.tsx`, `src/editor/nodes/ChartNode.tsx`, `src/editor/panels/ChartDataPanel.tsx`, `tests/blocks/chart.test.ts`
+- **Acceptance:** 6 test layers pass; cross-field validation works; SSR option-builder produces deterministic output; side panel handles Excel paste (English locale only per O-05).
+- **est.** 8h (down from 12h thanks to the worked reference)
 
 ### T-33 · Implement `callout` block — see T-23 (reference) ✅
 
@@ -247,10 +263,10 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Note:** Layout-affecting; coordinate with T-50.
 
 ### T-40 · YAML round-trip + losslessness test
-- **Inputs:** T-19, all blocks T-23–T-39
-- **Outputs:** `src/docmodel/serialize.ts` (DocModel <-> YAML) + tests using `examples/sample-proposal.yaml` and `examples/sample-deck.yaml`
-- **Acceptance:** YAML -> DocModel -> YAML produces byte-identical output (after a canonical formatting pass). Test runs on both sample files.
-- **est.** 4h
+- **Inputs:** T-19, all blocks T-23–T-39; **`docs/YAML_FORMAT.md` for the exact formatter config and canonicalizer**
+- **Outputs:** `src/docmodel/yaml-config.ts`, `src/docmodel/canonicalize.ts`, `src/docmodel/serialize.ts` + tests using `examples/sample-proposal.yaml` and `examples/sample-deck.yaml`
+- **Acceptance:** YAML -> DocModel -> YAML produces byte-identical output on the SECOND save (first may differ from source if not already canonical). Test runs on both sample files. Adding a new block type without updating `KEY_ORDERS` in `canonicalize.ts` fails the test with a precise path.
+- **est.** 3h (most of the design is in `YAML_FORMAT.md`)
 
 ### Sub-phase 1D — Setup AI pipeline
 
@@ -464,11 +480,11 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** After 10 LLM calls with varied prompts, the SQLite db contains zero rows where any field matches even partial prompt text (verified by searching every column for a sentinel string in the prompts).
 - **est.** 2h
 
-### T-73 · Install-time privacy notice + cost-tracking toggle
-- **Inputs:** D-34
-- **Outputs:** updates to `src/setup/install.ts` to show a privacy notice; cost-tracking enable/disable toggle in Settings
-- **Acceptance:** Install script presents the privacy notice; consultant must acknowledge before proceeding. Settings toggle disables cost-tracking (and also disables monthly limits).
-- **est.** 3h
+### T-73 · Install CLI flow + privacy notice + cost-tracking toggle
+- **Inputs:** **`docs/SETUP_INSTALL_FLOW.md` for the exact prompts, defaults, validation.** D-34.
+- **Outputs:** `src/setup/install.ts` implementing all 7 steps; cost-tracking enable/disable toggle in Settings; non-interactive mode via CLI flags + env vars.
+- **Acceptance:** All 7 steps work interactively; non-interactive mode works with all flags; API keys land in OS keychain (verified via `get_secret` IPC); `config.yaml` validates against `AppConfigSchema`; cost ledger SQLite is initialized; consultant cannot proceed past privacy notice without affirmative consent.
+- **est.** 5h (most of the design is in SETUP_INSTALL_FLOW.md)
 
 **M3 acceptance gate:** outline -> valid DocModel; scoped patch affects only target block; malformed LLM output rejected; 20-comment batch produces 20 patches (with caching); follow-up includes prior proposal in next request; cost ledger never records prompt/response content (verified by T-72); monthly limit enforced; "Clear history" wipes cleanly.
 
@@ -488,17 +504,11 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Editor can insert any of the 15 block types via the `insertXxx` commands.
 - **est.** 2h
 
-### T-76 · Implement DocModel -> editor-document mapping (`blockToProseMirror`)
-- **Inputs:** all block mapping helpers from T-23–T-39
-- **Outputs:** `src/editor/mapping.ts`
-- **Acceptance:** Given a DocModel, produces a ProseMirror JSON doc that TipTap accepts. Roundtrip test using `examples/sample-proposal.yaml`.
-- **est.** 4h
-
-### T-77 · Implement editor-document -> DocModel mapping (`proseMirrorToBlock`)
-- **Inputs:** all block mapping helpers, T-76
-- **Outputs:** updates to `src/editor/mapping.ts`
-- **Acceptance:** Given a ProseMirror doc, produces a valid DocModel. Roundtrip test must pass losslessly (DocModel -> PM -> DocModel returns the original).
-- **est.** 4h
+### T-76 + T-77 · Implement DocModel ⇄ ProseMirror orchestrator
+- **Inputs:** all per-block mapping helpers from T-23b–T-39; **`reference/mapping/mapping.ts` is the worked example — copy and extend.**
+- **Outputs:** `src/editor/mapping.ts` implementing both `docModelToProseMirror` and `proseMirrorToDocModel` with the per-block dispatch + `assertNever` exhaustiveness check.
+- **Acceptance:** matches T-89 (the round-trip test fixture). Adding a new block type without adding both dispatch arms is a compile-time error.
+- **est.** 3h (down from 8h thanks to the worked reference)
 
 ### T-78 · Implement closed-schema enforcement in the editor
 - **Inputs:** T-75
@@ -537,10 +547,10 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **est.** 4h
 
 ### T-84 · Implement library UI (D-27)
-- **Inputs:** TYPES.md MetaSchema, AppConfig.paths.cloudSyncRoot
-- **Outputs:** `src/library/LibraryView.tsx`, `src/library/DocCard.tsx`, `src/library/FilterSidebar.tsx`, `src/library/SearchBar.tsx`
-- **Acceptance:** On launch, app scans the cloud-sync root recursively, lists all docs as cards. Filters by client/sector/status/language work. Search matches title and tags.
-- **est.** 8h (split into 3 sub-tasks: scan + card view, filters, search)
+- **Inputs:** TYPES.md MetaSchema, AppConfig.paths.cloudSyncRoot, **`docs/UI_LIBRARY.md` for the wireframe + state model + component breakdown.**
+- **Outputs:** all components per UI_LIBRARY.md §"File locations" (LibraryView, FilterSidebar, SearchBar, DocList, DocCard, index-builder, filter, thumbnail).
+- **Acceptance:** matches UI_LIBRARY.md §"Acceptance checklist (per T-84)" — 11 items including 500-doc index in < 2s, all five filter groups, grid+list views, lazy thumbnails.
+- **est.** 8h (split into 3 sub-tasks per the design: scan + cards, filters, thumbnails)
 
 ### T-85 · Implement Save As (creates a folder, not a file)
 - **Inputs:** D-19
@@ -567,10 +577,10 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **est.** 8h
 
 ### T-89 · DocModel <-> editor mapping losslessness test (acceptance criterion)
-- **Inputs:** T-76, T-77
-- **Outputs:** `tests/mapping-roundtrip.test.ts`
-- **Acceptance:** For every fixture in `examples/`, `proseMirrorToBlock(blockToProseMirror(doc))` produces a DocModel byte-identical to the input.
-- **est.** 2h
+- **Inputs:** T-76, T-77; **`reference/mapping/*` — copy `mapping.ts` and `mapping.test.ts` in**
+- **Outputs:** `src/editor/mapping.ts`, `tests/mapping-roundtrip.test.ts`
+- **Acceptance:** For every fixture in `examples/`, `proseMirrorToDocModel(docModelToProseMirror(doc))` deep-equals `doc`. The compile-time `assertNever(_b: never)` catches missing block-type dispatch arms.
+- **est.** 1.5h (mostly copy from reference; was 2h)
 
 **M4 acceptance gate:** load + edit + save -> lossless round-trip; consultant can add/remove/reorder blocks; off-schema content impossible; consultants never see YAML/JSON.
 
@@ -591,9 +601,9 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **est.** 3h
 
 ### T-92 · Implement comment review panel (mode B — default)
-- **Inputs:** T-91, D-25
-- **Outputs:** `src/comments/ReviewPanel.tsx`
-- **Acceptance:** Panel shows all open comments as cards, sorted by block order. Each card has: block id, instruction, current proposal (if any), accept/reject/follow-up buttons.
+- **Inputs:** T-91, D-25, **`docs/UI_REVIEW_PANEL.md` for wireframe + state model + per-card behavior**
+- **Outputs:** all components per UI_REVIEW_PANEL.md §"File locations" (ReviewPanel, ProposalCard, DiffPreview, ProseDiff, FieldsDiff, FollowUpInput, BulkActions).
+- **Acceptance:** matches UI_REVIEW_PANEL.md §"Acceptance checklist (per T-92)" — 11 items including keyboard shortcuts, conflict detection (T-99), failed proposals, bulk actions with confirmation.
 - **est.** 8h
 
 ### T-93 · Implement inline track-changes review (mode A)
