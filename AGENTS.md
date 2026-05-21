@@ -173,6 +173,18 @@ loop:
   ci-poll-tool: gh     # CLI tool to use; if missing, CI-poll is skipped (warned in STATUS.md, not halted)
 ```
 
+### Model + effort tier
+
+Pick the right combination in your chat app before launching `/loop`:
+
+| Tier | Use for | Claude Code | Cursor (Composer) | Codex / ChatGPT |
+|---|---|---|---|---|
+| **Default** (~90% of tasks) | Mechanical block work, schema, renderers, mapping | Sonnet 4.6 + **high** | Sonnet 4.6 + **max thinking** | GPT-5 + "Think harder" |
+| **Escalation** (~10%, hard tasks) | Setup AI pipeline (T-41–T-49), watchdog (T-46b), cost ledger (T-67, T-72), perf benchmarks (T-89c, T-89d), retry of any `[?]` task | Opus 4.7 + **high** (xhigh after failed retry) | Opus 4.7 + **max thinking** | GPT-5 Pro + "Think harder" |
+| **Avoid** | This protocol is too detailed for these | Sonnet medium · Haiku | Composer 1 · Cursor "fast" · Auto | GPT-4o · GPT-5 low |
+
+Full guidance is in [`.claude/commands/next-task.md`](.claude/commands/next-task.md) under "Model and effort tier." The loop self-reports its tier in `STATUS.md` and emits `tier-mismatch` advisories for escalation tasks running on the default tier — informative, not blocking.
+
 ### Hard rules the loop will never violate
 
 - Never force-push. Push rejection → halt to `PUSH-CONFLICT`.

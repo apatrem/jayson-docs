@@ -8,6 +8,80 @@ You are an autonomous task runner for `docs/TASKS.md`. One invocation = one or m
 
 ---
 
+# Model and effort tier (read this before doing anything)
+
+This loop's quality depends on the model and reasoning-effort tier running it. The human picks the right combination in their chat app before issuing `/loop` or `/next-task`. If you are an LLM reading this spec: confirm your tier matches the recommendation below; if you cannot tell what tier you are running at, assume the default tier and proceed with extra care on long procedural steps (every pre-flight check, every halt-rule arithmetic step, every STATUS.md regeneration).
+
+## Default tier — handles ~90% of tasks
+
+| App | Model | Effort / Thinking budget |
+|---|---|---|
+| Claude Code | Claude Sonnet 4.6 | **high** |
+| Cursor (Composer) | Claude Sonnet 4.6 | **max thinking** (the "high reasoning budget" label, NOT the Claude Max plan) |
+| Cursor (Composer) | GPT-5 | **high** reasoning |
+| Codex desktop / ChatGPT | GPT-5 | "Think harder" / high reasoning |
+| Gemini Code | Gemini 2.5 Pro | extended thinking ON |
+
+## Escalation tier — for the ~10% of harder tasks
+
+For the task IDs listed below, a stronger model is recommended. The agent does NOT halt on tier mismatch; it emits a one-line warning in STATUS.md saying `tier-mismatch: T-NN benefits from <stronger model>; running on <current tier>`, then proceeds. The human can intervene by stopping the loop, switching model in their app, and re-running for that specific task.
+
+**Tasks that benefit from escalation:**
+
+- T-41 through T-49 (M1d setup AI pipeline — novel architecture)
+- T-46b (runtime watchdog — security-sensitive)
+- T-67, T-72 (cost ledger + no-prompt-content invariant test — privacy invariant)
+- T-89c, T-89d (perf benchmark harness + adversarial watchdog test)
+- **Any task that has been `[?]`'d once already** — the second attempt deserves more reasoning depth
+
+| App | Stronger model | Effort |
+|---|---|---|
+| Claude Code | Claude Opus 4.7 | **high** (escalate to **xhigh** only after a failed retry on `high`) |
+| Cursor (Composer) | Claude Opus 4.7 | **max thinking** |
+| Cursor (Composer) | GPT-5 Pro / o-series reasoning | **high** reasoning |
+| Codex / ChatGPT | GPT-5 Pro | "Think harder" |
+| Gemini Code | Gemini 2.5 Pro Thinking | extended thinking ON |
+
+## Tiers that should NOT run this loop
+
+This spec is 240+ lines of conservative procedural protocol. Models without sufficient reasoning budget *will* skip steps. Avoid:
+
+- Claude Sonnet/Haiku at **medium** or **default** effort
+- Claude Haiku at any effort
+- GPT-5 at **low** or **default** reasoning
+- GPT-4o / GPT-4-turbo (predecessor models)
+- Cursor "Composer 1", "fast", "cmd-k-fast", or any "auto" model selection (favors fast variants for cost)
+- Any model where the reasoning-effort budget cannot be set explicitly
+
+If you are an LLM reading this spec and you suspect you are in this "should not run" tier (small parameter count, no extended thinking, fast-and-cheap variant): write a `BOOT-CHECK-FAILED` STATUS.md with state `TIER-TOO-LOW` listing your model name, and stop the invocation. The human will switch model and re-fire.
+
+## Self-reporting in STATUS.md
+
+On every fire's STATUS.md regeneration, include a line near the top:
+
+```
+Running on: <model name> at <effort>  (or "(effort unknown)" if undetectable)
+```
+
+If the current task is in the escalation list and the agent is on the default tier, also add a line under "What needs your attention":
+
+```
+⚠ Tier-mismatch advisory: T-NN benefits from escalation-tier reasoning.
+  Currently: <default tier>. If quality is poor, retry on escalation tier.
+```
+
+This is informative, not blocking. The loop proceeds.
+
+## BLOCKERS.md hint for escalation tasks
+
+When marking an escalation-tier task `[?]`, append to its BLOCKERS.md entry's `Suggested action for human` section:
+
+```
+- This task is on the escalation list. If retrying, switch model to <stronger model> + <high/max thinking> before unblocking.
+```
+
+---
+
 # Status markers (canonical reference)
 
 | Marker | Meaning | Eligible to pick? |
