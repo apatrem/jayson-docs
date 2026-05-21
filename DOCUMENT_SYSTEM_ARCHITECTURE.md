@@ -24,21 +24,28 @@ experiment. Prior prototypes may be looked at for ideas, but nothing is carried
 over — the system is built to this memo, not migrated from anything.
 
 ### Templating inputs — demo DOCX/PPTX
-The consultancy will supply a few demo DOCX and PPTX proposals. Their role is deliberately
-narrow and one-time:
+The consultancy will supply a few demo DOCX, PPTX, and (optionally) PDF brand
+materials. Their role is deliberately narrow and one-time:
 
 - They are used **once, at setup**, to derive the **brand identity**
-  (colours, fonts, logo, spacing) and to inform the **initial block library and
-  slide-layout library** — i.e. which block and layout types a deliverable
-  actually uses.
-- They are read **by a person or an AI assistant during setup** to hand-author
-  the brand-token file and the block/layout catalogue. They are **not**
-  processed by the system.
-- They **do not influence the architecture.** The architecture in this memo is
-  fixed and stands independent of whichever demo files are supplied.
-- **Do not build DOCX/PPTX parsing or import into the system.** The system
-  never reads or writes Office formats at runtime (consistent with R3 and R15).
-  The demo files are a design-time reference only.
+  (colours, fonts, logo, spacing — see `brand.example.yaml`) and to inform
+  **which blocks the consultancy needs** (see `blocks.catalogue.yaml`).
+- They are processed by a **setup-time AI pipeline** that produces two
+  artifacts for human review:
+  1. A draft brand-token file populated from the observed visual identity.
+  2. A catalogue diff: which of the 15 pre-built blocks the consultancy
+     uses + proposals for any consultancy-specific blocks that need to be
+     generated (subject to the Layer 1 mitigations).
+- Both artifacts land in a **pending review state** and require human
+  approval before the app will load them.
+- The demo files **do not influence the architecture.** The architecture in
+  this memo is fixed and stands independent of whichever demo files are
+  supplied. Only the brand-token file and the block catalogue (data, not
+  architecture) vary per consultancy.
+- **Do not build runtime DOCX/PPTX parsing or import into the system.** The
+  setup pipeline is the only place Office files are read, and it runs
+  out-of-band of the editor/renderer (consistent with R3 and R15). The
+  runtime system never reads or writes Office formats.
 
 ---
 
@@ -140,8 +147,44 @@ class, but not canonical.
 **Define a Zod schema from scratch.** It is used in three places: validating
 LLM output before it is accepted, constraining what the editor can build, and
 gating rendering. **This schema is the implementation of "anchored on the
-company template" (R6).** The block library is *closed*: a consultant cannot
-produce an off-template document because off-template blocks do not exist.
+company template" (R6).**
+
+**The block library is closed *per consultancy instance*, with a two-tier
+composition:**
+
+- **Tier 1 — Pre-built generic catalogue (15 blocks).** Ships with the app.
+  Built once by the developer; spec lives in `blocks.catalogue.yaml`
+  (prose, heading, bullet-list, numbered-list, chart, table, callout,
+  kpi-cards, timeline, roadmap, risk-matrix, team, image, diagram, divider).
+  Brand-token mapping makes these feel native to each consultancy without
+  code changes.
+- **Tier 2 — Consultancy-specific generated blocks.** Added at setup time
+  by an AI that scans the consultancy's demo files and generates new blocks
+  *only when an observed pattern cannot be expressed by Tier 1 with brand-
+  token mapping alone*. Capped at 10 per setup pass.
+
+**Mitigations on generated blocks (mandatory):**
+1. **Constrained template** — AI fills a pre-defined node-view scaffold;
+   no free-form React.
+2. **Whitelisted imports only** — `react`, `@tiptap/*`, `echarts/*`,
+   `./brand-tokens`, `./block-primitives`. Lint rule fails the build on
+   imports outside this set.
+3. **Forbidden patterns** — no `dangerouslySetInnerHTML`, `eval`,
+   `Function`, `fetch`, `XMLHttpRequest`, or direct CSS injection.
+4. **Human review gate** — generated files land in `/generated-blocks/pending/`;
+   the app refuses to load them until a human reviewer moves them to
+   `/generated-blocks/active/`.
+5. **CSP-sandboxed rendering** — generated blocks render inside a
+   Content-Security-Policy-constrained iframe in the editor; pre-rendered
+   to static HTML at PDF export time.
+6. **Regen pipeline** — when the host app updates the scaffold, a
+   `regenerate` script re-runs generation and routes any drift to
+   `/pending/` for re-review.
+
+**Once approved, the library is closed for that consultancy until the next
+setup pass.** A consultant cannot produce an off-template document because
+off-template blocks do not exist.
+
 There must be exactly one machine-readable brand source (colours, fonts,
 spacing), derived from the demo DOCX/PPTX at setup (§1) and consumed by every
 renderer. If the documented brand and actual template files disagree,

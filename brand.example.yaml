@@ -1,0 +1,325 @@
+# Brand Token File — Example / Template
+#
+# Purpose: single source of truth for all visual identity tokens
+#          consumed by every renderer (HTML, PDF, deck) in the doc system.
+#
+# How it is produced:
+#   - On setup, an LLM ingests a consultancy's real deliverables
+#     (DOCX, PPTX, brand book PDFs, web style guide) and produces a
+#     populated copy of this file.
+#   - A human reviews, corrects, and approves it once.
+#   - It then lives in the shared cloud-synced folder
+#     (e.g. ~/Consultancy-Shared/brand.yaml) — see Q14.
+#
+# Field conventions:
+#   - Colors: hex strings, no shorthand (use "#FFFFFF" not "#FFF").
+#   - Fonts:  family names + fallback chain; weights as integer arrays.
+#   - Spacing: a base unit in pixels + a scale of multipliers.
+#   - Sizes:  prefer mm for print, px for screen. Be explicit with units.
+#   - Paths:  relative to the shared folder root.
+#
+# Required vs optional:
+#   - Fields marked [REQUIRED] must be present for the schema to validate.
+#   - Fields marked [OPTIONAL] may be omitted; renderers fall back to defaults.
+#   - Fields marked [v1.1] are reserved for future use; safe to leave blank.
+
+schemaVersion: "1.0.0"          # [REQUIRED] bump when the schema changes
+lastUpdated: "2026-05-21"       # [REQUIRED] ISO date, updated on every edit
+source:                          # [OPTIONAL] provenance for audit
+  generatedFrom:
+    - "demo-proposal-2025.docx"
+    - "company-deck-template-2025.pptx"
+    - "brand-book-v3.pdf"
+  generator: "claude-opus-4-7"
+  reviewedBy: "Jane Smith"
+  reviewedAt: "2026-05-21"
+
+# ─────────────────────────────────────────────────────────────────────────
+# 1. Identity
+# ─────────────────────────────────────────────────────────────────────────
+identity:
+  name: "Acme Strategy Partners"            # [REQUIRED] short trading name
+  legalName: "Acme Strategy Partners SAS"   # [OPTIONAL] used in footers
+  shortName: "ASP"                          # [OPTIONAL] used in headers / favicons
+  tagline: "Strategy for ambitious leaders" # [OPTIONAL] cover-page subtitle
+  url: "https://acme-strategy.example"      # [OPTIONAL] footer link
+  confidentialityNotice: |                  # [OPTIONAL] doc footer disclaimer
+    Confidential — for the addressee only. Do not distribute.
+
+# ─────────────────────────────────────────────────────────────────────────
+# 2. Logo
+# ─────────────────────────────────────────────────────────────────────────
+# Provide SVGs whenever possible (scale cleanly to any size).
+# PNG fallbacks are accepted at 2x intended size (retina-ready).
+logo:
+  primary:                                  # [REQUIRED] full-color, on light bg
+    svg: "assets/logo/primary.svg"
+    png: "assets/logo/primary@2x.png"
+    minWidthPx: 80                          # minimum render width (avoid distortion)
+    intrinsicAspect: 3.2                    # width / height — lets renderer reserve space
+  inverse:                                  # [OPTIONAL] for dark-background slides
+    svg: "assets/logo/inverse.svg"
+    png: "assets/logo/inverse@2x.png"
+  monochrome:                               # [OPTIONAL] for fax/print/B&W
+    svg: "assets/logo/monochrome.svg"
+  mark:                                     # [OPTIONAL] icon-only variant
+    svg: "assets/logo/mark.svg"
+    usage: "favicons, small headers, watermarks"
+  favicon: "assets/logo/favicon.ico"        # [OPTIONAL] HTML output
+
+# ─────────────────────────────────────────────────────────────────────────
+# 3. Color palette
+# ─────────────────────────────────────────────────────────────────────────
+# Two-layer model: abstract brand colors + semantic roles that map to them.
+# Renderers should reference SEMANTIC roles, never raw brand colors directly.
+colors:
+  brand:                                    # [REQUIRED] the actual brand palette
+    primary:   "#0B3D91"                    # the dominant brand color
+    secondary: "#E8A33D"                    # the supporting brand color
+    tertiary:  "#2D9C5A"                    # [OPTIONAL] occasional accent
+    dark:      "#0A1A2F"                    # darkest brand color (titles, headers)
+    light:     "#F4F7FC"                    # lightest brand color (subtle bg)
+
+  neutral:                                  # [REQUIRED] grayscale ramp
+    "0":   "#FFFFFF"                        # pure white (page background)
+    "50":  "#F8FAFC"
+    "100": "#F1F5F9"
+    "200": "#E2E8F0"                        # borders, dividers
+    "300": "#CBD5E1"
+    "400": "#94A3B8"                        # muted text, captions
+    "500": "#64748B"
+    "600": "#475569"                        # secondary text
+    "700": "#334155"
+    "800": "#1E293B"                        # primary text on light bg
+    "900": "#0F172A"                        # headings, emphasis
+
+  semantic:                                 # [REQUIRED] role-based aliases
+    pageBackground:    "neutral.0"
+    surfaceBackground: "neutral.50"         # callouts, cards
+    textPrimary:       "neutral.800"
+    textSecondary:     "neutral.600"
+    textMuted:         "neutral.400"
+    textOnBrand:       "neutral.0"          # text laid over brand.primary
+    border:            "neutral.200"
+    borderStrong:      "neutral.300"
+    link:              "brand.primary"
+    headingPrimary:    "brand.dark"
+    accent:            "brand.secondary"
+
+  status:                                   # [OPTIONAL] callout / alert colors
+    success: "#15803D"
+    warning: "#B45309"
+    error:   "#B91C1C"
+    info:    "#1D4ED8"
+
+  chartPalette:                             # [REQUIRED] ordered series colors
+    # ECharts and other chart renderers cycle through these in order
+    # when drawing multi-series charts. Keep ≥ 8 colors; ensure they
+    # are visually distinguishable and brand-coherent.
+    qualitative:
+      - "#0B3D91"
+      - "#E8A33D"
+      - "#2D9C5A"
+      - "#C44536"
+      - "#7C3AED"
+      - "#0891B2"
+      - "#65A30D"
+      - "#DB2777"
+    sequential:                             # for heatmaps, gradients
+      - "#F4F7FC"
+      - "#C9D7EF"
+      - "#7FA3DC"
+      - "#3870C0"
+      - "#0B3D91"
+    diverging:                              # for variance, +/- charts
+      negative: "#B91C1C"
+      neutral:  "#94A3B8"
+      positive: "#15803D"
+
+# ─────────────────────────────────────────────────────────────────────────
+# 4. Typography
+# ─────────────────────────────────────────────────────────────────────────
+# Fonts must be either (a) common web-safe families, (b) Google Fonts, or
+# (c) self-hosted under assets/fonts/. Web-safe fallbacks are mandatory.
+typography:
+  fonts:                                    # [REQUIRED] font-family declarations
+    heading:
+      family: "Söhne, 'Helvetica Neue', Helvetica, Arial, sans-serif"
+      source: "self-hosted"                 # self-hosted | google | system
+      assetPath: "assets/fonts/soehne/"     # only if self-hosted
+      weights: [400, 500, 600, 700]
+    body:
+      family: "Inter, -apple-system, 'Segoe UI', Roboto, sans-serif"
+      source: "google"
+      weights: [400, 500, 600]
+    mono:
+      family: "'JetBrains Mono', 'SF Mono', Consolas, monospace"
+      source: "google"
+      weights: [400, 500]
+    display:                                # [OPTIONAL] for cover/title slides
+      family: "Söhne, 'Helvetica Neue', sans-serif"
+      source: "self-hosted"
+      assetPath: "assets/fonts/soehne/"
+      weights: [700, 800]
+
+  scale:                                    # [REQUIRED] font-size scale (px)
+    # Used by both document and deck renderers, scaled relative to medium.
+    h1:      32
+    h2:      24
+    h3:      20
+    h4:      16
+    h5:      14
+    h6:      12
+    body:    11                             # default body text in flowing docs
+    bodyLg:  13                             # emphasized body
+    caption: 9                              # figure captions, footnotes
+    overline: 9                             # uppercase eyebrow labels
+    deckTitle: 44                           # for slide titles
+    deckBody:  18                           # for slide body text
+
+  lineHeight:                               # [REQUIRED] unitless multipliers
+    tight:   1.15                           # headings
+    snug:    1.3                            # subheadings
+    normal:  1.5                            # body
+    relaxed: 1.7                            # long-form prose
+
+  letterSpacing:                            # [OPTIONAL] em values
+    tight:    "-0.02em"                     # large display sizes
+    normal:   "0"
+    wide:     "0.04em"                      # uppercase overlines
+
+  emphasis:                                 # [OPTIONAL] style for <strong> / <em>
+    strong: { weight: 600 }
+    em:     { style: "italic" }
+
+# ─────────────────────────────────────────────────────────────────────────
+# 5. Spacing scale
+# ─────────────────────────────────────────────────────────────────────────
+# A base unit + a scale of multipliers. Renderers compose spacing as
+# `unit * step`. Keeps vertical rhythm consistent everywhere.
+spacing:
+  unit: 4                                   # [REQUIRED] base unit in px
+  scale: [0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48]
+  # Examples: spacing.scale[3] = 4 * 3 = 12px
+
+# ─────────────────────────────────────────────────────────────────────────
+# 6. Page layout (flowing documents → PDF)
+# ─────────────────────────────────────────────────────────────────────────
+page:
+  size: "A4"                                # [REQUIRED] A4 | Letter | Legal
+  orientation: "portrait"                   # [REQUIRED] portrait | landscape
+  margins:                                  # [REQUIRED] all in mm
+    top:    24
+    right:  18
+    bottom: 22
+    left:   18
+  header:                                   # [OPTIONAL] running header
+    enabled: true
+    heightMm: 12
+    content: "logo-left + project-title-right"   # renderer-defined preset
+  footer:                                   # [OPTIONAL] running footer
+    enabled: true
+    heightMm: 10
+    content: "confidentiality-left + page-number-right"
+    pageNumberFormat: "Page {n} of {total}"
+  firstPageHasNoHeader: true                # [OPTIONAL] suppress on cover
+
+# ─────────────────────────────────────────────────────────────────────────
+# 7. Deck layout (slide decks)
+# ─────────────────────────────────────────────────────────────────────────
+deck:
+  slideSize: "16:9"                         # [REQUIRED] 16:9 | 4:3
+  dimensionsPx: { width: 1920, height: 1080 }   # [REQUIRED] rendering canvas
+  margins:                                  # [REQUIRED] safe area in px
+    top:    72
+    right:  96
+    bottom: 72
+    left:   96
+  titleBar:                                 # [OPTIONAL] persistent title bar
+    enabled: true
+    heightPx: 96
+  footer:                                   # [OPTIONAL]
+    enabled: true
+    heightPx: 48
+    content: "logo-left + page-number-right + confidentiality-center"
+
+# ─────────────────────────────────────────────────────────────────────────
+# 8. Document elements
+# ─────────────────────────────────────────────────────────────────────────
+# Conventions for prose blocks. Keeps two consultants from producing
+# documents that look subtly different.
+elements:
+  headings:
+    numbering: "decimal-nested"             # [REQUIRED] none | decimal | decimal-nested
+    # decimal-nested → 1, 1.1, 1.1.1 — most common in consulting reports
+    casing: "sentence"                      # [REQUIRED] sentence | title | upper
+  paragraph:
+    align: "left"                           # [REQUIRED] left | justify
+    indentFirstLine: false                  # [REQUIRED] common in legal/EU style
+    spaceAfter: 6                           # [REQUIRED] px gap between paragraphs
+  bullets:
+    marker: "•"                             # [REQUIRED] character or "decimal"
+    indentPx: 16
+    nestedMarker: "–"                       # [OPTIONAL] for level-2 bullets
+  callouts:
+    defaultStyle: "info"                    # info | success | warning | error
+    iconSet: "lucide"                       # [OPTIONAL]
+  quotes:
+    style: "left-rule"                      # left-rule | indented | italic
+    accentColor: "semantic.accent"
+  code:
+    background: "neutral.50"
+    border:     "semantic.border"
+  tables:
+    headerFill: "brand.primary"
+    headerText: "semantic.textOnBrand"
+    zebraFill:  "neutral.50"
+    borderColor: "semantic.border"
+
+# ─────────────────────────────────────────────────────────────────────────
+# 9. Charts (visual defaults applied across all chart blocks)
+# ─────────────────────────────────────────────────────────────────────────
+charts:
+  defaultPalette: "qualitative"             # qualitative | sequential
+  background: "transparent"
+  gridLines:
+    color: "neutral.200"
+    style: "dashed"
+  axisLabels:
+    font: "body"
+    sizePx: 10
+    color: "semantic.textSecondary"
+  legend:
+    position: "bottom"                      # top | bottom | right | none
+    font: "body"
+    sizePx: 10
+  dataLabels:
+    enabled: false                          # consultants can override per chart
+
+# ─────────────────────────────────────────────────────────────────────────
+# 10. Tone & language defaults
+# ─────────────────────────────────────────────────────────────────────────
+# Used by the LLM during generation to keep voice consistent.
+# Not a renderer concern — these go into the LLM system prompt.
+tone:                                       # [OPTIONAL]
+  voice: "expert, concise, evidence-led"
+  forbiddenWords: ["leverage", "synergy", "best-in-class", "world-class"]
+  preferredPhrases:
+    - "we recommend" instead of "it is recommended"
+    - "the data shows" instead of "the data suggests"
+  defaultLanguage: "en"                     # en | fr — fallback when not set per doc
+  frenchTypography:                         # [OPTIONAL] enable insécables
+    nonBreakingBeforeColon: true
+    nonBreakingBeforeQuestion: true
+    nonBreakingBeforeExclam: true
+    angleQuotes: true                       # « ... » instead of "..."
+
+# ─────────────────────────────────────────────────────────────────────────
+# 11. Future / reserved
+# ─────────────────────────────────────────────────────────────────────────
+# Reserved keys — leave empty in v1, schema accepts but ignores.
+interactiveHtml: {}                         # [v1.1] live model embeds
+darkMode: {}                                # [v1.1] inverse rendering
+accessibility:                              # [v1.1] WCAG token overrides
+  contrastTarget: "AA"
+  reducedMotion: false
