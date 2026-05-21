@@ -27,21 +27,55 @@ T-01..T-05 are all default-tier tasks. Escalation only fires if a task gets `[?]
 bash scripts/bakeoff-setup.sh
 ```
 
-The script:
+The script (default mode):
 - Verifies you're on `main` with a clean tree.
 - Tags current `HEAD` as `bakeoff-start` (used by `next-task-bakeoff` for crash recovery).
 - Creates three local branches off `HEAD`: `bakeoff/claude`, `bakeoff/cursor`, `bakeoff/gpt5`.
-- Switches back to `main`.
+- **Creates three git worktrees** (sibling directories) so each driver app can operate on its own checkout in parallel.
+- Switches back to `main` in the primary worktree.
 - Prints next-step instructions.
+
+By default this produces a directory layout like:
+
+```
+~/Documents/
+  ├── jayson-docs/             ← primary worktree (main); compare from here
+  ├── jayson-docs-claude/      ← worktree on bakeoff/claude
+  ├── jayson-docs-cursor/      ← worktree on bakeoff/cursor
+  └── jayson-docs-gpt5/        ← worktree on bakeoff/gpt5
+```
+
+All four directories share the same `.git`. Commits made in any worktree are visible to all the others. **Each app opens a different folder**, so they can't fight over which branch is checked out.
 
 Verify:
 
 ```bash
 git branch --list 'bakeoff/*' -v
 git tag --list 'bakeoff-start'
+git worktree list
 ```
 
-You should see three branches and one tag. Branches are **local-only** — no `git push` happens. None of the bake-off activity touches `main` or `origin`.
+You should see three branches, one tag, and four worktrees (main + 3 bake-off). Branches are **local-only** — no `git push` happens. None of the bake-off activity touches `main` or `origin`.
+
+### Why parallel (and how to opt out)
+
+The three desktop apps (Claude Code, Cursor, Codex) all read the file system. Without worktrees, they'd fight over a single checkout — only one branch can be active at a time. Worktrees give each app its own folder + branch, so all three can run simultaneously. The bake-off finishes in ~1 hour instead of ~3 hours.
+
+If you'd rather run sequentially (one app at a time, checking out branches in turn):
+
+```bash
+bash scripts/bakeoff-setup.sh --no-worktrees
+```
+
+Then switch branches manually between drivers (the original setup behavior).
+
+### Custom worktree location
+
+Worktrees default to siblings of the main repo. Override with the `WORKTREE_BASE` environment variable:
+
+```bash
+WORKTREE_BASE=/tmp/bakeoff bash scripts/bakeoff-setup.sh
+```
 
 ---
 
@@ -50,12 +84,16 @@ You should see three branches and one tag. Branches are **local-only** — no `g
 **Model + effort:** Sonnet 4.6 + thinking budget = high  
 **Escalation rule:** if any of T-01..T-05 gets `[?]`'d, switch the chat model to Opus 4.7 + xhigh, mark the task back to `[ ]` in TASKS.md, and re-fire.
 
-```bash
-git checkout bakeoff/claude
+**Open Claude Code in the dedicated worktree:**
+
+```
+~/Documents/jayson-docs-claude/
 ```
 
+(The worktree is already on `bakeoff/claude` — no `git checkout` needed.)
+
 In Claude Code:
-1. Open the repo if it isn't already.
+1. Open the folder above as the working directory.
 2. In the model picker: select **Claude Sonnet 4.6**.
 3. Set thinking budget: **high**.
 4. Run `/next-task-bakeoff` once manually to validate the protocol.
@@ -64,6 +102,8 @@ In Claude Code:
 
 **Expected outcome:** 5 commits on `bakeoff/claude` (T-01..T-05), STATUS.md state = `BAKEOFF_COMPLETE`.
 
+**(Sequential mode without worktrees: `git checkout bakeoff/claude` in the main repo before running.)**
+
 ---
 
 ## Driver 2: Cursor in auto mode (mostly Composer 2.5)
@@ -71,12 +111,16 @@ In Claude Code:
 **Model + effort:** auto — Cursor routes as it sees fit; usually Composer 2.5.  
 **Escalation rule:** if any of T-01..T-05 gets `[?]`'d, manually pin the chat model to Sonnet 4.6 + max thinking or Opus 4.7 + max thinking, mark the task back to `[ ]`, and re-send.
 
-```bash
-git checkout bakeoff/cursor
+**Open Cursor in the dedicated worktree:**
+
+```
+~/Documents/jayson-docs-cursor/
 ```
 
+(The worktree is already on `bakeoff/cursor` — no `git checkout` needed.)
+
 In Cursor:
-1. Open the repo as a project.
+1. Open the folder above as a project.
 2. Open Composer (or the agent chat).
 3. **Model: auto** — do not pin a specific model. Cursor's auto mode is the data point being tested.
 4. Paste the entire contents of `.claude/commands/next-task-bakeoff.md` as the system instructions for the chat (Composer's "Background" / system-prompt slot, or the first message if no dedicated slot exists).
@@ -87,6 +131,8 @@ In Cursor:
 
 **If Cursor's auto routes you to a fast variant** that the protocol's `Tiers that should NOT run this loop` list rejects: the slash command will halt to `BOOT-CHECK-FAILED` with state `TIER-TOO-LOW`. That's also useful information — it tells you auto is unsafe for this workload.
 
+**(Sequential mode without worktrees: `git checkout bakeoff/cursor` in the main repo before opening Cursor.)**
+
 ---
 
 ## Driver 3: Codex desktop with GPT-5
@@ -94,12 +140,16 @@ In Cursor:
 **Model + effort:** GPT-5 + reasoning effort = high  
 **Escalation rule:** if any of T-01..T-05 gets `[?]`'d, switch effort to **xhigh** for the retry.
 
-```bash
-git checkout bakeoff/gpt5
+**Open Codex desktop in the dedicated worktree:**
+
+```
+~/Documents/jayson-docs-gpt5/
 ```
 
+(The worktree is already on `bakeoff/gpt5` — no `git checkout` needed.)
+
 In Codex desktop:
-1. Open the repo as a workspace (Codex has native filesystem access).
+1. Open the folder above as a workspace (Codex has native filesystem access).
 2. Model: **GPT-5**.
 3. Reasoning effort: **high**.
 4. Paste the entire contents of `.claude/commands/next-task-bakeoff.md` as the system instructions for the session.
@@ -107,6 +157,22 @@ In Codex desktop:
 6. Re-invoke "Continue" if Codex pauses between tasks.
 
 **Expected outcome:** 5 commits on `bakeoff/gpt5`, STATUS.md state = `BAKEOFF_COMPLETE`.
+
+**(Sequential mode without worktrees: `git checkout bakeoff/gpt5` in the main repo before opening Codex.)**
+
+---
+
+## Running all three in parallel
+
+With worktrees enabled (default), launch the three apps simultaneously:
+
+1. **Window 1:** open Claude Code on `~/Documents/jayson-docs-claude/`, configure model, run `/next-task-bakeoff`.
+2. **Window 2:** open Cursor on `~/Documents/jayson-docs-cursor/`, paste system prompt, send "Begin."
+3. **Window 3:** open Codex on `~/Documents/jayson-docs-gpt5/`, paste system instruction, send "Begin."
+
+All three commit to their own branches independently. The shared `.git` (back at `~/Documents/jayson-docs/`) sees all three branches diverge in real time. When all finish, run the comparison commands from `~/Documents/jayson-docs/` on `main`.
+
+**Don't make manual git changes in the main worktree while the bake-off is running** — leave it alone until all three drivers finish. If you need to inspect mid-run, use `git -C ~/Documents/jayson-docs-claude/ log --oneline` etc. from any terminal.
 
 ---
 
@@ -221,34 +287,42 @@ done
 Once you've decided which driver wins (let's say `bakeoff/claude`):
 
 ```bash
+# All commands run from the main worktree
+cd ~/Documents/jayson-docs
 git checkout main
 
-# Option A — Reset main to the winning branch and push
-# (Use this if you want the winner's 5 commits on origin/main.)
-# CAUTION: this rewrites main; only do it if you're sure no one else has pulled.
-# git reset --hard bakeoff/claude
-# git push origin main          # safer: --force-with-lease
+# 1. Remove the worktrees first (they hold a working copy that pins
+#    each branch; you can't delete a branch while a worktree is on it)
+git worktree remove ~/Documents/jayson-docs-claude
+git worktree remove ~/Documents/jayson-docs-cursor
+git worktree remove ~/Documents/jayson-docs-gpt5
 
-# Option B — Cherry-pick the winning branch's commits onto main, then push
+# 2. Merge or cherry-pick the winning branch onto main, then push
+# Option A — Cherry-pick the winner's commits onto main (preserves linear history)
 git cherry-pick bakeoff-start..bakeoff/claude
 git push origin main
 
-# Either way: clean up the losing branches
-git branch -D bakeoff/cursor bakeoff/gpt5
+# Option B — Reset main to the winning branch (CAUTION: rewrites history;
+# only safe if no one else has pulled origin/main since bakeoff-start)
+# git reset --hard bakeoff/claude
+# git push --force-with-lease origin main
 
-# And the winner branch (after merging)
+# 3. Delete the losing branches and the (now-merged) winner branch
+git branch -D bakeoff/cursor bakeoff/gpt5
 git branch -D bakeoff/claude
 
-# Delete the recovery tag
+# 4. Delete the recovery tag
 git tag -d bakeoff-start
 
-# Decide whether to keep the bake-off artifacts (for future bake-offs)
+# 5. Decide whether to keep the bake-off artifacts (for future bake-offs)
 # or remove them now:
 #
 # git rm .claude/commands/next-task-bakeoff.md scripts/bakeoff-setup.sh BAKEOFF.md
 # git commit -m "Remove bake-off artifacts; <winner> chosen as driver"
 # git push origin main
 ```
+
+**Important: worktrees first, branches second.** Git refuses to delete a branch that has a worktree on it. If you forget step 1, you'll get `error: Cannot delete branch 'bakeoff/claude' checked out at ~/Documents/jayson-docs-claude` — run `git worktree remove` and retry.
 
 ---
 

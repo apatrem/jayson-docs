@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
-# bakeoff-setup.sh — create the three local-only bake-off branches.
+# bakeoff-setup.sh — create the three local-only bake-off branches and
+# (by default) the three git worktrees so the human can run all three
+# drivers in parallel.
 #
-# Run once before launching any driver. Idempotent: if branches/tag already
-# exist, the script verifies them and exits cleanly. Refuses to run if the
-# tree isn't clean on main.
+# Run once before launching any driver. Idempotent: existing branches /
+# tag / worktrees are verified and preserved.
+#
+# Usage:
+#   bash scripts/bakeoff-setup.sh                 # branches + tag + worktrees (default)
+#   bash scripts/bakeoff-setup.sh --no-worktrees  # branches + tag only (sequential workflow)
 #
 # Companion to BAKEOFF.md and .claude/commands/next-task-bakeoff.md.
 
@@ -15,6 +20,40 @@ BRANCHES=(
   "bakeoff/gpt5"
 )
 TAG="bakeoff-start"
+
+# Worktree paths are siblings of the main repo by default.
+# Override by setting WORKTREE_BASE before invoking.
+REPO_ROOT=$(git rev-parse --show-toplevel)
+REPO_NAME=$(basename "$REPO_ROOT")
+PARENT_DIR=$(dirname "$REPO_ROOT")
+WORKTREE_BASE="${WORKTREE_BASE:-$PARENT_DIR}"
+
+# Worktree directory name = repo-basename + "-" + driver tail
+declare -A WORKTREE_PATHS
+for branch in "${BRANCHES[@]}"; do
+  driver_tail="${branch#bakeoff/}"
+  WORKTREE_PATHS["$branch"]="$WORKTREE_BASE/${REPO_NAME}-${driver_tail}"
+done
+
+# ── Parse flags ─────────────────────────────────────────────────────────────
+
+CREATE_WORKTREES=true
+for arg in "$@"; do
+  case "$arg" in
+    --no-worktrees)
+      CREATE_WORKTREES=false
+      ;;
+    --help|-h)
+      head -16 "$0" | grep -E "^#"
+      exit 0
+      ;;
+    *)
+      echo "Unknown flag: $arg" >&2
+      echo "Try: --no-worktrees, --help" >&2
+      exit 2
+      ;;
+  esac
+done
 
 # ── Verify state ───────────────────────────────────────────────────────────
 
@@ -65,8 +104,34 @@ for branch in "${BRANCHES[@]}"; do
   fi
 done
 
-# Ensure we're still on main
+# Ensure we're still on main in the primary worktree
 git checkout main >/dev/null 2>&1
+
+# ── Create worktrees (idempotent, parallel workflow) ───────────────────────
+
+if [[ "$CREATE_WORKTREES" == "true" ]]; then
+  for branch in "${BRANCHES[@]}"; do
+    wt_path="${WORKTREE_PATHS[$branch]}"
+
+    if git worktree list --porcelain | grep -q "^worktree $wt_path$"; then
+      # Already a worktree — verify it's on the right branch
+      existing_branch=$(git -C "$wt_path" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "?")
+      if [[ "$existing_branch" != "$branch" ]]; then
+        echo "ERROR: worktree at $wt_path is on '$existing_branch', expected '$branch'." >&2
+        echo "Remove it with: git worktree remove $wt_path" >&2
+        exit 1
+      fi
+      echo "Worktree '$wt_path' already exists on '$branch' — keeping."
+    elif [[ -e "$wt_path" ]]; then
+      echo "ERROR: '$wt_path' exists but is not a git worktree." >&2
+      echo "Remove the directory or pick a different WORKTREE_BASE." >&2
+      exit 1
+    else
+      git worktree add "$wt_path" "$branch"
+      echo "Created worktree at '$wt_path' on '$branch'."
+    fi
+  done
+fi
 
 # ── Report ─────────────────────────────────────────────────────────────────
 
@@ -78,27 +143,63 @@ git branch --list 'bakeoff/*' -v
 echo ""
 echo " Recovery tag:"
 git tag --list "$TAG" | sed 's/^/   /'
+
+if [[ "$CREATE_WORKTREES" == "true" ]]; then
+  echo ""
+  echo " Worktrees (each app opens its own — parallel workflow):"
+  for branch in "${BRANCHES[@]}"; do
+    echo "   ${WORKTREE_PATHS[$branch]}  →  $branch"
+  done
+fi
+
 echo ""
 echo "═══════════════════════════════════════════════════════════════════"
 echo " Next steps — see BAKEOFF.md for full instructions per driver:"
 echo "═══════════════════════════════════════════════════════════════════"
+
+if [[ "$CREATE_WORKTREES" == "true" ]]; then
+cat <<EOF
+
+  PARALLEL workflow (recommended — all three apps run simultaneously):
+
+  Driver 1 — Claude Code (Sonnet 4.6 high):
+    Open Claude Code on:  ${WORKTREE_PATHS[bakeoff/claude]}
+    Select model: Sonnet 4.6 + thinking budget high
+    Invoke:       /next-task-bakeoff
+
+  Driver 2 — Cursor (auto mode, mostly Composer 2.5):
+    Open Cursor on:       ${WORKTREE_PATHS[bakeoff/cursor]}
+    Composer: model = auto; paste .claude/commands/next-task-bakeoff.md
+    as system prompt; send "Begin."
+
+  Driver 3 — Codex desktop (GPT-5 high):
+    Open Codex on:        ${WORKTREE_PATHS[bakeoff/gpt5]}
+    Reasoning effort: high; paste .claude/commands/next-task-bakeoff.md
+    as system instruction; send "Begin."
+
+  After all three complete, run the comparison commands in BAKEOFF.md
+  from the main repo at: $REPO_ROOT
+
+EOF
+else
 cat <<'EOF'
+
+  SEQUENTIAL workflow (worktrees disabled):
 
   Driver 1 — Claude Code (Sonnet 4.6 high):
     git checkout bakeoff/claude
-    # In Claude Code: select Sonnet 4.6 + thinking budget high
     /next-task-bakeoff
+    (run to BAKEOFF_COMPLETE, then continue)
 
-  Driver 2 — Cursor (auto mode, mostly Composer 2.5):
+  Driver 2 — Cursor (auto mode):
     git checkout bakeoff/cursor
-    # Open repo in Cursor; paste .claude/commands/next-task-bakeoff.md
-    # into Composer's system prompt; model = auto; send "Begin."
+    (open repo in Cursor, paste system prompt, begin)
 
   Driver 3 — Codex desktop (GPT-5 high):
     git checkout bakeoff/gpt5
-    # Open repo in Codex; reasoning effort = high; paste
-    # .claude/commands/next-task-bakeoff.md as the system instruction;
-    # send "Begin."
+    (open repo in Codex, set high reasoning, begin)
 
-After all three complete, run the comparison commands in BAKEOFF.md.
+  Compare via BAKEOFF.md once all three finish.
+
 EOF
+fi
