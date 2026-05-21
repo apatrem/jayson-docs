@@ -1,0 +1,778 @@
+# Shared TypeScript Types
+
+**Purpose:** single source of truth for every type referenced across the codebase. When in doubt about a shape, this file wins.
+
+**How to use:**
+- The developer (or LLM) copies each section into `src/schema/*.ts` files at the path indicated.
+- Zod schemas defined here are the runtime validators; the TypeScript types are derived from them via `z.infer<typeof X>` to keep the two in sync.
+- Every shared type lives here — no type is allowed to be defined twice in different files.
+
+**Conventions:**
+- All schemas use `.strict()` so unknown keys are rejected (catches drift early).
+- All IDs are strings (UUIDv4 generated client-side at block creation).
+- All dates are ISO-8601 strings in UTC (`"2026-05-21T14:32:00Z"`).
+- All asset paths must start with `assets/` (per-doc) or `$brand:` (token reference). Enforced by the schema.
+
+---
+
+## 1. DocModel — top-level structure
+
+**File:** `src/schema/docmodel.ts`
+
+```typescript
+import { z } from "zod";
+import { MetaSchema } from "./meta";
+import { CommentSchema } from "./comment";
+import { SectionSchema, SlideSchema } from "./containers";
+
+/**
+ * The canonical document. A YAML file on disk parses into this shape.
+ *
+ * A doc is either kind:"document" (with sections) or kind:"deck" (with slides).
+ * Per D-29, the two kinds share leaf blocks but have distinct top-level containers.
+ */
+export const DocModelSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("document"),
+    schemaVersion: z.literal("1.0.0"),
+    meta: MetaSchema,
+    sections: z.array(SectionSchema).min(1),
+    comments: z.array(CommentSchema).default([]),
+  }).strict(),
+  z.object({
+    kind: z.literal("deck"),
+    schemaVersion: z.literal("1.0.0"),
+    meta: MetaSchema,
+    slides: z.array(SlideSchema).min(1),
+    comments: z.array(CommentSchema).default([]),
+  }).strict(),
+]);
+
+export type DocModel = z.infer<typeof DocModelSchema>;
+```
+
+---
+
+## 2. Meta — document metadata
+
+**File:** `src/schema/meta.ts`
+
+```typescript
+import { z } from "zod";
+
+/**
+ * Document metadata. Populated by the scaffolding skill at creation; updated
+ * by the editor on every save. Indexed by the library UI (D-27).
+ */
+export const MetaSchema = z.object({
+  // Identity
+  client: z.string().min(1).max(120),              // client name (may be anonymized)
+  project: z.string().min(1).max(200),             // project / engagement title
+  docKind: z.enum(["proposal", "report", "audit", "memo", "deck", "other"]),
+
+  // Classification
+  sector: z.string().optional(),                   // free tag: "energy", "mobility", "circular", ...
+  tags: z.array(z.string()).default([]),
+  language: z.enum(["en", "fr"]),                  // D-28 — drives typography + LLM prompts
+
+  // Workflow
+  status: z.enum(["draft", "in-review", "sent", "won", "lost", "archived"]),
+  archived: z.boolean().default(false),
+  confidentialityLevel: z.enum(["low", "medium", "high"]).default("medium"),
+
+  // People
+  owner: z.string().email(),                       // primary author; D-23 — set at install time
+  reviewers: z.array(z.string().email()).default([]),
+
+  // Dates
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+
+  // Brand
+  brandRef: z.string().default("$brand:default"),  // resolved from shared folder (D-20)
+}).strict();
+
+export type Meta = z.infer<typeof MetaSchema>;
+```
+
+---
+
+## 3. Block — the union of all 15 pre-built blocks
+
+**File:** `src/schema/blocks/index.ts`
+
+```typescript
+import { z } from "zod";
+
+// Each block schema lives in its own file under src/schema/blocks/
+import { ProseBlockSchema } from "./prose";
+import { HeadingBlockSchema } from "./heading";
+import { BulletListBlockSchema } from "./bullet-list";
+import { NumberedListBlockSchema } from "./numbered-list";
+import { ChartBlockSchema } from "./chart";
+import { TableBlockSchema } from "./table";
+import { CalloutBlockSchema } from "./callout";       // see reference/ implementation
+import { KpiCardsBlockSchema } from "./kpi-cards";
+import { TimelineBlockSchema } from "./timeline";
+import { RoadmapBlockSchema } from "./roadmap";
+import { RiskMatrixBlockSchema } from "./risk-matrix";
+import { TeamBlockSchema } from "./team";
+import { ImageBlockSchema } from "./image";
+import { DiagramBlockSchema } from "./diagram";
+import { DividerBlockSchema } from "./divider";
+
+/**
+ * Common fields on every block. All concrete block schemas extend this.
+ */
+export const BlockBaseSchema = z.object({
+  id: z.string().uuid(),                         // stable; assigned at creation
+  type: z.string(),                              // narrowed per block (literal in concrete schemas)
+  note: z.string().max(500).optional(),          // internal note, never rendered (per blocks.catalogue.yaml)
+}).strict();
+
+export type BlockBase = z.infer<typeof BlockBaseSchema>;
+
+/**
+ * The closed union of all block types known to v1.
+ * Custom blocks (per D-08 tier 2) extend this via the same pattern,
+ * loaded from /generated-blocks/active/.
+ */
+export const BlockSchema = z.discriminatedUnion("type", [
+  ProseBlockSchema,
+  HeadingBlockSchema,
+  BulletListBlockSchema,
+  NumberedListBlockSchema,
+  ChartBlockSchema,
+  TableBlockSchema,
+  CalloutBlockSchema,
+  KpiCardsBlockSchema,
+  TimelineBlockSchema,
+  RoadmapBlockSchema,
+  RiskMatrixBlockSchema,
+  TeamBlockSchema,
+  ImageBlockSchema,
+  DiagramBlockSchema,
+  DividerBlockSchema,
+]);
+
+export type Block = z.infer<typeof BlockSchema>;
+```
+
+### 3a. Asset-path validator (shared across blocks that reference assets)
+
+**File:** `src/schema/asset-path.ts`
+
+```typescript
+import { z } from "zod";
+
+/**
+ * Asset paths must be either:
+ *   - relative within the doc folder, starting with "assets/" — e.g. "assets/cover.jpg"
+ *   - a brand token reference, starting with "$brand:" — e.g. "$brand:logo.primary"
+ *
+ * Per D-10. Forbids absolute paths and parent-directory escapes.
+ */
+export const AssetPathSchema = z.string()
+  .min(1)
+  .refine(
+    (s) => s.startsWith("assets/") || s.startsWith("$brand:"),
+    { message: "Asset paths must start with 'assets/' (per-doc) or '$brand:' (token)." }
+  )
+  .refine(
+    (s) => !s.includes(".."),
+    { message: "Asset paths must not contain '..' (parent-directory escape)." }
+  );
+
+export type AssetPath = z.infer<typeof AssetPathSchema>;
+```
+
+### 3b. ProseMirror fragment type
+
+**File:** `src/schema/prosemirror-fragment.ts`
+
+```typescript
+import { z } from "zod";
+
+/**
+ * Rich-text content stored in ProseMirror JSON format. Used by:
+ *   - prose blocks (body content)
+ *   - bullet/numbered-list items (item text)
+ *   - table cells
+ *   - callout body
+ *
+ * The shape is ProseMirror's standard JSON serialization. We validate at the
+ * structural level only; deeper validation happens via the TipTap schema.
+ */
+export const ProseMirrorFragmentSchema = z.object({
+  type: z.literal("doc"),
+  content: z.array(z.any()),                       // recursive ProseMirror nodes
+}).passthrough();
+
+export type ProseMirrorFragment = z.infer<typeof ProseMirrorFragmentSchema>;
+```
+
+### 3c. One per-block schema (callout reference — others follow the pattern)
+
+See `reference/callout/schema.ts` for the worked example. The remaining 14 blocks follow the same pattern; their data shapes are spec'd in `blocks.catalogue.yaml` and `BLOCK_IMPLEMENTATION_GUIDE.md`.
+
+---
+
+## 4. Section & Slide — top-level containers
+
+**File:** `src/schema/containers.ts`
+
+```typescript
+import { z } from "zod";
+import { BlockSchema } from "./blocks";
+
+/**
+ * A section in a flowing document. Contains an ordered list of blocks.
+ * Top-level only — sections do not nest.
+ */
+export const SectionSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(1).max(200).optional(),    // section title (rendered as heading)
+  blocks: z.array(BlockSchema).min(1),
+}).strict();
+
+export type Section = z.infer<typeof SectionSchema>;
+
+/**
+ * A slide in a deck. Each slide has a layout name (from the closed deck-layout
+ * library, D-30) and an ordered list of blocks placed into the layout's slots.
+ * The renderer + layout decide how the blocks are arranged.
+ */
+export const SlideSchema = z.object({
+  id: z.string().uuid(),
+  layout: z.enum([
+    "cover", "section-divider", "agenda",
+    "title-body", "two-column", "three-column",
+    "chart-full", "chart-commentary", "table",
+    "quote", "process-timeline", "team",
+    "kpis", "image-caption", "closing",
+  ]),
+  blocks: z.array(BlockSchema),                    // can be empty for some layouts (e.g. divider)
+  notes: z.string().max(2000).optional(),          // speaker notes, never rendered to slide
+}).strict();
+
+export type Slide = z.infer<typeof SlideSchema>;
+```
+
+---
+
+## 5. Comment — threaded conversations (D-12)
+
+**File:** `src/schema/comment.ts`
+
+```typescript
+import { z } from "zod";
+import { BlockPatchSchema } from "./block-patch";
+
+/**
+ * One exchange in a comment thread. Comments are threads of these entries,
+ * accumulated as the consultant iterates with the AI (D-12).
+ */
+export const ThreadEntrySchema = z.discriminatedUnion("kind", [
+  // Initial instruction or follow-up from the consultant
+  z.object({
+    kind: z.literal("instruction"),
+    author: z.string().min(1),
+    authorEmail: z.string().email(),
+    authorRole: z.enum(["consultant", "reviewer"]),  // D-26
+    text: z.string().min(1).max(2000),
+    createdAt: z.string().datetime(),
+  }).strict(),
+
+  // AI's proposed patch (response to the prior instruction in the thread)
+  z.object({
+    kind: z.literal("ai-proposal"),
+    model: z.string().min(1),                        // e.g. "claude-opus-4-7", "gpt-5.5"
+    patch: BlockPatchSchema,
+    inputTokens: z.number().int().nonnegative(),
+    outputTokens: z.number().int().nonnegative(),
+    createdAt: z.string().datetime(),
+  }).strict(),
+
+  // Consultant's follow-up after seeing an AI proposal
+  z.object({
+    kind: z.literal("follow-up"),
+    author: z.string().min(1),
+    authorEmail: z.string().email(),
+    text: z.string().min(1).max(2000),
+    createdAt: z.string().datetime(),
+  }).strict(),
+]);
+
+export type ThreadEntry = z.infer<typeof ThreadEntrySchema>;
+
+/**
+ * A comment is a thread of entries anchored to a specific block.
+ *
+ * Comments live in DocModel.comments[] (top-level), not on the block they
+ * target — this keeps comment storage independent of block edits and lets
+ * comments survive YAML round-trips even when blocks are modified.
+ */
+export const CommentSchema = z.object({
+  id: z.string().uuid(),
+  blockId: z.string().uuid(),                      // anchors to a block.id
+  range: z.object({                                // optional sub-block range
+    from: z.number().int().nonnegative(),
+    to: z.number().int().nonnegative(),
+  }).optional(),
+  quotedText: z.string().max(1000),                // snapshot of highlighted text at comment creation
+  status: z.enum(["open", "applied", "rejected"]),
+  thread: z.array(ThreadEntrySchema).min(1),       // must have at least the initial instruction
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+}).strict();
+
+export type Comment = z.infer<typeof CommentSchema>;
+```
+
+---
+
+## 6. BlockPatch — scoped AI edits (D-13)
+
+**File:** `src/schema/block-patch.ts`
+
+```typescript
+import { z } from "zod";
+import { BlockSchema } from "./blocks";
+
+/**
+ * A BlockPatch is the only way the AI is allowed to modify a document.
+ * Each patch targets exactly one block (by id) and either:
+ *   - replaces the block's content with new content (most common), or
+ *   - removes the block entirely, or
+ *   - inserts a new block after the target.
+ *
+ * Per D-13: patches are validated against the schema before they are
+ * shown to the consultant as an "Accept/Reject" proposal. Invalid patches
+ * trigger a corrective re-prompt; they never reach the consultant.
+ */
+export const BlockPatchSchema = z.discriminatedUnion("op", [
+  // Replace the block at blockId with the new content
+  z.object({
+    op: z.literal("replace"),
+    blockId: z.string().uuid(),
+    block: BlockSchema,                            // the new block content
+    reason: z.string().max(500).optional(),        // optional AI explanation
+  }).strict(),
+
+  // Remove the block at blockId
+  z.object({
+    op: z.literal("remove"),
+    blockId: z.string().uuid(),
+    reason: z.string().max(500).optional(),
+  }).strict(),
+
+  // Insert a new block immediately after the block at afterBlockId
+  z.object({
+    op: z.literal("insert-after"),
+    afterBlockId: z.string().uuid(),
+    block: BlockSchema,
+    reason: z.string().max(500).optional(),
+  }).strict(),
+]);
+
+export type BlockPatch = z.infer<typeof BlockPatchSchema>;
+```
+
+---
+
+## 7. BrandTokens — the brand-token file (matches `brand.example.yaml`)
+
+**File:** `src/schema/brand.ts`
+
+```typescript
+import { z } from "zod";
+
+/**
+ * The brand-token file. Loaded once at app start from the shared cloud folder
+ * (D-20). Consumed by every renderer.
+ *
+ * Shape matches brand.example.yaml. The setup AI (D-16) produces a populated
+ * instance of this schema from a consultancy's demo materials.
+ */
+export const BrandTokensSchema = z.object({
+  schemaVersion: z.literal("1.0.0"),
+  lastUpdated: z.string(),                          // ISO date
+  source: z.object({
+    generatedFrom: z.array(z.string()),
+    generator: z.string(),
+    reviewedBy: z.string(),
+    reviewedAt: z.string(),
+  }).optional(),
+
+  identity: z.object({
+    name: z.string(),
+    legalName: z.string().optional(),
+    shortName: z.string().optional(),
+    tagline: z.string().optional(),
+    url: z.string().url().optional(),
+    confidentialityNotice: z.string().optional(),
+  }),
+
+  logo: z.object({
+    primary: z.object({
+      svg: z.string(),
+      png: z.string().optional(),
+      minWidthPx: z.number().int().positive(),
+      intrinsicAspect: z.number().positive(),
+    }),
+    inverse: z.object({
+      svg: z.string(),
+      png: z.string().optional(),
+    }).optional(),
+    monochrome: z.object({ svg: z.string() }).optional(),
+    mark: z.object({ svg: z.string(), usage: z.string().optional() }).optional(),
+    favicon: z.string().optional(),
+  }),
+
+  colors: z.object({
+    brand: z.object({
+      primary: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+      secondary: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+      tertiary: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+      dark: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+      light: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+    }),
+    neutral: z.record(z.string(), z.string().regex(/^#[0-9A-Fa-f]{6}$/)),
+    semantic: z.record(z.string(), z.string()),     // values are token references like "neutral.800"
+    status: z.object({
+      success: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+      warning: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+      error:   z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+      info:    z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+    }).optional(),
+    chartPalette: z.object({
+      qualitative: z.array(z.string().regex(/^#[0-9A-Fa-f]{6}$/)).min(8),
+      sequential:  z.array(z.string().regex(/^#[0-9A-Fa-f]{6}$/)).min(3),
+      diverging: z.object({
+        negative: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+        neutral:  z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+        positive: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+      }).optional(),
+    }),
+  }),
+
+  typography: z.object({
+    fonts: z.object({
+      heading: z.object({
+        family: z.string(),
+        source: z.enum(["self-hosted", "google", "system"]),
+        assetPath: z.string().optional(),
+        weights: z.array(z.number().int()),
+      }),
+      body: z.object({
+        family: z.string(),
+        source: z.enum(["self-hosted", "google", "system"]),
+        assetPath: z.string().optional(),
+        weights: z.array(z.number().int()),
+      }),
+      mono: z.object({
+        family: z.string(),
+        source: z.enum(["self-hosted", "google", "system"]),
+        assetPath: z.string().optional(),
+        weights: z.array(z.number().int()),
+      }),
+      display: z.object({
+        family: z.string(),
+        source: z.enum(["self-hosted", "google", "system"]),
+        assetPath: z.string().optional(),
+        weights: z.array(z.number().int()),
+      }).optional(),
+    }),
+    scale: z.record(z.string(), z.number()),       // h1, h2, ..., body, etc.
+    lineHeight: z.record(z.string(), z.number()),
+    letterSpacing: z.record(z.string(), z.string()).optional(),
+    emphasis: z.any().optional(),
+  }),
+
+  spacing: z.object({
+    unit: z.number().positive(),
+    scale: z.array(z.number()).min(2),
+  }),
+
+  page: z.object({
+    size: z.enum(["A4", "Letter", "Legal"]),
+    orientation: z.enum(["portrait", "landscape"]),
+    margins: z.object({
+      top: z.number(), right: z.number(),
+      bottom: z.number(), left: z.number(),
+    }),
+    header: z.object({
+      enabled: z.boolean(),
+      heightMm: z.number().optional(),
+      content: z.string().optional(),
+    }).optional(),
+    footer: z.object({
+      enabled: z.boolean(),
+      heightMm: z.number().optional(),
+      content: z.string().optional(),
+      pageNumberFormat: z.string().optional(),
+    }).optional(),
+    firstPageHasNoHeader: z.boolean().optional(),
+  }),
+
+  deck: z.object({
+    slideSize: z.enum(["16:9", "4:3"]),
+    dimensionsPx: z.object({ width: z.number(), height: z.number() }),
+    margins: z.object({
+      top: z.number(), right: z.number(),
+      bottom: z.number(), left: z.number(),
+    }),
+    titleBar: z.object({ enabled: z.boolean(), heightPx: z.number().optional() }).optional(),
+    footer: z.object({
+      enabled: z.boolean(),
+      heightPx: z.number().optional(),
+      content: z.string().optional(),
+    }).optional(),
+  }),
+
+  elements: z.any(),                                // shape per brand.example.yaml §8
+  charts: z.any(),                                  // shape per brand.example.yaml §9
+  tone: z.any().optional(),                         // shape per brand.example.yaml §10
+
+  // Reserved keys — accepted but unused in v1
+  interactiveHtml: z.any().optional(),
+  darkMode: z.any().optional(),
+  accessibility: z.any().optional(),
+}).strict();
+
+export type BrandTokens = z.infer<typeof BrandTokensSchema>;
+```
+
+---
+
+## 8. LLM API types — batched request/response (D-13)
+
+**File:** `src/llm/types.ts`
+
+```typescript
+import { z } from "zod";
+import { BlockPatchSchema } from "../schema/block-patch";
+
+/**
+ * A batched comment-to-AI request. One API call processes N comments together
+ * and returns N patches (or errors per patch).
+ *
+ * Prompt-caching is applied to: systemPrompt, schema, brandTokens, docContext.
+ * Only `comments` is fresh per call.
+ */
+export interface BatchedCommentRequest {
+  model: "fast" | "thinking";                       // routed per D-11
+  systemPrompt: string;                             // cached
+  schemaContext: string;                            // serialized schema for the LLM — cached
+  brandTokensContext: string;                       // serialized brand tokens — cached
+  docContext: string;                               // serialized current DocModel — cached
+  comments: Array<{
+    commentId: string;                              // matches CommentSchema.id
+    blockId: string;
+    quotedText: string;
+    thread: Array<{
+      role: "user" | "assistant";
+      content: string;                              // formatted instruction/proposal/follow-up
+    }>;
+  }>;
+}
+
+/**
+ * The structured response from a batched call. Each entry corresponds 1:1 to
+ * the request's `comments[]` by `commentId`.
+ *
+ * Per-entry status is independent — partial success (some patches valid,
+ * some failed) is normal and triggers per-comment retry.
+ */
+export const BatchedCommentResponseSchema = z.object({
+  results: z.array(z.discriminatedUnion("status", [
+    z.object({
+      status: z.literal("ok"),
+      commentId: z.string(),
+      patch: BlockPatchSchema,
+    }).strict(),
+    z.object({
+      status: z.literal("failed"),
+      commentId: z.string(),
+      error: z.string(),
+      rawOutput: z.string().optional(),             // for debugging
+    }).strict(),
+  ])),
+  usage: z.object({
+    inputTokens: z.number().int().nonnegative(),
+    outputTokens: z.number().int().nonnegative(),
+    cachedTokens: z.number().int().nonnegative(),
+  }),
+}).strict();
+
+export type BatchedCommentResponse = z.infer<typeof BatchedCommentResponseSchema>;
+```
+
+---
+
+## 9. Cost ledger types (D-34)
+
+**File:** `src/cost-ledger/types.ts`
+
+```typescript
+import { z } from "zod";
+
+/**
+ * One row in the local cost ledger. Per D-34, only cost-computation fields
+ * are stored — no prompt content, no response content, no behavioral signal.
+ *
+ * Storage: local SQLite at the app's config path (e.g.,
+ * ~/Library/Application Support/DocSystem/cost.db on macOS).
+ * Retention: 13-month sliding window — older rows auto-deleted.
+ */
+export const CostLedgerRowSchema = z.object({
+  id: z.string().uuid(),                            // row PK
+  timestamp: z.string().datetime(),
+  model: z.string(),                                // e.g. "claude-opus-4-7"
+  provider: z.string(),                             // "anthropic" | "openai" | ...
+  inputTokens: z.number().int().nonnegative(),
+  outputTokens: z.number().int().nonnegative(),
+  cachedTokens: z.number().int().nonnegative(),
+  computedCostUsd: z.number().nonnegative(),        // computed at row-creation from current rates
+  docId: z.string().uuid().optional(),              // doc this call was for; null for setup calls
+  callKind: z.enum(["generation", "comment-batch", "comment-single", "setup"]),
+}).strict();
+
+export type CostLedgerRow = z.infer<typeof CostLedgerRowSchema>;
+
+/**
+ * The aggregate the app shows in Settings → My LLM Spend and uses for
+ * monthly-limit enforcement.
+ */
+export interface CostSummary {
+  currentMonth: {
+    totalUsd: number;
+    callCount: number;
+    limitUsd: number;                               // from config, default ~€50 equivalent
+    pctOfLimit: number;                             // 0–1
+  };
+  rolling30Days: {
+    totalUsd: number;
+    callCount: number;
+  };
+  perDoc: Array<{ docId: string; totalUsd: number; callCount: number }>;
+}
+```
+
+---
+
+## 10. App configuration types (D-22, D-23)
+
+**File:** `src/config/types.ts`
+
+```typescript
+import { z } from "zod";
+
+/**
+ * The local config file written by the install script. Lives at the OS
+ * config path (e.g. ~/Library/Application Support/DocSystem/config.yaml).
+ *
+ * API keys are NOT stored here — they live in the OS keychain. This file
+ * just references which keychain entry to fetch.
+ */
+export const AppConfigSchema = z.object({
+  user: z.object({
+    name: z.string().min(1),
+    email: z.string().email(),
+    role: z.enum(["consultant", "senior", "admin"]),
+    initials: z.string().max(4),
+  }),
+
+  paths: z.object({
+    cloudSyncRoot: z.string(),                      // e.g. "~/Dropbox/Consultancy"
+    sharedFolder: z.string(),                       // e.g. "~/Dropbox/Consultancy-Shared"
+  }),
+
+  llm: z.object({
+    fastModel: z.object({
+      provider: z.enum(["openai", "anthropic", "azure", "local"]),
+      model: z.string(),
+      keychainEntry: z.string(),                    // name of OS keychain entry holding the API key
+    }),
+    thinkingModel: z.object({
+      provider: z.enum(["openai", "anthropic", "azure", "local"]),
+      model: z.string(),
+      keychainEntry: z.string(),
+    }),
+  }),
+
+  costLimits: z.object({
+    enabled: z.boolean().default(true),
+    monthlyUsdSoft: z.number().positive().default(50),  // warning at 80%
+    monthlyUsdHard: z.number().positive().default(50),  // hard stop
+    allowAdminOverride: z.boolean().default(true),
+  }),
+
+  editor: z.object({
+    reviewMode: z.enum(["panel", "inline", "diff"]).default("panel"),
+    autosaveDebounceMs: z.number().int().positive().default(2000),
+  }),
+}).strict();
+
+export type AppConfig = z.infer<typeof AppConfigSchema>;
+```
+
+---
+
+## 11. Validation entry point
+
+**File:** `src/schema/validate.ts`
+
+```typescript
+import { DocModelSchema, DocModel } from "./docmodel";
+import { z } from "zod";
+
+export type ValidationResult =
+  | { ok: true; doc: DocModel }
+  | { ok: false; errors: ValidationError[] };
+
+export interface ValidationError {
+  path: string;                                     // dot-separated path to the offending field
+  message: string;
+  code: string;                                     // Zod error code
+}
+
+/**
+ * The single entry point for validating a DocModel. All loading paths
+ * (file open, YAML import, LLM output) MUST go through here. Never trust
+ * a DocModel that wasn't validated by this function.
+ */
+export function validateDocModel(input: unknown): ValidationResult {
+  const result = DocModelSchema.safeParse(input);
+  if (result.success) {
+    return { ok: true, doc: result.data };
+  }
+  const errors: ValidationError[] = result.error.issues.map((issue) => ({
+    path: issue.path.join("."),
+    message: issue.message,
+    code: issue.code,
+  }));
+  return { ok: false, errors };
+}
+```
+
+---
+
+## 12. Type/file map (quick reference)
+
+| Type | File |
+|---|---|
+| `DocModel` | `src/schema/docmodel.ts` |
+| `Meta` | `src/schema/meta.ts` |
+| `Block`, `BlockBase` | `src/schema/blocks/index.ts` |
+| `AssetPath` | `src/schema/asset-path.ts` |
+| `ProseMirrorFragment` | `src/schema/prosemirror-fragment.ts` |
+| Per-block schemas (15) | `src/schema/blocks/<name>.ts` |
+| `Section`, `Slide` | `src/schema/containers.ts` |
+| `Comment`, `ThreadEntry` | `src/schema/comment.ts` |
+| `BlockPatch` | `src/schema/block-patch.ts` |
+| `BrandTokens` | `src/schema/brand.ts` |
+| `BatchedCommentRequest`, `BatchedCommentResponse` | `src/llm/types.ts` |
+| `CostLedgerRow`, `CostSummary` | `src/cost-ledger/types.ts` |
+| `AppConfig` | `src/config/types.ts` |
+| `validateDocModel`, `ValidationResult` | `src/schema/validate.ts` |

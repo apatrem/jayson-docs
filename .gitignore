@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# CodeGraph local index
+.codegraph/
+
+# Editor caches
+.vscode/
+.idea/
+
+# Future build output (not yet relevant — repo is docs-only)
+node_modules/
+dist/
+build/

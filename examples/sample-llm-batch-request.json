@@ -1,0 +1,65 @@
+{
+  "_comment": "Example BatchedCommentRequest sent to the LLM API. Matches BatchedCommentRequest in TYPES.md §8. Demonstrates D-13: one API call processes N comments together; the system prompt, schema, brand, and doc context are prompt-cached.",
+
+  "model": "fast",
+  "_model_note": "Routes to the configured fast model (e.g. gpt-5.5) per D-11. Set to 'thinking' when the consultant toggled the thinking mode in the comment popup.",
+
+  "systemPrompt": "You are an editing assistant for a consulting firm. You produce strict, schema-validated BlockPatch objects in response to comments on a structured document.\n\nRules:\n1. Each output patch targets exactly one block by id.\n2. Output is valid against the BlockPatch schema (one of: replace, remove, insert-after).\n3. Voice is expert, concise, evidence-led. Avoid: leverage, synergy, best-in-class, world-class.\n4. Use the consultancy's brand tokens (referenced via $brand: prefix) — never hard-code colors or fonts.\n5. Preserve the consultant's existing edits — base your patch on the CURRENT block content shown to you.\n6. When in a thread with prior exchanges, take the full thread context into account.",
+  "_systemPrompt_note": "Cached. Sent once at thread start; reused for every batch within the cache TTL.",
+
+  "schemaContext": "<<JSON-serialized Zod schemas for DocModel, Block, BlockPatch — ~3000 tokens. See TYPES.md for the source.>>",
+  "_schemaContext_note": "Cached. Lets the LLM produce structurally-valid output. Updated only when the schema version bumps.",
+
+  "brandTokensContext": "<<JSON-serialized contents of the consultancy's brand.yaml — ~800 tokens. Includes tone.forbiddenWords and tone.preferredPhrases which guide voice.>>",
+  "_brandTokensContext_note": "Cached per consultancy. Updated only when the brand file changes.",
+
+  "docContext": "<<JSON-serialized current DocModel (kind + meta + sections + comments). ~8000 tokens for a mid-size doc. The LLM sees the full doc but only patches the specific blocks targeted by the comments.>>",
+  "_docContext_note": "Cached for the duration of one editing session. Refreshed when the doc is saved (per D-04, current state is SSOT).",
+
+  "comments": [
+    {
+      "commentId": "c-001-uuid-aaaa-bbbb-cccc-dddddddddddd",
+      "blockId": "b1-callout-01",
+      "quotedText": "EU industrial-decarbonization tax credits for SMR offtake expire Q4 2027.",
+      "thread": [
+        {
+          "role": "user",
+          "content": "Comment from Jane Smith (consultant) at 2026-05-21T14:32:00Z:\nMake this title action-oriented and quantify the urgency."
+        }
+      ]
+    },
+    {
+      "commentId": "c-002-uuid-eeee-ffff-gggg-hhhhhhhhhhhh",
+      "blockId": "b2-bullets-01",
+      "quotedText": "Cost volatility — gas-price exposure on 60% of OPEX",
+      "thread": [
+        {
+          "role": "user",
+          "content": "Comment from Jane Smith (consultant) at 2026-05-21T14:33:00Z:\nAdd a sub-bullet with the 2024 actual figure."
+        }
+      ]
+    },
+    {
+      "commentId": "c-003-uuid-iiii-jjjj-kkkk-llllllllllll",
+      "blockId": "b3-chart-01",
+      "quotedText": "Projected annual OPEX by scenario",
+      "thread": [
+        {
+          "role": "user",
+          "content": "Comment from Jane Smith (consultant) at 2026-05-21T14:34:00Z:\nThe takeaway is too long. One sentence max."
+        },
+        {
+          "role": "assistant",
+          "content": "Proposed patch at 2026-05-21T14:34:18Z: replaced takeaway with 'SMR scenario reduces OPEX by 38% by year 5.'"
+        },
+        {
+          "role": "user",
+          "content": "Follow-up from Jane Smith at 2026-05-21T14:36:00Z:\nGood but add the dollar amount."
+        }
+      ],
+      "_thread_note": "This comment is on its second AI exchange. The thread shows the prior instruction + AI's previous proposal + the consultant's follow-up. The LLM sees this and produces a revised patch that addresses the follow-up."
+    }
+  ],
+
+  "_response_expectation": "The LLM returns a BatchedCommentResponse (see sample-llm-batch-response.json) with one entry per comment in the same order. Each entry is either { status: 'ok', patch } or { status: 'failed', error }. The app validates each patch against BlockPatchSchema before showing it to the consultant; invalid patches trigger a per-comment retry with corrective re-prompt (D-13)."
+}

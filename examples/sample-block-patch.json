@@ -1,0 +1,68 @@
+{
+  "_comment": "Example BlockPatch — the only way an AI is allowed to modify a document. This shape matches BlockPatchSchema in TYPES.md §6. Use as a fixture for testing the LLM interface (M3).",
+
+  "_replace_example": {
+    "op": "replace",
+    "blockId": "b1-callout-01",
+    "block": {
+      "id": "b1-callout-01",
+      "type": "callout",
+      "variant": "info",
+      "title": "Why now (concise)",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "EU tax credits expire Q4 2027. A go-decision by Q1 2027 is required to secure first-mover pricing."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "reason": "Tightened from 2 sentences to 1, as requested in comment c-001."
+  },
+
+  "_remove_example": {
+    "op": "remove",
+    "blockId": "b3-prose-old",
+    "reason": "Section overlap with executive summary; consolidating per comment c-002."
+  },
+
+  "_insert_after_example": {
+    "op": "insert-after",
+    "afterBlockId": "b2-bullets-01",
+    "block": {
+      "id": "b2-callout-new",
+      "type": "callout",
+      "variant": "warning",
+      "title": "Regulatory note",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "EU ETS phase-4 cap reductions accelerate from 2.2% to 4.3% annually starting 2027."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "reason": "Added regulatory context as suggested in comment c-003."
+  },
+
+  "_usage_notes": [
+    "A real BlockPatch object is one of the three shapes above (not the wrapper object shown here).",
+    "The `op` field is the discriminator — it determines which other fields are required.",
+    "For `replace` and `insert-after`, the `block` field must itself be a valid Block (matching the closed library).",
+    "The `reason` field is optional but recommended — it helps the consultant understand the AI's intent during review."
+  ]
+}

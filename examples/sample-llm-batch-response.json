@@ -1,0 +1,108 @@
+{
+  "_comment": "Example BatchedCommentResponse — what the LLM returns for the request in sample-llm-batch-request.json. Matches BatchedCommentResponseSchema in TYPES.md §8. Demonstrates mixed success (2 ok, 1 failed) — the typical case where per-patch validation catches LLM output drift.",
+
+  "results": [
+    {
+      "status": "ok",
+      "commentId": "c-001-uuid-aaaa-bbbb-cccc-dddddddddddd",
+      "patch": {
+        "op": "replace",
+        "blockId": "b1-callout-01",
+        "block": {
+          "id": "b1-callout-01",
+          "type": "callout",
+          "variant": "info",
+          "title": "Decide by Q1 2027 to secure first-mover tax credits",
+          "body": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "EU industrial-decarbonization tax credits for SMR offtake expire Q4 2027, leaving a 9-month window to lock in pricing."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "reason": "Action-oriented title; added 9-month window to quantify urgency."
+      }
+    },
+    {
+      "status": "ok",
+      "commentId": "c-002-uuid-eeee-ffff-gggg-hhhhhhhhhhhh",
+      "patch": {
+        "op": "replace",
+        "blockId": "b2-bullets-01",
+        "block": {
+          "id": "b2-bullets-01",
+          "type": "bullet-list",
+          "items": [
+            {
+              "text": {
+                "type": "doc",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      { "type": "text", "text": "Cost volatility — gas-price exposure on 60% of OPEX (€42M in 2024)" }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "text": {
+                "type": "doc",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      { "type": "text", "text": "Regulatory drift — EU ETS scope-1 emissions cap tightening through 2030" }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "text": {
+                "type": "doc",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      { "type": "text", "text": "Client expectations — Tier-1 customers requiring Scope-3 disclosures by 2027" }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "reason": "Added the 2024 actual figure (€42M) to the first bullet."
+      }
+    },
+    {
+      "status": "failed",
+      "commentId": "c-003-uuid-iiii-jjjj-kkkk-llllllllllll",
+      "error": "Patch validation failed: chart.takeaway exceeds maxLength of 200.",
+      "rawOutput": "{\"op\":\"replace\",\"blockId\":\"b3-chart-01\",\"block\":{\"id\":\"b3-chart-01\",\"type\":\"chart\",\"chartType\":\"stacked-bar\",\"title\":\"Projected annual OPEX by scenario\",\"takeaway\":\"SMR scenario reduces OPEX by 38% by year 5, saving approximately €42M cumulatively over the period, which represents a strong business case relative to the status quo natural-gas trajectory and the increasing ETS exposure that significantly impacts the long-term economics.\",\"data\":{...}}}",
+      "_note": "The LLM produced a takeaway that exceeded the 200-char limit. The app rejects this patch and queues it for a single-comment retry with a corrective re-prompt: 'Your previous patch failed validation because the takeaway field exceeded 200 characters. Produce a shorter takeaway (≤200 chars).'"
+    }
+  ],
+
+  "usage": {
+    "inputTokens": 14952,
+    "outputTokens": 487,
+    "cachedTokens": 12231
+  },
+  "_usage_note": "cachedTokens is the portion of input that hit the prompt cache. Here, ~82% of input is cached (the system prompt + schema + brand + doc context). Fresh input was the comments[] array. This is the cost-saving mechanic from D-13.",
+
+  "_handling_per_status": {
+    "ok": "Patch is shown to the consultant in the review panel (D-25) as a proposed change. Consultant clicks Accept → patch applied to DocModel and added as 'ai-proposal' entry in the comment's thread.",
+    "failed": "Patch is queued for a single-comment retry with corrective re-prompt. After 2 retry attempts, the comment is shown as 'failed' in the review panel with a 'View raw output' debug action."
+  }
+}

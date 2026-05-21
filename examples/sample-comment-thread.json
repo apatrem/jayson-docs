@@ -1,0 +1,105 @@
+{
+  "_comment": "Example Comment with a multi-round thread. Demonstrates the threaded conversation model from D-12: instruction → ai-proposal → follow-up → ai-proposal. Use as a fixture for testing the comment system (M5).",
+
+  "id": "c-001-uuid-aaaa-bbbb-cccc-dddddddddddd",
+  "blockId": "b1-callout-01",
+  "range": {
+    "from": 0,
+    "to": 87
+  },
+  "quotedText": "EU industrial-decarbonization tax credits for SMR offtake expire Q4 2027.",
+  "status": "open",
+  "createdAt": "2026-05-21T14:32:00Z",
+  "updatedAt": "2026-05-21T14:38:00Z",
+
+  "thread": [
+    {
+      "kind": "instruction",
+      "author": "Jane Smith",
+      "authorEmail": "j.smith@boutique.example",
+      "authorRole": "consultant",
+      "text": "Make this title action-oriented and quantify the urgency.",
+      "createdAt": "2026-05-21T14:32:00Z"
+    },
+    {
+      "kind": "ai-proposal",
+      "model": "gpt-5.5",
+      "patch": {
+        "op": "replace",
+        "blockId": "b1-callout-01",
+        "block": {
+          "id": "b1-callout-01",
+          "type": "callout",
+          "variant": "info",
+          "title": "Decide by Q1 2027 to secure €40M in first-mover tax credits",
+          "body": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "EU industrial-decarbonization tax credits for SMR offtake expire Q4 2027, leaving a 9-month window to lock in pricing."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "reason": "Quantified urgency in the title (€40M) and added 9-month window."
+      },
+      "inputTokens": 14823,
+      "outputTokens": 156,
+      "createdAt": "2026-05-21T14:33:12Z"
+    },
+    {
+      "kind": "follow-up",
+      "author": "Jane Smith",
+      "authorEmail": "j.smith@boutique.example",
+      "text": "The €40M figure isn't confirmed. Use 'significant' instead, and keep the timing concrete.",
+      "createdAt": "2026-05-21T14:36:00Z"
+    },
+    {
+      "kind": "ai-proposal",
+      "model": "gpt-5.5",
+      "patch": {
+        "op": "replace",
+        "blockId": "b1-callout-01",
+        "block": {
+          "id": "b1-callout-01",
+          "type": "callout",
+          "variant": "info",
+          "title": "Decide by Q1 2027 to secure significant first-mover tax credits",
+          "body": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "EU industrial-decarbonization tax credits for SMR offtake expire Q4 2027, leaving a 9-month window to lock in pricing."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "reason": "Replaced '€40M' with 'significant'; kept the Q1 2027 / 9-month framing."
+      },
+      "inputTokens": 14987,
+      "outputTokens": 142,
+      "createdAt": "2026-05-21T14:38:10Z"
+    }
+  ],
+
+  "_usage_notes": [
+    "The thread always starts with an 'instruction' entry from the consultant.",
+    "Each AI response is an 'ai-proposal' entry containing a BlockPatch + token usage.",
+    "Follow-ups are 'follow-up' entries from the consultant — they queue locally until the next batch submit.",
+    "The 'current proposal' is always the LAST 'ai-proposal' in the thread — that's the one Accept/Reject acts on.",
+    "Comments can be in three statuses: 'open' (under review), 'applied' (consultant accepted), 'rejected'.",
+    "When the LLM responds, the full thread is passed in as context — it sees all prior exchanges."
+  ]
+}
