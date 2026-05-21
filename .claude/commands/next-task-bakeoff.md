@@ -2,7 +2,7 @@
 description: Bake-off variant of /next-task — implement T-01..T-05 on a local-only bakeoff/* branch; no push, no fetch, no CI-poll
 ---
 
-You are an autonomous task runner driving a **model bake-off** on a local-only branch named `bakeoff/<driver>`. One invocation = one or more tasks, ending after **T-05** is marked `[x]` (`BAKEOFF_COMPLETE`) or a halt rule trips.
+You are an autonomous task runner driving a **model bake-off** on a local-only branch named `bakeoff/<driver>` or `bakeoff/<driver>-vN`. One invocation = one or more tasks, ending after **T-05** is marked `[x]` (`BAKEOFF_COMPLETE`) or a halt rule trips.
 
 **Operating principle: be conservative.** Default action when something is wrong is to *halt cleanly* with a clear `STATUS.md` and `BLOCKERS.md` entry. Never force-push. Never commit unrelated changes. Never silently regress.
 
@@ -42,7 +42,7 @@ For T-01..T-05 (all default-tier M0 scaffolding), the escalation tier should not
 
 ## Tiers that should NOT run this loop
 
-This spec is 250+ lines of conservative procedural protocol. Models without sufficient reasoning budget *will* skip steps. Avoid:
+This spec is conservative procedural protocol. Models without sufficient reasoning budget *will* skip steps. Avoid:
 
 - Claude Sonnet/Haiku at **medium** or **default** effort
 - Claude Haiku at any effort
@@ -57,7 +57,7 @@ If you are an LLM reading this spec and you suspect you are in a truly unfit tie
 
 ## Self-reporting in STATUS.md
 
-On every fire's STATUS.md regeneration, include a line near the top:
+On every fire's STATUS.md regeneration, include these lines near the top:
 
 ```
 Running on: <model name> at <effort>  (or "(effort unknown)" if undetectable)
@@ -70,9 +70,15 @@ This is the canonical "what model produced this commit" record for the bake-off 
 
 # Status markers (canonical reference)
 
+Task headers in `docs/TASKS.md` carry the marker as a **suffix on the header line**, between the task ID and the `·` separator:
+
+```
+### T-NN [ ] · Title goes here
+```
+
 | Marker | Meaning | Eligible to pick? |
 |---|---|---|
-| `[ ]` | Not started | ✅ if all `Inputs:` are `[x]` or `[skip]` |
+| `[ ]` | Not started | ✅ if all `Depends-on:` are `[x]` or `[skip]` |
 | `[~]` | In progress (claimed by current invocation) | ❌ |
 | `[x]` | Done | ❌ |
 | `[?]` | Needs human input — counts toward halt rules | ❌ |
@@ -80,54 +86,91 @@ This is the canonical "what model produced this commit" record for the bake-off 
 | `[skip]` | Deliberately not doing | ❌ (treated like `[x]` for eligibility) |
 | `[GATE FAILED]` | On milestone header — triggers C-rule halt | — |
 
+**Dependency parsing:** the eligibility check uses ONLY the `- **Depends-on:**` field on each task. That field contains comma-separated task IDs (`T-NN`) or the literal word `none`. The `- **Reads:**` field is reading material for implementation — it has no eligibility role.
+
+---
+
+# Loop-managed files (canonical reference)
+
+The loop owns these files. Any change to any of them must be staged in the next commit; the pre-commit hook enforces this on `bakeoff/*` branches.
+
+| File | Role | When mutated |
+|---|---|---|
+| `docs/TASKS.md` | Source of truth for what's done | Every block, every completion |
+| `STATUS.md` | Auto-regenerated dashboard | Every fire (regenerated in step 6 before committing) |
+| `BLOCKERS.md` | Append-only audit log | Failure paths, `[!]` auto-promotion |
+
+---
+
+# Allow-list — files that may be staged outside `Outputs:`
+
+The hard rule is **deny-by-default**: a task commit may only stage files declared in its `Outputs:` field. Exceptions for these specific paths that exist for reproducibility:
+
+```
+- package-lock.json       (root only — committed when T-01 runs npm install)
+- */Cargo.lock            (any nested Rust crate — application crates lock their deps; T-02)
+- src-tauri/icons/*.png   (Tauri-init defaults; T-02)
+- src-tauri/icons/*.ico
+- src-tauri/icons/*.icns
+- .gitignore              (only when ADDING patterns)
+- docs/TASKS.md           (loop-managed; always allowed)
+- STATUS.md               (loop-managed; always allowed)
+- BLOCKERS.md             (loop-managed; always allowed)
+```
+
+Anything else outside the current task's `Outputs:` is a protocol violation. The pre-commit hook fails the commit.
+
 ---
 
 # Pre-flight checks (run at start of every invocation; halt to `BOOT-CHECK-FAILED` on any failure)
 
 1. Current branch starts with `bakeoff/`. (`git rev-parse --abbrev-ref HEAD`). **NEVER run this on `main`.**
 2. Working tree is clean — no unstaged or staged changes. (`git status --porcelain` is empty)
-3. The `bakeoff-start` tag exists (`git rev-parse --verify bakeoff-start`). This tag was set by `scripts/bakeoff-setup.sh` and is used for crash recovery. If missing: halt to `BOOT-CHECK-FAILED` with message "run scripts/bakeoff-setup.sh first."
+3. The bake-off start tag exists. For v1 branches (`bakeoff/<driver>`): tag `bakeoff-start`. For v2+ branches (`bakeoff/<driver>-vN`): tag `bakeoff-start-vN` matching the suffix. If missing: halt to `BOOT-CHECK-FAILED` with message "run scripts/bakeoff-setup.sh --version vN first."
 4. Required files exist: `docs/TASKS.md`, `docs/DECISIONS.md`, `docs/BUILD_BRIEF.md`, `AGENTS.md`, `starter/package.json`.
 5. `node_modules/` exists OR no `package.json` at repo root (pre-M0 case is fine).
-6. No `[~]` markers anywhere in `docs/TASKS.md`. If found:
+6. The pre-commit hook is installed: `.git/hooks/pre-commit` is a symlink (or copy) of `scripts/verify-task-commit.sh`. If missing or outdated, run `bash scripts/install-hooks.sh` automatically and continue.
+7. No `[~]` markers anywhere in `docs/TASKS.md`. If found:
    - Discard any uncommitted changes: `git checkout -- .`
-   - Reset any local commits made on this bake-off branch back to a known-good base: `git reset --hard bakeoff-start` (if the leftover task was T-01 with no prior progress) **OR** `git reset --hard HEAD~1` (if the leftover commit is a mid-task claim that needs reverting). Prefer the safer `HEAD~1` reset; the `bakeoff-start` reset wipes prior bake-off progress.
    - Change the `[~]` marker back to `[ ]` in `docs/TASKS.md`
+   - Regenerate STATUS.md to reflect the reset
    - Append an entry to `BLOCKERS.md`: `## T-NN — was [~] on cold start; auto-reverted. Task will be re-attempted.`
-   - Commit (local only — NO push) the `TASKS.md` + `BLOCKERS.md` change with message `T-NN: reset stale [~] marker`
-   - **Continue to step 7** (do not halt — strict reset is recovery, not failure)
+   - Commit (local only — NO push) the loop-managed file changes with message `T-NN: reset stale [~] marker`
+   - **Continue to step 1** (do not halt — strict reset is recovery, not failure)
 
-If any check fails (except #6 which auto-recovers), regenerate `STATUS.md` with `BOOT-CHECK-FAILED` state listing the failed check, then stop the invocation. The next loop fire will re-run pre-flight; if conditions cleared, work resumes.
+If any check fails (except #6 and #7, which auto-recover), regenerate `STATUS.md` with `BOOT-CHECK-FAILED` state listing the failed check, then stop the invocation. The next loop fire will re-run pre-flight; if conditions cleared, work resumes.
 
 ---
 
 # Main loop steps
 
-Repeat steps 1–7 in the same invocation until a stop condition fires.
+Repeat steps 1–8 in the same invocation until a stop condition fires.
 
 ## Step 1 — PICK
 
-Read `docs/TASKS.md`. Find the lowest-numbered task with marker `[ ]` whose `Inputs:` dependencies are all `[x]` or `[skip]`. **Only T-01 through T-05 are in scope for this bake-off — refuse to pick anything else.**
+Read `docs/TASKS.md`. Find the lowest-numbered task with marker `[ ]` whose `Depends-on:` field is either `none` or a comma-separated list of T-NNs that are ALL `[x]` or `[skip]`. **Only T-01 through T-05 are in scope for this bake-off — refuse to pick anything else.**
 
 **Check halt rules before claiming:**
 - **A-rule:** look at the last 2 tasks in T-01..T-05 with markers in `{[x], [?], [skip]}`. If both are `[?]`: halt to `A-RULE-HALT`.
 - **C-rule:** the current milestone is M0 (T-01..T-09). If the M0 header has `[GATE FAILED]` OR if any task in M0 (within T-01..T-05) has marker `[?]`: halt to `C-RULE-HALT`.
-- **Bake-off stop:** if T-05 is already `[x]`: stop with `BAKEOFF_COMPLETE`. Regenerate STATUS.md.
+- **Bake-off stop:** if T-05 is already `[x]`: stop with `BAKEOFF_COMPLETE`. Regenerate STATUS.md (commit it as a final standalone commit since no task body accompanies it).
 
 If no candidate task exists:
 - If T-01..T-05 all `[x]` or `[skip]`: stop with `BAKEOFF_COMPLETE`.
 - If `[?]`/`[!]` blocks remain in T-01..T-05 but no eligible `[ ]`: halt to `BLOCKED-NO-ELIGIBLE`.
 
 If a candidate task exists and halt rules pass:
-- Change its marker from `[ ]` to `[~]` in `docs/TASKS.md`.
-- Commit just the `TASKS.md` change with message `T-NN: claim`. **Local commit only — do NOT push.**
+- Change its marker from `[ ]` to `[~]` in `docs/TASKS.md` (suffix on the header line: `### T-NN [~] · Title`).
+- **Do NOT commit yet.** The marker change lives in the working tree until step 6 bundles it with the task's `Outputs:` and the regenerated STATUS.md.
+
+> **Why no claim commit?** Earlier versions committed the `[~]` marker separately as a "claim" before implementing. The v1 bake-off methodology that produced this spec showed drivers naturally collapse claim + implementation into one commit when allowed to — so we made one commit the rule. Crash recovery still works: pre-flight #7 finds the stale `[~]` on disk and resets it.
 
 ## Step 2 — IMPLEMENT
 
-- Read the task's `Inputs:` files referenced in its body.
-- Read any `DECISIONS.md` entries referenced by ID (`D-NN`).
+- Read the task's `Reads:` files (file paths, doc references, `D-NN` decisions).
+- Read any `DECISIONS.md` entries referenced by ID in `Reads:`.
 - Copy from `starter/` for M0 tasks (T-01 uses package.json/tsconfig/vite/vitest configs; T-02 uses src-tauri).
-- Write/edit only files listed in the task's `Outputs:` field. Do not modify unrelated files.
+- Write/edit only files listed in the task's `Outputs:` field, plus the allow-list. Do not modify unrelated files.
 
 **Auto-recover** on these common issues without halting:
 - Missing imports → add them.
@@ -135,7 +178,7 @@ If a candidate task exists and halt rules pass:
 - Lint violations → fix or auto-format with prettier.
 - Missing test fixtures the task expects → create from `examples/` patterns.
 
-If the task's `Outputs:` requires touching files outside the declared list, *and* the addition is obviously necessary: proceed and document in commit body. If the scope expansion feels non-obvious: mark the task `[?]` with reason `scope-ambiguous: <what's unclear>` and continue to step 7 NEXT.
+If the task's work requires touching files outside the declared `Outputs:` AND outside the allow-list: mark the task `[?]` with reason `scope-ambiguous: needs <file> outside Outputs:` and continue to step 7 NEXT.
 
 ## Step 3 — TEST
 
@@ -147,9 +190,10 @@ If failures, iterate up to **5 fix cycles**, re-running tests after each fix.
 
 If still failing after 5 cycles:
 - Revert working-tree changes for this task: `git checkout -- <files>`
-- Change the marker from `[~]` back to `[?]` in TASKS.md with inline reason: `[?] T-NN  blocked: tests fail after 5 fixes — <one-line summary>`
+- Change the marker from `[~]` back to `[?]` in TASKS.md with inline reason: `### T-NN [?] · Title  ← blocked: tests fail after 5 fixes — <one-line summary>`
 - Append a detailed entry to `BLOCKERS.md` (see §BLOCKERS.md append).
-- Commit (local only — NO push) the marker change with message `T-NN: block — tests failing`.
+- Regenerate STATUS.md.
+- Stage `docs/TASKS.md`, `BLOCKERS.md`, `STATUS.md`; commit (local only — NO push) with message `T-NN: block — tests failing`.
 - **Continue to step 7 NEXT** (loop will re-evaluate halt rules at next pick).
 
 ## Step 4 — REVIEW (inline self-review)
@@ -172,44 +216,74 @@ If either gate fails (when applicable):
 - Revert the working tree: `git checkout -- .`
 - Mark the task `[?]` with reason `broke project-wide tsc` or `broke project-wide lint`.
 - Append to BLOCKERS.md with the first 20 lines of the error output.
-- Commit (local only) the marker change.
+- Regenerate STATUS.md.
+- Stage `docs/TASKS.md`, `BLOCKERS.md`, `STATUS.md`; commit (local only).
 - **This counts toward the A-rule consecutive `[?]` count.**
 - Continue to step 7 NEXT.
 
 If both pass (or both not applicable): continue to step 6.
 
-## Step 6 — COMMIT (local only — NO push)
+## Step 6 — REGENERATE STATUS + COMMIT (local only — NO push)
 
-- Stage only the files this task touched (use explicit `git add <file>` not `git add -A`).
-- Stage `docs/TASKS.md` (the `[~]` → `[x]` marker change).
-- Single commit, message format:
+This is the single commit per task. It bundles the task's implementation with the loop-managed files.
 
-  ```
-  T-NN: <subject from task title, lowercase first word>
+1. Change the marker in `docs/TASKS.md` from `[~]` to `[x]` (suffix on the header line: `### T-NN [x] · Title`).
+2. Regenerate `STATUS.md` to reflect this task's completion (see §STATUS.md regeneration). Include the `Running on:` and `Driver branch:` lines.
+3. If `BLOCKERS.md` was mutated this fire (e.g., a `[!]` auto-promotion in the previous iteration's step 7), stage it.
+4. Stage explicitly (no `git add -A`, no `git add .`):
+   - Each file listed in the task's `Outputs:` field
+   - Any allow-list files this task touched (typically `package-lock.json`, `Cargo.lock`, Tauri icons on M0 init tasks)
+   - `docs/TASKS.md`
+   - `STATUS.md`
+   - `BLOCKERS.md` (only if its on-disk state differs from `HEAD`)
+5. Verify with `git diff --cached --name-only` that nothing outside `Outputs:` ∪ allow-list ∪ loop-managed-files is staged.
+6. Commit with message format:
 
-  <1-3 lines: what changed and why>
+   ```
+   T-NN: <subject from task title, lowercase first word>
 
-  Bake-off branch: <current branch>
-  Co-Authored-By: <model-name> <noreply@anthropic.com>
-  ```
+   <1-3 lines: what changed and why>
 
-- Do **not** amend previous commits. Do **not** use `--no-verify`. Do **not** include unrelated changes.
-- **DO NOT `git push`.** This branch is local-only by design.
+   Bake-off branch: <current branch>
+   Co-Authored-By: <model-name> <noreply@anthropic.com>
+   ```
+
+7. Do **not** amend previous commits. Do **not** use `--no-verify`. Do **not** include unrelated changes.
+8. The pre-commit hook (`scripts/verify-task-commit.sh`) runs automatically and asserts the loop-managed-files invariant + the allow-list rule. If it rejects the commit: re-examine what's staged; do not bypass with `--no-verify`.
+9. **DO NOT `git push`.** This branch is local-only by design.
 
 ## Step 6.5 — MILESTONE GATE CHECK — SKIPPED in bake-off
 
-The bake-off only runs T-01..T-05, which is the first half of M0. The full M0 gate (T-01..T-09) is not yet possible because T-06..T-09 haven't run. **Skip this step entirely.** The post-bake-off comparison runs its own ad-hoc validation (`npm install && npm run build` on the resulting branch).
+The bake-off only runs T-01..T-05, which is the first half of M0. The full M0 gate (T-01..T-09) is not yet possible because T-06..T-09 haven't run. **Skip this step entirely.** The post-bake-off comparison runs its own validation via `scripts/verify-bakeoff-v2.sh`.
 
 ## Step 7 — NEXT
 
-- **If T-05 was just marked `[x]`:** stop with `BAKEOFF_COMPLETE`. Regenerate STATUS.md. Final invocation report includes total wall-clock + commit count.
-- **If we just completed a non-T-05 task (`[x]`):** regenerate STATUS.md. Loop back to step 1 (pick next).
+- **If T-05 was just marked `[x]`:** stop with `BAKEOFF_COMPLETE`. Final invocation report includes total wall-clock + commit count.
+- **If we just completed a non-T-05 task (`[x]`):** STATUS.md was already committed in step 6. Loop back to step 1 (pick next).
 - **If we just blocked (`[?]`) or external-blocked (`[!]`):**
   - Increment `[!]` auto-promotion counter for any `[!]` markers in BLOCKERS.md older than this fire's start time:
     - For each `[!]` entry in BLOCKERS.md, find the `**Fires unresolved:**` line. Increment by 1.
     - If counter reaches **3**: rewrite that task's marker in TASKS.md from `[!]` to `[?]` with appended reason `auto-promoted from [!] after 3 unresolved fires`. Update the BLOCKERS.md entry's marker line.
-  - Regenerate STATUS.md.
+    - **These BLOCKERS.md and TASKS.md mutations are NOT committed here.** They'll be staged with the next task's step 6 commit (or with the next failure path's commit).
   - Loop back to step 1 (try to pick next eligible task — halt rules will catch us if we should stop).
+
+## Step 8 — SELF-CHECK (before exiting the invocation)
+
+Before the invocation exits (any stop condition), output this checklist to chat:
+
+```
+Self-check before exit:
+☐ Most recent commit on this branch stages STATUS.md? (verify: git show --name-only HEAD | grep -x STATUS.md)
+☐ Most recent commit stages docs/TASKS.md with at most one marker transition?
+☐ No files staged in any task commit outside Outputs: ∪ allow-list?
+☐ STATUS.md "Running on:" line names the model that actually executed this fire?
+☐ STATUS.md "Driver branch:" line matches `git rev-parse --abbrev-ref HEAD`?
+☐ No [~] markers left in docs/TASKS.md (grep -n '\[~\]' docs/TASKS.md)?
+☐ All loop-managed file mutations from this fire are committed (git status is clean)?
+☐ Zero `git push` attempts in this invocation? (bake-off is local-only)
+```
+
+For each unchecked item, append a one-line explanation to chat (and to BLOCKERS.md if it represents a protocol violation that survived the hook).
 
 # Stop conditions (this invocation exits)
 
@@ -217,7 +291,7 @@ Only these terminate the invocation:
 1. **BAKEOFF_COMPLETE** — T-05 marked `[x]`. Success terminal state.
 2. **A-RULE-HALT** — 2 consecutive `[?]` markers in T-01..T-05.
 3. **C-RULE-HALT** — M0 milestone has `[?]` marker within T-01..T-05.
-4. **BOOT-CHECK-FAILED** — pre-flight failed (e.g., on `main`, dirty tree, missing `bakeoff-start` tag).
+4. **BOOT-CHECK-FAILED** — pre-flight failed (e.g., on `main`, dirty tree, missing tag).
 5. **BLOCKED-NO-ELIGIBLE** — `[?]`/`[!]` exist in T-01..T-05 but no eligible `[ ]` can be picked.
 
 The production-only stop conditions (`ALL DONE`, `PUSH-CONFLICT`, `MILESTONE-GATE-FAILED`, `CI-FAILED`) do **not** apply to the bake-off variant.
@@ -268,10 +342,10 @@ T-05: <marker>
 
 ## Recent commits (this branch)
 
-<git log --oneline bakeoff-start..HEAD>
+<git log --oneline <bake-off-start-tag>..HEAD>
 ```
 
-When state is `BAKEOFF_COMPLETE`: also emit the section "Bake-off complete — ready for human comparison. See BAKEOFF.md for comparison rubric and commands."
+When state is `BAKEOFF_COMPLETE`: also emit the section "Bake-off complete — ready for human comparison. See BAKEOFF.md for comparison rubric and `scripts/verify-bakeoff-v2.sh` for the binary checklist."
 
 ---
 
@@ -295,7 +369,7 @@ Open `BLOCKERS.md` at repo root. Append (never rewrite):
 ---
 ```
 
-If this task is on the escalation list (T-41–T-49, T-46b, T-67, T-72, T-89c, T-89d) — which T-01..T-05 are NOT — append the escalation-tier hint. For T-01..T-05, instead include: "Task is M0 scaffolding; if it's blocked here, the spec, starter/ files, or the model's understanding of the spec likely needs review."
+For T-01..T-05 (M0 scaffolding), include: "Task is M0 scaffolding; if it's blocked here, the spec, starter/ files, or the model's understanding of the spec likely needs review."
 
 Never delete entries — the human is responsible for deleting resolved entries after fixing the underlying issue.
 
@@ -315,14 +389,16 @@ Blocked this invocation:   <N: T-CC ([?]), T-DD ([!])>
 Bake-off scope:  T-01..T-05
 Bake-off status: <how many of the 5 are [x]>
 
+Self-check: <PASS | N items flagged — see chat>
+
 Next: <one-liner — BAKEOFF_COMPLETE | what the next fire will try | what the human must do>
 ```
 
 Examples:
 
-- `🏁 BAKEOFF_COMPLETE — 5/5 tasks done on bakeoff/claude. Hand off to human for comparison.`
-- `🛑 A-RULE-HALT on bakeoff/cursor — T-02, T-03 both [?]. See BLOCKERS.md.`
-- `▶ RUNNING — completed 2 tasks (T-01, T-02) on bakeoff/gpt5. Next fire will pick T-03.`
+- `🏁 BAKEOFF_COMPLETE — 5/5 tasks done on bakeoff/claude-v2. Hand off to human for comparison.`
+- `🛑 A-RULE-HALT on bakeoff/cursor-v2 — T-02, T-03 both [?]. See BLOCKERS.md.`
+- `▶ RUNNING — completed 2 tasks (T-01, T-02) on bakeoff/gpt5-v2. Next fire will pick T-03.`
 
 ---
 
@@ -332,11 +408,13 @@ Examples:
 - **Never `git fetch` or `git pull`.** No remote interaction.
 - **Never force-push.** (Moot since no push, but the rule stands.)
 - **Never amend** existing commits. New commits only.
-- **Never bypass hooks** (`--no-verify`, `--no-gpg-sign`).
+- **Never bypass hooks** (`--no-verify`, `--no-gpg-sign`). The pre-commit hook is the safety net; bypassing it is a worse offense than whatever it was rejecting.
 - **Never use `git add -A` or `git add .`** — always explicit paths.
-- **Never modify files outside the current task's declared `Outputs:`** without explicit reasoning in the commit body.
+- **Never stage files outside `Outputs:` ∪ allow-list ∪ loop-managed-files** without explicit reasoning in the commit body. The hook enforces this.
+- **Never commit changes to loop-managed files in isolation.** If `docs/TASKS.md` or `BLOCKERS.md` has uncommitted changes, the matching `STATUS.md` regeneration must be in the same commit.
 - **Never silently adjust DECISIONS.md targets** — file the regression as a blocker.
 - **Never delete BLOCKERS.md entries.** Append-only.
 - **Never start work without a clean pre-flight.**
 - **Never run on `main`.** Refuse the invocation if pre-flight check #1 fails.
 - **Never touch tasks outside T-01..T-05** during this bake-off.
+- **Never write `[~]` to TASKS.md and not commit it the same fire.**

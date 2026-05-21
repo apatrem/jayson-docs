@@ -7,19 +7,81 @@
 # tag / worktrees are verified and preserved.
 #
 # Usage:
-#   bash scripts/bakeoff-setup.sh                 # branches + tag + worktrees (default)
+#   bash scripts/bakeoff-setup.sh                 # branches + tag + worktrees (default: v2)
+#   bash scripts/bakeoff-setup.sh --version v3    # next-generation bake-off
+#   bash scripts/bakeoff-setup.sh --version none  # original v1 names (no suffix)
 #   bash scripts/bakeoff-setup.sh --no-worktrees  # branches + tag only (sequential workflow)
+#
+# Versioning (per BAKEOFF.md Q9 decision):
+#   v1 (legacy, frozen):  branches bakeoff/claude     + tag bakeoff-start
+#   v2 (current):         branches bakeoff/claude-v2  + tag bakeoff-start-v2
+#   v3, v4, ...:          branches bakeoff/claude-vN  + tag bakeoff-start-vN
+#
+# Default version is v2 going forward. Pass --version none to recreate the
+# v1 layout (rarely needed since v1 should already exist on disk as the
+# frozen comparison baseline).
 #
 # Companion to BAKEOFF.md and .claude/commands/next-task-bakeoff.md.
 
 set -euo pipefail
 
+# ── Parse flags ─────────────────────────────────────────────────────────────
+
+CREATE_WORKTREES=true
+VERSION="v2"   # default per Q9: v2 is the canonical current bake-off
+
+# Parse flags before computing derived values (BRANCHES, TAG depend on VERSION).
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-worktrees)
+      CREATE_WORKTREES=false
+      shift
+      ;;
+    --version)
+      VERSION="${2:-}"
+      if [[ -z "$VERSION" ]]; then
+        echo "ERROR: --version requires an argument (e.g., v2, v3, none)" >&2
+        exit 2
+      fi
+      shift 2
+      ;;
+    --version=*)
+      VERSION="${1#--version=}"
+      shift
+      ;;
+    --help|-h)
+      head -22 "$0" | grep -E "^#"
+      exit 0
+      ;;
+    *)
+      echo "Unknown flag: $1" >&2
+      echo "Try: --no-worktrees, --version v2, --help" >&2
+      exit 2
+      ;;
+  esac
+done
+
+# Normalize the version → suffix (none → empty; everything else → "-vN")
+case "$VERSION" in
+  none|"")
+    SUFFIX=""
+    TAG="bakeoff-start"
+    ;;
+  v[0-9]*)
+    SUFFIX="-${VERSION}"
+    TAG="bakeoff-start-${VERSION}"
+    ;;
+  *)
+    echo "ERROR: --version must be 'none' or 'vN' (e.g., v2, v3)." >&2
+    exit 2
+    ;;
+esac
+
 BRANCHES=(
-  "bakeoff/claude"
-  "bakeoff/cursor"
-  "bakeoff/gpt5"
+  "bakeoff/claude${SUFFIX}"
+  "bakeoff/cursor${SUFFIX}"
+  "bakeoff/gpt5${SUFFIX}"
 )
-TAG="bakeoff-start"
 
 # Worktree paths are siblings of the main repo by default.
 # Override by setting WORKTREE_BASE before invoking.
@@ -32,29 +94,11 @@ WORKTREE_BASE="${WORKTREE_BASE:-$PARENT_DIR}"
 # Avoids `declare -A` so the script works on macOS's default bash 3.2.
 worktree_path_for() {
   local branch="$1"
-  local driver_tail="${branch#bakeoff/}"
+  local driver_tail="${branch#bakeoff/}"   # "claude-v2", "cursor", etc.
   echo "$WORKTREE_BASE/${REPO_NAME}-${driver_tail}"
 }
 
-# ── Parse flags ─────────────────────────────────────────────────────────────
-
-CREATE_WORKTREES=true
-for arg in "$@"; do
-  case "$arg" in
-    --no-worktrees)
-      CREATE_WORKTREES=false
-      ;;
-    --help|-h)
-      head -16 "$0" | grep -E "^#"
-      exit 0
-      ;;
-    *)
-      echo "Unknown flag: $arg" >&2
-      echo "Try: --no-worktrees, --help" >&2
-      exit 2
-      ;;
-  esac
-done
+echo "Bake-off setup: version='${VERSION}' (tag='${TAG}', branch suffix='${SUFFIX:-<none>}')."
 
 # ── Verify state ───────────────────────────────────────────────────────────
 
@@ -159,9 +203,9 @@ echo " Next steps — see BAKEOFF.md for full instructions per driver:"
 echo "═══════════════════════════════════════════════════════════════════"
 
 if [[ "$CREATE_WORKTREES" == "true" ]]; then
-WT_CLAUDE=$(worktree_path_for "bakeoff/claude")
-WT_CURSOR=$(worktree_path_for "bakeoff/cursor")
-WT_GPT5=$(worktree_path_for "bakeoff/gpt5")
+WT_CLAUDE=$(worktree_path_for "bakeoff/claude${SUFFIX}")
+WT_CURSOR=$(worktree_path_for "bakeoff/cursor${SUFFIX}")
+WT_GPT5=$(worktree_path_for "bakeoff/gpt5${SUFFIX}")
 cat <<EOF
 
   PARALLEL workflow (recommended — all three apps run simultaneously):
@@ -181,26 +225,29 @@ cat <<EOF
     Reasoning effort: high; paste .claude/commands/next-task-bakeoff.md
     as system instruction; send "Begin."
 
-  After all three complete, run the comparison commands in BAKEOFF.md
+  After all three complete, validate the v2 spec-fix assertions:
+    bash scripts/verify-bakeoff-v2.sh --all
+
+  Then run the qualitative comparison commands in BAKEOFF.md
   from the main repo at: $REPO_ROOT
 
 EOF
 else
-cat <<'EOF'
+cat <<EOF
 
   SEQUENTIAL workflow (worktrees disabled):
 
   Driver 1 — Claude Code (Sonnet 4.6 high):
-    git checkout bakeoff/claude
+    git checkout bakeoff/claude${SUFFIX}
     /next-task-bakeoff
     (run to BAKEOFF_COMPLETE, then continue)
 
   Driver 2 — Cursor (auto mode):
-    git checkout bakeoff/cursor
+    git checkout bakeoff/cursor${SUFFIX}
     (open repo in Cursor, paste system prompt, begin)
 
   Driver 3 — Codex desktop (GPT-5 high):
-    git checkout bakeoff/gpt5
+    git checkout bakeoff/gpt5${SUFFIX}
     (open repo in Codex, set high reasoning, begin)
 
   Compare via BAKEOFF.md once all three finish.

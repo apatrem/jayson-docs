@@ -127,15 +127,28 @@ To drive the loop autonomously, in Claude Code:
 
 ### Status markers in TASKS.md
 
+Markers are placed as a **suffix on the task header line**, between the task ID and the `·` separator:
+
+```
+### T-NN [ ] · Title goes here
+```
+
 | Marker | Meaning |
 |---|---|
-| `[ ]` | Not started — eligible when all `Inputs:` are `[x]` or `[skip]` |
+| `[ ]` | Not started — eligible when all `Depends-on:` are `[x]` or `[skip]` |
 | `[~]` | In progress (current invocation); leftover from a crashed prior fire is auto-reset |
 | `[x]` | Done |
 | `[?]` | Needs human input — counts toward halt rules |
 | `[!]` | Waiting on external dep — doesn't halt; auto-promotes to `[?]` after 3 fires |
 | `[skip]` | Deliberately not doing |
 | `[GATE FAILED]` | On milestone header — halts the loop |
+
+Each task carries two distinct dependency-style fields:
+
+- **`Depends-on:`** — comma-separated task IDs (`T-NN`) or `none`. Controls eligibility.
+- **`Reads:`** — file paths, doc references, and `D-NN` decision references the task must consult during implementation. No eligibility role.
+
+The old single `Inputs:` field is deprecated; do not introduce it on new tasks.
 
 ### Halt rules (conservative)
 
@@ -189,11 +202,23 @@ Full guidance is in [`.claude/commands/next-task.md`](.claude/commands/next-task
 
 - Never force-push. Push rejection → halt to `PUSH-CONFLICT`.
 - Never amend prior commits.
+- Never bypass the pre-commit hook (`--no-verify`, `--no-gpg-sign`). The hook is the safety net.
 - Never use `git add -A` / `git add .` — always explicit paths.
-- Never modify files outside the current task's declared `Outputs:` without explicit reasoning.
+- Never stage files outside `Outputs:` ∪ allow-list ∪ loop-managed-files. The pre-commit hook fails the commit.
+- Never commit changes to loop-managed files (`docs/TASKS.md`, `STATUS.md`, `BLOCKERS.md`) in isolation — they must be bundled together when any of them is mutated. The hook enforces this.
 - Never silently adjust `DECISIONS.md` targets when a gate fails — file the regression as a blocker.
 - Never delete `BLOCKERS.md` entries (append-only).
 - Never start work without a clean pre-flight.
+
+### Pre-commit hook
+
+`scripts/verify-task-commit.sh` runs as the pre-commit hook on `main` and `bakeoff/*` branches. It enforces:
+
+- Loop-managed files (`docs/TASKS.md`, `STATUS.md`, `BLOCKERS.md`) are staged together when any of them is mutated.
+- Only files in the static allow-list may be staged outside the current task's declared `Outputs:`. See [`.claude/commands/next-task.md`](.claude/commands/next-task.md) for the allow-list.
+- Marker transitions in `docs/TASKS.md` are well-formed (at most one `[ ]→[~]→[x]` or failure-path transition per commit).
+
+Install with: `bash scripts/install-hooks.sh` (also runs automatically from the loop's pre-flight #6).
 
 ## Code intelligence
 

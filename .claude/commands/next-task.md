@@ -1,5 +1,5 @@
 ---
-description: Autonomous one-task loop driver — implement next eligible task, run gates, commit, push, regenerate STATUS.md, then continue or halt
+description: Autonomous one-task loop driver — implement next eligible task, run gates, commit, push, then continue or halt
 ---
 
 You are an autonomous task runner for `docs/TASKS.md`. One invocation = one or more tasks, ending when the halt rules trip or `ALL DONE`.
@@ -44,7 +44,7 @@ For the task IDs listed below, a stronger model is recommended. The agent does N
 
 ## Tiers that should NOT run this loop
 
-This spec is 240+ lines of conservative procedural protocol. Models without sufficient reasoning budget *will* skip steps. Avoid:
+This spec is conservative procedural protocol. Models without sufficient reasoning budget *will* skip steps. Avoid:
 
 - Claude Sonnet/Haiku at **medium** or **default** effort
 - Claude Haiku at any effort
@@ -84,15 +84,59 @@ When marking an escalation-tier task `[?]`, append to its BLOCKERS.md entry's `S
 
 # Status markers (canonical reference)
 
+Task headers in `docs/TASKS.md` carry the marker as a **suffix on the header line**, between the task ID and the `·` separator:
+
+```
+### T-NN [ ] · Title goes here
+```
+
 | Marker | Meaning | Eligible to pick? |
 |---|---|---|
-| `[ ]` | Not started | ✅ if all `Inputs:` are `[x]` or `[skip]` |
+| `[ ]` | Not started | ✅ if all `Depends-on:` are `[x]` or `[skip]` |
 | `[~]` | In progress (claimed by current invocation) | ❌ |
 | `[x]` | Done | ❌ |
 | `[?]` | Needs human input — counts toward halt rules | ❌ |
 | `[!]` | Waiting on external dep — doesn't halt; auto-promote to `[?]` after 3 unresolved fires | ❌ |
 | `[skip]` | Deliberately not doing | ❌ (treated like `[x]` for eligibility) |
 | `[GATE FAILED]` | On milestone header — triggers C-rule halt | — |
+
+**Dependency parsing:** the eligibility check uses ONLY the `- **Depends-on:**` field on each task. That field contains comma-separated task IDs (`T-NN`) or the literal word `none`. The `- **Reads:**` field is reading material for implementation — it has no eligibility role.
+
+---
+
+# Loop-managed files (canonical reference)
+
+The loop owns these files. Any change to any of them must be staged in the next commit; the pre-commit hook enforces this.
+
+| File | Role | When mutated |
+|---|---|---|
+| `docs/TASKS.md` | Source of truth for what's done | Every claim, every block, every completion, every cascade |
+| `STATUS.md` | Auto-regenerated dashboard | Every fire (regenerated in step 6 before committing) |
+| `BLOCKERS.md` | Append-only audit log | Failure paths, `[!]` auto-promotion |
+
+**Hard rule (enforced by `scripts/verify-task-commit.sh`):** any commit on `main` or `bakeoff/*` that touches one of these files must stage all of them whose on-disk state differs from `HEAD`. Forgetting STATUS.md while committing a `TASKS.md` marker change is a protocol violation.
+
+---
+
+# Allow-list — files that may be staged outside `Outputs:`
+
+The hard rule is **deny-by-default**: a task commit may only stage files declared in its `Outputs:` field. Exceptions for these specific paths that exist for reproducibility (not for the task's actual work product):
+
+```
+- package-lock.json       (root only — committed by every npm task that runs install)
+- */Cargo.lock            (any nested Rust crate — application crates lock their deps)
+- src-tauri/icons/*.png   (Tauri-init defaults; replaced later by branded assets)
+- src-tauri/icons/*.ico   (Windows icon variant)
+- src-tauri/icons/*.icns  (macOS icon variant)
+- .gitignore              (only when ADDING patterns; never removing)
+- docs/TASKS.md           (loop-managed; always allowed)
+- STATUS.md               (loop-managed; always allowed)
+- BLOCKERS.md             (loop-managed; always allowed)
+```
+
+Anything else outside the current task's `Outputs:` is a protocol violation. The pre-commit hook fails the commit. If a task genuinely needs to touch an unlisted file, either:
+- Add it to the task's `Outputs:` in `docs/TASKS.md` first (separate commit), then re-run, OR
+- Mark the task `[?]` with reason `scope-ambiguous: needs <file> outside Outputs:` and surface to the human.
 
 ---
 
@@ -103,16 +147,17 @@ When marking an escalation-tier task `[?]`, append to its BLOCKERS.md entry's `S
 3. After `git fetch`, `HEAD` equals `origin/main` (no divergence, no commits ahead or behind).
 4. Required files exist: `docs/TASKS.md`, `docs/DECISIONS.md`, `docs/BUILD_BRIEF.md`, `AGENTS.md`, `starter/package.json`.
 5. `node_modules/` exists OR no `package.json` at repo root (pre-M0 case is fine).
-6. No `[~]` markers anywhere in `docs/TASKS.md`. If found:
+6. The pre-commit hook is installed and current: `.git/hooks/pre-commit` is a symlink (or copy) of `scripts/verify-task-commit.sh`. If missing or outdated, run `bash scripts/install-hooks.sh` automatically and continue. (This is self-healing, not a halt.)
+7. No `[~]` markers anywhere in `docs/TASKS.md`. If found:
    - Discard any uncommitted changes: `git checkout -- .`
-   - Reset any local-only commit: `git reset --hard origin/main`
    - Change the `[~]` marker back to `[ ]` in `docs/TASKS.md`
+   - Regenerate STATUS.md to reflect the reset
    - Append an entry to `BLOCKERS.md`: `## T-NN — was [~] on cold start; auto-reverted. Task will be re-attempted.`
-   - Commit + push the `TASKS.md` + `BLOCKERS.md` change with message `T-NN: reset stale [~] marker`
-   - **Continue to step 7** (do not halt — strict reset is recovery, not failure)
-7. CI status on origin/main is green (see CI-poll section below). If `failure`: halt to `CI-FAILED`.
+   - Commit + push the loop-managed file changes (TASKS.md + STATUS.md + BLOCKERS.md) with message `T-NN: reset stale [~] marker`
+   - **Continue to step 8** (do not halt — strict reset is recovery, not failure)
+8. CI status on `origin/main` is green (see CI-poll section below). If `failure`: halt to `CI-FAILED`.
 
-If any check fails (except #6 which auto-recovers), regenerate `STATUS.md` with `BOOT-CHECK-FAILED` state listing the failed check, then stop the invocation. The next loop fire will re-run pre-flight; if conditions cleared, work resumes.
+If any check fails (except #6 and #7, which auto-recover), regenerate `STATUS.md` with `BOOT-CHECK-FAILED` state listing the failed check, then stop the invocation. The next loop fire will re-run pre-flight; if conditions cleared, work resumes.
 
 ---
 
@@ -127,31 +172,33 @@ If `ci-poll: true` in AGENTS.md:
 
 # Main loop steps
 
-Repeat steps 1–7 in the same invocation until a stop condition fires.
+Repeat steps 1–8 in the same invocation until a stop condition fires.
 
 ## Step 1 — PICK
 
-Read `docs/TASKS.md`. Find the lowest-numbered task with marker `[ ]` whose `Inputs:` dependencies are all `[x]` or `[skip]`.
+Read `docs/TASKS.md`. Find the lowest-numbered task with marker `[ ]` whose `Depends-on:` field is either `none` or a comma-separated list of T-NNs that are ALL `[x]` or `[skip]`.
 
 **Check halt rules before claiming:**
-- **A-rule:** look at the last 2 tasks (by sequence in TASKS.md) with markers in `{[x], [?], [skip]}`. If both are `[?]`: halt to `A-RULE-HALT`. Regenerate STATUS.md with the halt brief (see §STATUS.md regeneration). Stop the invocation.
-- **C-rule:** find the milestone the candidate task belongs to (by the most recent `## Phase N — M*` header above it). If that milestone header has `[GATE FAILED]` OR if any task in that milestone has marker `[?]`: halt to `C-RULE-HALT`. Regenerate STATUS.md. Stop the invocation.
+- **A-rule:** look at the last 2 tasks (by sequence in TASKS.md) with markers in `{[x], [?], [skip]}`. If both are `[?]`: halt to `A-RULE-HALT`. Regenerate STATUS.md with the halt brief (see §STATUS.md regeneration). Commit + push the STATUS.md change. Stop the invocation.
+- **C-rule:** find the milestone the candidate task belongs to (by the most recent `## Phase N — M*` header above it). If that milestone header has `[GATE FAILED]` OR if any task in that milestone has marker `[?]`: halt to `C-RULE-HALT`. Regenerate STATUS.md. Commit + push. Stop the invocation.
 
 If no candidate task exists:
-- If no `[ ]` tasks remain AND no `[?]`/`[!]` remain: stop with `ALL DONE`. Regenerate STATUS.md.
-- If `[?]`/`[!]` remain but no eligible `[ ]`: halt to `BLOCKED-NO-ELIGIBLE`. Regenerate STATUS.md.
+- If no `[ ]` tasks remain AND no `[?]`/`[!]` remain: stop with `ALL DONE`. Regenerate STATUS.md. Commit + push.
+- If `[?]`/`[!]` remain but no eligible `[ ]`: halt to `BLOCKED-NO-ELIGIBLE`. Regenerate STATUS.md. Commit + push.
 
 If a candidate task exists and halt rules pass:
-- Change its marker from `[ ]` to `[~]` in `docs/TASKS.md`.
-- Commit + push just the `TASKS.md` change with message `T-NN: claim`.
+- Change its marker from `[ ]` to `[~]` in `docs/TASKS.md` (suffix on the header line: `### T-NN [~] · Title`).
+- **Do NOT commit yet.** The marker change lives in the working tree until step 6 bundles it with the task's `Outputs:` and the regenerated STATUS.md.
+
+> **Why no claim commit?** Earlier versions committed the `[~]` marker separately as a "claim" before implementing. The bake-off methodology that produced this spec showed drivers naturally collapse claim + implementation into one commit when allowed to — so we made one commit the rule. Crash recovery still works: pre-flight #7 finds the stale `[~]` on disk and resets it.
 
 ## Step 2 — IMPLEMENT
 
-- Read the task's `Inputs:` files referenced in its body.
-- Read any `DECISIONS.md` entries referenced by ID (`D-NN`).
+- Read the task's `Reads:` files (file paths, doc references, `D-NN` decisions).
+- Read any `DECISIONS.md` entries referenced by ID in `Reads:`.
 - For block tasks: clone the pattern from `reference/callout/` or `reference/chart/`.
 - For setup-pipeline tasks: follow `docs/SETUP_PIPELINE.md` literally.
-- Write/edit only files listed in the task's `Outputs:` field. Do not modify unrelated files.
+- Write/edit only files listed in the task's `Outputs:` field, plus the allow-list (above). Do not modify unrelated files.
 
 **Auto-recover** on these common issues without halting:
 - Missing imports → add them.
@@ -159,7 +206,7 @@ If a candidate task exists and halt rules pass:
 - Lint violations → fix or auto-format with prettier.
 - Missing test fixtures the task expects → create from `examples/` patterns.
 
-If the task's `Outputs:` requires touching files outside the declared list, *and* the addition is obviously necessary (e.g., updating `src/schema/blocks/index.ts` to include a new block in the union): proceed and document in commit body. If the scope expansion feels non-obvious: mark the task `[?]` with reason `scope-ambiguous: <what's unclear>` and continue to step 7 NEXT.
+If the task's work requires touching files outside the declared `Outputs:` AND outside the allow-list, *and* the addition is obviously necessary (e.g., updating `src/schema/blocks/index.ts` to include a new block in the union): mark the task `[?]` with reason `scope-ambiguous: needs <file> outside Outputs:` and continue to step 7 NEXT. The human will either update the task's `Outputs:` and unblock or restructure the task.
 
 ## Step 3 — TEST
 
@@ -171,9 +218,10 @@ If failures, iterate up to **5 fix cycles**, re-running tests after each fix.
 
 If still failing after 5 cycles:
 - Revert working-tree changes for this task: `git checkout -- <files>`
-- Change the marker from `[~]` back to `[?]` in TASKS.md with inline reason: `[?] T-NN  blocked: tests fail after 5 fixes — <one-line summary>`
+- Change the marker from `[~]` back to `[?]` in TASKS.md with inline reason: `### T-NN [?] · Title  ← blocked: tests fail after 5 fixes — <one-line summary>`
 - Append a detailed entry to `BLOCKERS.md` (see §BLOCKERS.md append).
-- Commit + push the marker change with message `T-NN: block — tests failing`.
+- Regenerate STATUS.md.
+- Stage `docs/TASKS.md`, `BLOCKERS.md`, `STATUS.md` (the three loop-managed files); commit + push with message `T-NN: block — tests failing`.
 - **Continue to step 7 NEXT** (loop will re-evaluate halt rules at next pick).
 
 ## Step 4 — REVIEW (inline self-review)
@@ -197,29 +245,41 @@ If either fails:
 - Revert the working tree: `git checkout -- .`
 - Mark the task `[?]` with reason `broke project-wide tsc` or `broke project-wide lint`.
 - Append to BLOCKERS.md with the first 20 lines of the error output.
-- Commit + push the marker change.
+- Regenerate STATUS.md.
+- Stage `docs/TASKS.md`, `BLOCKERS.md`, `STATUS.md`; commit + push.
 - **This counts toward the A-rule consecutive `[?]` count.**
 - Continue to step 7 NEXT.
 
 If both pass: continue to step 6.
 
-## Step 6 — COMMIT + PUSH
+## Step 6 — REGENERATE STATUS + COMMIT + PUSH
 
-- Stage only the files this task touched (use explicit `git add <file>` not `git add -A`).
-- Stage `docs/TASKS.md` (the `[~]` → `[x]` marker change).
-- Single commit, message format:
+This is the single commit per task. It bundles the task's implementation with the loop-managed files.
 
-  ```
-  T-NN: <subject from task title, lowercase first word>
+1. Change the marker in `docs/TASKS.md` from `[~]` to `[x]` (suffix on the header line: `### T-NN [x] · Title`).
+2. Regenerate `STATUS.md` to reflect this task's completion (see §STATUS.md regeneration). Include the `Running on:` line.
+3. If `BLOCKERS.md` was mutated this fire (e.g., a `[!]` auto-promotion in the previous iteration's step 7), it's also on the stage list.
+4. Stage explicitly (no `git add -A`, no `git add .`):
+   - Each file listed in the task's `Outputs:` field
+   - Any allow-list files this task touched (typically `package-lock.json`, `Cargo.lock`, Tauri icons on M0 init tasks)
+   - `docs/TASKS.md`
+   - `STATUS.md`
+   - `BLOCKERS.md` (only if its on-disk state differs from `HEAD`)
+5. Verify with `git diff --cached --name-only` that nothing outside `Outputs:` ∪ allow-list ∪ loop-managed-files is staged.
+6. Commit with message format:
 
-  <1-3 lines: what changed and why>
+   ```
+   T-NN: <subject from task title, lowercase first word>
 
-  Co-Authored-By: <model-name> <noreply@anthropic.com>
-  ```
+   <1-3 lines: what changed and why>
 
-- Do **not** amend previous commits. Do **not** use `--no-verify`. Do **not** include unrelated changes.
-- `git push origin main`.
-- If push rejected (non-fast-forward): `git pull --rebase origin main`, retry push **once**. If still rejected: this is the one true halt condition besides ALL DONE — mark task `[?]` with `push-conflict: needs manual rebase`, commit + push the marker change as a separate small commit, halt to `PUSH-CONFLICT`. Stop the invocation.
+   Co-Authored-By: <model-name> <noreply@anthropic.com>
+   ```
+
+7. Do **not** amend previous commits. Do **not** use `--no-verify`. Do **not** include unrelated changes.
+8. The pre-commit hook (`scripts/verify-task-commit.sh`) runs automatically and asserts the loop-managed-files invariant + the allow-list rule. If it rejects the commit: re-examine what's staged; do not bypass with `--no-verify`. If the hook is genuinely buggy, mark the task `[?]` with reason `hook-misfire: <hook error>` and halt to BLOCKED-NO-ELIGIBLE.
+9. `git push origin main`.
+10. If push rejected (non-fast-forward): `git pull --rebase origin main`, retry push **once**. If still rejected: this is the one true halt condition besides ALL DONE — mark task `[?]` with `push-conflict: needs manual rebase`, regenerate STATUS.md + append BLOCKERS.md, commit the loop-managed files as a separate small commit, halt to `PUSH-CONFLICT`. Stop the invocation.
 
 ## Step 6.5 — MILESTONE GATE CHECK (only when entering a new milestone)
 
@@ -230,18 +290,35 @@ If the task just completed was the **last `[ ]` task in its milestone** (all sib
 - If gate fails:
   - Mark the milestone header `[GATE FAILED]` in TASKS.md (e.g., `### Sub-phase 1A — Core schema [GATE FAILED]`).
   - Append a "## M1a — gate failed" entry to BLOCKERS.md listing every commit since the previous green gate as a suspect. Recommend `git bisect` to the human.
-  - Commit + push the marker change.
+  - Regenerate STATUS.md.
+  - Stage `docs/TASKS.md`, `BLOCKERS.md`, `STATUS.md`; commit + push.
   - Halt to `MILESTONE-GATE-FAILED`. Stop the invocation.
 
 ## Step 7 — NEXT
 
-- If we just completed a task (`[x]`): regenerate STATUS.md. Loop back to step 1 (pick next).
+- If we just completed a task (`[x]`): nothing more to do here; STATUS.md was already committed in step 6. Loop back to step 1 (pick next).
 - If we just blocked (`[?]`) or external-blocked (`[!]`):
   - Increment `[!]` auto-promotion counter for any `[!]` markers in BLOCKERS.md older than this fire's start time:
     - For each `[!]` entry in BLOCKERS.md, find the `**Fires unresolved:**` line. Increment by 1.
     - If counter reaches **3**: rewrite that task's marker in TASKS.md from `[!]` to `[?]` with appended reason `auto-promoted from [!] after 3 unresolved fires`. Update the BLOCKERS.md entry's marker line.
-  - Regenerate STATUS.md.
+    - **These BLOCKERS.md and TASKS.md mutations are NOT committed here.** They'll be staged with the next task's step 6 commit (or with the next failure path's commit). The pre-commit hook will reject any commit that doesn't stage them, so they cannot drift.
   - Loop back to step 1 (try to pick next eligible task — halt rules will catch us if we should stop).
+
+## Step 8 — SELF-CHECK (before exiting the invocation)
+
+Before the invocation exits (any stop condition), output this checklist to chat:
+
+```
+Self-check before exit:
+☐ Most recent commit on this branch stages STATUS.md? (verify: git show --name-only HEAD | grep -x STATUS.md)
+☐ Most recent commit stages docs/TASKS.md with at most one marker transition?
+☐ No files staged in any task commit outside Outputs: ∪ allow-list?
+☐ STATUS.md "Running on:" line names the model that actually executed this fire?
+☐ No [~] markers left in docs/TASKS.md (use grep -n '\[~\]' docs/TASKS.md)?
+☐ All loop-managed file mutations from this fire are committed (git status is clean)?
+```
+
+For each unchecked item, append a one-line explanation to chat (and to BLOCKERS.md if it represents a protocol violation that survived the hook). Self-checking honestly is more valuable than passing — the human reads this to gauge trust.
 
 # Stop conditions (this invocation exits)
 
@@ -268,6 +345,7 @@ Rewrite `STATUS.md` at repo root, replacing existing content. Use this exact tem
 
 **Last fire:** <ISO-8601 UTC>
 **State:** <RUNNING | HALTED | ALL_DONE | BOOT-CHECK-FAILED | CI-FAILED>
+**Running on:** <model name> at <effort>  (or "(effort unknown)")
 **Halt reason:** <one-line, only if HALTED>
 **Halted since:** <ISO-8601 UTC, only if HALTED>
 
@@ -339,6 +417,8 @@ Never delete entries — the human is responsible for deleting resolved entries 
 Completed this invocation: <N tasks: T-AA, T-BB, ...>
 Blocked this invocation:   <N: T-CC ([?]), T-DD ([!])>
 
+Self-check: <PASS | N items flagged — see chat>
+
 Next: <one-liner — what the next fire will try OR what the human must do>
 ```
 
@@ -354,9 +434,11 @@ Examples:
 
 - **Never force-push.** Push rejection → halt to PUSH-CONFLICT.
 - **Never amend** existing commits. New commits only.
-- **Never bypass hooks** (`--no-verify`, `--no-gpg-sign`).
+- **Never bypass hooks** (`--no-verify`, `--no-gpg-sign`). The pre-commit hook is the safety net; bypassing it is a worse offense than whatever the hook was rejecting.
 - **Never use `git add -A` or `git add .`** — always explicit paths.
-- **Never modify files outside the current task's declared `Outputs:`** without explicit reasoning in the commit body.
+- **Never stage files outside `Outputs:` ∪ allow-list ∪ loop-managed-files** without explicit reasoning in the commit body. The hook enforces this.
+- **Never commit changes to loop-managed files in isolation.** If `docs/TASKS.md` or `BLOCKERS.md` has uncommitted changes, the matching `STATUS.md` regeneration must be in the same commit (or the next commit, if a fire was interrupted — pre-flight #7 handles that). The hook enforces this.
 - **Never silently adjust DECISIONS.md targets** when a perf or quality gate fails — file the regression as a blocker; let the human decide whether to relax the target.
 - **Never delete BLOCKERS.md entries.** Append-only.
 - **Never start work without a clean pre-flight.**
+- **Never write `[~]` to TASKS.md and not commit it the same fire.** Pre-flight #7 catches stale `[~]` on cold start; don't rely on it for graceful exits — finish the task, block it, or revert the marker.
