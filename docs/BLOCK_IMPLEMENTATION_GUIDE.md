@@ -104,7 +104,9 @@ Most blocks follow the callout pattern cleanly. These deserve specific attention
 
 ### `chart` (block #5)
 - The hardest block. Plan ≥ 12 hours.
-- The renderer wraps ECharts. For the editor view, render a snapshot via `echarts-for-react`; for the PDF export, pre-render to static SVG via ECharts's headless mode (no JS at PDF time).
+- The renderer wraps ECharts directly. For the editor view, mount/dispose an
+  ECharts instance inside the block node view; for the PDF export, pre-render
+  to static SVG via ECharts's headless mode (no JS at PDF time).
 - The data grid (D-24 side panel) is a separate React component (`src/editor/panels/ChartDataPanel.tsx`) that mounts when a chart is selected.
 - Excel-paste detection: in the data grid's paste handler, detect `\t`-separated (TSV) vs `,`-separated (CSV). For locale-dependent numbers (`1.234,56` vs `1,234.56`), defer to **O-05 open item** — ship with English-locale parsing only in v1.
 - Brand integration: the chart's color palette comes from `brand.colors.chartPalette.qualitative` (or `.sequential` if `block.palette === "sequential"`).

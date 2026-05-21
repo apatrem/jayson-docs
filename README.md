@@ -34,6 +34,7 @@ A consulting document system. Designed in detail. Not yet built.
 2. Read `docs/DOCUMENT_SYSTEM_ARCHITECTURE.md`. Twenty minutes.
 3. Read `docs/BUILD_BRIEF.md`. Ten minutes.
 4. Open `docs/DECISIONS.md` when something feels arbitrary. It probably isn't.
+5. Run `scripts/check-specs` before implementing from the machine-readable specs.
 
 ## Quick start (for LLMs)
 
@@ -42,6 +43,17 @@ Same as above. In parallel.
 ## Status
 
 Designed. Grilled. Decided. ~10–11 weeks of focused work to v1.
+
+## Spec sanity check
+
+This repo is docs-first, but the YAML/JSON files are executable specs. Run:
+
+```bash
+scripts/check-specs
+```
+
+It parses every YAML and JSON spec/fixture file using only the system Ruby
+standard library. Schema validation comes later in M1a.
 
 ## Stack (planned)
 

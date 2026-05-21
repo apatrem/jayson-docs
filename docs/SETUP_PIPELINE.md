@@ -343,7 +343,6 @@ const WHITELISTED_IMPORTS = [
   "echarts/charts",
   "echarts/components",
   "echarts/renderers",
-  "echarts-for-react",
   /* relative imports to:
      ../../src/schema/...
      ../../src/brand-tokens/...

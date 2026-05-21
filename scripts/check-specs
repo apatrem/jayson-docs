@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "json"
+require "yaml"
+
+ROOT = File.expand_path("..", __dir__)
+
+files = Dir.chdir(ROOT) do
+  Dir.glob("**/*.{yaml,yml,json}")
+     .reject { |path| path.start_with?(".git/", ".codegraph/", "node_modules/") }
+     .sort
+end
+
+failures = []
+
+files.each do |relative_path|
+  absolute_path = File.join(ROOT, relative_path)
+  begin
+    case File.extname(relative_path)
+    when ".json"
+      JSON.parse(File.read(absolute_path))
+    when ".yaml", ".yml"
+      YAML.load_file(absolute_path)
+    end
+    puts "OK #{relative_path}"
+  rescue StandardError => e
+    failures << [relative_path, e]
+    warn "FAIL #{relative_path}: #{e.class}: #{e.message.lines.first&.strip}"
+  end
+end
+
+if failures.any?
+  warn "\n#{failures.length} spec file(s) failed to parse."
+  exit 1
+end
+
+puts "\n#{files.length} spec file(s) parsed successfully."

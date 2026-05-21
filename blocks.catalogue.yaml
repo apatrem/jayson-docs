@@ -31,475 +31,476 @@
 schemaVersion: "1.0.0"
 lastUpdated: "2026-05-21"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 1 — prose
-# ─────────────────────────────────────────────────────────────────────────
-- id: prose
-  name: "Prose"
-  description: "Free-flowing rich text — paragraphs, inline marks (bold, italic, links, code)."
-  appliesTo: [document, deck]
-  schema:
-    content:
-      type: "prosemirror-fragment"           # rich-text JSON (ProseMirror format)
-      required: true
-      allowedMarks: [strong, em, code, link, underline]
-    align:
-      type: "enum"
-      values: [left, justify]
-      default: "left"
-  llmUsage:
-    when: "Any continuous narrative text. The default block for body content."
-    avoid: "Bulleted lists (use 'bullet-list'); single key insights (use 'callout')."
-  brandTokensUsed:
-    - "typography.fonts.body"
-    - "typography.scale.body"
-    - "typography.lineHeight.normal"
-    - "colors.semantic.textPrimary"
-    - "elements.paragraph"
+blocks:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 1 — prose
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: prose
+    name: "Prose"
+    description: "Free-flowing rich text — paragraphs, inline marks (bold, italic, links, code)."
+    appliesTo: [document, deck]
+    schema:
+      content:
+        type: "prosemirror-fragment"           # rich-text JSON (ProseMirror format)
+        required: true
+        allowedMarks: [strong, em, code, link, underline]
+      align:
+        type: "enum"
+        values: [left, justify]
+        default: "left"
+    llmUsage:
+      when: "Any continuous narrative text. The default block for body content."
+      avoid: "Bulleted lists (use 'bullet-list'); single key insights (use 'callout')."
+    brandTokensUsed:
+      - "typography.fonts.body"
+      - "typography.scale.body"
+      - "typography.lineHeight.normal"
+      - "colors.semantic.textPrimary"
+      - "elements.paragraph"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 2 — heading
-# ─────────────────────────────────────────────────────────────────────────
-- id: heading
-  name: "Heading"
-  description: "Section heading (H1–H4). Numbering applied automatically per brand."
-  appliesTo: [document, deck]
-  schema:
-    level:
-      type: "enum"
-      values: [1, 2, 3, 4]
-      required: true
-    text:
-      type: "string"
-      required: true
-      maxLength: 200
-    numbered:
-      type: "boolean"
-      default: true                          # follows brand.elements.headings.numbering
-  llmUsage:
-    when: "Start of a new section or subsection. Use level 1 for top sections, 2 for subsections."
-    avoid: "Don't use as emphasis inside body text — use marks in 'prose' instead."
-  brandTokensUsed:
-    - "typography.fonts.heading"
-    - "typography.scale.h1..h4"
-    - "colors.semantic.headingPrimary"
-    - "elements.headings"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 2 — heading
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: heading
+    name: "Heading"
+    description: "Section heading (H1–H4). Numbering applied automatically per brand."
+    appliesTo: [document, deck]
+    schema:
+      level:
+        type: "enum"
+        values: [1, 2, 3, 4]
+        required: true
+      text:
+        type: "string"
+        required: true
+        maxLength: 200
+      numbered:
+        type: "boolean"
+        default: true                          # follows brand.elements.headings.numbering
+    llmUsage:
+      when: "Start of a new section or subsection. Use level 1 for top sections, 2 for subsections."
+      avoid: "Don't use as emphasis inside body text — use marks in 'prose' instead."
+    brandTokensUsed:
+      - "typography.fonts.heading"
+      - "typography.scale.h1..h4"
+      - "colors.semantic.headingPrimary"
+      - "elements.headings"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 3 — bullet-list
-# ─────────────────────────────────────────────────────────────────────────
-- id: bullet-list
-  name: "Bulleted list"
-  description: "Unordered list, single or nested (max 2 levels)."
-  appliesTo: [document, deck]
-  schema:
-    items:
-      type: "array"
-      required: true
-      minItems: 1
-      maxItems: 12                           # cap to prevent unreadable lists
-      itemSchema:
-        text:
-          type: "prosemirror-fragment"       # bullets can have inline marks
-          required: true
-        children:                            # for one level of nesting
-          type: "array"
-          maxItems: 8
-          itemSchema:
-            text: "prosemirror-fragment"
-  llmUsage:
-    when: "Enumerating 3–7 related points. Ideal for objectives, deliverables, key takeaways."
-    avoid: "Long paragraphs disguised as bullets; numbered/ordered content (use 'numbered-list')."
-  brandTokensUsed:
-    - "elements.bullets"
-    - "typography.fonts.body"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 3 — bullet-list
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: bullet-list
+    name: "Bulleted list"
+    description: "Unordered list, single or nested (max 2 levels)."
+    appliesTo: [document, deck]
+    schema:
+      items:
+        type: "array"
+        required: true
+        minItems: 1
+        maxItems: 12                           # cap to prevent unreadable lists
+        itemSchema:
+          text:
+            type: "prosemirror-fragment"       # bullets can have inline marks
+            required: true
+          children:                            # for one level of nesting
+            type: "array"
+            maxItems: 8
+            itemSchema:
+              text: "prosemirror-fragment"
+    llmUsage:
+      when: "Enumerating 3–7 related points. Ideal for objectives, deliverables, key takeaways."
+      avoid: "Long paragraphs disguised as bullets; numbered/ordered content (use 'numbered-list')."
+    brandTokensUsed:
+      - "elements.bullets"
+      - "typography.fonts.body"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 4 — numbered-list
-# ─────────────────────────────────────────────────────────────────────────
-- id: numbered-list
-  name: "Numbered list"
-  description: "Ordered list with explicit sequence (1, 2, 3...)."
-  appliesTo: [document, deck]
-  schema:
-    items:
-      type: "array"
-      required: true
-      minItems: 1
-      maxItems: 12
-      itemSchema:
-        text: "prosemirror-fragment"
-    startAt:
-      type: "integer"
-      default: 1
-      minimum: 1
-  llmUsage:
-    when: "Sequence matters (steps, ranking, methodology phases). Use when '1st, 2nd, 3rd' is meaningful."
-    avoid: "Sets without order (use 'bullet-list')."
-  brandTokensUsed:
-    - "elements.bullets.nestedMarker"
-    - "typography.fonts.body"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 4 — numbered-list
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: numbered-list
+    name: "Numbered list"
+    description: "Ordered list with explicit sequence (1, 2, 3...)."
+    appliesTo: [document, deck]
+    schema:
+      items:
+        type: "array"
+        required: true
+        minItems: 1
+        maxItems: 12
+        itemSchema:
+          text: "prosemirror-fragment"
+      startAt:
+        type: "integer"
+        default: 1
+        minimum: 1
+    llmUsage:
+      when: "Sequence matters (steps, ranking, methodology phases). Use when '1st, 2nd, 3rd' is meaningful."
+      avoid: "Sets without order (use 'bullet-list')."
+    brandTokensUsed:
+      - "elements.bullets.nestedMarker"
+      - "typography.fonts.body"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 5 — chart
-# ─────────────────────────────────────────────────────────────────────────
-- id: chart
-  name: "Chart"
-  description: "Data visualization via ECharts. Static snapshot — no live data."
-  appliesTo: [document, deck]
-  schema:
-    chartType:
-      type: "enum"
-      values: [bar, stacked-bar, line, area, pie, donut, scatter, waterfall, mekko]
-      required: true
-    title:
-      type: "string"
-      required: true
-      maxLength: 120
-    takeaway:                                # the "so what" caption above/below
-      type: "string"
-      required: false
-      maxLength: 200
-    data:
-      type: "object"
-      required: true
-      schema:
-        series:
-          type: "array"
-          minItems: 1
-          itemSchema:
-            name: "string"
-            values: "array<number>"
-        xLabels: "array<string>"             # for bar/line/area
-        unit:    "string"                    # e.g. "€M", "%", "FTE"
-    axes:
-      type: "object"
-      schema:
-        xTitle: { type: "string", required: false }
-        yTitle: { type: "string", required: false }
-        ySuffix: { type: "string", required: false }   # e.g. "%" appended to values
-    palette:
-      type: "enum"
-      values: [qualitative, sequential]
-      default: "qualitative"
-    showLegend:
-      type: "boolean"
-      default: true
-    showDataLabels:
-      type: "boolean"
-      default: false
-  llmUsage:
-    when: "Quantitative comparison or trend. Always include a 'takeaway' string ('What does this show?')."
-    avoid: "Decorative charts with no insight. Charts where the data is the same as a 2-row table (use 'table')."
-  brandTokensUsed:
-    - "colors.chartPalette.qualitative"
-    - "colors.chartPalette.sequential"
-    - "charts.*"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 5 — chart
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: chart
+    name: "Chart"
+    description: "Data visualization via ECharts. Static snapshot — no live data."
+    appliesTo: [document, deck]
+    schema:
+      chartType:
+        type: "enum"
+        values: [bar, stacked-bar, line, area, pie, donut, scatter, waterfall, mekko]
+        required: true
+      title:
+        type: "string"
+        required: true
+        maxLength: 120
+      takeaway:                                # the "so what" caption above/below
+        type: "string"
+        required: false
+        maxLength: 200
+      data:
+        type: "object"
+        required: true
+        schema:
+          series:
+            type: "array"
+            minItems: 1
+            itemSchema:
+              name: "string"
+              values: "array<number>"
+          xLabels: "array<string>"             # for bar/line/area
+          unit:    "string"                    # e.g. "€M", "%", "FTE"
+      axes:
+        type: "object"
+        schema:
+          xTitle: { type: "string", required: false }
+          yTitle: { type: "string", required: false }
+          ySuffix: { type: "string", required: false }   # e.g. "%" appended to values
+      palette:
+        type: "enum"
+        values: [qualitative, sequential]
+        default: "qualitative"
+      showLegend:
+        type: "boolean"
+        default: true
+      showDataLabels:
+        type: "boolean"
+        default: false
+    llmUsage:
+      when: "Quantitative comparison or trend. Always include a 'takeaway' string ('What does this show?')."
+      avoid: "Decorative charts with no insight. Charts where the data is the same as a 2-row table (use 'table')."
+    brandTokensUsed:
+      - "colors.chartPalette.qualitative"
+      - "colors.chartPalette.sequential"
+      - "charts.*"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 6 — table
-# ─────────────────────────────────────────────────────────────────────────
-- id: table
-  name: "Table"
-  description: "Tabular data with header row. Use for comparison matrices and feature/option tables."
-  appliesTo: [document, deck]
-  schema:
-    columns:
-      type: "array"
-      required: true
-      minItems: 2
-      maxItems: 8
-      itemSchema:
-        header: "string"
-        align: { type: "enum", values: [left, center, right], default: "left" }
-        width: { type: "string", required: false }   # "20%" or "120px"
-    rows:
-      type: "array"
-      required: true
-      minItems: 1
-      maxItems: 30
-      itemSchema:
-        cells:
-          type: "array"
-          itemSchema: "prosemirror-fragment"        # cells can have rich text
-    caption:
-      type: "string"
-      required: false
-  llmUsage:
-    when: "Comparing 2–8 options across 2–8 dimensions. Feature/spec matrices, pros/cons."
-    avoid: "Numeric data series (use 'chart' instead). Decorative grids."
-  brandTokensUsed:
-    - "elements.tables.*"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 6 — table
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: table
+    name: "Table"
+    description: "Tabular data with header row. Use for comparison matrices and feature/option tables."
+    appliesTo: [document, deck]
+    schema:
+      columns:
+        type: "array"
+        required: true
+        minItems: 2
+        maxItems: 8
+        itemSchema:
+          header: "string"
+          align: { type: "enum", values: [left, center, right], default: "left" }
+          width: { type: "string", required: false }   # "20%" or "120px"
+      rows:
+        type: "array"
+        required: true
+        minItems: 1
+        maxItems: 30
+        itemSchema:
+          cells:
+            type: "array"
+            itemSchema: "prosemirror-fragment"        # cells can have rich text
+      caption:
+        type: "string"
+        required: false
+    llmUsage:
+      when: "Comparing 2–8 options across 2–8 dimensions. Feature/spec matrices, pros/cons."
+      avoid: "Numeric data series (use 'chart' instead). Decorative grids."
+    brandTokensUsed:
+      - "elements.tables.*"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 7 — callout
-# ─────────────────────────────────────────────────────────────────────────
-- id: callout
-  name: "Callout"
-  description: "Highlighted box for key insight, warning, quote, or status."
-  appliesTo: [document, deck]
-  schema:
-    variant:
-      type: "enum"
-      values: [info, success, warning, error, quote, tip]
-      default: "info"
-    title:
-      type: "string"
-      required: false
-      maxLength: 100
-    body:
-      type: "prosemirror-fragment"
-      required: true
-    attribution:                              # for quote variant
-      type: "string"
-      required: false
-  llmUsage:
-    when: "A single key insight or warning that should pop. Quotes from client / experts."
-    avoid: "More than 3 callouts per page (loses emphasis). Long-form content (use 'prose')."
-  brandTokensUsed:
-    - "colors.status.*"
-    - "colors.semantic.surfaceBackground"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 7 — callout
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: callout
+    name: "Callout"
+    description: "Highlighted box for key insight, warning, quote, or status."
+    appliesTo: [document, deck]
+    schema:
+      variant:
+        type: "enum"
+        values: [info, success, warning, error, quote, tip]
+        default: "info"
+      title:
+        type: "string"
+        required: false
+        maxLength: 100
+      body:
+        type: "prosemirror-fragment"
+        required: true
+      attribution:                              # for quote variant
+        type: "string"
+        required: false
+    llmUsage:
+      when: "A single key insight or warning that should pop. Quotes from client / experts."
+      avoid: "More than 3 callouts per page (loses emphasis). Long-form content (use 'prose')."
+    brandTokensUsed:
+      - "colors.status.*"
+      - "colors.semantic.surfaceBackground"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 8 — kpi-cards
-# ─────────────────────────────────────────────────────────────────────────
-- id: kpi-cards
-  name: "KPI cards"
-  description: "1–4 big numbers with labels and optional trend indicators."
-  appliesTo: [document, deck]
-  schema:
-    cards:
-      type: "array"
-      required: true
-      minItems: 1
-      maxItems: 4
-      itemSchema:
-        value:    { type: "string", required: true }    # "€42M" or "-18%" or "x3.2"
-        label:    { type: "string", required: true, maxLength: 60 }
-        sublabel: { type: "string", required: false, maxLength: 80 }
-        trend:
-          type: "enum"
-          values: [up, down, flat, none]
-          default: "none"
-        emphasis:                                       # color emphasis on the value
-          type: "enum"
-          values: [neutral, positive, negative, brand]
-          default: "neutral"
-  llmUsage:
-    when: "Headline numbers at the top of a section, executive summary, or cover page."
-    avoid: "Detailed quantitative data (use 'chart' or 'table')."
-  brandTokensUsed:
-    - "colors.brand.primary"
-    - "colors.status.success / .error"
-    - "typography.scale.deckTitle (for value)"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 8 — kpi-cards
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: kpi-cards
+    name: "KPI cards"
+    description: "1–4 big numbers with labels and optional trend indicators."
+    appliesTo: [document, deck]
+    schema:
+      cards:
+        type: "array"
+        required: true
+        minItems: 1
+        maxItems: 4
+        itemSchema:
+          value:    { type: "string", required: true }    # "€42M" or "-18%" or "x3.2"
+          label:    { type: "string", required: true, maxLength: 60 }
+          sublabel: { type: "string", required: false, maxLength: 80 }
+          trend:
+            type: "enum"
+            values: [up, down, flat, none]
+            default: "none"
+          emphasis:                                       # color emphasis on the value
+            type: "enum"
+            values: [neutral, positive, negative, brand]
+            default: "neutral"
+    llmUsage:
+      when: "Headline numbers at the top of a section, executive summary, or cover page."
+      avoid: "Detailed quantitative data (use 'chart' or 'table')."
+    brandTokensUsed:
+      - "colors.brand.primary"
+      - "colors.status.success / .error"
+      - "typography.scale.deckTitle (for value)"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 9 — timeline
-# ─────────────────────────────────────────────────────────────────────────
-- id: timeline
-  name: "Timeline / process"
-  description: "Sequential horizontal phases with title and brief description."
-  appliesTo: [document, deck]
-  schema:
-    phases:
-      type: "array"
-      required: true
-      minItems: 2
-      maxItems: 7
-      itemSchema:
-        label:    { type: "string", required: true, maxLength: 40 }
-        subtitle: { type: "string", required: false, maxLength: 80 }
-        body:     { type: "string", required: false, maxLength: 200 }
-        duration: { type: "string", required: false }   # e.g. "2 weeks"
-    orientation:
-      type: "enum"
-      values: [horizontal, vertical]
-      default: "horizontal"
-    connector:
-      type: "enum"
-      values: [arrow, line, none]
-      default: "arrow"
-  llmUsage:
-    when: "Methodology steps, project phases, evolution over time (qualitative)."
-    avoid: "Date-pinned schedule (use 'roadmap'). Long descriptions in each phase."
-  brandTokensUsed:
-    - "colors.brand.primary"
-    - "typography.fonts.heading"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 9 — timeline
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: timeline
+    name: "Timeline / process"
+    description: "Sequential horizontal phases with title and brief description."
+    appliesTo: [document, deck]
+    schema:
+      phases:
+        type: "array"
+        required: true
+        minItems: 2
+        maxItems: 7
+        itemSchema:
+          label:    { type: "string", required: true, maxLength: 40 }
+          subtitle: { type: "string", required: false, maxLength: 80 }
+          body:     { type: "string", required: false, maxLength: 200 }
+          duration: { type: "string", required: false }   # e.g. "2 weeks"
+      orientation:
+        type: "enum"
+        values: [horizontal, vertical]
+        default: "horizontal"
+      connector:
+        type: "enum"
+        values: [arrow, line, none]
+        default: "arrow"
+    llmUsage:
+      when: "Methodology steps, project phases, evolution over time (qualitative)."
+      avoid: "Date-pinned schedule (use 'roadmap'). Long descriptions in each phase."
+    brandTokensUsed:
+      - "colors.brand.primary"
+      - "typography.fonts.heading"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 10 — roadmap
-# ─────────────────────────────────────────────────────────────────────────
-- id: roadmap
-  name: "Roadmap"
-  description: "Gantt-style timeline with date-pinned workstreams and milestones."
-  appliesTo: [document, deck]
-  schema:
-    timeUnit:
-      type: "enum"
-      values: [week, month, quarter]
-      required: true
-    startDate: { type: "string", required: true }      # ISO date
-    endDate:   { type: "string", required: true }      # ISO date
-    workstreams:
-      type: "array"
-      required: true
-      minItems: 1
-      maxItems: 8
-      itemSchema:
-        label:     { type: "string", required: true }
-        startDate: { type: "string", required: true }  # ISO date
-        endDate:   { type: "string", required: true }
-        color:     { type: "enum", values: [auto, brand.primary, brand.secondary], default: "auto" }
-    milestones:
-      type: "array"
-      required: false
-      maxItems: 12
-      itemSchema:
-        label: "string"
-        date:  "string"                                # ISO date
-  llmUsage:
-    when: "Project planning section. Specific dates matter."
-    avoid: "Qualitative phases without dates (use 'timeline')."
-  brandTokensUsed:
-    - "colors.chartPalette.qualitative"
-    - "typography.fonts.body"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 10 — roadmap
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: roadmap
+    name: "Roadmap"
+    description: "Gantt-style timeline with date-pinned workstreams and milestones."
+    appliesTo: [document, deck]
+    schema:
+      timeUnit:
+        type: "enum"
+        values: [week, month, quarter]
+        required: true
+      startDate: { type: "string", required: true }      # ISO date
+      endDate:   { type: "string", required: true }      # ISO date
+      workstreams:
+        type: "array"
+        required: true
+        minItems: 1
+        maxItems: 8
+        itemSchema:
+          label:     { type: "string", required: true }
+          startDate: { type: "string", required: true }  # ISO date
+          endDate:   { type: "string", required: true }
+          color:     { type: "enum", values: [auto, brand.primary, brand.secondary], default: "auto" }
+      milestones:
+        type: "array"
+        required: false
+        maxItems: 12
+        itemSchema:
+          label: "string"
+          date:  "string"                                # ISO date
+    llmUsage:
+      when: "Project planning section. Specific dates matter."
+      avoid: "Qualitative phases without dates (use 'timeline')."
+    brandTokensUsed:
+      - "colors.chartPalette.qualitative"
+      - "typography.fonts.body"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 11 — risk-matrix
-# ─────────────────────────────────────────────────────────────────────────
-- id: risk-matrix
-  name: "Risk matrix"
-  description: "2×2 or 3×3 grid plotting risks on likelihood × impact."
-  appliesTo: [document, deck]
-  schema:
-    gridSize:
-      type: "enum"
-      values: ["2x2", "3x3"]
-      default: "3x3"
-    xAxisLabel: { type: "string", default: "Likelihood" }
-    yAxisLabel: { type: "string", default: "Impact" }
-    risks:
-      type: "array"
-      required: true
-      minItems: 1
-      maxItems: 20
-      itemSchema:
-        label:    { type: "string", required: true, maxLength: 40 }
-        x:        { type: "integer", required: true, minimum: 1, maximum: 3 }
-        y:        { type: "integer", required: true, minimum: 1, maximum: 3 }
-        severity:
-          type: "enum"
-          values: [low, medium, high, critical]
-          required: true
-  llmUsage:
-    when: "Risk assessment section in proposals, audits, due-diligence reports."
-    avoid: "More than 2 dimensions (use 'chart' with a scatter type)."
-  brandTokensUsed:
-    - "colors.status.success / .warning / .error"
-    - "colors.semantic.border"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 11 — risk-matrix
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: risk-matrix
+    name: "Risk matrix"
+    description: "2×2 or 3×3 grid plotting risks on likelihood × impact."
+    appliesTo: [document, deck]
+    schema:
+      gridSize:
+        type: "enum"
+        values: ["2x2", "3x3"]
+        default: "3x3"
+      xAxisLabel: { type: "string", default: "Likelihood" }
+      yAxisLabel: { type: "string", default: "Impact" }
+      risks:
+        type: "array"
+        required: true
+        minItems: 1
+        maxItems: 20
+        itemSchema:
+          label:    { type: "string", required: true, maxLength: 40 }
+          x:        { type: "integer", required: true, minimum: 1, maximum: 3 }
+          y:        { type: "integer", required: true, minimum: 1, maximum: 3 }
+          severity:
+            type: "enum"
+            values: [low, medium, high, critical]
+            required: true
+    llmUsage:
+      when: "Risk assessment section in proposals, audits, due-diligence reports."
+      avoid: "More than 2 dimensions (use 'chart' with a scatter type)."
+    brandTokensUsed:
+      - "colors.status.success / .warning / .error"
+      - "colors.semantic.border"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 12 — team
-# ─────────────────────────────────────────────────────────────────────────
-- id: team
-  name: "Team / org chart"
-  description: "Team composition with names, roles, and optional photos + allocation %."
-  appliesTo: [document, deck]
-  schema:
-    members:
-      type: "array"
-      required: true
-      minItems: 1
-      maxItems: 12
-      itemSchema:
-        name:       { type: "string", required: true }
-        role:       { type: "string", required: true }
-        photo:      { type: "string", required: false }   # relative asset path or $brand: token
-        allocation: { type: "string", required: false }   # e.g. "30%" or "2 days/week"
-        bio:        { type: "string", required: false, maxLength: 200 }
-    layout:
-      type: "enum"
-      values: [grid, hierarchical, list]
-      default: "grid"
-  llmUsage:
-    when: "'The team' section in proposals. Roster of consultants on the engagement."
-    avoid: "External stakeholders (use 'callout' or 'prose')."
-  brandTokensUsed:
-    - "colors.semantic.surfaceBackground"
-    - "typography.fonts.body"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 12 — team
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: team
+    name: "Team / org chart"
+    description: "Team composition with names, roles, and optional photos + allocation %."
+    appliesTo: [document, deck]
+    schema:
+      members:
+        type: "array"
+        required: true
+        minItems: 1
+        maxItems: 12
+        itemSchema:
+          name:       { type: "string", required: true }
+          role:       { type: "string", required: true }
+          photo:      { type: "string", required: false }   # relative asset path or $brand: token
+          allocation: { type: "string", required: false }   # e.g. "30%" or "2 days/week"
+          bio:        { type: "string", required: false, maxLength: 200 }
+      layout:
+        type: "enum"
+        values: [grid, hierarchical, list]
+        default: "grid"
+    llmUsage:
+      when: "'The team' section in proposals. Roster of consultants on the engagement."
+      avoid: "External stakeholders (use 'callout' or 'prose')."
+    brandTokensUsed:
+      - "colors.semantic.surfaceBackground"
+      - "typography.fonts.body"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 13 — image
-# ─────────────────────────────────────────────────────────────────────────
-- id: image
-  name: "Image"
-  description: "Static image with optional caption. Path is relative to doc folder."
-  appliesTo: [document, deck]
-  schema:
-    src:
-      type: "string"
-      required: true
-      pattern: "^(assets/|\\$brand:)"        # forbids absolute paths and ../
-    alt:
-      type: "string"
-      required: true                         # accessibility — never optional
-    caption: { type: "string", required: false }
-    width:   { type: "enum", values: [small, medium, large, full], default: "medium" }
-    align:   { type: "enum", values: [left, center, right], default: "center" }
-  llmUsage:
-    when: "Diagrams, photos, screenshots, client logos."
-    avoid: "Decorative images that add no information."
-  brandTokensUsed:
-    - "elements.images (border, shadow)"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 13 — image
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: image
+    name: "Image"
+    description: "Static image with optional caption. Path is relative to doc folder."
+    appliesTo: [document, deck]
+    schema:
+      src:
+        type: "string"
+        required: true
+        pattern: "^(assets/|\\$brand:)"        # forbids absolute paths and ../
+      alt:
+        type: "string"
+        required: true                         # accessibility — never optional
+      caption: { type: "string", required: false }
+      width:   { type: "enum", values: [small, medium, large, full], default: "medium" }
+      align:   { type: "enum", values: [left, center, right], default: "center" }
+    llmUsage:
+      when: "Diagrams, photos, screenshots, client logos."
+      avoid: "Decorative images that add no information."
+    brandTokensUsed:
+      - "elements.images (border, shadow)"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 14 — diagram
-# ─────────────────────────────────────────────────────────────────────────
-- id: diagram
-  name: "Diagram (Mermaid)"
-  description: "Schematic via Mermaid syntax — flowcharts, sequence, ERD, etc."
-  appliesTo: [document, deck]
-  schema:
-    source:
-      type: "string"
-      required: true                         # raw Mermaid source
-      maxLength: 4000
-    title:    { type: "string", required: false }
-    caption:  { type: "string", required: false }
-    width:    { type: "enum", values: [medium, large, full], default: "large" }
-  llmUsage:
-    when: "Process flows, system schematics, decision trees, organizational hierarchies."
-    avoid: "Static images that aren't structural diagrams (use 'image')."
-  brandTokensUsed:
-    - "colors.brand.primary"
-    - "colors.semantic.border"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 14 — diagram
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: diagram
+    name: "Diagram (Mermaid)"
+    description: "Schematic via Mermaid syntax — flowcharts, sequence, ERD, etc."
+    appliesTo: [document, deck]
+    schema:
+      source:
+        type: "string"
+        required: true                         # raw Mermaid source
+        maxLength: 4000
+      title:    { type: "string", required: false }
+      caption:  { type: "string", required: false }
+      width:    { type: "enum", values: [medium, large, full], default: "large" }
+    llmUsage:
+      when: "Process flows, system schematics, decision trees, organizational hierarchies."
+      avoid: "Static images that aren't structural diagrams (use 'image')."
+    brandTokensUsed:
+      - "colors.brand.primary"
+      - "colors.semantic.border"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Block 15 — divider
-# ─────────────────────────────────────────────────────────────────────────
-- id: divider
-  name: "Section divider"
-  description: "Page break in documents; full-bleed divider slide in decks."
-  appliesTo: [document, deck]
-  schema:
-    label:     { type: "string", required: false, maxLength: 80 }     # for deck dividers
-    subtitle:  { type: "string", required: false, maxLength: 120 }    # for deck dividers
-    numbering: { type: "string", required: false }                    # e.g. "Part 02"
-  llmUsage:
-    when: "Major section transition. In documents, forces a page break. In decks, becomes a full-screen divider slide."
-    avoid: "Decorative use — only place where a content break is structural."
-  brandTokensUsed:
-    - "colors.brand.dark (deck background)"
-    - "typography.scale.deckTitle"
+  # ─────────────────────────────────────────────────────────────────────────
+  # Block 15 — divider
+  # ─────────────────────────────────────────────────────────────────────────
+  - id: divider
+    name: "Section divider"
+    description: "Page break in documents; full-bleed divider slide in decks."
+    appliesTo: [document, deck]
+    schema:
+      label:     { type: "string", required: false, maxLength: 80 }     # for deck dividers
+      subtitle:  { type: "string", required: false, maxLength: 120 }    # for deck dividers
+      numbering: { type: "string", required: false }                    # e.g. "Part 02"
+    llmUsage:
+      when: "Major section transition. In documents, forces a page break. In decks, becomes a full-screen divider slide."
+      avoid: "Decorative use — only place where a content break is structural."
+    brandTokensUsed:
+      - "colors.brand.dark (deck background)"
+      - "typography.scale.deckTitle"
 
-# ─────────────────────────────────────────────────────────────────────────
-# Setup AI prompt — instructions for the AI that runs at setup time
-# ─────────────────────────────────────────────────────────────────────────
-# This section is consumed by the setup AI when scanning a consultancy's
-# demo files. It informs the AI of the existing catalogue so it can decide
-# "use existing" vs "generate new" per observed pattern.
-#
-# DO NOT use this section as runtime config — it is metadata for setup only.
+  # ─────────────────────────────────────────────────────────────────────────
+  # Setup AI prompt — instructions for the AI that runs at setup time
+  # ─────────────────────────────────────────────────────────────────────────
+  # This section is consumed by the setup AI when scanning a consultancy's
+  # demo files. It informs the AI of the existing catalogue so it can decide
+  # "use existing" vs "generate new" per observed pattern.
+  #
+  # DO NOT use this section as runtime config — it is metadata for setup only.
 
 setupAiInstructions:
   approach: |
@@ -530,9 +531,9 @@ setupAiInstructions:
     - "react"
     - "@tiptap/react"
     - "@tiptap/core"
-    - "echarts/core" (and ECharts components)
-    - "./brand-tokens" (the typed brand-token helper)
-    - "./block-primitives" (the shared scaffold components)
+    - "echarts/core and ECharts components"
+    - "./brand-tokens typed brand-token helper"
+    - "./block-primitives shared scaffold components"
 
   forbiddenPatterns:
     - "dangerouslySetInnerHTML"

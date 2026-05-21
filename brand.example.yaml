@@ -305,8 +305,10 @@ tone:                                       # [OPTIONAL]
   voice: "expert, concise, evidence-led"
   forbiddenWords: ["leverage", "synergy", "best-in-class", "world-class"]
   preferredPhrases:
-    - "we recommend" instead of "it is recommended"
-    - "the data shows" instead of "the data suggests"
+    - prefer: "we recommend"
+      avoid: "it is recommended"
+    - prefer: "the data shows"
+      avoid: "the data suggests"
   defaultLanguage: "en"                     # en | fr — fallback when not set per doc
   frenchTypography:                         # [OPTIONAL] enable insécables
     nonBreakingBeforeColon: true

@@ -39,7 +39,7 @@ Foundation. Nothing else compiles until this is done.
 
 ### T-03 · Pin exact dependency versions
 - **Inputs:** none
-- **Outputs:** updated `package.json` with exact versions for: react@18, react-dom@18, vite@5, typescript@5, zod@3, yaml@2, echarts@5, mermaid@10, @tiptap/core@2, @tiptap/react@2, @tiptap/pm@2, @tiptap/starter-kit@2, playwright@1, better-sqlite3@11
+- **Outputs:** updated `package.json` with exact versions for the approved app/runtime, setup-only, and dev-only dependencies in `BUILD_BRIEF.md` §2
 - **Acceptance:** `npm ls` shows the pinned versions; no `^` or `~` ranges in dependencies.
 - **est.** 0.5h
 
@@ -69,8 +69,8 @@ Foundation. Nothing else compiles until this is done.
 
 ### T-08 · Set up CI (GitHub Actions or equivalent)
 - **Inputs:** T-04, T-05
-- **Outputs:** `.github/workflows/ci.yml` running lint + test + build on every push
-- **Acceptance:** Push to the repo triggers CI; lint + test + build pass; failure on any of the three blocks the PR.
+- **Outputs:** `.github/workflows/ci.yml` running `scripts/check-specs`, lint, test, and build on every push
+- **Acceptance:** Push to the repo triggers CI; spec parsing, lint, test, and build pass; failure on any block blocks the PR.
 - **est.** 1.5h
 
 ### T-09 · Write project README with quickstart
@@ -83,7 +83,7 @@ Foundation. Nothing else compiles until this is done.
 
 ---
 
-## Phase 1 — M1: Schema & DocModel + Block Catalogue + Setup AI Pipeline
+## Phase 1 — M1a–M1d: Schema, Block Catalogue, and Setup Pipeline
 
 The single largest phase. Plan ≥ 6 weeks of focused work.
 
@@ -308,7 +308,13 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Both commands run; regenerate produces drift-detection output; validate runs lint over `/active/` and reports findings.
 - **est.** 4h
 
-**M1 acceptance gate:** all blocks T-23–T-39 pass their tests; T-40 round-trip passes; T-48 produces a complete setup output for the fixture demos; T-46 rejects a malicious generated block.
+**M1a acceptance gate:** T-10 through T-19 pass, valid fixtures validate, invalid fixtures fail with located errors, and duplicate IDs fail.
+
+**M1b acceptance gate:** all pre-built blocks T-23 through T-39 pass schema, renderer, mapping, and editor-node tests, and T-40 round-trip passes.
+
+**M1c acceptance gate:** T-41 through T-48 produce complete setup output for fixture demos, and T-46 rejects a malicious generated block.
+
+**M1d acceptance gate:** T-49 regenerates reviewed generated blocks and routes drift to `/pending/` for human re-review.
 
 ---
 
