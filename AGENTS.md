@@ -101,6 +101,88 @@ code for any new feature, milestone, or refactor:
 
 This applies to anything bigger than a one-file edit or a typo fix.
 
+## Autonomous task loop
+
+`docs/TASKS.md` is driven by an autonomous loop. The loop is conservative:
+defaults to halting cleanly when something is wrong rather than charging ahead.
+
+### Slash commands
+
+- **`/next-task`** — one fire of the loop. Reads `docs/TASKS.md`, picks the
+  next eligible task, implements + tests + global-gates + commits + pushes,
+  then continues to the next task. Runs until a halt rule trips or
+  `ALL DONE`. Spec: [.claude/commands/next-task.md](.claude/commands/next-task.md).
+- **`/status`** — read-only snapshot of loop state, recent commits, open
+  blockers, CI status. Safe to run anytime. Spec:
+  [.claude/commands/status.md](.claude/commands/status.md).
+- **`/skip T-NN <reason>`** — permanently mark a task as deliberately not
+  doing. Treated like `[x]` for dependency-eligibility. Spec:
+  [.claude/commands/skip.md](.claude/commands/skip.md).
+
+To drive the loop autonomously, in Claude Code:
+
+```
+/loop 45m /next-task
+```
+
+### Status markers in TASKS.md
+
+| Marker | Meaning |
+|---|---|
+| `[ ]` | Not started — eligible when all `Inputs:` are `[x]` or `[skip]` |
+| `[~]` | In progress (current invocation); leftover from a crashed prior fire is auto-reset |
+| `[x]` | Done |
+| `[?]` | Needs human input — counts toward halt rules |
+| `[!]` | Waiting on external dep — doesn't halt; auto-promotes to `[?]` after 3 fires |
+| `[skip]` | Deliberately not doing |
+| `[GATE FAILED]` | On milestone header — halts the loop |
+
+### Halt rules (conservative)
+
+The loop halts when ANY of these trip:
+
+1. **A-rule** — 2 consecutive `[?]` tasks (signals systemic rot, not bad luck).
+2. **C-rule** — current milestone has any `[?]` (don't advance past a broken phase).
+3. **Quality gate** — `tsc --noEmit` or `npm run lint` fails after a task; failure counts toward A-rule.
+4. **Milestone gate** — full `npm run build && npm test` fails when entering a new milestone.
+5. **CI failure** on `origin/main` (per the optional CI-poll config below).
+6. **Push conflict** that survives a rebase retry.
+7. **Pre-flight failure** (dirty tree, branch divergence, missing files).
+
+Halts are **self-healing** — the loop's `/loop` interval keeps firing. When
+the human resolves the blocker, the next fire auto-resumes.
+
+### Morning-check ritual (5 minutes)
+
+1. Open `STATUS.md` (auto-regenerated on every fire).
+2. If state is `RUNNING` or `ALL_DONE` → nothing to do.
+3. If state ends in `*HALT` / `*FAILED`:
+   - Read the "What needs your attention" section.
+   - Open `BLOCKERS.md` for full detail on each blocker.
+   - Fix the root cause; edit the relevant marker in `docs/TASKS.md` from
+     `[?]` back to `[ ]`.
+   - Append a `**Resolved:**` line to the BLOCKERS.md entry.
+   - The next loop fire (within 45 min) resumes autonomously.
+
+### Loop configuration
+
+```yaml
+# Consumed by /next-task; edit here to change behavior
+loop:
+  ci-poll: true        # check `gh run list` on origin/main before each task
+  ci-poll-tool: gh     # CLI tool to use; if missing, CI-poll is skipped (warned in STATUS.md, not halted)
+```
+
+### Hard rules the loop will never violate
+
+- Never force-push. Push rejection → halt to `PUSH-CONFLICT`.
+- Never amend prior commits.
+- Never use `git add -A` / `git add .` — always explicit paths.
+- Never modify files outside the current task's declared `Outputs:` without explicit reasoning.
+- Never silently adjust `DECISIONS.md` targets when a gate fails — file the regression as a blocker.
+- Never delete `BLOCKERS.md` entries (append-only).
+- Never start work without a clean pre-flight.
+
 ## Code intelligence
 
 This project uses **CodeGraph** for semantic code exploration. If `.codegraph/`
