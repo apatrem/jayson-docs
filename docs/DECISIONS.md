@@ -73,13 +73,13 @@ Every editor edit and every individual comment-accept/reject is a separate undo 
 ### D-09 — Generated blocks are heavily mitigated
 Six mitigations apply to any AI-generated block (see Layer 1 of the memo):
 1. Constrained template (AI fills a scaffold, not free React)
-2. Whitelisted imports only
+2. Whitelisted imports only — extended per ADR-0001 to forbid `parent`, `top`, `window.localStorage`, `document.cookie`, `postMessage`, intrinsic monkey-patching
 3. Forbidden patterns (no `dangerouslySetInnerHTML`, `eval`, `fetch`, etc.)
 4. **Human review gate** (`/generated-blocks/pending/` → `/generated-blocks/active/`)
-5. CSP-sandboxed rendering
+5. **Runtime render-budget watchdog** — see [ADR-0001](adr/0001-no-iframe-sandbox-for-generated-blocks.md). Originally specified as a CSP-sandboxed iframe; superseded by the watchdog + an extended lint after the O-08 spike resolution.
 6. Regen pipeline tied to scaffold version bumps
 
-**Why:** AI-generated code that ships unreviewed is an attack surface and a quality-control gap. The review gate makes it impossible to deploy ungoverned code.
+**Why:** AI-generated code that ships unreviewed is an attack surface and a quality-control gap. The review gate makes it impossible to deploy ungoverned code. The watchdog (replacing the original iframe sandbox) contains the runaway-loop / leak threat without iframe overhead.
 
 ### D-10 — Asset paths in YAML are constrained
 Block asset paths must start with `assets/` (per-doc, relative) or `$brand:` (token reference). Absolute paths and `..` traversal are **rejected by the Zod schema**.
@@ -298,6 +298,46 @@ Cost data is tracked locally (per D-32 carve-out), under the following strict co
 
 ---
 
+## 14. Performance & runtime safety (resolves O-08)
+
+### D-35 — Anchor scale: 200 node-views, 10 chart blocks per doc
+Designs are validated against a typical "heavy" deliverable: ~200 node-views (the consultant's iteration ceiling at 5–10 LLM cycles × 20+ comments), ~10 chart blocks, 1–3 tables of up to 30×6 cells, dozens of inline comment marks.
+**Why:** "TipTap at scale" is meaningless without a number; this is the load the system must handle smoothly. Docs above the anchor (rare in practice) get a separate "long-doc" optimization track if ever needed.
+**Implication:** All perf targets in D-37/D-38 and the spike harness in D-39 use this fixture as their reference.
+
+### D-36 — No iframe sandbox for generated blocks; runtime watchdog + extended lint
+Originally specified as a CSP-sandboxed iframe (D-09 mitigation #5). Superseded by [ADR-0001](adr/0001-no-iframe-sandbox-for-generated-blocks.md): drop the iframe, extend the lint with additional forbidden patterns (`parent`, `top`, `window.localStorage`, `document.cookie`, `postMessage`, monkey-patching of intrinsics), add a runtime render-budget watchdog (50ms cap per render; offending blocks unmount with an error placeholder).
+**Why:** iframes at the D-35 anchor cost ~500MB resident memory and seconds of mount time for ~15% marginal protection beyond what the lint + review already provide. The watchdog handles the strongest residual concern (runaway loops / leaks).
+**Implication:** New M1 tasks: watchdog implementation + extended-lint patterns. Watchdog adversarial test is part of the D-39 deliverable.
+
+### D-37 — Lazy ECharts mount via IntersectionObserver
+Charts initialize on first scroll-into-view, not on doc open.
+**Why:** ECharts `init()` + `setOption()` costs ~50–100ms per chart; mounting 10 eagerly on doc open adds 500–1000ms of jank. Lazy mount keeps cold open at the < 200ms target, scales cleanly if a future doc has 50 charts.
+**Implication:** `reference/chart/Chart.tsx` will be updated to support lazy mount; `Chart` accepts a prop or auto-enrolls in an `IntersectionObserver`. Confirmed by the D-39 benchmark.
+
+### D-38 — Table block: wrap `@tiptap/extension-table` with per-cell memoization
+Use the official `@tiptap/extension-table` for structural behavior (rows, columns, header, cell navigation), but wrap each cell's React node-view with `React.memo` + fine-grained equality. Disable column resizing. Constrain cell content to a single paragraph with the allowed marks from `ProseRenderer`.
+**Why:** Known TipTap-table issues (re-render cascades, slow cursor navigation) are well-understood and fixable via memoization. Custom-from-scratch is ~2 weeks of work vs ~1.5 days for the wrap; only justified if benchmarks fail.
+**Implication:** T-31 (table block) uses this pattern. Targets confirmed by the D-39 benchmark: mount < 150ms; typing latency < 16ms; cell navigation < 16ms.
+
+### D-39 — Perf spike deliverable: committed benchmark harness + watchdog adversarial test
+A reproducible benchmark harness in `tests/perf/`, run in CI, that:
+1. Loads a fixture matching the D-35 anchor.
+2. Measures **6 metrics** with hard targets:
+   - Cold doc open (with lazy ECharts mount): < 1s
+   - First chart paint when scrolled into view: < 200ms each
+   - Table mount: < 150ms
+   - Table cell typing latency: < 16ms
+   - Table cell navigation latency: < 16ms
+   - Memory growth over a 30-min editing session: < 100MB linear growth
+3. Includes a watchdog adversarial test: a deliberately-bad generated block that allocates in a hot loop; assert the watchdog unmounts it within 100ms of exceeding the budget.
+4. Emits `docs/perf-spike-results.md` on each CI run.
+
+**Why:** A markdown-only "I measured once and it felt OK" verdict is worse than no spike — perf regressions creep in invisibly. The harness makes the spike durable and protects D-37 / D-38 going forward.
+**Implication:** New M1/M4 tasks (anchor fixture, harness, adversarial test) added to TASKS.md.
+
+---
+
 # Roadmap items (flagged during scoping)
 
 Versions are nominal; actual sequencing depends on v1 outcomes.
@@ -346,8 +386,16 @@ How do consultants learn the system? Video walkthrough? In-app tour? Embedded he
 ### O-07 — Devops/security audit depth
 API key rotation, content sensitivity classification, audit logging (out of scope per D-32, but is *some* operational logging needed?), incident response, backup strategy beyond cloud sync.
 
-### O-08 — Half-day technical scan content
-Memo §12 step 1 — what specifically does the developer scan? With most architectural decisions resolved here, the remaining unknowns are: TipTap node-view ergonomics at scale (>15 custom nodes), CSP iframe rendering performance, ECharts SSR for PDF export.
+### O-08 — RESOLVED — Half-day technical scan replaced by a perf-spike work package
+**Resolution:** the scan's open questions are now four committed design decisions (D-35–D-38) and one ADR ([ADR-0001](adr/0001-no-iframe-sandbox-for-generated-blocks.md)), with a benchmark harness (D-39) as the durable artifact. See:
+
+- **D-35** — Anchor scale (200 node-views, 10 charts per doc)
+- **D-36** — No iframe sandbox; runtime watchdog + extended lint (ADR-0001)
+- **D-37** — Lazy ECharts mount via IntersectionObserver
+- **D-38** — Table block wraps `@tiptap/extension-table` with per-cell memoization + disabled column resize
+- **D-39** — Perf spike deliverable: benchmark harness in `tests/perf/` + watchdog adversarial test + auto-generated results report; runs in CI
+
+ECharts SSR for PDF export (the third item in the original scan) is captured in `reference/chart/Chart.tsx` (the exported `getEChartsOption` is the contract between the browser and SSR paths) and in M2 tasks T-57 (SSR pre-rendering).
 
 ### O-09 — Interactive HTML (v2) — what does it actually mean?
 "Live models" is hand-wavy. When this becomes a v2 priority, it needs a concrete spec: what kind of interactivity (calculators? toggleable scenarios? embedded D3?), what user flows, what schema extensions.

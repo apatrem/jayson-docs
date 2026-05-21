@@ -301,10 +301,16 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **est.** 8h
 
 ### T-46 · Implement the lint enforcement (whitelist + forbidden patterns + hex colors)
-- **Inputs:** SETUP_PIPELINE.md §4
+- **Inputs:** SETUP_PIPELINE.md §4; **ADR-0001** for the extended forbidden patterns list (per D-36)
 - **Outputs:** `src/setup/lint-generated.ts` + tests
-- **Acceptance:** A deliberately-malicious generated file (containing `dangerouslySetInnerHTML`) fails lint. A clean generated file passes. Hex colors in string literals are rejected.
-- **est.** 6h
+- **Acceptance:** A deliberately-malicious generated file (containing `dangerouslySetInnerHTML`) fails lint. A clean generated file passes. Hex colors in string literals are rejected. **Per ADR-0001:** also rejects `parent`, `top`, `window.localStorage`, `document.cookie`, `postMessage`, and obvious intrinsic monkey-patching (`Array.prototype.X = ...`).
+- **est.** 7h (extended pattern list adds ~1h)
+
+### T-46b · Implement the runtime render-budget watchdog (D-36, ADR-0001)
+- **Inputs:** ADR-0001
+- **Outputs:** `src/block-primitives/RenderWatchdog.tsx` — a higher-order component that wraps every generated-block React component and measures per-render duration via `performance.now()`. If a render exceeds 50ms, the watchdog unmounts the block and replaces it with an error placeholder (`<RenderFailedPlaceholder reason="render-budget-exceeded" />`).
+- **Acceptance:** A benign generated block renders normally with no observable overhead (< 1ms wrapper cost). A deliberately-bad block that allocates in a hot loop is unmounted within 100ms of exceeding the budget; the error placeholder appears in its place; no other blocks in the editor are affected.
+- **est.** 3h
 
 ### T-47 · Implement pending/active loading discipline
 - **Inputs:** D-09 mitigation 4
@@ -582,7 +588,32 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** For every fixture in `examples/`, `proseMirrorToDocModel(docModelToProseMirror(doc))` deep-equals `doc`. The compile-time `assertNever(_b: never)` catches missing block-type dispatch arms.
 - **est.** 1.5h (mostly copy from reference; was 2h)
 
-**M4 acceptance gate:** load + edit + save -> lossless round-trip; consultant can add/remove/reorder blocks; off-schema content impossible; consultants never see YAML/JSON.
+### T-89b · Build the perf-spike anchor fixture (D-35, D-39)
+- **Inputs:** D-35; all blocks T-23b through T-39 implemented
+- **Outputs:** `tests/perf/fixtures/anchor-doc.yaml` — a DocModel matching the D-35 anchor: ~200 node-views, 10 chart blocks (mixed types), 2 tables (one 30×6), dozens of inline comment marks.
+- **Acceptance:** Fixture validates against `DocModelSchema`. Loading the fixture into the editor produces 200±20 mounted node-views.
+- **est.** 1.5h
+
+### T-89c · Build the perf benchmark harness (D-39)
+- **Inputs:** T-89b; D-37 (lazy ECharts), D-38 (table wrap)
+- **Outputs:** `tests/perf/benchmark.test.ts` + `tests/perf/README.md` + CI hook
+- **Acceptance:** Harness runs in a real browser (Playwright; happy-dom lacks the perf APIs needed) and emits a `docs/perf-spike-results.md` report. Asserts all 6 metrics against D-39 targets:
+  - Cold doc open: < 1s
+  - First chart paint on scroll-into-view: < 200ms
+  - Table mount: < 150ms
+  - Table cell typing latency: < 16ms
+  - Table cell navigation latency: < 16ms
+  - Memory growth over 30-min editing session: < 100MB linear growth
+- **Failure mode:** any missed target fails CI on PRs touching `src/editor/`, `src/renderer/blocks/`, or `src/block-primitives/`. Maintainer must either fix the regression or explicitly bump the target in DECISIONS.md D-39.
+- **est.** 5h
+
+### T-89d · Build the watchdog adversarial test (D-39)
+- **Inputs:** T-46b (watchdog implementation), T-89b
+- **Outputs:** `tests/perf/watchdog-validation.test.ts`
+- **Acceptance:** A test fixture loads a generated block that allocates in a hot loop (a `while(true) { x.push(...) }` synchronous loop, or an unbounded `useEffect` that creates state on every render). The watchdog unmounts the block within 100ms of exceeding the 50ms render budget. The `<RenderFailedPlaceholder>` appears in the block's slot. Other blocks in the editor remain functional. The test asserts the editor's overall responsiveness (typing in a separate prose block remains < 16ms during and after the kill).
+- **est.** 2h
+
+**M4 acceptance gate:** load + edit + save -> lossless round-trip; consultant can add/remove/reorder blocks; off-schema content impossible; consultants never see YAML/JSON. **Perf gate (D-39):** T-89c emits a report with all 6 metrics passing; T-89d confirms the watchdog kills runaway blocks.
 
 ---
 
@@ -745,16 +776,16 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 | 1A | M1 (core schema) | T-10 — T-19 | 14.5 | |
 | 1B | M1 (brand consumption) | T-20 — T-22 | 5 | |
 | 1C | M1 (15 blocks) | T-23 — T-40 | ~110 | The biggest chunk |
-| 1D | M1 (setup pipeline) | T-41 — T-49 | 46 | |
+| 1D | M1 (setup pipeline + watchdog) | T-41 — T-49 incl. T-46b | 50 | +watchdog per ADR-0001 |
 | 2 | M2 (renderer/PDF) | T-50 — T-59 | 32 | |
 | 3 | M3 (LLM interface) | T-60 — T-73 | 50 | |
-| 4 | M4 (editor) | T-74 — T-89 | ~65 | |
+| 4 | M4 (editor + perf gate) | T-74 — T-89 incl. T-89b/c/d | ~74 | +perf harness per D-39 |
 | 5 | M5 (comments) | T-90 — T-102 | 52 | |
 | 6 | M6 (deck) | T-103 — T-107 | 38 | v1.1 |
 | 7 | Deployment | T-108 — T-112 | 21 | |
-| | | | **~450h** | ≈ 12 weeks full-time for a strong dev, or ~6 months at half-time |
+| | | | **~462h** | ≈ 12 weeks full-time for a strong dev, or ~6 months at half-time |
 
-**Realistic v1 (excluding M6 deck path):** ~412 hours ≈ 10–11 weeks full-time.
+**Realistic v1 (excluding M6 deck path):** ~424 hours ≈ 10.5–11 weeks full-time. The ~12h additions from O-08 resolution (watchdog + perf harness) pay for themselves the first time a perf regression is caught in CI rather than in pilot.
 
 These numbers match the architecture memo's §11 estimate of "6–12 months commitment" — the lower bound is achievable with a strong developer focused full-time; the upper bound includes M6 and a real-world overhead (review, debug, refactor, meetings).
 
