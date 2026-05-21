@@ -89,14 +89,14 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 
 ### Sub-phase 1A — Core schema (no blocks yet)
 
-### T-10 · Implement `AssetPathSchema`
-- **Inputs:** TYPES.md §3a
-- **Outputs:** `src/schema/asset-path.ts` + tests
-- **Acceptance:** schema accepts `"assets/x.jpg"` and `"$brand:logo.primary"`; rejects `"/abs/path"`, `"../foo"`, and `"http://..."` with clear error messages.
-- **est.** 1h
+### T-10 · Implement `StableIdSchema` and `AssetPathSchema`
+- **Inputs:** TYPES.md §3a, §3b
+- **Outputs:** `src/schema/stable-id.ts`, `src/schema/asset-path.ts` + tests
+- **Acceptance:** `StableIdSchema` accepts UUIDs and readable kebab-case IDs like `"b1-prose-01"`; rejects empty strings, spaces, and path-like IDs. `AssetPathSchema` accepts `"assets/x.jpg"` and `"$brand:logo.primary"`; rejects `"/abs/path"`, `"../foo"`, and `"http://..."` with clear error messages.
+- **est.** 1.5h
 
 ### T-11 · Implement `ProseMirrorFragmentSchema`
-- **Inputs:** TYPES.md §3b
+- **Inputs:** TYPES.md §3c
 - **Outputs:** `src/schema/prosemirror-fragment.ts` + tests
 - **Acceptance:** accepts a minimal `{ type: "doc", content: [] }`; rejects bare strings.
 - **est.** 1h
@@ -104,7 +104,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 ### T-12 · Implement `BlockBaseSchema`
 - **Inputs:** TYPES.md §3
 - **Outputs:** `src/schema/blocks/index.ts` (just the base for now; union added in T-28)
-- **Acceptance:** base requires `id` (UUID) and `type` (string); accepts optional `note`; rejects unknown keys.
+- **Acceptance:** base requires `id` (`StableIdSchema`) and `type` (string); accepts optional `note`; rejects unknown keys.
 - **est.** 1h
 
 ### T-13 · Implement `MetaSchema`
@@ -148,7 +148,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 ### T-19 · Implement `validateDocModel` entry point
 - **Inputs:** TYPES.md §11
 - **Outputs:** `src/schema/validate.ts` + tests using `examples/sample-proposal.yaml`, `examples/sample-deck.yaml`, and the 3 invalid fixtures
-- **Acceptance:** valid fixtures return `{ok: true}`; each invalid fixture returns `{ok: false}` with the documented error path.
+- **Acceptance:** valid fixtures return `{ok: true}`; each invalid fixture returns `{ok: false}` with the documented error path; duplicate section, slide, block, or comment IDs fail with the repeated ID and both paths.
 - **est.** 2h
 - **Depends on:** T-18
 
@@ -315,7 +315,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 ## Phase 2 — M2: Renderer + HTML/PDF
 
 ### T-50 · Implement `ProseRenderer` (rich-text serializer)
-- **Inputs:** TYPES.md §3b
+- **Inputs:** TYPES.md §3c
 - **Outputs:** `src/renderer/ProseRenderer.tsx` + tests
 - **Acceptance:** renders ProseMirror JSON to HTML with marks (bold, italic, link, code, underline) applied; deterministic; SSR-compatible.
 - **est.** 4h

@@ -309,15 +309,20 @@ comment record stored **on the DocModel**, not in editor state.
 ### Comment record (stored in a top-level `comments[]` array on the DocModel)
 ```
 Comment {
-  id:          string
-  blockId:     string                       // stable anchor — survives export
-  range:       { from: int, to: int } | null// char offsets within the block
-  quotedText:  string                       // snapshot of highlighted text
-  instruction: string                       // the message to the AI
-  status:      "open" | "proposed" | "applied" | "rejected"
-  author:      string
+  id:          StableId
+  blockId:     StableId                    // stable anchor — survives export
+  range:       { from: int, to: int } | null // char offsets within the block
+  quotedText:  string                      // snapshot of highlighted text
+  status:      "open" | "applied" | "rejected"
+  thread:      ThreadEntry[]               // instruction → ai-proposal → follow-up ...
   createdAt:   timestamp
-  aiProposal:  BlockPatch | null             // structured patch returned by AI
+  updatedAt:   timestamp
+}
+
+ThreadEntry =
+  | { kind: "instruction", author, authorEmail, authorRole, text, createdAt }
+  | { kind: "ai-proposal", model, patch: BlockPatch, inputTokens, outputTokens, createdAt }
+  | { kind: "follow-up", author, authorEmail, text, createdAt }
 }
 ```
 
@@ -326,7 +331,8 @@ Comment {
 2. On trigger, the system sends the AI: the targeted block(s), the highlighted
    span, and the instruction — with the rest of the document as **read-only
    context**.
-3. The AI returns a **structured patch scoped to that block** (`aiProposal`).
+3. The AI returns a **structured patch scoped to that block** as an
+   `ai-proposal` thread entry.
 4. The patch is displayed as a **proposed change (track-changes style)** — it
    is **never auto-applied**.
 5. The consultant accepts or rejects. On accept, the patch is applied as one
