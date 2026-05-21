@@ -28,12 +28,13 @@ REPO_NAME=$(basename "$REPO_ROOT")
 PARENT_DIR=$(dirname "$REPO_ROOT")
 WORKTREE_BASE="${WORKTREE_BASE:-$PARENT_DIR}"
 
-# Worktree directory name = repo-basename + "-" + driver tail
-declare -A WORKTREE_PATHS
-for branch in "${BRANCHES[@]}"; do
-  driver_tail="${branch#bakeoff/}"
-  WORKTREE_PATHS["$branch"]="$WORKTREE_BASE/${REPO_NAME}-${driver_tail}"
-done
+# Compute the worktree path for a given branch on the fly.
+# Avoids `declare -A` so the script works on macOS's default bash 3.2.
+worktree_path_for() {
+  local branch="$1"
+  local driver_tail="${branch#bakeoff/}"
+  echo "$WORKTREE_BASE/${REPO_NAME}-${driver_tail}"
+}
 
 # ── Parse flags ─────────────────────────────────────────────────────────────
 
@@ -111,7 +112,7 @@ git checkout main >/dev/null 2>&1
 
 if [[ "$CREATE_WORKTREES" == "true" ]]; then
   for branch in "${BRANCHES[@]}"; do
-    wt_path="${WORKTREE_PATHS[$branch]}"
+    wt_path=$(worktree_path_for "$branch")
 
     if git worktree list --porcelain | grep -q "^worktree $wt_path$"; then
       # Already a worktree — verify it's on the right branch
@@ -148,7 +149,7 @@ if [[ "$CREATE_WORKTREES" == "true" ]]; then
   echo ""
   echo " Worktrees (each app opens its own — parallel workflow):"
   for branch in "${BRANCHES[@]}"; do
-    echo "   ${WORKTREE_PATHS[$branch]}  →  $branch"
+    echo "   $(worktree_path_for "$branch")  →  $branch"
   done
 fi
 
@@ -158,22 +159,25 @@ echo " Next steps — see BAKEOFF.md for full instructions per driver:"
 echo "═══════════════════════════════════════════════════════════════════"
 
 if [[ "$CREATE_WORKTREES" == "true" ]]; then
+WT_CLAUDE=$(worktree_path_for "bakeoff/claude")
+WT_CURSOR=$(worktree_path_for "bakeoff/cursor")
+WT_GPT5=$(worktree_path_for "bakeoff/gpt5")
 cat <<EOF
 
   PARALLEL workflow (recommended — all three apps run simultaneously):
 
   Driver 1 — Claude Code (Sonnet 4.6 high):
-    Open Claude Code on:  ${WORKTREE_PATHS[bakeoff/claude]}
+    Open Claude Code on:  $WT_CLAUDE
     Select model: Sonnet 4.6 + thinking budget high
     Invoke:       /next-task-bakeoff
 
   Driver 2 — Cursor (auto mode, mostly Composer 2.5):
-    Open Cursor on:       ${WORKTREE_PATHS[bakeoff/cursor]}
+    Open Cursor on:       $WT_CURSOR
     Composer: model = auto; paste .claude/commands/next-task-bakeoff.md
     as system prompt; send "Begin."
 
   Driver 3 — Codex desktop (GPT-5 high):
-    Open Codex on:        ${WORKTREE_PATHS[bakeoff/gpt5]}
+    Open Codex on:        $WT_GPT5
     Reasoning effort: high; paste .claude/commands/next-task-bakeoff.md
     as system instruction; send "Begin."
 
