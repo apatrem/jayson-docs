@@ -135,16 +135,20 @@ const DocumentSection: FC<{
   );
 };
 
-function BlockView({
+export type BlockRenderContext = "document" | "deck";
+
+export function BlockView({
   block,
   assetContext,
   diagramSvgs,
   chartSvgs,
+  dividerContext = "document",
 }: {
   block: Block;
   assetContext: AssetContext;
   diagramSvgs: Record<string, string>;
   chartSvgs: Record<string, string>;
+  dividerContext?: BlockRenderContext;
 }): ReactNode {
   switch (block.type) {
     case "prose":
@@ -188,7 +192,7 @@ function BlockView({
       );
     }
     case "divider":
-      return <Divider block={block} />;
+      return <Divider block={block} context={dividerContext} />;
     default: {
       const _exhaustive: never = block;
       return _exhaustive;

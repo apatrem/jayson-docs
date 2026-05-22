@@ -445,7 +445,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Render `examples/sample-proposal.yaml` to HTML and to PDF. Extract text from PDF. Assert that all text in the HTML appears in the PDF (modulo whitespace differences). All chart titles, table headers, KPI values match.
 - **est.** 3h
 
-### T-59 [ ] · Brand consistency test across two fixture docs
+### T-59 [x] · Brand consistency test across two fixture docs
 - **Depends-on:** T-51
 - **Reads:** none
 - **Outputs:** `tests/brand-consistency.test.ts`
