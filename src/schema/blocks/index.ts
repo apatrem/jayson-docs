@@ -12,8 +12,9 @@ import { ChartBlockDataSchema } from "./chart";
 import { TimelineBlockSchema } from "./timeline";
 import { RoadmapBlockDataSchema } from "./roadmap";
 import { TeamBlockSchema } from "./team";
+import { RiskMatrixBlockDataSchema } from "./risk-matrix";
 
-/** Discriminated union of all implemented block types (grows with T-36+). */
+/** Discriminated union of all implemented block types (grows with T-37+). */
 export const BlockSchema = z.discriminatedUnion("type", [
   ProseBlockSchema,
   HeadingBlockSchema,
@@ -26,6 +27,7 @@ export const BlockSchema = z.discriminatedUnion("type", [
   ChartBlockDataSchema,
   TimelineBlockSchema,
   RoadmapBlockDataSchema,
+  RiskMatrixBlockDataSchema,
   TeamBlockSchema,
 ]);
 

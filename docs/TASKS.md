@@ -271,7 +271,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Reads:** `docs/BLOCK_IMPLEMENTATION_GUIDE.md` §3 (roadmap notes)
 - **est.** 12h (custom ECharts series; date math)
 
-### T-36 [ ] · Implement `risk-matrix` block (4 files)
+### T-36 [x] · Implement `risk-matrix` block (4 files)
 - **Depends-on:** none
 - **Reads:** `docs/BLOCK_IMPLEMENTATION_GUIDE.md` §3 (risk-matrix notes)
 - **est.** 8h
