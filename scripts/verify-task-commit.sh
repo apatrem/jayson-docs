@@ -82,6 +82,31 @@ if [[ "$any_loop_file_staged" == "true" ]] && [[ -n "$unstaged_loop_files" ]]; t
    Fix: \`git add$unstaged_loop_files\` and retry the commit."
 fi
 
+# ── Assertion 1c: reject STATUS-only commits (Q3 strengthening) ───────────
+# A commit that stages ONLY STATUS.md (and nothing else) is the failure mode
+# we saw post-T-20: the loop forgot to bundle STATUS.md with the task commit,
+# then patched it as a separate "chore: regenerate STATUS.md" follow-up.
+# That violates Q3 (bundle STATUS.md into the task commit) but slips past
+# Assertion 1b because no TASKS.md transition is present in the diff.
+#
+# Rule: STATUS.md cannot be the sole content of a commit on a loop branch.
+# If you're regenerating STATUS.md after the fact, either amend the previous
+# task commit (only safe if it's not pushed yet) or pair the STATUS.md update
+# with the next task's commit naturally.
+
+all_staged=$(git diff --cached --name-only)
+staged_count=$(printf '%s\n' "$all_staged" | grep -c .)
+
+if [[ "$staged_count" == "1" ]] && [[ "$all_staged" == "STATUS.md" ]]; then
+  fail "STATUS-only commit detected (only STATUS.md is staged).
+   Per Q3, STATUS.md must be bundled with the task commit, not committed alone.
+   If you're catching up a missed regeneration:
+     - If the prior task commit hasn't been pushed: \`git commit --amend\` it instead.
+     - If it has been pushed: stage STATUS.md with the next task's commit naturally.
+     - For genuine standalone regeneration (e.g., manual /status invocation that
+       writes the file), reset the working tree and don't commit it."
+fi
+
 # ── Assertion 1b: loop commits must include STATUS.md regeneration ───────
 
 # Detect "is this a loop commit?" by looking for marker transitions in the
