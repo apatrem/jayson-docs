@@ -193,7 +193,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** resolves `"colors.brand.primary"` to the hex string; resolves a one-level alias (e.g. `"colors.semantic.textPrimary"` -> `"neutral.800"` -> `"#1E293B"`); rejects unknown paths.
 - **est.** 2h
 
-### T-22 [ ] · Implement `resolveAssetPath(brand, sharedFolderPath, docFolderPath, ref)`
+### T-22 [x] · Implement `resolveAssetPath(brand, sharedFolderPath, docFolderPath, ref)`
 - **Depends-on:** T-16
 - **Reads:** none
 - **Outputs:** `src/brand-tokens/resolve-asset.ts` + tests

@@ -2,10 +2,10 @@ import type { BrandTokens } from "../schema/brand";
 
 const ALIAS_PREFIX = "colors.semantic.";
 
-export function resolveBrandToken(brand: BrandTokens, ref: string): string {
+export function lookupBrandPath(brand: BrandTokens, ref: string): unknown {
   const direct = getByDottedPath(brand, ref);
   if (direct === undefined) {
-    throw new Error(`resolveBrandToken: unknown token path "${ref}"`);
+    throw new Error(`lookupBrandPath: unknown token path "${ref}"`);
   }
 
   const isAliasContext = ref.startsWith(ALIAS_PREFIX);
@@ -19,15 +19,17 @@ export function resolveBrandToken(brand: BrandTokens, ref: string): string {
     const final = getByDottedPath(brand, aliasTarget);
     if (final === undefined) {
       throw new Error(
-        `resolveBrandToken: alias "${ref}" -> "${direct}" did not resolve`,
+        `lookupBrandPath: alias "${ref}" -> "${direct}" did not resolve`,
       );
-    }
-    if (typeof final !== "string") {
-      throw new Error(`resolveBrandToken: alias target is not a string`);
     }
     return final;
   }
 
+  return direct;
+}
+
+export function resolveBrandToken(brand: BrandTokens, ref: string): string {
+  const direct = lookupBrandPath(brand, ref);
   if (typeof direct !== "string") {
     throw new Error(`resolveBrandToken: path "${ref}" is not a string value`);
   }

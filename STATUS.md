@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T11:54:00Z
+**Last fire:** 2026-05-22T11:55:00Z
 **State:** RUNNING
 **Running on:** Composer (Cursor Auto) at (effort unknown)
 
@@ -10,15 +10,15 @@
 
 ## Next eligible task
 
-T-22 · Implement `resolveAssetPath`
+T-23 · Move `reference/primitives/` to production paths
 
 ## At a glance
 
-Total tasks: 112   Done: 18 (16%)   Open: 94
+Total tasks: 112   Done: 19 (17%)   Open: 93
 
 ## Recent commits
 
-0d1744d T-20: implement BrandProvider and useBrandTokens hook
+(pending T-22 STATUS bundle)
 
 ## CI status (origin/main)
 
