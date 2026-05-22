@@ -227,6 +227,12 @@ export async function exportHtmlToPdf(
   const browser = await chromium.launch({ headless: true });
   try {
     const page = await browser.newPage();
+    // `waitUntil: "load"` assumes the HTML is fully self-contained:
+    // SSR'd markup, inline CSS, no remote fonts or async assets. The
+    // DocumentRenderer pipeline (renderDocumentHtml + pre-rendered SVGs
+    // for diagrams and charts) satisfies this today. If a future scaffold
+    // introduces remote font loads or dynamic imports inside generated
+    // blocks, switch to `"networkidle"` to wait for the loading to settle.
     await page.setContent(html, { waitUntil: "load" });
     await page.pdf({
       path: outputPdfPath,

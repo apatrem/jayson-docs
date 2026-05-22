@@ -194,8 +194,18 @@ export function BlockView({
     case "divider":
       return <Divider block={block} context={dividerContext} />;
     default: {
-      const _exhaustive: never = block;
-      return _exhaustive;
+      // Compile-time exhaustiveness check: if this errors, a new block type
+      // was added to the union without a case above.
+      const exhaustiveCheck: never = block;
+      // Runtime diagnostic: if data coercion bypasses TS (e.g., the YAML
+      // contained a block type that survived validation due to a schema
+      // gap), throw with a precise message instead of silently rendering
+      // `undefined` — silent rendering hides regressions for a long time.
+      throw new Error(
+        `BlockView: unhandled block type "${String((exhaustiveCheck as unknown as { type?: string }).type)}". ` +
+          `Add a case to BlockView's switch in src/renderer/DocumentRenderer.tsx, ` +
+          `then register the block in src/schema/blocks/index.ts.`,
+      );
     }
   }
 }
