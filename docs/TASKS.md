@@ -291,7 +291,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **est.** 3h
 - **Note:** Layout-affecting; coordinate with T-50.
 
-### T-40 [ ] · YAML round-trip + losslessness test
+### T-40 [x] · YAML round-trip + losslessness test
 - **Depends-on:** T-19, T-23, T-23b, T-24, T-25, T-26, T-27, T-29, T-30, T-31, T-32, T-34, T-35, T-36, T-37, T-38, T-39
 - **Reads:** `docs/YAML_FORMAT.md`
 - **Outputs:** `src/docmodel/yaml-config.ts`, `src/docmodel/canonicalize.ts`, `src/docmodel/serialize.ts` + tests using `examples/sample-proposal.yaml` and `examples/sample-deck.yaml`

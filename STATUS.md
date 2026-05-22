@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T14:52:00Z
+**Last fire:** 2026-05-22T15:05:00Z
 **State:** RUNNING
 **Running on:** Cursor Composer (effort unknown)
 
@@ -10,19 +10,17 @@
 
 ## Next eligible task
 
-T-40 · YAML round-trip + losslessness test
+T-41 · Implement document ingestion (DOCX/PPTX/PDF -> analysis JSON)
 
 ## Progress since the previous fire
 
-- ✅ T-38 completed: diagram block (Mermaid)
-- ✅ T-39 completed: divider block (document page-break + deck slide)
-- **M1 block library complete** — all 15 types in `BlockSchema`
-- Total done: 44 (40%) · skipped: 1
+- ✅ T-40 completed: YAML canonicalize + serialize + byte-stable round-trip tests
+- Total done: 45 (41%) · skipped: 1
 
 ## Recent commits
 
+91b8617 T-39: implement divider block (4 files)
 0211a28 T-38: implement diagram block (4 files)
-4e214a3 T-37: implement team block (4 files)
 
 ## CI status (origin/main)
 
