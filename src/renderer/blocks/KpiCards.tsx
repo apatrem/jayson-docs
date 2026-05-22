@@ -70,6 +70,7 @@ export const KpiCards: FC<KpiCardsProps> = ({ block }) => {
 
   return (
     <div
+      className="doc-keep-together"
       data-block-id={block.id}
       data-block-type="kpi-cards"
       style={rowStyle}

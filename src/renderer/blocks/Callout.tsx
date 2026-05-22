@@ -45,6 +45,7 @@ export const Callout: FC<CalloutProps> = ({ block }) => {
 
   return (
     <aside
+      className="doc-keep-together"
       role="note"
       aria-label={block.variant}
       data-block-id={block.id}

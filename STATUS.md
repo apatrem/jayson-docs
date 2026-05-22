@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T16:08:00Z
+**Last fire:** 2026-05-22T16:25:00Z
 **State:** RUNNING
 **Running on:** Cursor Composer at (effort unknown)
 
@@ -10,20 +10,20 @@
 
 ## Progress since the previous fire
 
-- ✅ T-53 completed (Playwright headerTemplate/footerTemplate with logo, title, confidentiality, page numbers)
+- ✅ T-54 completed (page-break CSS for PDF export)
 
 ## Next eligible task
 
-T-54 · Implement page-break CSS rules
+T-55 · Add the `divider` block's page-break handling
 
 ## At a glance
 
-Total tasks: ~112   Done: 59   Open: ~53   Skipped: 1
+Total tasks: ~112   Done: 60   Open: ~52   Skipped: 1
 
 ## Recent commits
 
-6cececf T-52: add Playwright headless Chromium PDF export
+(pending)
 
 ## CI status (origin/main)
 
-success (last known)
+success

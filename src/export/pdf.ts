@@ -11,6 +11,10 @@ import { BrandTokensSchema } from "../schema/brand";
 import { validateDocModel } from "../schema/validate";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const pageBreakCss = readFileSync(
+  join(repoRoot, "src/renderer/page-breaks.css"),
+  "utf8",
+);
 
 export interface PdfExportOptions {
   brandPath?: string;
@@ -82,6 +86,7 @@ export function renderDocumentHtml(
       * { box-sizing: border-box; }
       body { margin: 0; }
     </style>
+    <style>${pageBreakCss}</style>
   </head>
   <body>${body}</body>
 </html>`;

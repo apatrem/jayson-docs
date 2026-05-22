@@ -64,6 +64,7 @@ export const Chart: FC<ChartProps> = ({ block, renderer = "canvas" }) => {
 
   return (
     <figure
+      className="doc-keep-together"
       data-block-id={block.id}
       data-block-type="chart"
       data-chart-type={block.chartType}

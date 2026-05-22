@@ -59,6 +59,7 @@ export const Table: FC<TableProps> = ({ block }) => {
 
   return (
     <figure
+      className="doc-keep-together"
       data-block-id={block.id}
       data-block-type="table"
       style={{ margin: 0 }}

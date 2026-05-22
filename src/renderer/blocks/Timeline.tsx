@@ -80,6 +80,7 @@ export const Timeline: FC<TimelineProps> = ({ block }) => {
 
   return (
     <div
+      className="doc-keep-together"
       data-block-id={block.id}
       data-block-type="timeline"
       data-orientation={block.orientation}

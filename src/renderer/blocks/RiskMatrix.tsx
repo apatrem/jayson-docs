@@ -103,6 +103,7 @@ export const RiskMatrix: FC<RiskMatrixProps> = ({ block }) => {
 
   return (
     <div
+      className="doc-keep-together"
       data-block-id={block.id}
       data-block-type="risk-matrix"
       data-grid-size={block.gridSize}

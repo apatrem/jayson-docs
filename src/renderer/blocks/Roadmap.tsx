@@ -130,6 +130,7 @@ export const Roadmap: FC<RoadmapProps> = ({ block }) => {
 
   return (
     <div
+      className="doc-keep-together"
       data-block-id={block.id}
       data-block-type="roadmap"
       data-time-unit={block.timeUnit}

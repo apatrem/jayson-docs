@@ -63,6 +63,7 @@ export const Diagram: FC<DiagramProps> = ({ block, renderedSvg }) => {
 
   return (
     <figure
+      className="doc-keep-together"
       data-block-id={block.id}
       data-block-type="diagram"
       data-width={block.width}

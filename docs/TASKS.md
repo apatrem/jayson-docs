@@ -410,7 +410,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Exported PDF has a header showing the logo + project title; footer showing confidentiality text + "Page N of M".
 - **est.** 3h
 
-### T-54 [ ] · Implement page-break CSS rules
+### T-54 [x] · Implement page-break CSS rules
 - **Depends-on:** T-51, T-52
 - **Reads:** none
 - **Outputs:** `src/renderer/page-breaks.css` + updates to block renderers

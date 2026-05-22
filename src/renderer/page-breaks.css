@@ -1,0 +1,34 @@
+/* Print/PDF page-break rules for flowing documents (memo §7, BUILD_BRIEF M2). */
+
+@media print {
+  [data-block-type="heading"] {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  [data-block-type="chart"],
+  [data-block-type="table"],
+  [data-block-type="kpi-cards"],
+  [data-block-type="diagram"],
+  [data-block-type="callout"],
+  [data-block-type="image"],
+  [data-block-type="timeline"],
+  [data-block-type="roadmap"],
+  [data-block-type="risk-matrix"],
+  [data-block-type="team"],
+  .doc-keep-together {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  [data-block-type="table"] tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .doc-page-break,
+  [data-block-type="divider"][data-render-context="document"] {
+    break-before: page;
+    page-break-before: always;
+  }
+}

@@ -214,6 +214,7 @@ export const Team: FC<TeamProps> = ({ block, assetContext }) => {
 
   return (
     <section
+      className="doc-keep-together"
       data-block-id={block.id}
       data-block-type="team"
       data-layout={block.layout}

@@ -44,6 +44,7 @@ export const Image: FC<ImageProps> = ({ block, assetContext }) => {
 
   return (
     <figure
+      className="doc-keep-together"
       data-block-id={block.id}
       data-block-type="image"
       data-width={block.width}
