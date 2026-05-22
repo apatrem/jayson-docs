@@ -287,7 +287,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **est.** 6h
 - **Note:** PDF path requires pre-rendering to SVG — coordinate with T-50 (PDF export).
 
-### T-39 [ ] · Implement `divider` block (4 files)
+### T-39 [x] · Implement `divider` block (4 files)
 - **est.** 3h
 - **Note:** Layout-affecting; coordinate with T-50.
 
