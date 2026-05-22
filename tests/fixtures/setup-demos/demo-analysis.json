@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "1.0.0",
+  "analyzedAt": "2026-05-22T12:57:16.896Z",
+  "sourceDirectory": "/Users/pierresupau/Documents/jayson-docs/tests/fixtures/setup-demos",
+  "files": [
+    {
+      "fileName": "sample.docx",
+      "format": "docx",
+      "textContent": "1. Executive summary\n\nAcme Industrial is evaluating SMR process-heat applications for European sites.",
+      "textSamples": [
+        "Acme Industrial is evaluating SMR process-heat applications for European sites."
+      ],
+      "observedColors": [
+        "#0563C1",
+        "#0B3D91",
+        "#1F4D78",
+        "#2E74B5"
+      ],
+      "fontFamilies": [
+        "Arial"
+      ],
+      "sectionPatterns": []
+    },
+    {
+      "fileName": "sample.pdf",
+      "format": "pdf",
+      "textContent": "Fees and delivery assumptions for the engagement.",
+      "textSamples": [
+        "Fees and delivery assumptions for the engagement."
+      ],
+      "observedColors": [],
+      "fontFamilies": [],
+      "sectionPatterns": []
+    },
+    {
+      "fileName": "sample.pptx",
+      "format": "pptx",
+      "textContent": "Strategic context\nMarket scan and recommendation timeline for the board.\n\n1",
+      "textSamples": [
+        "Strategic context Market scan and recommendation timeline for the board."
+      ],
+      "observedColors": [
+        "#000000",
+        "#0563C1",
+        "#0B3D91",
+        "#44546A",
+        "#4472C4",
+        "#5B9BD5",
+        "#70AD47",
+        "#954F72",
+        "#A5A5A5",
+        "#E7E6E6",
+        "#E8A33D",
+        "#ED7D31",
+        "#FFC000"
+      ],
+      "fontFamilies": [
+        "+mj-cs",
+        "+mj-ea",
+        "+mj-lt",
+        "+mn-cs",
+        "+mn-ea",
+        "+mn-lt",
+        "Calibri",
+        "Calibri Light"
+      ],
+      "sectionPatterns": [
+        "slide:body"
+      ]
+    }
+  ],
+  "textContent": "1. Executive summary\n\nAcme Industrial is evaluating SMR process-heat applications for European sites.\n\nFees and delivery assumptions for the engagement.\n\nStrategic context\nMarket scan and recommendation timeline for the board.\n\n1",
+  "observedColors": [
+    "#000000",
+    "#0563C1",
+    "#0B3D91",
+    "#1F4D78",
+    "#2E74B5",
+    "#44546A",
+    "#4472C4",
+    "#5B9BD5",
+    "#70AD47",
+    "#954F72",
+    "#A5A5A5",
+    "#E7E6E6",
+    "#E8A33D",
+    "#ED7D31",
+    "#FFC000"
+  ],
+  "fontFamilies": [
+    "+mj-cs",
+    "+mj-ea",
+    "+mj-lt",
+    "+mn-cs",
+    "+mn-ea",
+    "+mn-lt",
+    "Arial",
+    "Calibri",
+    "Calibri Light"
+  ],
+  "sectionPatterns": [
+    "slide:body"
+  ]
+}

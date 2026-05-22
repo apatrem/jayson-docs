@@ -349,7 +349,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** A benign generated block renders normally with no observable overhead (< 1ms wrapper cost). A deliberately-bad block that allocates in a hot loop is unmounted within 100ms of exceeding the budget; the error placeholder appears in its place; no other blocks in the editor are affected.
 - **est.** 3h
 
-### T-47 [ ] · Implement pending/active loading discipline
+### T-47 [x] · Implement pending/active loading discipline
 - **Depends-on:** none
 - **Reads:** D-09
 - **Outputs:** `src/setup/load-generated-blocks.ts`

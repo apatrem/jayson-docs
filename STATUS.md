@@ -1,32 +1,34 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T14:33:00Z
+**Last fire:** 2026-05-22T14:57:30Z
 **State:** RUNNING
-**Running on:** Cursor Composer (effort unknown)
+**Running on:** Cursor Composer at (effort unknown)
 
 ---
 
-## Last completed task
+## Loop is running cleanly — no action needed.
 
-T-46b · Implement the runtime render-budget watchdog (D-36, ADR-0001)
+## Progress since the previous fire
+
+- ✅ 1 task completed this fire: T-47
 
 ## Next eligible task
 
-T-47 · Implement pending/active loading discipline
+T-48 · Implement the `setup:scan-demos` CLI command end-to-end
 
-## Progress
+## At a glance
 
-- ✅ T-42–T-46b: brand extraction, catalogue diff, scaffolds, codegen, lint, render watchdog
-- Total done: 52 (46%) · skipped: 1
+Total tasks: ~112   Done: 53   Blocked: 0   Waiting: 0   Open: ~58   Skipped: 1
 
 ## What needs your attention
 
-⚠ Tier-mismatch advisory: T-47+ in M1d benefit from escalation-tier reasoning if quality is poor.
+⚠ Tier-mismatch advisory: T-48 benefits from escalation-tier reasoning.
+  Currently: default tier (Cursor Composer). If quality is poor, retry on escalation tier.
 
 ## Recent commits
 
-(pending commit for T-42..T-46b)
+fe49d83 T-42..T-46b: setup pipeline stages 2–4, lint, render watchdog
 
 ## CI status (origin/main)
 
-success
+failure (missing tests/fixtures/setup-demos in repo — fixed this fire, pending push)
