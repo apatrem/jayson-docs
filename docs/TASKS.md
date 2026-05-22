@@ -135,7 +135,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** validates `examples/sample-proposal.yaml`'s `meta` block; rejects missing required fields.
 - **est.** 1.5h
 
-### T-14 [ ] · Implement `CommentSchema` + `ThreadEntrySchema`
+### T-14 [x] · Implement `CommentSchema` + `ThreadEntrySchema`
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` §5, `examples/sample-comment-thread.json`
 - **Outputs:** `src/schema/comment.ts` + tests
