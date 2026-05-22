@@ -149,7 +149,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** validates all three op shapes from the JSON fixture; rejects op variants with wrong required fields.
 - **est.** 2h
 
-### T-16 [ ] · Implement `BrandTokensSchema`
+### T-16 [x] · Implement `BrandTokensSchema`
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` §7, `brand.example.yaml`
 - **Outputs:** `src/schema/brand.ts` + tests
