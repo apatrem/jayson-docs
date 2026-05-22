@@ -38,15 +38,7 @@ function mm(value: number): string {
 
 export function loadBrandTokens(brandPath: string): BrandTokens {
   const raw: unknown = parse(readFileSync(brandPath, "utf8"));
-  const base = BrandTokensSchema.parse(raw);
-  return {
-    ...base,
-    headshots: {
-      "jane-smith": "assets/headshots/jane-smith.svg",
-      "pierre-dubois": "assets/headshots/pierre-dubois.svg",
-      "marie-chen": "assets/headshots/marie-chen.svg",
-    },
-  } as BrandTokens;
+  return BrandTokensSchema.parse(raw);
 }
 
 export function loadDocumentModel(yamlPath: string): DocumentModel {

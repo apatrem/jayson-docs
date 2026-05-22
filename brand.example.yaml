@@ -317,6 +317,21 @@ tone:                                       # [OPTIONAL]
     angleQuotes: true                       # « ... » instead of "..."
 
 # ─────────────────────────────────────────────────────────────────────────
+# 10b. Consultancy member headshots
+# ─────────────────────────────────────────────────────────────────────────
+# Asset paths to each consultant's headshot, keyed by their stable person ID.
+# Documents reference these via `$brand:headshots.<id>` in Team block member
+# `photo:` fields. Paths are relative to the shared cloud folder.
+#
+# Keep the keys stable across the brand book lifecycle — once a doc refers
+# to `$brand:headshots.jane-smith`, renaming the key breaks the reference.
+# To rotate a photo, update the asset file, not the key.
+headshots:                                  # [OPTIONAL] used by Team blocks
+  jane-smith: "assets/headshots/jane-smith.svg"
+  pierre-dubois: "assets/headshots/pierre-dubois.svg"
+  marie-chen: "assets/headshots/marie-chen.svg"
+
+# ─────────────────────────────────────────────────────────────────────────
 # 11. Future / reserved
 # ─────────────────────────────────────────────────────────────────────────
 # Reserved keys — leave empty in v1, schema accepts but ignores.

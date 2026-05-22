@@ -156,6 +156,13 @@ export const BrandTokensSchema = z
     charts: z.unknown(),
     tone: z.unknown().optional(),
 
+    // Consultancy member headshot asset paths, keyed by person ID. Referenced
+    // from documents as `$brand:headshots.<id>` via resolveAssetPath →
+    // lookupBrandPath. The keys are the same person IDs used in `Team` block
+    // member entries (e.g. "jane-smith"). Optional because headless smoke
+    // tests can omit it; production brand files SHOULD populate it.
+    headshots: z.record(z.string(), z.string()).optional(),
+
     interactiveHtml: z.unknown().optional(),
     darkMode: z.unknown().optional(),
     accessibility: z.unknown().optional(),

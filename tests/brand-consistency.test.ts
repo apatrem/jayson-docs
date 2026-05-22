@@ -14,16 +14,9 @@ import { validateDocModel } from "../src/schema/validate";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-const brand = {
-  ...BrandTokensSchema.parse(
-    parse(readFileSync(join(repoRoot, "brand.example.yaml"), "utf8")),
-  ),
-  headshots: {
-    "jane-smith": "assets/headshots/jane-smith.svg",
-    "pierre-dubois": "assets/headshots/pierre-dubois.svg",
-    "marie-chen": "assets/headshots/marie-chen.svg",
-  },
-} as BrandTokens;
+const brand: BrandTokens = BrandTokensSchema.parse(
+  parse(readFileSync(join(repoRoot, "brand.example.yaml"), "utf8")),
+);
 
 function loadDocModel(path: string): DocModel {
   const raw: unknown = parse(readFileSync(path, "utf8"));
