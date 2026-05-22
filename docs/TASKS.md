@@ -34,7 +34,7 @@
 
 Foundation. Nothing else compiles until this is done.
 
-### T-01 [ ] · Initialize repo and Vite + React + TypeScript app
+### T-01 [x] · Initialize repo and Vite + React + TypeScript app
 - **Depends-on:** none
 - **Reads:** `starter/package.json`, `starter/tsconfig.json`, `starter/vite.config.ts`, `starter/vitest.config.ts`
 - **Outputs:** `package.json`, `vite.config.ts`, `tsconfig.json`, `vitest.config.ts`, `index.html`, `src/main.tsx`, `src/App.tsx`
