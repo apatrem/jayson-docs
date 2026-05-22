@@ -56,4 +56,21 @@ describe("generateBlock", () => {
     expect(lint.ok).toBe(true);
     expect(files.some((f) => f.path === "schema.ts")).toBe(true);
   });
+
+  // ADR-0001 mitigation #2 — the runtime watchdog. The HOC is built in
+  // src/block-primitives/RenderWatchdog.tsx (T-46b); this test asserts that
+  // every generated renderer actually USES it, otherwise the security
+  // contract (drop iframe sandbox, rely on lint + watchdog) is broken.
+  it("scaffolds every renderer wrapped in withRenderWatchdog (ADR-0001)", () => {
+    const files = buildStatBadgeGeneratedFiles(proposal, "test-model");
+    const renderer = files.find((f) => f.path.endsWith(".tsx") && !f.path.endsWith("Node.tsx"));
+    expect(renderer, "expected a renderer file (NameOfBlock.tsx)").toBeDefined();
+
+    const src = renderer!.content;
+    expect(src).toMatch(
+      /import\s+\{\s*withRenderWatchdog\s*\}\s+from\s+["']\.\.\/\.\.\/\.\.\/src\/block-primitives\/RenderWatchdog["']/,
+    );
+    expect(src).toMatch(/const\s+\w+Raw:\s*React\.FC/);
+    expect(src).toMatch(/export\s+const\s+\w+\s*=\s*withRenderWatchdog\(\w+Raw\)/);
+  });
 });
