@@ -264,20 +264,33 @@ Correctness or security violations: fix and re-run TEST. Style-only nits: note i
 
 ## Step 5 — GLOBAL QUALITY GATES (β)
 
-Run, in order:
+Run the single gate runner:
+
+```
+bash scripts/verify-gates.sh
+```
+
+This script is the single source of truth for project-wide gates. It runs (in order):
 1. `tsc --noEmit` (project-wide typecheck)
 2. `npm run lint`
+3. `npm test` (full suite)
 
-If either fails:
+Pre-M0 escape: if `package.json` or `node_modules/` is absent, the script skips all gates with a warning and exits 0. T-01 / T-02 commits won't trip on this.
+
+**The pre-commit hook (`scripts/verify-task-commit.sh`) invokes the same script on any commit that touches a TypeScript/JavaScript/Rust file OR represents a real loop transition.** That means even if you skip step 5 by accident, your commit cannot land if the gates fail. Don't rely on the hook as the only check — running step 5 here gives you the chance to fix issues before constructing a doomed commit.
+
+If `verify-gates.sh` exits non-zero:
 - Revert the working tree: `git checkout -- .`
-- Mark the task `[?]` with reason `broke project-wide tsc` or `broke project-wide lint`.
-- Append to BLOCKERS.md with the first 20 lines of the error output.
+- Mark the task `[?]` with reason matching whichever gate failed (`broke project-wide tsc`, `broke project-wide lint`, or `broke project-wide tests`).
+- Append to BLOCKERS.md with the first 20 lines of the gate runner's failing output.
 - Regenerate STATUS.md.
 - Stage `docs/TASKS.md`, `BLOCKERS.md`, `STATUS.md`; commit + push.
 - **This counts toward the A-rule consecutive `[?]` count.**
 - Continue to step 7 NEXT.
 
-If both pass: continue to step 6.
+If `verify-gates.sh` exits 0: continue to step 6.
+
+For debugging when a gate fails non-obviously, run `GATES_VERBOSE=1 bash scripts/verify-gates.sh` to see full output instead of the first 30 lines.
 
 ## Step 6 — REGENERATE STATUS + COMMIT + PUSH
 

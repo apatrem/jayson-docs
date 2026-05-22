@@ -47,6 +47,7 @@ fail() {
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 LOOP_FILES="docs/TASKS.md STATUS.md BLOCKERS.md"
+REPO_ROOT=$(git rev-parse --show-toplevel)
 
 is_staged() {
   git diff --cached --name-only -- "$1" 2>/dev/null | grep -Fxq "$1"
@@ -60,6 +61,37 @@ has_unstaged_changes() {
     return 1
   fi
 }
+
+# Returns "true" iff the staged docs/TASKS.md diff contains REAL marker
+# transitions (the same task ID has a different marker on the - and + sides).
+# Pure text edits (titles, Outputs:, Reads:) leave markers unchanged and
+# return "false".
+is_loop_commit() {
+  if ! is_staged "docs/TASKS.md"; then
+    echo "false"
+    return
+  fi
+  local old_p new_p
+  old_p=$(git diff --cached -- docs/TASKS.md \
+    | grep -E '^-### T-[0-9]' \
+    | sed -E 's/^-### (T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)*) \[([^]]+)\] ·.*/\1=\3/' \
+    | sort -u)
+  new_p=$(git diff --cached -- docs/TASKS.md \
+    | grep -E '^\+### T-[0-9]' \
+    | sed -E 's/^\+### (T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)*) \[([^]]+)\] ·.*/\1=\3/' \
+    | sort -u)
+  if [[ -n "$(comm -3 <(echo "$old_p") <(echo "$new_p") 2>/dev/null | grep -E .)" ]]; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
+# Compute once; reused by Assertion 1b and Assertion 4.
+LOOP_COMMIT=$(is_loop_commit)
+
+# Staged file list — used by several assertions.
+staged_files=$(git diff --cached --name-only)
 
 # ── Assertion 1: loop-managed files bundled together ──────────────────────
 
@@ -94,7 +126,7 @@ fi
 # task commit (only safe if it's not pushed yet) or pair the STATUS.md update
 # with the next task's commit naturally.
 
-all_staged=$(git diff --cached --name-only)
+all_staged="$staged_files"  # reuse the global computed earlier
 staged_count=$(printf '%s\n' "$all_staged" | grep -c .)
 
 if [[ "$staged_count" == "1" ]] && [[ "$all_staged" == "STATUS.md" ]]; then
@@ -120,44 +152,21 @@ fi
 # value changed for some task). Compound headers like `T-76 + T-77` are
 # treated as one task ID for this purpose.
 
-if is_staged "docs/TASKS.md" && ! is_staged "STATUS.md"; then
-  # Extract task=marker pairs from removed and added lines. We deliberately
-  # match ALL markers (including `[ ]`) so the diff can correctly identify
-  # transitions in either direction.
-  old_pairs=$(git diff --cached -- docs/TASKS.md \
-    | grep -E '^-### T-[0-9]' \
-    | sed -E 's/^-### (T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)*) \[([^]]+)\] ·.*/\1=\3/' \
-    | sort -u)
-  new_pairs=$(git diff --cached -- docs/TASKS.md \
-    | grep -E '^\+### T-[0-9]' \
-    | sed -E 's/^\+### (T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)*) \[([^]]+)\] ·.*/\1=\3/' \
-    | sort -u)
-
-  # comm -3 outputs lines unique to either side. After stripping the marker
-  # and uniqifying task IDs, the count is "tasks whose marker changed".
-  changed_tasks=$(comm -3 <(echo "$old_pairs") <(echo "$new_pairs") 2>/dev/null \
-    | sed -E 's/[[:space:]]+//g; s/=.*//' \
-    | sort -u \
-    | grep -c . || true)
-
-  if [[ "$changed_tasks" -gt 0 ]]; then
-    # Real loop transition. Require STATUS.md to be staged AND differ from HEAD.
-    if git diff --quiet HEAD -- STATUS.md 2>/dev/null; then
-      fail "Loop commit detected ($changed_tasks task(s) with marker transitions)
+if [[ "$LOOP_COMMIT" == "true" ]] && ! is_staged "STATUS.md"; then
+  # Real loop transition. Require STATUS.md to be staged AND differ from HEAD.
+  if git diff --quiet HEAD -- STATUS.md 2>/dev/null; then
+    fail "Loop commit detected (TASKS.md has real marker transitions)
    but STATUS.md was not regenerated. Per Step 6, every task commit must
    include the regenerated STATUS.md. Run the regeneration,
    \`git add STATUS.md\`, and retry."
-    fi
   fi
-  # Pure title/Outputs/Reads edits leave the marker unchanged for every task
-  # and are exempt — those are structural spec edits, not loop commits.
 fi
+# Pure title/Outputs/Reads edits leave the marker unchanged for every task
+# and are exempt — those are structural spec edits, not loop commits.
 
 # ── Assertion 2: forbidden paths in the staged set ────────────────────────
 
 FORBIDDEN_REGEX='(^|/)(node_modules|target|dist|build|\.next|\.turbo|\.cache|coverage)/|\.DS_Store$|\.env(\..+)?$|/\.idea/|/\.vscode/settings\.json$'
-
-staged_files=$(git diff --cached --name-only)
 
 forbidden_matches=$(echo "$staged_files" | grep -E "$FORBIDDEN_REGEX" || true)
 
@@ -188,6 +197,39 @@ done <<< "$staged_files"
 if [[ -n "$large_files" ]]; then
   fail "Large file(s) staged (>5MB threshold — suspicious for spec/code repo):
 $large_files   If a binary asset is genuinely needed, add to .gitattributes/LFS first."
+fi
+
+# ── Assertion 4: project-wide gates (the step-5 machine backstop) ─────────
+# Runs scripts/verify-gates.sh (tsc + lint + tests) when the commit either
+# (a) is a loop transition (which means the loop just shipped code), or
+# (b) stages any TypeScript / JavaScript / Rust source file (manual edits).
+# Pure docs / markdown / script-only commits skip this — they can't break
+# the build, so spending 5 seconds on tsc would be noise.
+#
+# Why this exists: T-24 shipped with broken tsc + lint because Cursor Auto
+# silently skipped step 5 (driver discipline). The hook now invokes the
+# same gate runner so a commit that breaks the project simply cannot land,
+# regardless of which driver wrote it. See ADR-0003 (forthcoming).
+
+needs_gates=false
+
+if [[ "$LOOP_COMMIT" == "true" ]]; then
+  needs_gates=true
+fi
+
+if echo "$staged_files" | grep -qE '\.(ts|tsx|js|jsx|cjs|mjs|rs)$'; then
+  needs_gates=true
+fi
+
+if [[ "$needs_gates" == "true" ]]; then
+  yellow ""
+  yellow "  Running project-wide gates (verify-gates.sh) — may take ~5s..."
+  if ! bash "$REPO_ROOT/scripts/verify-gates.sh"; then
+    fail "Project-wide gates failed. The commit would land a regression.
+   See the gate output above. Fix the failures and retry.
+   To inspect interactively: \`bash scripts/verify-gates.sh\` (run by itself
+   outside the hook for unmuted output, or set GATES_VERBOSE=1)."
+  fi
 fi
 
 # ── OK ─────────────────────────────────────────────────────────────────────
