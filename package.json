@@ -16,7 +16,7 @@
     "export:pdf": "node scripts/export-pdf.mjs",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "setup:scan-demos": "node scripts/setup-scan-demos.mjs",
+    "setup:scan-demos": "tsx src/setup/scan-demos.ts",
     "setup:install": "node scripts/setup-install.mjs",
     "setup:validate": "node scripts/setup-validate.mjs",
     "setup:regenerate": "node scripts/setup-regenerate.mjs"

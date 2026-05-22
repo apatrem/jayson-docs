@@ -356,7 +356,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** The block loader reads from `/generated-blocks/active/` ONLY. If a block file is placed in `/pending/`, the app does NOT load it (verified by automated test).
 - **est.** 3h
 
-### T-48 [ ] · Implement the `setup:scan-demos` CLI command end-to-end
+### T-48 [x] · Implement the `setup:scan-demos` CLI command end-to-end
 - **Depends-on:** T-41, T-42, T-43, T-44, T-45, T-46, T-47
 - **Reads:** none
 - **Outputs:** `src/setup/scan-demos.ts` + an updated `package.json` script
