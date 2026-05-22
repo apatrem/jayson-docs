@@ -55,7 +55,7 @@ Foundation. Nothing else compiles until this is done.
 - **Acceptance:** `npm ls` shows the pinned versions; no `^` or `~` ranges in dependencies.
 - **est.** 0.5h
 
-### T-04 [ ] · Set up ESLint + Prettier + EditorConfig
+### T-04 [x] · Set up ESLint + Prettier + EditorConfig
 - **Depends-on:** T-01
 - **Reads:** none
 - **Outputs:** `.eslintrc.cjs`, `.prettierrc`, `.editorconfig`
