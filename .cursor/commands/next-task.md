@@ -329,8 +329,18 @@ This is the single commit per task. It bundles the task's implementation with th
 
    <1-3 lines: what changed and why>
 
+   Tier: <model + effort>          ← REQUIRED if T-NN is on the escalation list
+   Tier-mismatch acknowledged:     ← REQUIRED if Tier: is not an escalation tier
+     <one-line reason>             (Opus 4.7 / GPT-5 Pro / Gemini 2.5 Pro Thinking)
+   Scope expansion:                ← REQUIRED if you touched files outside Outputs
+     - <path> — <one-line why>
+
    Co-Authored-By: <model-name> <noreply@anthropic.com>
    ```
+
+   **The commit-msg hook (`scripts/verify-commit-msg.sh`) enforces the `Tier:` and `Tier-mismatch acknowledged:` lines for escalation-list tasks.** The escalation list lives in `scripts/escalation-list.txt` (mirrors §"Escalation tier" above). If the hook rejects your commit, either switch to an escalation-tier model OR add the acknowledgment line with a real reason. Don't bypass.
+
+   For non-escalation tasks, the `Tier:` line is optional but encouraged — it makes the post-hoc audit trail richer when something goes sideways.
 
 7. Do **not** amend previous commits. Do **not** use `--no-verify`. Do **not** include unrelated changes.
 8. The pre-commit hook (`scripts/verify-task-commit.sh`) runs automatically and asserts the loop-managed-files invariant + the allow-list rule. If it rejects the commit: re-examine what's staged; do not bypass with `--no-verify`. If the hook is genuinely buggy, mark the task `[?]` with reason `hook-misfire: <hook error>` and halt to BLOCKED-NO-ELIGIBLE.
