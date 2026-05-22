@@ -424,7 +424,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** A divider block in a flowing document forces a page break in the exported PDF.
 - **est.** 1h
 
-### T-56 [ ] · Add Mermaid pre-rendering for PDF export
+### T-56 [x] · Add Mermaid pre-rendering for PDF export
 - **Depends-on:** T-38, T-52
 - **Reads:** none
 - **Outputs:** updates to `src/export/pdf.ts`: detect `diagram` blocks, pre-render via Mermaid Node API to SVG, substitute into the HTML before PDF render

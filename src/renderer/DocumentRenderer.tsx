@@ -32,6 +32,8 @@ export interface DocumentRendererProps {
   brand: BrandTokens;
   sharedFolderPath?: string;
   docFolderPath?: string;
+  /** Mermaid SVG strings keyed by diagram block id (PDF export). */
+  diagramSvgs?: Record<string, string>;
 }
 
 export const DocumentRenderer: FC<DocumentRendererProps> = ({
@@ -39,6 +41,7 @@ export const DocumentRenderer: FC<DocumentRendererProps> = ({
   brand,
   sharedFolderPath = "/shared",
   docFolderPath = "/docs",
+  diagramSvgs = {},
 }) => {
   const assetContext: AssetContext = {
     sharedFolderPath,
@@ -48,7 +51,11 @@ export const DocumentRenderer: FC<DocumentRendererProps> = ({
 
   return (
     <BrandProvider tokens={brand}>
-      <DocumentBody doc={doc} assetContext={assetContext} />
+      <DocumentBody
+        doc={doc}
+        assetContext={assetContext}
+        diagramSvgs={diagramSvgs}
+      />
     </BrandProvider>
   );
 };
@@ -56,7 +63,8 @@ export const DocumentRenderer: FC<DocumentRendererProps> = ({
 const DocumentBody: FC<{
   doc: DocumentModel;
   assetContext: AssetContext;
-}> = ({ doc, assetContext }) => {
+  diagramSvgs: Record<string, string>;
+}> = ({ doc, assetContext, diagramSvgs }) => {
   const brand = useBrandTokens();
   const pageStyle: CSSProperties = {
     fontFamily: brand.typography.fonts.body.family,
@@ -75,6 +83,7 @@ const DocumentBody: FC<{
           key={section.id}
           section={section}
           assetContext={assetContext}
+          diagramSvgs={diagramSvgs}
         />
       ))}
     </article>
@@ -84,7 +93,8 @@ const DocumentBody: FC<{
 const DocumentSection: FC<{
   section: Section;
   assetContext: AssetContext;
-}> = ({ section, assetContext }) => {
+  diagramSvgs: Record<string, string>;
+}> = ({ section, assetContext, diagramSvgs }) => {
   const brand = useBrandTokens();
 
   return (
@@ -110,6 +120,7 @@ const DocumentSection: FC<{
           key={block.id}
           block={block}
           assetContext={assetContext}
+          diagramSvgs={diagramSvgs}
         />
       ))}
     </section>
@@ -119,9 +130,11 @@ const DocumentSection: FC<{
 function BlockView({
   block,
   assetContext,
+  diagramSvgs,
 }: {
   block: Block;
   assetContext: AssetContext;
+  diagramSvgs: Record<string, string>;
 }): ReactNode {
   switch (block.type) {
     case "prose":
@@ -150,8 +163,14 @@ function BlockView({
       return <RiskMatrix block={block} />;
     case "team":
       return <Team block={block} assetContext={assetContext} />;
-    case "diagram":
-      return <Diagram block={block} />;
+    case "diagram": {
+      const renderedSvg = diagramSvgs[block.id];
+      return renderedSvg !== undefined ? (
+        <Diagram block={block} renderedSvg={renderedSvg} />
+      ) : (
+        <Diagram block={block} />
+      );
+    }
     case "divider":
       return <Divider block={block} />;
     default: {

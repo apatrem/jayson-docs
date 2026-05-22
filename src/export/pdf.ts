@@ -8,6 +8,8 @@ import { parse } from "yaml";
 import { DocumentRenderer, type DocumentModel } from "../renderer/DocumentRenderer";
 import type { BrandTokens } from "../schema/brand";
 import { BrandTokensSchema } from "../schema/brand";
+import { renderMermaidSvg } from "../renderer/mermaid";
+import type { Block } from "../schema/blocks";
 import { validateDocModel } from "../schema/validate";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -59,13 +61,31 @@ export function loadDocumentModel(yamlPath: string): DocumentModel {
   return result.doc;
 }
 
-export function renderDocumentHtml(
+function blocksInDocument(doc: DocumentModel): Block[] {
+  return doc.sections.flatMap((section) => section.blocks);
+}
+
+export async function preRenderDiagramSvgs(
+  doc: DocumentModel,
+  brand: BrandTokens,
+): Promise<Record<string, string>> {
+  const svgs: Record<string, string> = {};
+  for (const block of blocksInDocument(doc)) {
+    if (block.type === "diagram") {
+      svgs[block.id] = await renderMermaidSvg(block.source, brand);
+    }
+  }
+  return svgs;
+}
+
+export async function renderDocumentHtml(
   doc: DocumentModel,
   brand: BrandTokens,
   paths?: { sharedFolderPath?: string; docFolderPath?: string },
-): string {
+): Promise<string> {
   const sharedFolderPath = paths?.sharedFolderPath ?? repoRoot;
   const docFolderPath = paths?.docFolderPath ?? repoRoot;
+  const diagramSvgs = await preRenderDiagramSvgs(doc, brand);
 
   const body = renderToStaticMarkup(
     createElement(DocumentRenderer, {
@@ -73,6 +93,7 @@ export function renderDocumentHtml(
       brand,
       sharedFolderPath,
       docFolderPath,
+      diagramSvgs,
     }),
   );
 
@@ -207,7 +228,7 @@ export async function exportPdfFromDocument(
   paths?: { sharedFolderPath?: string; docFolderPath?: string },
 ): Promise<void> {
   const sharedFolderPath = paths?.sharedFolderPath ?? repoRoot;
-  const html = renderDocumentHtml(doc, brand, paths);
+  const html = await renderDocumentHtml(doc, brand, paths);
   const templates = {
     headerTemplate: buildHeaderTemplate(doc, brand, sharedFolderPath),
     footerTemplate: buildFooterTemplate(doc, brand),
