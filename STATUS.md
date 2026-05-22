@@ -27,7 +27,8 @@ Total tasks: 112   Done: 17 (15%)   Blocked: 0   Waiting: 0   Open: 95   Skipped
 
 ## Recent commits
 
-(pending T-20 commit)
+0d1744d T-20: implement BrandProvider and useBrandTokens hook
+(prior) T-16: implement BrandTokensSchema
 
 ## CI status (origin/main)
 
