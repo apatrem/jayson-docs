@@ -66,6 +66,7 @@
     "eslint-plugin-react-hooks": "5.1.0-rc-fb9a90fa48-20240614",
     "happy-dom": "15.7.4",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.6.82",
     "playwright": "1.47.0",
     "pptxgenjs": "^3.12.0",
     "prettier": "3.3.3",

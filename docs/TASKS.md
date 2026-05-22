@@ -438,7 +438,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** A document with a chart exports to a PDF showing the rendered chart.
 - **est.** 4h
 
-### T-58 [ ] · Implement HTML vs PDF render parity test
+### T-58 [x] · Implement HTML vs PDF render parity test
 - **Depends-on:** T-51, T-52
 - **Reads:** none
 - **Outputs:** `tests/render-parity.test.ts`
