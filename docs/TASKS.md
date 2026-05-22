@@ -281,7 +281,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Reads:** `docs/BLOCK_IMPLEMENTATION_GUIDE.md` §3 (team notes), 3 layout sub-renderers
 - **est.** 8h
 
-### T-38 [ ] · Implement `diagram` block (4 files)
+### T-38 [x] · Implement `diagram` block (4 files)
 - **Depends-on:** none
 - **Reads:** `docs/BLOCK_IMPLEMENTATION_GUIDE.md` §3 (diagram notes), Mermaid setup
 - **est.** 6h

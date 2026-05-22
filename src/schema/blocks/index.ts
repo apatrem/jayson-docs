@@ -13,8 +13,9 @@ import { TimelineBlockSchema } from "./timeline";
 import { RoadmapBlockDataSchema } from "./roadmap";
 import { TeamBlockSchema } from "./team";
 import { RiskMatrixBlockDataSchema } from "./risk-matrix";
+import { DiagramBlockSchema } from "./diagram";
 
-/** Discriminated union of all implemented block types (grows with T-37+). */
+/** Discriminated union of all implemented block types (grows with T-39+). */
 export const BlockSchema = z.discriminatedUnion("type", [
   ProseBlockSchema,
   HeadingBlockSchema,
@@ -29,6 +30,7 @@ export const BlockSchema = z.discriminatedUnion("type", [
   RoadmapBlockDataSchema,
   RiskMatrixBlockDataSchema,
   TeamBlockSchema,
+  DiagramBlockSchema,
 ]);
 
 export type Block = z.infer<typeof BlockSchema>;

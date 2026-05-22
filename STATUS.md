@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T14:32:00Z
+**Last fire:** 2026-05-22T14:45:00Z
 **State:** RUNNING
 **Running on:** Cursor Composer (effort unknown)
 
@@ -10,18 +10,17 @@
 
 ## Next eligible task
 
-T-38 · Implement `diagram` block (4 files)
+T-39 · Implement `divider` block (4 files)
 
 ## Progress since the previous fire
 
-- ✅ T-36 completed: risk-matrix block
-- ✅ T-37 completed: team block (grid, list, hierarchical layouts)
-- Total done: 42 (38%) · skipped: 1
+- ✅ T-38 completed: diagram block (Mermaid schema, SSR shell, SVG data-URI path)
+- Total done: 43 (39%) · skipped: 1
 
 ## Recent commits
 
+4e214a3 T-37: implement team block (4 files)
 8f59945 T-36: implement risk-matrix block (4 files)
-747bc3f T-19: implement validateDocModel entry point
 
 ## CI status (origin/main)
 
