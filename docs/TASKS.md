@@ -220,7 +220,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** all five test layers pass; the reference's tests pass unmodified after path updates.
 - **est.** 2h
 
-### T-24 [ ] · Implement `prose` block (4 files)
+### T-24 [x] · Implement `prose` block (4 files)
 - **est.** 4h
 
 ### T-25 [ ] · Implement `heading` block (4 files)
