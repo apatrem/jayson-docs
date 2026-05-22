@@ -70,6 +70,13 @@ const mixedFixture = [
       ],
     },
   },
+  {
+    id: "b1-kpi-01",
+    type: "kpi-cards",
+    cards: [
+      { value: "€42M", label: "Exposure", emphasis: "negative", trend: "up" },
+    ],
+  },
 ];
 
 describe("BlockSchema discriminated union", () => {
@@ -77,7 +84,7 @@ describe("BlockSchema discriminated union", () => {
     for (const block of mixedFixture) {
       expect(BlockSchema.safeParse(block).success).toBe(true);
     }
-    expect(BlockSchema.array().parse(mixedFixture)).toHaveLength(5);
+    expect(BlockSchema.array().parse(mixedFixture)).toHaveLength(6);
   });
 
   it("rejects an unknown block type via discriminator", () => {

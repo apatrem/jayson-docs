@@ -241,7 +241,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **est.** 1h initial + 5min per block added
 - **Note:** Update this task as each block is added (T-23–T-37).
 
-### T-29 [ ] · Implement `kpi-cards` block (4 files)
+### T-29 [x] · Implement `kpi-cards` block (4 files)
 - **est.** 6h
 
 ### T-30 [ ] · Implement `image` block (4 files)

@@ -5,14 +5,16 @@ import { HeadingBlockSchema } from "./heading";
 import { BulletListBlockSchema } from "./bullet-list";
 import { NumberedListBlockSchema } from "./numbered-list";
 import { CalloutBlockSchema } from "./callout";
+import { KpiCardsBlockSchema } from "./kpi-cards";
 
-/** Discriminated union of all implemented block types (grows with T-29+). */
+/** Discriminated union of all implemented block types (grows with T-30+). */
 export const BlockSchema = z.discriminatedUnion("type", [
   ProseBlockSchema,
   HeadingBlockSchema,
   BulletListBlockSchema,
   NumberedListBlockSchema,
   CalloutBlockSchema,
+  KpiCardsBlockSchema,
 ]);
 
 export type Block = z.infer<typeof BlockSchema>;
