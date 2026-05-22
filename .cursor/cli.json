@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "deny": [
+      "Shell(rm)",
+      "Shell(rm:*)",
+      "Shell(git push:--force*)",
+      "Shell(git push:-f*)",
+      "Shell(git push:*--force*)",
+      "Shell(git commit:--amend*)",
+      "Shell(git commit:--no-verify*)",
+      "Shell(git commit:--no-gpg-sign*)",
+      "Shell(git add:-A*)",
+      "Shell(git add:--all*)",
+      "Shell(git add:.*)",
+      "Shell(git reset:--hard*)",
+      "Shell(git clean:*)",
+      "Shell(git checkout:--*)"
+    ]
+  }
+}

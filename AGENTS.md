@@ -65,6 +65,7 @@ If the brief and the memo conflict, the memo's §2 principle and §3 requirement
 ## Reference reading (consult as needed)
 
 ### Specifications
+
 - [docs/TYPES.md](docs/TYPES.md) — every shared TypeScript type lives here. No type is defined twice.
 - [docs/TASKS.md](docs/TASKS.md) — atomic backlog. Use task IDs (`T-NN`) in commit messages and PRs.
 - [docs/BLOCK_IMPLEMENTATION_GUIDE.md](docs/BLOCK_IMPLEMENTATION_GUIDE.md) — copy-pattern for the 15 blocks.
@@ -76,15 +77,18 @@ If the brief and the memo conflict, the memo's §2 principle and §3 requirement
 - [docs/UI_LIBRARY.md](docs/UI_LIBRARY.md) — wireframe + state model for the doc library.
 
 ### Worked code (copy these patterns; do not invent new ones)
+
 - [reference/primitives/](reference/primitives/) — block-primitives. **Foundation — every block depends on these.**
 - [reference/callout/](reference/callout/) — the canonical simple block (4-file pattern).
 - [reference/chart/](reference/chart/) — second worked block introducing cross-field schema, atom nodes, JSON-encoded payload, side panel, SSR render path.
 - [reference/mapping/](reference/mapping/) — top-level DocModel ⇄ editor orchestrator with losslessness invariant.
 
 ### Drop-in scaffolding
+
 - [starter/](starter/) — pinned configs for `npm init`, Tauri 2.x setup, ESLint, Prettier, Vitest.
 
 ### Data specs
+
 - [blocks.catalogue.yaml](blocks.catalogue.yaml) — the 15 pre-built block specs.
 - [brand.example.yaml](brand.example.yaml) — brand-token reference shape.
 - [examples/](examples/) — valid + invalid YAML/JSON fixtures (use as test inputs and few-shot LLM context).
@@ -96,7 +100,7 @@ code for any new feature, milestone, or refactor:
 
 1. Draft the plan.
 2. Invoke `grill-me` to stress-test it — resolve every branch of the decision
-   tree before implementation begins.
+  tree before implementation begins.
 3. Only after the grilling settles should code land.
 
 This applies to anything bigger than a one-file edit or a typo fix.
@@ -108,16 +112,16 @@ defaults to halting cleanly when something is wrong rather than charging ahead.
 
 ### Slash commands
 
-- **`/next-task`** — one fire of the loop. Reads `docs/TASKS.md`, picks the
-  next eligible task, implements + tests + global-gates + commits + pushes,
-  then continues to the next task. Runs until a halt rule trips or
-  `ALL DONE`. Spec: [.claude/commands/next-task.md](.claude/commands/next-task.md).
-- **`/status`** — read-only snapshot of loop state, recent commits, open
-  blockers, CI status. Safe to run anytime. Spec:
-  [.claude/commands/status.md](.claude/commands/status.md).
-- **`/skip T-NN <reason>`** — permanently mark a task as deliberately not
-  doing. Treated like `[x]` for dependency-eligibility. Spec:
-  [.claude/commands/skip.md](.claude/commands/skip.md).
+- `**/next-task`** — one fire of the loop. Reads `docs/TASKS.md`, picks the
+next eligible task, implements + tests + global-gates + commits + pushes,
+then continues to the next task. Runs until a halt rule trips or
+`ALL DONE`. Spec: [.claude/commands/next-task.md](.claude/commands/next-task.md).
+- `**/status`** — read-only snapshot of loop state, recent commits, open
+blockers, CI status. Safe to run anytime. Spec:
+[.claude/commands/status.md](.claude/commands/status.md).
+- `**/skip T-NN <reason>**` — permanently mark a task as deliberately not
+doing. Treated like `[x]` for dependency-eligibility. Spec:
+[.claude/commands/skip.md](.claude/commands/skip.md).
 
 To drive the loop autonomously, in Claude Code:
 
@@ -133,20 +137,22 @@ Markers are placed as a **suffix on the task header line**, between the task ID 
 ### T-NN [ ] · Title goes here
 ```
 
-| Marker | Meaning |
-|---|---|
-| `[ ]` | Not started — eligible when all `Depends-on:` are `[x]` or `[skip]` |
-| `[~]` | In progress (current invocation); leftover from a crashed prior fire is auto-reset |
-| `[x]` | Done |
-| `[?]` | Needs human input — counts toward halt rules |
-| `[!]` | Waiting on external dep — doesn't halt; auto-promotes to `[?]` after 3 fires |
-| `[skip]` | Deliberately not doing |
-| `[GATE FAILED]` | On milestone header — halts the loop |
+
+| Marker          | Meaning                                                                            |
+| --------------- | ---------------------------------------------------------------------------------- |
+| `[ ]`           | Not started — eligible when all `Depends-on:` are `[x]` or `[skip]`                |
+| `[~]`           | In progress (current invocation); leftover from a crashed prior fire is auto-reset |
+| `[x]`           | Done                                                                               |
+| `[?]`           | Needs human input — counts toward halt rules                                       |
+| `[!]`           | Waiting on external dep — doesn't halt; auto-promotes to `[?]` after 3 fires       |
+| `[skip]`        | Deliberately not doing                                                             |
+| `[GATE FAILED]` | On milestone header — halts the loop                                               |
+
 
 Each task carries two distinct dependency-style fields:
 
-- **`Depends-on:`** — comma-separated task IDs (`T-NN`) or `none`. Controls eligibility.
-- **`Reads:`** — file paths, doc references, and `D-NN` decision references the task must consult during implementation. No eligibility role.
+- `**Depends-on:**` — comma-separated task IDs (`T-NN`) or `none`. Controls eligibility.
+- `**Reads:**` — file paths, doc references, and `D-NN` decision references the task must consult during implementation. No eligibility role.
 
 The old single `Inputs:` field is deprecated; do not introduce it on new tasks.
 
@@ -170,12 +176,12 @@ the human resolves the blocker, the next fire auto-resumes.
 1. Open `STATUS.md` (auto-regenerated on every fire).
 2. If state is `RUNNING` or `ALL_DONE` → nothing to do.
 3. If state ends in `*HALT` / `*FAILED`:
-   - Read the "What needs your attention" section.
-   - Open `BLOCKERS.md` for full detail on each blocker.
-   - Fix the root cause; edit the relevant marker in `docs/TASKS.md` from
-     `[?]` back to `[ ]`.
-   - Append a `**Resolved:**` line to the BLOCKERS.md entry.
-   - The next loop fire (within 45 min) resumes autonomously.
+  - Read the "What needs your attention" section.
+  - Open `BLOCKERS.md` for full detail on each blocker.
+  - Fix the root cause; edit the relevant marker in `docs/TASKS.md` from
+  `[?]` back to `[ ]`.
+  - Append a `**Resolved:`** line to the BLOCKERS.md entry.
+  - The next loop fire (within 45 min) resumes autonomously.
 
 ### Loop configuration
 
@@ -190,13 +196,38 @@ loop:
 
 Pick the right combination in your chat app before launching `/loop`:
 
-| Tier | Use for | Claude Code | Cursor (Composer) | Codex / ChatGPT |
-|---|---|---|---|---|
-| **Default** (~90% of tasks) | Mechanical block work, schema, renderers, mapping | Sonnet 4.6 + **high** | Sonnet 4.6 + **max thinking** | GPT-5 + "Think harder" |
-| **Escalation** (~10%, hard tasks) | Setup AI pipeline (T-41–T-49), watchdog (T-46b), cost ledger (T-67, T-72), perf benchmarks (T-89c, T-89d), retry of any `[?]` task | Opus 4.7 + **high** (xhigh after failed retry) | Opus 4.7 + **max thinking** | GPT-5 Pro + "Think harder" |
-| **Avoid** | This protocol is too detailed for these | Sonnet medium · Haiku | Composer 1 · Cursor "fast" · Auto | GPT-4o · GPT-5 low |
 
-Full guidance is in [`.claude/commands/next-task.md`](.claude/commands/next-task.md) under "Model and effort tier." The loop self-reports its tier in `STATUS.md` and emits `tier-mismatch` advisories for escalation tasks running on the default tier — informative, not blocking.
+| Tier                              | Use for                                                                                                                            | Claude Code                                    | Cursor (Composer) | Codex / ChatGPT    |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ----------------- | ------------------ |
+| **Default** (~90% of tasks)       | Mechanical block work, schema, renderers, mapping                                                                                  | Sonnet 4.6 + **high**                          | Auto              | GPT-5.5 High       |
+| **Escalation** (~10%, hard tasks) | Setup AI pipeline (T-41–T-49), watchdog (T-46b), cost ledger (T-67, T-72), perf benchmarks (T-89c, T-89d), retry of any `[?]` task | Opus 4.7 + **high** (xhigh after failed retry) | GPT-5.5 xHigh     | GPT-5.5 xHigh      |
+| **Avoid**                         | This protocol is too detailed for these                                                                                            | Sonnet medium · Haiku                          | Composer 1        | GPT-4o · GPT-5 low |
+
+
+Full guidance is in `[.claude/commands/next-task.md](.claude/commands/next-task.md)` under "Model and effort tier." The loop self-reports its tier in `STATUS.md` and emits `tier-mismatch` advisories for escalation tasks running on the default tier — informative, not blocking.
+
+### Cursor auto-run (allowlist — no terminal deny-list UI)
+
+Cursor does **not** expose a terminal **deny list** in Settings. Auto-run uses an **allowlist**: only listed command prefixes auto-run without approval; everything else prompts (or runs sandboxed in **Allowlist (with Sandbox)** mode).
+
+**Settings path:** **Cursor Settings → Agents → Auto-Run** (and **Protection** toggles on the same page).
+
+| Control | Purpose |
+| --- | --- |
+| **Auto-Run mode** | `Allowlist` or `Allowlist (with Sandbox)` for `/next-task` |
+| **Command Allowlist** | Safe prefixes: `npm`, `npx`, `tsc`, `vitest`, `eslint`, `prettier`, `cargo`, `bash scripts/`, `gh`, specific `git` subcommands — avoid bare `git` if you want push/commit gated |
+| **File-Deletion Protection** | On — blocks automatic deletes |
+| **Dotfile / External-File Protection** | On as needed |
+
+**Forbidden commands** for this repo (enforced three ways):
+
+1. **`.cursor/cli.json`** — `permissions.deny` (`Shell(...)` tokens; deny beats allow)
+2. **`.cursor/rules/autonomous-loop-terminal-safety.mdc`** — agent must not run them
+3. **Pre-commit hook** — blocks bad commits even if a command slipped through
+
+Do **not** add `git push --force`, `git commit --amend`, `--no-verify`, or `git add -A` / `git add .` to the IDE allowlist.
+
+Optional global file (overrides in-app terminal allowlist when set): `~/.cursor/permissions.json` — see [Cursor permissions.json](https://cursor.com/docs/reference/permissions).
 
 ### Hard rules the loop will never violate
 
@@ -212,10 +243,10 @@ Full guidance is in [`.claude/commands/next-task.md`](.claude/commands/next-task
 
 ### Pre-commit hook
 
-`scripts/verify-task-commit.sh` runs as the pre-commit hook on `main` and `bakeoff/*` branches. It enforces:
+`scripts/verify-task-commit.sh` runs as the pre-commit hook on `main` and `bakeoff/`* branches. It enforces:
 
 - Loop-managed files (`docs/TASKS.md`, `STATUS.md`, `BLOCKERS.md`) are staged together when any of them is mutated.
-- Only files in the static allow-list may be staged outside the current task's declared `Outputs:`. See [`.claude/commands/next-task.md`](.claude/commands/next-task.md) for the allow-list.
+- Only files in the static allow-list may be staged outside the current task's declared `Outputs:`. See `[.claude/commands/next-task.md](.claude/commands/next-task.md)` for the allow-list.
 - Marker transitions in `docs/TASKS.md` are well-formed (at most one `[ ]→[~]→[x]` or failure-path transition per commit).
 
 Install with: `bash scripts/install-hooks.sh` (also runs automatically from the loop's pre-flight #6).
@@ -246,6 +277,7 @@ rewrites common commands (`git`, `ls`, etc.) to save 60–90% on tokens. The
 Claude Code hook handles rewriting automatically; just run commands normally.
 
 Meta commands (run `rtk` directly):
+
 - `rtk gain` — token savings analytics
 - `rtk discover` — find missed savings opportunities
 - `rtk proxy <cmd>` — bypass filtering for debugging
@@ -254,31 +286,32 @@ Meta commands (run `rtk` directly):
 
 - **Greenfield.** No code/schema/config from prior prototypes.
 - **Open-source only.** No Tiptap Pro/Cloud, no paid SaaS. LLM is the sole
-  non-OSS component.
+non-OSS component.
 - **DocModel is canonical** (memo §2). Editor state and CRDT docs are
-  projections, never sources of truth.
+projections, never sources of truth.
 - **Closed block library.** 15 pre-built blocks + up to 10 AI-generated
-  per-consultancy blocks gated by the human-review pipeline in
-  `docs/SETUP_PIPELINE.md`. No off-catalogue block types.
+per-consultancy blocks gated by the human-review pipeline in
+`docs/SETUP_PIPELINE.md`. No off-catalogue block types.
 - **No telemetry.** Operational cost-tracking only, per D-32/D-34. The local
-  cost ledger stores cost-computation fields exclusively — never prompt
-  content, response content, or behavioral signal.
+cost ledger stores cost-computation fields exclusively — never prompt
+content, response content, or behavioral signal.
 - **Do not build** anything in memo §10 (think-cell clone, deck editor,
-  DOCX/PPTX import/export, v1 real-time collab, live-models platform).
+DOCX/PPTX import/export, v1 real-time collab, live-models platform).
 - **Demo Office files are reference only** — never parse or generate them
-  at runtime (the setup-time pipeline is the sole exception).
+at runtime (the setup-time pipeline is the sole exception).
 - **When uncertain, stop and ask.** Use `TBD` and flag it; do not invent brand
-  values, client content, or block types.
+values, client content, or block types.
 
 ## Working style
 
 - Build milestone-by-milestone. Do not start a milestone until the previous
-  one's acceptance criteria pass.
+one's acceptance criteria pass.
 - Work tasks from `docs/TASKS.md` in dependency order. Reference task IDs
-  (`T-NN`) in commit messages and PR titles.
+(`T-NN`) in commit messages and PR titles.
 - Prefer editing existing files over creating new ones.
 - Don't add features, abstractions, or error handling beyond what the task
-  requires.
+requires.
 - Default to no comments. Only write a comment when the *why* is non-obvious.
 - For any new block: copy the four-file pattern from `reference/callout/`.
-  Do not invent a new shape.
+Do not invent a new shape.
+
