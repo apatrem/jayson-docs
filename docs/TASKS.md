@@ -389,7 +389,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** renders ProseMirror JSON to HTML with marks (bold, italic, link, code, underline) applied; deterministic; SSR-compatible.
 - **est.** 4h
 
-### T-51 [ ] · Implement `DocumentRenderer`
+### T-51 [x] · Implement `DocumentRenderer`
 - **Depends-on:** T-50
 - **Reads:** none
 - **Outputs:** `src/renderer/DocumentRenderer.tsx` + tests

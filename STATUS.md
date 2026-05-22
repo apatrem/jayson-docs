@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T15:28:00Z
+**Last fire:** 2026-05-22T15:30:00Z
 **State:** RUNNING
 **Running on:** Cursor Composer at (effort unknown)
 
@@ -10,20 +10,20 @@
 
 ## Progress since the previous fire
 
-- ✅ T-50 completed (ProseRenderer acceptance tests; CI tsc-verify skip under Vitest)
+- ✅ T-50, T-51 completed (M2 renderer entry + sample-proposal end-to-end)
 
 ## Next eligible task
 
-T-51 · Implement `DocumentRenderer`
+T-52 · Set up Playwright for headless Chromium PDF export
 
 ## At a glance
 
-Total tasks: ~112   Done: 56   Open: ~56   Skipped: 1
+Total tasks: ~112   Done: 57   Open: ~55   Skipped: 1
 
 ## Recent commits
 
-be5e632 T-49: add setup:regenerate and setup:validate CLIs
+30a6e95 T-50: add ProseRenderer acceptance tests for M2
 
 ## CI status (origin/main)
 
-failure (timeouts on setup tests — addressed in this fire)
+pending (T-51 push)
