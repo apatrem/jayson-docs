@@ -206,18 +206,18 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 **Estimation guide:** simple blocks (heading, prose, image, divider) ~4h each. Medium (callout, bullet/numbered list, kpi-cards, timeline, team) ~6h. Complex (chart, table, risk-matrix, roadmap, diagram) ~10–12h.
 
-### T-23 [x] · Move `reference/primitives/` to `src/brand-tokens/` + `src/block-primitives/`
+### T-23 [x] · Copy `reference/primitives/` to `src/brand-tokens/` + `src/block-primitives/`
 - **Depends-on:** none
 - **Reads:** `reference/primitives/{BrandProvider,useBrandTokens,resolve,resolve-asset,ProseRenderer,block-primitives}.{ts,tsx}`
-- **Outputs:** files moved to production paths per `reference/primitives/README.md`; tests in `tests/primitives/`
-- **Acceptance:** `BrandProvider` provides tokens; `useBrandTokens` throws outside it; `resolveBrandToken` resolves direct + alias paths; `resolveAssetPath` accepts the two schemes and rejects `..`; `ProseRenderer` renders allowed marks and drops disallowed ones (no `dangerouslySetInnerHTML` anywhere); primitives consume brand tokens.
+- **Outputs:** files copied to production paths per `reference/primitives/README.md`; tests in `tests/primitives/`. **`reference/primitives/` is preserved** as the canonical pattern exemplar (siblings `reference/callout/` and `reference/chart/` keep the same role for their tasks); do not `git rm` the source.
+- **Acceptance:** `BrandProvider` provides tokens; `useBrandTokens` throws outside it; `resolveBrandToken` resolves direct + alias paths; `resolveAssetPath` accepts the two schemes and rejects `..`; `ProseRenderer` renders allowed marks and drops disallowed ones (no `dangerouslySetInnerHTML` anywhere); primitives consume brand tokens; the original `reference/primitives/` directory is unchanged after the task.
 - **est.** 3h
 
-### T-23b [ ] · Reference block: move `reference/callout/` to production paths
+### T-23b [ ] · Reference block: copy `reference/callout/` to production paths
 - **Depends-on:** T-23
 - **Reads:** `reference/callout/*`
-- **Outputs:** files moved to `src/schema/blocks/callout.ts`, `src/renderer/blocks/Callout.tsx`, `src/editor/nodes/CalloutNode.tsx`, `tests/blocks/callout.test.ts`; imports updated to clean paths
-- **Acceptance:** all five test layers pass; the reference's tests pass unmodified after path updates.
+- **Outputs:** files copied to `src/schema/blocks/callout.ts`, `src/renderer/blocks/Callout.tsx`, `src/editor/nodes/CalloutNode.tsx`, `tests/blocks/callout.test.ts`; imports updated to clean paths. **`reference/callout/` is preserved** as the worked exemplar that drivers consult when implementing the other 14 blocks (T-24..T-39).
+- **Acceptance:** all five test layers pass; the reference's tests pass unmodified after path updates; the original `reference/callout/` directory is unchanged after the task.
 - **est.** 2h
 
 ### T-24 [x] · Implement `prose` block (4 files)

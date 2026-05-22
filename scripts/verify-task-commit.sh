@@ -109,29 +109,48 @@ fi
 
 # ── Assertion 1b: loop commits must include STATUS.md regeneration ───────
 
-# Detect "is this a loop commit?" by looking for marker transitions in the
-# staged TASKS.md diff. Loop transitions involve markers other than the
-# initial [ ]: [~] / [x] / [?] / [!] / [skip]. A structural edit that only
-# changes [ ] (e.g., adding new tasks, splitting Inputs into Depends-on) is
-# not a loop commit and does not require STATUS.md regeneration.
+# Detect "is this a loop commit?" by looking for REAL marker transitions in
+# the staged TASKS.md diff. A real transition means the SAME task ID has a
+# different marker on the `-` and `+` lines. Pure text edits (e.g. renaming
+# "Move" → "Copy" in a task title) leave the marker unchanged and must NOT
+# trip this check — that's a structural edit, not a loop commit.
 #
-# Pattern matches lines added/removed of the form: `### T-NN [marker] ·`
-# where marker is one of the "in flight" or "terminal" markers, not [ ].
+# Method: extract `T-NN=marker` pairs from `-` and `+` lines separately,
+# then use comm to find pairs that exist on one side only (i.e., the marker
+# value changed for some task). Compound headers like `T-76 + T-77` are
+# treated as one task ID for this purpose.
 
 if is_staged "docs/TASKS.md" && ! is_staged "STATUS.md"; then
-  has_transition=$(git diff --cached -- docs/TASKS.md \
-    | grep -cE '^[+-]### T-[0-9]+[a-z]? \[(~|x|\?|!|skip)\] ·' || true)
+  # Extract task=marker pairs from removed and added lines. We deliberately
+  # match ALL markers (including `[ ]`) so the diff can correctly identify
+  # transitions in either direction.
+  old_pairs=$(git diff --cached -- docs/TASKS.md \
+    | grep -E '^-### T-[0-9]' \
+    | sed -E 's/^-### (T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)*) \[([^]]+)\] ·.*/\1=\3/' \
+    | sort -u)
+  new_pairs=$(git diff --cached -- docs/TASKS.md \
+    | grep -E '^\+### T-[0-9]' \
+    | sed -E 's/^\+### (T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)*) \[([^]]+)\] ·.*/\1=\3/' \
+    | sort -u)
 
-  if [[ "$has_transition" -gt 0 ]]; then
-    # Loop commit detected. Require STATUS.md to be staged AND differ from HEAD.
+  # comm -3 outputs lines unique to either side. After stripping the marker
+  # and uniqifying task IDs, the count is "tasks whose marker changed".
+  changed_tasks=$(comm -3 <(echo "$old_pairs") <(echo "$new_pairs") 2>/dev/null \
+    | sed -E 's/[[:space:]]+//g; s/=.*//' \
+    | sort -u \
+    | grep -c . || true)
+
+  if [[ "$changed_tasks" -gt 0 ]]; then
+    # Real loop transition. Require STATUS.md to be staged AND differ from HEAD.
     if git diff --quiet HEAD -- STATUS.md 2>/dev/null; then
-      fail "Loop commit detected (TASKS.md has a marker transition) but STATUS.md
-   was not regenerated. Per the loop's Step 6, every task commit must include
-   the regenerated STATUS.md. Run the regeneration, \`git add STATUS.md\`,
-   and retry."
+      fail "Loop commit detected ($changed_tasks task(s) with marker transitions)
+   but STATUS.md was not regenerated. Per Step 6, every task commit must
+   include the regenerated STATUS.md. Run the regeneration,
+   \`git add STATUS.md\`, and retry."
     fi
   fi
-  # Structural edits (only [ ] markers, or non-marker changes) are exempt.
+  # Pure title/Outputs/Reads edits leave the marker unchanged for every task
+  # and are exempt — those are structural spec edits, not loop commits.
 fi
 
 # ── Assertion 2: forbidden paths in the staged set ────────────────────────
