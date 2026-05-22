@@ -226,7 +226,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 ### T-25 [x] · Implement `heading` block (4 files)
 - **est.** 3h
 
-### T-26 [ ] · Implement `bullet-list` block (4 files)
+### T-26 [x] · Implement `bullet-list` block (4 files)
 - **est.** 5h
 
 ### T-27 [ ] · Implement `numbered-list` block (4 files)

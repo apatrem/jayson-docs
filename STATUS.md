@@ -10,16 +10,16 @@
 
 ## Next eligible task
 
-T-26 · Implement `bullet-list` block (4 files)
+T-27 · Implement `numbered-list` block (4 files)
 
 ## Progress since the previous fire
 
-- ✅ 1 task completed this fire: T-23b
-- Total done: 24 (21%)
+- ✅ 2 tasks completed this fire: T-23b, T-26
+- Total done: 25 (22%)
 
 ## Recent commits
 
-b4da0d2 Add ADR-0003: pre-commit hook invokes project-wide gates for code commits
+(pending T-26 push)
 
 ## CI status (origin/main)
 
