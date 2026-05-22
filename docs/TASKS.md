@@ -76,7 +76,7 @@ Foundation. Nothing else compiles until this is done.
 - **Acceptance:** `tree src setup tests fixtures generated-blocks templates` matches the BUILD_BRIEF layout.
 - **est.** 0.5h
 
-### T-07 [ ] · Add npm scripts
+### T-07 [x] · Add npm scripts
 - **Depends-on:** T-01, T-02, T-04, T-05
 - **Reads:** none
 - **Outputs:** updated `package.json` with: `dev`, `build`, `lint`, `test`, `validate`, `export:pdf`, `tauri:dev`, `tauri:build`, `setup:scan-demos`, `setup:install`, `setup:validate`, `setup:regenerate`
