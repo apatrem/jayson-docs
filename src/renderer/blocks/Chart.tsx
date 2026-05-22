@@ -15,7 +15,7 @@
  * Production path: src/renderer/blocks/Chart.tsx
  */
 
-import { useEffect, useMemo, useRef, type FC } from "react";
+import { useEffect, useMemo, useRef, type FC, type ReactNode } from "react";
 import * as echarts from "echarts";
 import type { ECharts, EChartsOption } from "echarts";
 import { Caption } from "../../block-primitives";
@@ -35,16 +35,22 @@ export interface ChartProps {
   block: ChartBlock;
   /** When true, the chart renders into an SVG (used by PDF export). Default canvas. */
   renderer?: "canvas" | "svg";
+  /** Pre-rendered SVG from the PDF export pipeline (SSR path). */
+  staticSvg?: string;
 }
 
-export const Chart: FC<ChartProps> = ({ block, renderer = "canvas" }) => {
+export const Chart: FC<ChartProps> = ({
+  block,
+  renderer = "canvas",
+  staticSvg,
+}) => {
   const brand = useBrandTokens();
   const option = useMemo(() => getEChartsOption(block, brand), [block, brand]);
   const chartElRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ECharts | null>(null);
 
   useEffect(() => {
-    if (!chartElRef.current) return;
+    if (staticSvg || !chartElRef.current) return;
 
     const chart = echarts.init(chartElRef.current, undefined, { renderer });
     chartRef.current = chart;
@@ -60,9 +66,9 @@ export const Chart: FC<ChartProps> = ({ block, renderer = "canvas" }) => {
         chartRef.current = null;
       }
     };
-  }, [option, renderer]);
+  }, [option, renderer, staticSvg]);
 
-  return (
+  const figureShell = (title: ReactNode, body: ReactNode) => (
     <figure
       className="doc-keep-together"
       data-block-id={block.id}
@@ -86,22 +92,37 @@ export const Chart: FC<ChartProps> = ({ block, renderer = "canvas" }) => {
           marginBottom: brand.spacing.unit * 2,
         }}
       >
-        {block.title}
+        {title}
       </div>
-
-      <div
-        ref={chartElRef}
-        role="img"
-        aria-label={block.title}
-        style={{ height: 360, width: "100%" }}
-      />
-
-      {block.takeaway && (
+      {body}
+      {block.takeaway ? (
         <Caption align="left">
           <strong>So what:</strong> {block.takeaway}
         </Caption>
-      )}
+      ) : null}
     </figure>
+  );
+
+  if (staticSvg) {
+    return figureShell(
+      block.title,
+      <img
+        role="img"
+        aria-label={block.title}
+        src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(staticSvg)}`}
+        style={{ display: "block", width: "100%", height: "auto" }}
+      />,
+    );
+  }
+
+  return figureShell(
+    block.title,
+    <div
+      ref={chartElRef}
+      role="img"
+      aria-label={block.title}
+      style={{ height: 360, width: "100%" }}
+    />,
   );
 };
 

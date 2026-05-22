@@ -431,7 +431,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** A document with a Mermaid diagram exports to a PDF showing the rendered diagram (not raw Mermaid source).
 - **est.** 4h
 
-### T-57 [ ] · Add ECharts pre-rendering for PDF export
+### T-57 [x] · Add ECharts pre-rendering for PDF export
 - **Depends-on:** T-32, T-52
 - **Reads:** none
 - **Outputs:** updates to `src/export/pdf.ts`: detect `chart` blocks, pre-render via ECharts SSR to SVG, substitute into HTML

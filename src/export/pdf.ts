@@ -8,6 +8,8 @@ import { parse } from "yaml";
 import { DocumentRenderer, type DocumentModel } from "../renderer/DocumentRenderer";
 import type { BrandTokens } from "../schema/brand";
 import { BrandTokensSchema } from "../schema/brand";
+import * as echarts from "echarts";
+import { getEChartsOption } from "../renderer/blocks/Chart";
 import { renderMermaidSvg } from "../renderer/mermaid";
 import type { Block } from "../schema/blocks";
 import { validateDocModel } from "../schema/validate";
@@ -78,6 +80,26 @@ export async function preRenderDiagramSvgs(
   return svgs;
 }
 
+export function preRenderChartSvgs(
+  doc: DocumentModel,
+  brand: BrandTokens,
+): Record<string, string> {
+  const svgs: Record<string, string> = {};
+  for (const block of blocksInDocument(doc)) {
+    if (block.type !== "chart") continue;
+    const instance = echarts.init(null, null, {
+      renderer: "svg",
+      ssr: true,
+      width: 800,
+      height: 360,
+    });
+    instance.setOption(getEChartsOption(block, brand), true);
+    svgs[block.id] = instance.renderToSVGString();
+    instance.dispose();
+  }
+  return svgs;
+}
+
 export async function renderDocumentHtml(
   doc: DocumentModel,
   brand: BrandTokens,
@@ -86,6 +108,7 @@ export async function renderDocumentHtml(
   const sharedFolderPath = paths?.sharedFolderPath ?? repoRoot;
   const docFolderPath = paths?.docFolderPath ?? repoRoot;
   const diagramSvgs = await preRenderDiagramSvgs(doc, brand);
+  const chartSvgs = preRenderChartSvgs(doc, brand);
 
   const body = renderToStaticMarkup(
     createElement(DocumentRenderer, {
@@ -94,6 +117,7 @@ export async function renderDocumentHtml(
       sharedFolderPath,
       docFolderPath,
       diagramSvgs,
+      chartSvgs,
     }),
   );
 

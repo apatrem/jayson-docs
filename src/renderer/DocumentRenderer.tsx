@@ -34,6 +34,8 @@ export interface DocumentRendererProps {
   docFolderPath?: string;
   /** Mermaid SVG strings keyed by diagram block id (PDF export). */
   diagramSvgs?: Record<string, string>;
+  /** ECharts SVG strings keyed by chart block id (PDF export). */
+  chartSvgs?: Record<string, string>;
 }
 
 export const DocumentRenderer: FC<DocumentRendererProps> = ({
@@ -42,6 +44,7 @@ export const DocumentRenderer: FC<DocumentRendererProps> = ({
   sharedFolderPath = "/shared",
   docFolderPath = "/docs",
   diagramSvgs = {},
+  chartSvgs = {},
 }) => {
   const assetContext: AssetContext = {
     sharedFolderPath,
@@ -55,6 +58,7 @@ export const DocumentRenderer: FC<DocumentRendererProps> = ({
         doc={doc}
         assetContext={assetContext}
         diagramSvgs={diagramSvgs}
+        chartSvgs={chartSvgs}
       />
     </BrandProvider>
   );
@@ -64,7 +68,8 @@ const DocumentBody: FC<{
   doc: DocumentModel;
   assetContext: AssetContext;
   diagramSvgs: Record<string, string>;
-}> = ({ doc, assetContext, diagramSvgs }) => {
+  chartSvgs: Record<string, string>;
+}> = ({ doc, assetContext, diagramSvgs, chartSvgs }) => {
   const brand = useBrandTokens();
   const pageStyle: CSSProperties = {
     fontFamily: brand.typography.fonts.body.family,
@@ -84,6 +89,7 @@ const DocumentBody: FC<{
           section={section}
           assetContext={assetContext}
           diagramSvgs={diagramSvgs}
+          chartSvgs={chartSvgs}
         />
       ))}
     </article>
@@ -94,7 +100,8 @@ const DocumentSection: FC<{
   section: Section;
   assetContext: AssetContext;
   diagramSvgs: Record<string, string>;
-}> = ({ section, assetContext, diagramSvgs }) => {
+  chartSvgs: Record<string, string>;
+}> = ({ section, assetContext, diagramSvgs, chartSvgs }) => {
   const brand = useBrandTokens();
 
   return (
@@ -121,6 +128,7 @@ const DocumentSection: FC<{
           block={block}
           assetContext={assetContext}
           diagramSvgs={diagramSvgs}
+          chartSvgs={chartSvgs}
         />
       ))}
     </section>
@@ -131,10 +139,12 @@ function BlockView({
   block,
   assetContext,
   diagramSvgs,
+  chartSvgs,
 }: {
   block: Block;
   assetContext: AssetContext;
   diagramSvgs: Record<string, string>;
+  chartSvgs: Record<string, string>;
 }): ReactNode {
   switch (block.type) {
     case "prose":
@@ -153,8 +163,14 @@ function BlockView({
       return <Image block={block} assetContext={assetContext} />;
     case "table":
       return <Table block={block} />;
-    case "chart":
-      return <Chart block={block} />;
+    case "chart": {
+      const staticSvg = chartSvgs[block.id];
+      return staticSvg !== undefined ? (
+        <Chart block={block} staticSvg={staticSvg} />
+      ) : (
+        <Chart block={block} />
+      );
+    }
     case "timeline":
       return <Timeline block={block} />;
     case "roadmap":
