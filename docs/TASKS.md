@@ -48,7 +48,7 @@ Foundation. Nothing else compiles until this is done.
 - **Acceptance:** `npm run tauri:dev` opens the Vite app in a native window on macOS/Windows/Linux; `npm run tauri:build` produces an unsigned binary; all IPC command stubs registered (even if not yet implemented — they appear in the `generate_handler!` macro); `src-tauri/Cargo.lock` and at least one file in `src-tauri/icons/` are committed.
 - **est.** 2h (drop-in from `starter/` + stub registration; was 3h)
 
-### T-03 [ ] · Pin exact dependency versions
+### T-03 [x] · Pin exact dependency versions
 - **Depends-on:** none
 - **Reads:** none
 - **Outputs:** updated `package.json` with exact versions for the approved app/runtime, setup-only, and dev-only dependencies in `BUILD_BRIEF.md` §2
