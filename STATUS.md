@@ -1,33 +1,41 @@
-# Loop status — auto-generated; do not edit (bake-off variant)
+# Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T08:00:00Z
-**State:** BAKEOFF_COMPLETE
-**Driver branch:** bakeoff/cursor-v2
-**Running on:** Composer (Cursor auto) at (effort unknown)
+**Last fire:** 2026-05-22T11:39:00Z
+**State:** RUNNING
+**Running on:** Composer (Cursor Auto) at (effort unknown)
 **Halt reason:** —
 **Halted since:** —
 
 ---
 
-## Progress this fire
+## Loop is running cleanly — no action needed.
 
-- ✅ 5 tasks completed: T-01, T-02, T-03, T-04, T-05
+## Next eligible task
 
-## Bake-off scope (T-01..T-05)
+T-07 · Add npm scripts
 
-T-01: [x]
-T-02: [x]
-T-03: [x]
-T-04: [x]
-T-05: [x]
+## Progress since the previous fire
 
-## Recent commits (this branch)
+- ✅ 1 task completed this fire: T-06
+- ⚠ 0 tasks blocked this fire
+- ⏸ 0 tasks marked waiting this fire
+- ↩ 0 commits reverted this fire
 
-5e8f1a2 T-04: set up ESLint + Prettier + EditorConfig
-87a488c T-03: pin exact dependency versions
-a3c0e9c T-02: set up Tauri 2.x desktop shell
-04548c0 T-01: initialize repo and Vite + React + TypeScript app
+## At a glance
 
----
+Total tasks: 112   Done: 6 (5%)   Blocked: 0   Waiting: 0   Open: 106   Skipped: 0
 
-## Bake-off complete — ready for human comparison. See BAKEOFF.md for comparison rubric and `scripts/verify-bakeoff-v2.sh` for the binary checklist.
+## Recent commits
+
+15667d6 Document Cursor Auto tier and terminal safety for the task loop.
+1eb8869 Retire next-task-bakeoff.md after v2 validation
+712ef38 T-05: set up Vitest with one passing sample test
+7fc9830 T-04: set up ESLint + Prettier + EditorConfig
+33d9fa3 T-03: pin exact dependency versions
+0ad7b04 T-02: set up Tauri 2.x desktop shell
+7d8231d T-01: initialize repo and Vite + React + TypeScript app
+b2435dd Fix macOS BSD sed compatibility in verify-bakeoff-v2.sh assertion 2
+
+## CI status (origin/main)
+
+CI-poll skipped — gh returned empty (no runs or not configured)

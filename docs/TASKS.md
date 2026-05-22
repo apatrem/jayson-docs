@@ -69,7 +69,7 @@ Foundation. Nothing else compiles until this is done.
 - **Acceptance:** `npm test` runs and the sample test passes.
 - **est.** 0.5h
 
-### T-06 [ ] · Create the full folder structure (empty)
+### T-06 [x] · Create the full folder structure (empty)
 - **Depends-on:** none
 - **Reads:** `docs/BUILD_BRIEF.md`
 - **Outputs:** all directories from the BUILD_BRIEF, each with a `.gitkeep` or `README.md`
