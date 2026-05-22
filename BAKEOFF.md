@@ -129,6 +129,14 @@ WORKTREE_BASE=/tmp/bakeoff bash scripts/bakeoff-setup.sh
 
 ---
 
+## Regenerate the bake-off variant spec (required before drivers)
+
+`.claude/commands/next-task-bakeoff.md` is **not committed** in this repo — per decision Q7, it's retired after each bake-off generation completes. Before launching any driver, regenerate it by following the **Patches recipe for future bake-offs** at the bottom of this file. That recipe forks the current `.claude/commands/next-task.md`, applies 15 surgical patches to convert it to a local-only bake-off variant, and leaves the file at `.claude/commands/next-task-bakeoff.md` ready to use.
+
+Skip this step and the driver sections below will reference a file that doesn't exist.
+
+---
+
 ## Driver 1: Claude Code
 
 **Model + effort:** Sonnet 4.6 + thinking budget = high  
