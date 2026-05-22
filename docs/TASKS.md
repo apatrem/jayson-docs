@@ -253,7 +253,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **est.** 10h
 - **Note:** Wrap `@tiptap/extension-table` with a constrained custom node. Cells must be `ProseMirrorFragment`.
 
-### T-32 [ ] · Implement `chart` block (4 files + side panel)
+### T-32 [x] · Implement `chart` block (4 files + side panel)
 - **Depends-on:** none
 - **Reads:** `reference/chart/*`, `docs/BLOCK_IMPLEMENTATION_GUIDE.md` §3 (chart notes), ECharts docs
 - **Outputs:** `src/schema/blocks/chart.ts`, `src/renderer/blocks/Chart.tsx`, `src/editor/nodes/ChartNode.tsx`, `src/editor/panels/ChartDataPanel.tsx`, `tests/blocks/chart.test.ts`

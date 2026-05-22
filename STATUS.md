@@ -10,16 +10,16 @@
 
 ## Next eligible task
 
-T-32 · Implement `chart` block (4 files + side panel)
+T-34 · Implement `timeline` block (4 files)
 
 ## Progress since the previous fire
 
-- ✅ 1 task completed this fire: T-31
-- Total done: 31 (28%)
+- ✅ 2 tasks completed this fire: T-31, T-32
+- Total done: 33 (29%)
 
 ## Recent commits
 
-8aafc77 T-30: implement image block (4 files)
+1479bf7 T-31: implement table block (4 files)
 
 ## CI status (origin/main)
 

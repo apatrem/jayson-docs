@@ -8,8 +8,9 @@ import { CalloutBlockSchema } from "./callout";
 import { KpiCardsBlockSchema } from "./kpi-cards";
 import { ImageBlockSchema } from "./image";
 import { TableBlockDataSchema } from "./table";
+import { ChartBlockDataSchema } from "./chart";
 
-/** Discriminated union of all implemented block types (grows with T-32+). */
+/** Discriminated union of all implemented block types (grows with T-33+). */
 export const BlockSchema = z.discriminatedUnion("type", [
   ProseBlockSchema,
   HeadingBlockSchema,
@@ -19,6 +20,7 @@ export const BlockSchema = z.discriminatedUnion("type", [
   KpiCardsBlockSchema,
   ImageBlockSchema,
   TableBlockDataSchema,
+  ChartBlockDataSchema,
 ]);
 
 export type Block = z.infer<typeof BlockSchema>;
