@@ -13,6 +13,7 @@ export type NumberedListItem = z.infer<typeof NumberedListItemSchema>;
 export const NumberedListBlockSchema = BlockBaseSchema.extend({
   type: z.literal("numbered-list"),
   items: z.array(NumberedListItemSchema).min(1).max(12),
+  startAt: z.number().int().min(1).optional(),
 }).strict();
 
 export type NumberedListBlock = z.infer<typeof NumberedListBlockSchema>;

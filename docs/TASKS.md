@@ -170,7 +170,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** discriminated-union on `kind`; `kind: "document"` requires `sections`; `kind: "deck"` requires `slides`.
 - **est.** 1h
 
-### T-19 [ ] · Implement `validateDocModel` entry point
+### T-19 [x] · Implement `validateDocModel` entry point
 - **Depends-on:** T-18
 - **Reads:** `docs/TYPES.md` §11
 - **Outputs:** `src/schema/validate.ts` + tests using `examples/sample-proposal.yaml`, `examples/sample-deck.yaml`, and the 3 invalid fixtures

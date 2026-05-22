@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T14:12:00Z
+**Last fire:** 2026-05-22T14:15:00Z
 **State:** RUNNING
 **Running on:** Cursor Composer (effort unknown)
 
@@ -10,17 +10,21 @@
 
 ## Next eligible task
 
-T-19 · Implement `validateDocModel` entry point
+T-36 · Implement `risk-matrix` block (4 files)
+
+*(Override complete: T-17 → T-18 → T-19 landed; normal lowest-numbered-eligible policy resumes.)*
 
 ## Progress since the previous fire
 
-- ✅ T-18 completed: DocModelSchema discriminated union on kind
-- Total done: 38 (34%) · skipped: 1
+- ✅ T-17: SectionSchema + SlideSchema
+- ✅ T-18: DocModelSchema discriminated union
+- ✅ T-19: validateDocModel + fixture tests
+- Total done: 40 (36%) · skipped: 1
 
 ## Recent commits
 
+8799dfa T-18: implement DocModelSchema (top-level)
 a6d4487 T-17: implement SectionSchema and SlideSchema
-647f3a4 Step 1 PICK: halt on pointer-stub and malformed-task entries
 
 ## CI status (origin/main)
 

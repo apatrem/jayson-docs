@@ -11,6 +11,7 @@ import { TableBlockDataSchema } from "./table";
 import { ChartBlockDataSchema } from "./chart";
 import { TimelineBlockSchema } from "./timeline";
 import { RoadmapBlockDataSchema } from "./roadmap";
+import { TeamBlockSchema } from "./team";
 
 /** Discriminated union of all implemented block types (grows with T-36+). */
 export const BlockSchema = z.discriminatedUnion("type", [
@@ -25,6 +26,7 @@ export const BlockSchema = z.discriminatedUnion("type", [
   ChartBlockDataSchema,
   TimelineBlockSchema,
   RoadmapBlockDataSchema,
+  TeamBlockSchema,
 ]);
 
 export type Block = z.infer<typeof BlockSchema>;
