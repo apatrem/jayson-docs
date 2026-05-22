@@ -188,7 +188,23 @@ If no candidate task exists:
 - If no `[ ]` tasks remain AND no `[?]`/`[!]` remain: stop with `ALL DONE`. Regenerate STATUS.md. Commit + push.
 - If `[?]`/`[!]` remain but no eligible `[ ]`: halt to `BLOCKED-NO-ELIGIBLE`. Regenerate STATUS.md. Commit + push.
 
-If a candidate task exists and halt rules pass:
+**Well-formedness check before claiming:**
+
+Before changing the candidate's marker, verify the entry is actionable. The check exists because the T-33 audit showed drivers silently skip over malformed entries (no Outputs → "nothing to do" → moves to T-34 without halting), which drifts from the "lowest-numbered eligible" rule invisibly.
+
+The candidate entry is **actionable** if AT LEAST ONE of these holds:
+
+1. **It has an explicit `**Outputs:**` line.** (Standard case; covers ~95% of tasks.)
+2. **The title ends with `(N files)`** (e.g., `Implement \`divider\` block (4 files)`). This is the terse-block pattern; the driver inherits the 4-file shape from `reference/callout/`: schema + renderer + TipTap node + test, plus a `Scope expansion:` union update.
+
+The candidate entry is **NOT actionable** (halt to `[?]`) if any of these hold:
+
+- **Title contains `see T-NN`, `(reference)`, or `✅` as a pointer to other work** AND the entry has no `Outputs:`. This is a pointer-stub left over when work was deferred or reassigned. Mark `[?]` with reason `pointer-stub: title points at T-NN; should be [skip] if redundant, or needs proper fields if real work`. Append a BLOCKERS.md entry asking the human to either `/skip` the task or fill in `Depends-on:` + `Outputs:` + `Acceptance:`.
+- **The entry has no `Outputs:` AND no terse-pattern title.** Mark `[?]` with reason `malformed-task: no Outputs declared and title doesn't match the terse-block pattern (N files)`. Same BLOCKERS.md treatment.
+
+Silent skipping is the worst outcome — it leaves the marker `[ ]` so future fires keep re-encountering the same anomaly, while no human ever sees a halt. The explicit `[?]` halt forces a one-line decision from the human.
+
+If the entry IS actionable:
 - Change its marker from `[ ]` to `[~]` in `docs/TASKS.md` (suffix on the header line: `### T-NN [~] · Title`).
 - **Do NOT commit yet.** The marker change lives in the working tree until step 6 bundles it with the task's `Outputs:` and the regenerated STATUS.md.
 
