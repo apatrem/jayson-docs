@@ -39,6 +39,11 @@ npm run setup:install \
   --thinking-provider anthropic \
   --thinking-model claude-opus-4-7 \
   --accept-privacy-notice
+
+  # openai-compatible / local providers also require --{fast,thinking}-base-url:
+  #   --fast-provider openai-compatible \
+  #   --fast-base-url https://api.lightning.ai/v1 \
+  #   --fast-model meta-llama/Meta-Llama-3.1-70B-Instruct
 ```
 
 ---
@@ -160,7 +165,13 @@ The derived `initials` field is auto-computed from the first letter of each spac
 │     (1) OpenAI                                                          │
 │     (2) Anthropic (default)                                             │
 │     (3) Azure OpenAI                                                    │
+│     (4) Mistral                                                         │
+│     (5) OpenAI-compatible (lightning.ai, OpenRouter, Together, Groq, …) │
+│     (6) Local (Ollama / llama.cpp, OpenAI-compatible endpoint)          │
 │   Choice [2]: _                                                         │
+│                                                                         │
+│   [if 5 or 6] Base URL:                                                 │
+│     e.g. https://api.lightning.ai/v1   or   http://localhost:11434/v1   │
 │                                                                         │
 │   Model name:                                                           │
 │     [claude-haiku-4]   (suggested default for Anthropic fast)           │
@@ -170,7 +181,12 @@ The derived `initials` field is auto-computed from the first letter of each spac
 │     (1) OpenAI                                                          │
 │     (2) Anthropic (default)                                             │
 │     (3) Azure OpenAI                                                    │
+│     (4) Mistral                                                         │
+│     (5) OpenAI-compatible                                               │
+│     (6) Local                                                           │
 │   Choice [2]: _                                                         │
+│                                                                         │
+│   [if 5 or 6] Base URL: _                                               │
 │                                                                         │
 │   Model name:                                                           │
 │     [claude-opus-4-7]  (suggested default for Anthropic thinking)       │
@@ -184,10 +200,14 @@ The derived `initials` field is auto-computed from the first letter of each spac
 | OpenAI | `gpt-4.1-mini` | `gpt-5` |
 | Anthropic | `claude-haiku-4` | `claude-opus-4-7` |
 | Azure OpenAI | (user-provided deployment name) | (user-provided deployment name) |
+| Mistral | `mistral-small-latest` | `mistral-large-latest` |
+| OpenAI-compatible | (user-provided; e.g. lightning.ai model id) | (user-provided) |
+| Local | (user-provided; e.g. `llama3.1:8b`) | (user-provided; e.g. `llama3.1:70b`) |
 
 **Validation:**
-- Provider must be one of the three.
+- Provider must be one of the six.
 - Model name: non-empty, no whitespace.
+- `openai-compatible` and `local` require a base URL — must parse as a valid URL.
 
 ### Step 5 — API keys (entered into OS keychain, never written to disk)
 
@@ -207,12 +227,15 @@ The derived `initials` field is auto-computed from the first letter of each spac
 ```
 
 **Validation:**
-- Key must be non-empty.
-- Key format check (per provider):
+- Key must be non-empty (except `local`, where the key may be empty if the endpoint doesn't require auth — wizard accepts an empty value only when provider is `local`).
+- Key format check (per provider; performed by the adapter's `validateKeyFormat`, T-60):
   - Anthropic: starts with `sk-ant-`.
   - OpenAI: starts with `sk-`.
   - Azure: no fixed prefix; skip prefix check.
-- A test call is made: the wizard calls the provider's "list models" or equivalent low-cost endpoint to verify the key works. **If it fails, the wizard prompts to re-enter** with the error message.
+  - Mistral: no fixed prefix; skip prefix check.
+  - OpenAI-compatible: no fixed prefix (varies per vendor — lightning.ai, OpenRouter, etc.); skip prefix check.
+  - Local: skip prefix check; empty allowed.
+- A test call is made: the wizard calls the provider's "list models" or equivalent low-cost endpoint (for `openai-compatible` and `local`, this is `GET {baseUrl}/models`) to verify the key + endpoint work. **If it fails, the wizard prompts to re-enter** with the error message.
 
 **Reuse:** if the user presses Enter on the thinking-model key prompt, the fast-model key is reused (same provider). If providers differ, no reuse — both keys required.
 

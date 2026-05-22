@@ -660,7 +660,7 @@ export const CostLedgerRowSchema = z.object({
   id: z.string().uuid(),                            // row PK
   timestamp: z.string().datetime(),
   model: z.string(),                                // e.g. "claude-opus-4-7"
-  provider: z.string(),                             // "anthropic" | "openai" | ...
+  provider: z.string(),                             // adapter key from LlmEndpointSchema; open string so historical rows survive adding new providers
   inputTokens: z.number().int().nonnegative(),
   outputTokens: z.number().int().nonnegative(),
   cachedTokens: z.number().int().nonnegative(),
@@ -700,6 +700,35 @@ export interface CostSummary {
 import { z } from "zod";
 
 /**
+ * One LLM endpoint (fast or thinking). The set of providers is open —
+ * adding a new one is a new adapter file (see T-60), not a schema change.
+ *
+ * `provider` is the adapter key. `openai-compatible` covers any vendor
+ * exposing an OpenAI-shaped Chat Completions API (lightning.ai, OpenRouter,
+ * Together, Groq, vLLM, Anyscale, …). `local` is reserved for fully
+ * on-machine inference (e.g. Ollama, llama.cpp direct).
+ *
+ * `baseUrl` is required for `openai-compatible` and `local`, optional for
+ * `azure` (resource endpoint), ignored by `openai`, `anthropic`, `mistral`
+ * (validated by the adapter, not this schema, to keep it open).
+ */
+export const LlmEndpointSchema = z.object({
+  provider: z.enum([
+    "openai",
+    "anthropic",
+    "azure",
+    "mistral",
+    "openai-compatible",
+    "local",
+  ]),
+  model: z.string(),                                // e.g. "claude-opus-4-7", "mistral-large-latest", or a deployment name
+  keychainEntry: z.string(),                        // name of OS keychain entry holding the API key
+  baseUrl: z.string().url().optional(),             // see comment above; required for openai-compatible + local
+}).strict();
+
+export type LlmEndpoint = z.infer<typeof LlmEndpointSchema>;
+
+/**
  * The local config file written by the install script. Lives at the OS
  * config path (e.g. ~/Library/Application Support/DocSystem/config.yaml).
  *
@@ -720,16 +749,8 @@ export const AppConfigSchema = z.object({
   }),
 
   llm: z.object({
-    fastModel: z.object({
-      provider: z.enum(["openai", "anthropic", "azure", "local"]),
-      model: z.string(),
-      keychainEntry: z.string(),                    // name of OS keychain entry holding the API key
-    }),
-    thinkingModel: z.object({
-      provider: z.enum(["openai", "anthropic", "azure", "local"]),
-      model: z.string(),
-      keychainEntry: z.string(),
-    }),
+    fastModel: LlmEndpointSchema,
+    thinkingModel: LlmEndpointSchema,
   }),
 
   costLimits: z.object({
@@ -737,6 +758,15 @@ export const AppConfigSchema = z.object({
     monthlyUsdSoft: z.number().positive().default(50),  // warning at 80%
     monthlyUsdHard: z.number().positive().default(50),  // hard stop
     allowAdminOverride: z.boolean().default(true),
+    // Used by the cost-ledger (T-68) when a `${provider}:${model}` lookup
+    // misses both the pricing table and the adapter's default. Keeps cost
+    // tracking honest for unknown models on openai-compatible / local
+    // endpoints without forcing a code change. Conservative defaults.
+    fallbackPricingPer1k: z.object({
+      inputUsd: z.number().nonnegative().default(0.01),
+      cachedInputUsd: z.number().nonnegative().default(0.001),
+      outputUsd: z.number().nonnegative().default(0.03),
+    }).default({}),
   }),
 
   editor: z.object({

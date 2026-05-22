@@ -460,17 +460,20 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ### T-60 [ ] · Implement provider-agnostic LLM client
 - **Depends-on:** none
-- **Reads:** `docs/TYPES.md` §10 AppConfig
-- **Outputs:** `src/llm/client.ts` with adapters for `openai`, `anthropic` (and stubs for `azure`, `local`)
-- **Acceptance:** A `LLMClient.call(modelKind, request)` routes to the configured provider; API key fetched from OS keychain via Tauri command.
-- **est.** 6h
+- **Reads:** `docs/TYPES.md` §10 (`LlmEndpointSchema`, `AppConfig`)
+- **Outputs:** `src/llm/client.ts` defining a `Provider` interface (`call`, `parseUsage`, `cacheCapability: "explicit" | "automatic" | "none"`, `validateKeyFormat`); one adapter file per provider in `src/llm/providers/{openai,anthropic,azure,mistral,openai-compatible,local}.ts`. The `openai-compatible` adapter accepts a `baseUrl` and covers lightning.ai, OpenRouter, Together, Groq, vLLM, Anyscale, etc.; `local` accepts a `baseUrl` for Ollama / llama.cpp servers. Adding a new vendor is a new adapter file — no edits to `client.ts` or schemas.
+- **Acceptance:** `LLMClient.call(modelKind, request)` routes by `provider` from `LlmEndpointSchema`; API key fetched from OS keychain via Tauri command; `openai`, `anthropic`, `mistral`, and `openai-compatible` are fully implemented; `azure` and `local` may be stubs that throw `NotImplemented` but are registered in the dispatch table. A unit test asserts that registering a fake `"acme"` adapter only requires adding one file + extending the `LlmEndpointSchema` enum.
+- **est.** 8h (up from 6h: real `mistral` + `openai-compatible` adapters, plus the interface seam)
 
-### T-61 [ ] · Implement prompt caching (Anthropic format) and cached-token tracking
+### T-61 [ ] · Implement prompt caching as a per-adapter capability
 - **Depends-on:** T-60
 - **Reads:** D-13
-- **Outputs:** updates to `src/llm/client.ts` with `cache_control` markers on system, schema, brand, doc context
-- **Acceptance:** A second call within the cache TTL returns a high `cachedTokens` value in the response; cost computation reflects the cache discount.
-- **est.** 3h
+- **Outputs:** updates to each adapter in `src/llm/providers/`. Adapters declare `cacheCapability`:
+  - `"explicit"` (Anthropic, Mistral on supporting models) — emit `cache_control` / equivalent markers on systemPrompt, schemaContext, brandTokensContext, docContext per D-13's caching list.
+  - `"automatic"` (OpenAI, OpenAI-compatible endpoints that honour OpenAI's automatic prefix caching) — emit no markers; rely on the vendor's automatic cache and read `usage.prompt_tokens_details.cached_tokens` (or equivalent).
+  - `"none"` (local, providers without caching) — return `cachedTokens: 0`; cost computation treats all input tokens as uncached.
+- **Acceptance:** A second call within the cache TTL returns a high `cachedTokens` value for `explicit` and `automatic` adapters; the value is `0` for `"none"` adapters without failing the call. Cost computation reflects the cache discount when present and falls back to full-rate input pricing otherwise. A unit test exercises one provider per capability bucket.
+- **est.** 4h (up from 3h: per-capability branches + the automatic-cache `usage` parsing for OpenAI-shaped responses)
 
 ### T-62 [ ] · Implement outline-driven generation (initial doc creation)
 - **Depends-on:** T-60
@@ -517,9 +520,9 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 ### T-68 [ ] · Implement cost-ledger insert on every LLM call
 - **Depends-on:** T-60, T-67
 - **Reads:** none
-- **Outputs:** updates to `src/llm/client.ts` to insert a row after each call
-- **Acceptance:** After a successful LLM call, exactly one row appears in the ledger with the correct token counts and computed cost. Failed calls also insert a row (with zero output tokens).
-- **est.** 2h
+- **Outputs:** updates to `src/llm/client.ts` to insert a row after each call. Cost computation is table-driven: `src/llm/pricing.ts` exports a `Pricing` map keyed by `${provider}:${model}` with `{ inputPer1k, cachedInputPer1k, outputPer1k }`. When a `${provider}:${model}` key is missing, fall back to an adapter-declared default (or, last resort, a configured `fallbackPricingPer1k` in `AppConfig`) and tag the row with `pricingSource: "lookup" | "adapter-default" | "config-fallback"` in a single non-content column for later analytics. No call ever fails because pricing is unknown.
+- **Acceptance:** After a successful LLM call, exactly one row appears in the ledger with the correct token counts and computed cost. Failed calls also insert a row (with zero output tokens). A call to an unpriced `openai-compatible:lightning/llama-3.1-70b` model still inserts a row using the configured fallback, with `pricingSource` set accordingly. Adding a new model is a one-line entry in `pricing.ts`.
+- **est.** 3h (up from 2h: pricing table + fallback seam)
 
 ### T-69 [ ] · Implement monthly limit enforcement
 - **Depends-on:** T-67
