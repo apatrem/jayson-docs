@@ -96,11 +96,12 @@ check_2_five_task_commits() {
 
   for n in 01 02 03 04 05; do
     # Pull the marker from the line `### T-${n} [marker] · Title`.
+    # Uses [^]]+ for portability — macOS BSD sed doesn't support {n,m}? non-greedy.
     local marker
     marker=$(echo "$tasks_md" \
              | grep -E "^### T-${n}( \+ T-[0-9]+[a-z]?)* \[" \
              | head -1 \
-             | sed -E 's/^### T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)* \[(.{1,5}?)\] ·.*/\2/')
+             | sed -E 's/^### T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)* \[([^]]+)\] ·.*/\2/')
 
     if [[ "$marker" == "x" ]]; then
       completed=$((completed + 1))
