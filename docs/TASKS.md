@@ -114,7 +114,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** `StableIdSchema` accepts UUIDs and readable kebab-case IDs like `"b1-prose-01"`; rejects empty strings, spaces, and path-like IDs. `AssetPathSchema` accepts `"assets/x.jpg"` and `"$brand:logo.primary"`; rejects `"/abs/path"`, `"../foo"`, and `"http://..."` with clear error messages.
 - **est.** 1.5h
 
-### T-11 [ ] · Implement `ProseMirrorFragmentSchema`
+### T-11 [x] · Implement `ProseMirrorFragmentSchema`
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` §3c
 - **Outputs:** `src/schema/prosemirror-fragment.ts` + tests
