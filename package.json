@@ -18,8 +18,8 @@
     "tauri:build": "tauri build",
     "setup:scan-demos": "tsx src/setup/scan-demos.ts",
     "setup:install": "node scripts/setup-install.mjs",
-    "setup:validate": "node scripts/setup-validate.mjs",
-    "setup:regenerate": "node scripts/setup-regenerate.mjs"
+    "setup:validate": "tsx src/setup/validate.ts",
+    "setup:regenerate": "tsx src/setup/regenerate.ts"
   },
   "dependencies": {
     "@tauri-apps/api": "2.0.3",

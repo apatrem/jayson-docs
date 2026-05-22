@@ -363,7 +363,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** `npm run setup:scan-demos -- --input tests/fixtures/setup-demos --output /tmp/setup-output` produces all expected outputs (brand.draft.yaml, catalogue-diff.json, generated-blocks/pending/, setup-report.md).
 - **est.** 3h
 
-### T-49 [ ] · Implement the `setup:regenerate` and `setup:validate` CLI commands
+### T-49 [x] · Implement the `setup:regenerate` and `setup:validate` CLI commands
 - **Depends-on:** T-48
 - **Reads:** none
 - **Outputs:** `src/setup/regenerate.ts`, `src/setup/validate.ts`
