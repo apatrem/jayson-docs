@@ -128,7 +128,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** base requires `id` (`StableIdSchema`) and `type` (string); accepts optional `note`; rejects unknown keys.
 - **est.** 1h
 
-### T-13 [ ] · Implement `MetaSchema`
+### T-13 [x] · Implement `MetaSchema`
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` §2
 - **Outputs:** `src/schema/meta.ts` + tests
