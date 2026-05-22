@@ -213,7 +213,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** `BrandProvider` provides tokens; `useBrandTokens` throws outside it; `resolveBrandToken` resolves direct + alias paths; `resolveAssetPath` accepts the two schemes and rejects `..`; `ProseRenderer` renders allowed marks and drops disallowed ones (no `dangerouslySetInnerHTML` anywhere); primitives consume brand tokens; the original `reference/primitives/` directory is unchanged after the task.
 - **est.** 3h
 
-### T-23b [ ] · Reference block: copy `reference/callout/` to production paths
+### T-23b [x] · Reference block: copy `reference/callout/` to production paths
 - **Depends-on:** T-23
 - **Reads:** `reference/callout/*`
 - **Outputs:** files copied to `src/schema/blocks/callout.ts`, `src/renderer/blocks/Callout.tsx`, `src/editor/nodes/CalloutNode.tsx`, `tests/blocks/callout.test.ts`; imports updated to clean paths. **`reference/callout/` is preserved** as the worked exemplar that drivers consult when implementing the other 14 blocks (T-24..T-39).
