@@ -10,16 +10,16 @@
 
 ## Next eligible task
 
-T-31 · Implement `table` block (4 files)
+T-32 · Implement `chart` block (4 files + side panel)
 
 ## Progress since the previous fire
 
-- ✅ 2 tasks completed this fire: T-29, T-30
-- Total done: 30 (27%)
+- ✅ 1 task completed this fire: T-31
+- Total done: 31 (28%)
 
 ## Recent commits
 
-7591104 T-29: implement kpi-cards block (4 files)
+8aafc77 T-30: implement image block (4 files)
 
 ## CI status (origin/main)
 

@@ -247,7 +247,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 ### T-30 [x] · Implement `image` block (4 files)
 - **est.** 4h
 
-### T-31 [ ] · Implement `table` block (4 files)
+### T-31 [x] · Implement `table` block (4 files)
 - **Depends-on:** none
 - **Reads:** `docs/BLOCK_IMPLEMENTATION_GUIDE.md` §3 (table notes)
 - **est.** 10h
