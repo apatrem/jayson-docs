@@ -69,28 +69,50 @@ resolve_start_tag() {
 
 check_1_marker_suffix() {
   # All task headers in TASKS.md on this branch use suffix marker format.
-  # Pattern: ### T-NN [marker] · Title
+  # Accepted patterns:
+  #   ### T-NN [marker] · Title
+  #   ### T-NN + T-MM [marker] · Title       (compound entries — multiple IDs sharing one body)
+  #   ### T-NN + T-MM + T-OO [marker] · Title (3+ IDs also accepted)
   local bad
   bad=$(git show "$BRANCH:docs/TASKS.md" 2>/dev/null \
         | grep -E '^### T-[0-9]+[a-z]?' \
-        | grep -vE '^### T-[0-9]+[a-z]? \[(  ?|~|x|\?|!|skip)\] ·' \
+        | grep -vE '^### T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)* \[(  ?|~|x|\?|!|skip)\] ·' \
         | head -3 || true)
   if [[ -z "$bad" ]]; then
-    assert "1. All task headers use suffix marker format ([ ] between ID and ·)" pass
+    assert "1. All task headers use suffix marker format ([marker] between ID and ·)" pass
   else
     assert "1. All task headers use suffix marker format" fail "first offender(s): $(echo "$bad" | head -1)"
   fi
 }
 
 check_2_five_task_commits() {
-  # Expect exactly 5 commits with "T-0[1-5]:" prefix from bake-off-start to HEAD.
-  local n
-  n=$(git log --format='%s' "$START_TAG..$BRANCH" 2>/dev/null \
-      | grep -cE '^T-0[1-5]:' || true)
-  if [[ "$n" -eq 5 ]]; then
-    assert "2. Exactly 5 T-01..T-05 commits ($n)" pass
+  # All of T-01..T-05 should have marker [x] in TASKS.md on the branch.
+  # Failure-path commits (T-NN: block — ..., T-NN: wait — ...) are legitimate
+  # protocol behavior and do not invalidate the assertion — we count
+  # completed markers, not total commits.
+  local completed=0 incomplete=""
+  local tasks_md
+  tasks_md=$(git show "$BRANCH:docs/TASKS.md" 2>/dev/null)
+
+  for n in 01 02 03 04 05; do
+    # Pull the marker from the line `### T-${n} [marker] · Title`.
+    local marker
+    marker=$(echo "$tasks_md" \
+             | grep -E "^### T-${n}( \+ T-[0-9]+[a-z]?)* \[" \
+             | head -1 \
+             | sed -E 's/^### T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)* \[(.{1,5}?)\] ·.*/\2/')
+
+    if [[ "$marker" == "x" ]]; then
+      completed=$((completed + 1))
+    else
+      incomplete+="T-${n}=[${marker:-?}] "
+    fi
+  done
+
+  if [[ "$completed" -eq 5 ]]; then
+    assert "2. All T-01..T-05 completed ($completed/5 [x])" pass
   else
-    assert "2. Exactly 5 T-01..T-05 commits" fail "got $n"
+    assert "2. All T-01..T-05 completed" fail "$completed/5 [x]; incomplete: ${incomplete% }"
   fi
 }
 
