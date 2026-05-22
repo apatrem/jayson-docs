@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T11:43:00Z
+**Last fire:** 2026-05-22T11:43:35Z
 **State:** RUNNING
 **Running on:** Composer (Cursor Auto) at (effort unknown)
 **Halt reason:** —
@@ -12,25 +12,25 @@
 
 ## Next eligible task
 
-T-09 · Write project README with quickstart
+T-10 · Implement `StableIdSchema` and `AssetPathSchema`
 
 ## Progress since the previous fire
 
-- ✅ 3 tasks completed this fire: T-06, T-07, T-08
+- ✅ 4 tasks completed this fire: T-06, T-07, T-08, T-09
 - ⚠ 0 tasks blocked this fire
 - ⏸ 0 tasks marked waiting this fire
 - ↩ 0 commits reverted this fire
 
 ## At a glance
 
-Total tasks: 112   Done: 8 (7%)   Blocked: 0   Waiting: 0   Open: 104   Skipped: 0
+Total tasks: 112   Done: 9 (8%)   Blocked: 0   Waiting: 0   Open: 103   Skipped: 0
 
 ## Recent commits
 
+907de50 T-08: set up CI (GitHub Actions or equivalent)
 ade7828 T-07: add npm scripts
 73ba74f T-06: create the full folder structure (empty)
 15667d6 Document Cursor Auto tier and terminal safety for the task loop.
-1eb8869 Retire next-task-bakeoff.md after v2 validation
 712ef38 T-05: set up Vitest with one passing sample test
 7fc9830 T-04: set up ESLint + Prettier + EditorConfig
 33d9fa3 T-03: pin exact dependency versions
@@ -38,4 +38,4 @@ ade7828 T-07: add npm scripts
 
 ## CI status (origin/main)
 
-CI-poll skipped — gh returned empty (workflow not yet on remote until push completes)
+pending — workflow pushed this fire; poll on next pick

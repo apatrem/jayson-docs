@@ -90,7 +90,7 @@ Foundation. Nothing else compiles until this is done.
 - **Acceptance:** Push to the repo triggers CI; spec parsing, lint, test, and build pass; failure on any block blocks the PR.
 - **est.** 1.5h
 
-### T-09 [ ] · Write project README with quickstart
+### T-09 [x] · Write project README with quickstart
 - **Depends-on:** T-01, T-02, T-03, T-04, T-05, T-06, T-07, T-08
 - **Reads:** none
 - **Outputs:** `README.md` covering: install, dev loop, project layout, link to all docs in this repo

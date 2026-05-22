@@ -1,71 +1,89 @@
 # Document System
 
-A consulting document system. Designed in detail. Not yet built.
+Consultancy document system — DocModel-first proposals and decks, local desktop app (Tauri), closed block library, setup-time AI for brand and custom blocks.
 
-## What's here
+## Prerequisites
 
-- Design decisions. Types. Examples. Two worked blocks. UI wireframes. Drop-in configs.
-- Enough scaffolding to hand to a developer or an LLM.
+- **Node.js** ≥ 20.11 and **npm** ≥ 10
+- **Ruby** 3.x (stdlib only) for `scripts/check-specs`
+- **Rust** toolchain (for Tauri desktop builds; optional for web-only dev)
 
-## What's not here
+## Install
 
-- Any code that runs. Yet.
+```bash
+git clone <repo-url> docsystem && cd docsystem
+npm ci
+bash scripts/install-hooks.sh   # pre-commit hook for the autonomous task loop
+```
 
-## Where to look
+## Dev loop
 
-| If you want... | Read this |
+```bash
+npm run dev          # Vite dev server (http://localhost:5173)
+npm test             # Vitest
+npm run lint         # ESLint
+npm run build        # tsc --noEmit && vite build
+npm run tauri:dev    # Tauri desktop shell (requires Rust)
+```
+
+Other scripts (stubs until later milestones): `validate`, `export:pdf`, `setup:scan-demos`, `setup:install`, `setup:validate`, `setup:regenerate`.
+
+## Project layout
+
+```
+src/
+  schema/           # Zod schemas (DocModel, blocks, brand)
+  docmodel/         # load, serialize, patch
+  renderer/         # DocModel → HTML/PDF
+  editor/           # TipTap nodes + mapping
+  comments/         # comment-to-AI workflow
+  llm/              # LLM client + patches
+  export/           # PDF / bundle export
+  brand/            # brand-token runtime
+  block-primitives/ # shared renderer primitives
+generated-blocks/   # setup AI output (pending/ vs active/)
+setup/              # setup-time CLI sources (stubs in M0)
+templates/          # slide layouts (v1.1)
+fixtures/           # sample DocModel YAML
+tests/              # Vitest suites
+scripts/            # validate, export-pdf, check-specs, hooks
+src-tauri/          # Tauri 2.x Rust shell + IPC stubs
+docs/               # architecture, types, tasks, decisions
+reference/          # copy-paste patterns (callout, chart, mapping, primitives)
+examples/           # valid + invalid YAML/JSON fixtures
+starter/            # pinned drop-in configs for greenfield init
+```
+
+## Documentation
+
+| Topic | File |
 |---|---|
-| The rules | [`AGENTS.md`](AGENTS.md) |
-| Why we built it this way | [`docs/DOCUMENT_SYSTEM_ARCHITECTURE.md`](docs/DOCUMENT_SYSTEM_ARCHITECTURE.md) |
-| What to build | [`docs/BUILD_BRIEF.md`](docs/BUILD_BRIEF.md) |
-| The settled decisions | [`docs/DECISIONS.md`](docs/DECISIONS.md) |
-| ~112 bite-sized tasks | [`docs/TASKS.md`](docs/TASKS.md) |
-| Every shared TypeScript type | [`docs/TYPES.md`](docs/TYPES.md) |
-| How to implement a block | [`docs/BLOCK_IMPLEMENTATION_GUIDE.md`](docs/BLOCK_IMPLEMENTATION_GUIDE.md) |
-| The setup AI pipeline | [`docs/SETUP_PIPELINE.md`](docs/SETUP_PIPELINE.md) |
-| The install CLI flow | [`docs/SETUP_INSTALL_FLOW.md`](docs/SETUP_INSTALL_FLOW.md) |
-| JS↔Rust commands (Tauri) | [`docs/TAURI_IPC.md`](docs/TAURI_IPC.md) |
-| Byte-stable YAML rules | [`docs/YAML_FORMAT.md`](docs/YAML_FORMAT.md) |
-| Review-panel UI design | [`docs/UI_REVIEW_PANEL.md`](docs/UI_REVIEW_PANEL.md) |
-| Library UI design | [`docs/UI_LIBRARY.md`](docs/UI_LIBRARY.md) |
-| Drop-in project configs | [`starter/`](starter/) |
-| Block-primitives (every renderer depends on these) | [`reference/primitives/`](reference/primitives/) |
-| A simple worked block | [`reference/callout/`](reference/callout/) |
-| A complex worked block (chart) | [`reference/chart/`](reference/chart/) |
-| DocModel ⇄ editor orchestrator | [`reference/mapping/`](reference/mapping/) |
-| Valid + invalid fixtures | [`examples/`](examples/) |
-| The brand-token shape | [`brand.example.yaml`](brand.example.yaml) |
-| The 15 pre-built block specs | [`blocks.catalogue.yaml`](blocks.catalogue.yaml) |
-
-## Quick start (for humans)
-
-1. Read `AGENTS.md`. Five minutes.
-2. Read `docs/DOCUMENT_SYSTEM_ARCHITECTURE.md`. Twenty minutes.
-3. Read `docs/BUILD_BRIEF.md`. Ten minutes.
-4. Open `docs/DECISIONS.md` when something feels arbitrary. It probably isn't.
-5. Run `scripts/check-specs` before implementing from the machine-readable specs.
-
-## Quick start (for LLMs)
-
-Same as above. In parallel.
-
-## Status
-
-Designed. Grilled. Decided. ~10–11 weeks of focused work to v1.
+| Agent / loop rules | [`AGENTS.md`](AGENTS.md) |
+| Architecture (why) | [`docs/DOCUMENT_SYSTEM_ARCHITECTURE.md`](docs/DOCUMENT_SYSTEM_ARCHITECTURE.md) |
+| Build plan & milestones | [`docs/BUILD_BRIEF.md`](docs/BUILD_BRIEF.md) |
+| Settled decisions | [`docs/DECISIONS.md`](docs/DECISIONS.md) |
+| Task backlog | [`docs/TASKS.md`](docs/TASKS.md) |
+| Shared TypeScript types | [`docs/TYPES.md`](docs/TYPES.md) |
+| Block implementation | [`docs/BLOCK_IMPLEMENTATION_GUIDE.md`](docs/BLOCK_IMPLEMENTATION_GUIDE.md) |
+| Setup AI pipeline | [`docs/SETUP_PIPELINE.md`](docs/SETUP_PIPELINE.md) |
+| Install CLI | [`docs/SETUP_INSTALL_FLOW.md`](docs/SETUP_INSTALL_FLOW.md) |
+| Tauri IPC | [`docs/TAURI_IPC.md`](docs/TAURI_IPC.md) |
+| YAML format | [`docs/YAML_FORMAT.md`](docs/YAML_FORMAT.md) |
+| Review panel UI | [`docs/UI_REVIEW_PANEL.md`](docs/UI_REVIEW_PANEL.md) |
+| Library UI | [`docs/UI_LIBRARY.md`](docs/UI_LIBRARY.md) |
 
 ## Spec sanity check
 
-This repo is docs-first, but the YAML/JSON files are executable specs. Run:
-
 ```bash
-scripts/check-specs
+ruby scripts/check-specs
 ```
 
-It parses every YAML and JSON spec/fixture file using only the system Ruby
-standard library. Schema validation comes later in M1a.
+Parses every YAML/JSON spec and fixture in the repo (CI runs this on every push).
 
-## Stack (planned)
+## Status
 
-Tauri · React · TypeScript · TipTap · Zod · ECharts · Playwright.
+**M0 scaffold** in progress on `main` (Vite + React + TS, Tauri shell, ESLint, Vitest, CI). Schema, blocks, editor, and setup pipeline follow **M1** in `docs/TASKS.md`.
 
-No PowerPoint. No Word. No live data. No regrets.
+## Stack
+
+Tauri 2 · React · TypeScript · TipTap · Zod · ECharts · Mermaid · Playwright · SQLite (cost ledger).
