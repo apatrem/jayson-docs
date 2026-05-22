@@ -1,3 +1,12 @@
 #!/usr/bin/env node
-console.log('export:pdf: stub — PDF export not implemented yet');
-process.exit(0);
+import { spawnSync } from "node:child_process";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const result = spawnSync(
+  "npx",
+  ["tsx", "src/export/pdf.ts", ...process.argv.slice(2)],
+  { cwd: root, stdio: "inherit" },
+);
+process.exit(result.status ?? 1);

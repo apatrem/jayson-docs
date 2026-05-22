@@ -396,7 +396,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Given a valid DocModel (kind: "document"), renders a full HTML doc. Brand tokens applied via BrandProvider. Renders `examples/sample-proposal.yaml` end-to-end.
 - **est.** 4h
 
-### T-52 [ ] · Set up Playwright for headless Chromium PDF export
+### T-52 [x] · Set up Playwright for headless Chromium PDF export
 - **Depends-on:** T-51
 - **Reads:** none
 - **Outputs:** `src/export/pdf.ts`, `scripts/export-pdf.mjs` CLI
