@@ -208,7 +208,32 @@ If a candidate task exists and halt rules pass:
 - Lint violations → fix or auto-format with prettier.
 - Missing test fixtures the task expects → create from `examples/` patterns.
 
-If the task's work requires touching files outside the declared `Outputs:` AND outside the allow-list, *and* the addition is obviously necessary (e.g., updating `src/schema/blocks/index.ts` to include a new block in the union): mark the task `[?]` with reason `scope-ambiguous: needs <file> outside Outputs:` and continue to step 7 NEXT. The human will either update the task's `Outputs:` and unblock or restructure the task.
+If the task's work requires touching files outside the declared `Outputs:` AND outside the allow-list, you have two paths — pick based on your confidence:
+
+**Path A — proceed with documented scope expansion.** Only when ALL of these hold:
+1. The extra file is in the **same logical subsystem** as the declared Outputs (e.g., refactoring `src/brand-tokens/resolve.ts` while implementing `src/brand-tokens/resolve-asset.ts`; registering a new block in `src/schema/blocks/index.ts` while implementing a new block schema).
+2. The change is **obviously necessary** (a sibling helper needs an export; an index union needs an entry).
+3. You can explain it in **one short line per file**.
+
+If all three hold, proceed AND include a `Scope expansion:` block in the commit body listing each extra file with a one-line rationale. Example:
+
+```
+T-22: implement resolveAssetPath
+
+Adds the asset path resolver that handles both per-doc and brand-token refs.
+
+Scope expansion:
+- src/brand-tokens/resolve.ts — extracted lookupBrandPath() from resolveBrandToken
+  so resolveAssetPath can reuse the brand-token lookup without duplicating.
+
+Co-Authored-By: ...
+```
+
+Reviewers grep for `^Scope expansion:` in commit messages; if it's missing while the diff touches undeclared files, that's a protocol audit failure. The pre-commit hook does NOT enforce this (it can't parse the task's Outputs from markdown); discipline rests on the driver and is verified at step 8 self-check.
+
+**Path B — halt with `[?]` for human guidance.** When the addition is non-obvious, cross-cuts boundaries, modifies files in a different subsystem (e.g., your block-renderer task wants to touch `src/schema/`), or you can't articulate the rationale in one line: mark the task `[?]` with reason `scope-ambiguous: needs <file> outside Outputs:` and continue to step 7 NEXT. The human will either update the task's `Outputs:` and unblock or restructure the task.
+
+When in doubt, prefer Path B. A halted task that gets clarified once is cheaper than a quiet scope creep that compounds across a milestone.
 
 ## Step 3 — TEST
 
@@ -314,7 +339,7 @@ Before the invocation exits (any stop condition), output this checklist to chat:
 Self-check before exit:
 ☐ Most recent commit on this branch stages STATUS.md? (verify: git show --name-only HEAD | grep -x STATUS.md)
 ☐ Most recent commit stages docs/TASKS.md with at most one marker transition?
-☐ No files staged in any task commit outside Outputs: ∪ allow-list?
+☐ No files staged in any task commit outside Outputs: ∪ allow-list — OR if any are, the commit body has a `Scope expansion:` block per file?
 ☐ STATUS.md "Running on:" line names the model that actually executed this fire?
 ☐ No [~] markers left in docs/TASKS.md (use grep -n '\[~\]' docs/TASKS.md)?
 ☐ All loop-managed file mutations from this fire are committed (git status is clean)?
