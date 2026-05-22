@@ -262,7 +262,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ### T-33 [ ] · Implement `callout` block — see T-23 (reference) ✅
 
-### T-34 [ ] · Implement `timeline` block (4 files)
+### T-34 [x] · Implement `timeline` block (4 files)
 - **est.** 6h
 
 ### T-35 [ ] · Implement `roadmap` block (4 files)

@@ -10,16 +10,16 @@
 
 ## Next eligible task
 
-T-34 · Implement `timeline` block (4 files)
+T-35 · Implement `roadmap` block (4 files)
 
 ## Progress since the previous fire
 
-- ✅ 2 tasks completed this fire: T-31, T-32
-- Total done: 33 (29%)
+- ✅ 1 task completed this fire: T-34
+- Total done: 34 (30%)
 
 ## Recent commits
 
-1479bf7 T-31: implement table block (4 files)
+bfaf50f T-32: implement chart block with ECharts and data panel
 
 ## CI status (origin/main)
 
