@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BlockBaseSchema } from "./index";
+import { BlockBaseSchema } from "./block-base";
 import { ProseMirrorFragmentSchema } from "../prosemirror-fragment";
 
 export const BulletListChildItemSchema = z

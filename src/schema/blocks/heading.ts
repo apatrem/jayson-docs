@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BlockBaseSchema } from "./index";
+import { BlockBaseSchema } from "./block-base";
 
 export const HeadingLevelSchema = z.union([
   z.literal(1),

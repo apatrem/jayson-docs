@@ -1,15 +1,18 @@
+export { BlockBaseSchema, type BlockBase } from "./block-base";
 import { z } from "zod";
-import { StableIdSchema } from "../stable-id";
+import { ProseBlockSchema } from "./prose";
+import { HeadingBlockSchema } from "./heading";
+import { BulletListBlockSchema } from "./bullet-list";
+import { NumberedListBlockSchema } from "./numbered-list";
+import { CalloutBlockSchema } from "./callout";
 
-/**
- * Common fields on every block. All concrete block schemas extend this.
- */
-export const BlockBaseSchema = z
-  .object({
-    id: StableIdSchema,
-    type: z.string(),
-    note: z.string().max(500).optional(),
-  })
-  .strict();
+/** Discriminated union of all implemented block types (grows with T-29+). */
+export const BlockSchema = z.discriminatedUnion("type", [
+  ProseBlockSchema,
+  HeadingBlockSchema,
+  BulletListBlockSchema,
+  NumberedListBlockSchema,
+  CalloutBlockSchema,
+]);
 
-export type BlockBase = z.infer<typeof BlockBaseSchema>;
+export type Block = z.infer<typeof BlockSchema>;

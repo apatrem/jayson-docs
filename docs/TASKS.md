@@ -233,7 +233,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **est.** 4h
 - **Note:** May share most code with T-26 — refactor common list logic into `src/block-primitives/List.tsx`.
 
-### T-28 [ ] · Wire up the `BlockSchema` discriminated union
+### T-28 [x] · Wire up the `BlockSchema` discriminated union
 - **Depends-on:** T-23, T-23b, T-24, T-25, T-26, T-27
 - **Reads:** none
 - **Outputs:** `src/schema/blocks/index.ts` exports `BlockSchema` as a union of all 15 schemas; new blocks added as they're implemented
