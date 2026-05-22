@@ -142,7 +142,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** validates the sample thread JSON; rejects threads without an initial instruction; rejects unknown `kind` values.
 - **est.** 2h
 
-### T-15 [ ] · Implement `BlockPatchSchema`
+### T-15 [x] · Implement `BlockPatchSchema`
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` §6, `examples/sample-block-patch.json`
 - **Outputs:** `src/schema/block-patch.ts` + tests
