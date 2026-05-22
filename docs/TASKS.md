@@ -276,7 +276,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Reads:** `docs/BLOCK_IMPLEMENTATION_GUIDE.md` §3 (risk-matrix notes)
 - **est.** 8h
 
-### T-37 [ ] · Implement `team` block (4 files)
+### T-37 [x] · Implement `team` block (4 files)
 - **Depends-on:** none
 - **Reads:** `docs/BLOCK_IMPLEMENTATION_GUIDE.md` §3 (team notes), 3 layout sub-renderers
 - **est.** 8h
