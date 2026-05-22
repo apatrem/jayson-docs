@@ -1,8 +1,10 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T11:50:30Z
+**Last fire:** 2026-05-22T11:52:00Z
 **State:** RUNNING
 **Running on:** Composer (Cursor Auto) at (effort unknown)
+**Halt reason:** —
+**Halted since:** —
 
 ---
 
@@ -10,12 +12,22 @@
 
 ## Next eligible task
 
-T-20 · Implement `BrandProvider` + `useBrandTokens` hook
+T-21 · Implement `resolveBrandToken(brand, ref)`
 
 ## Progress since the previous fire
 
-- ✅ 1 task completed: T-16
-- Total done: 16 (14%)
+- ✅ 2 tasks completed this fire: T-16, T-20
+- ⚠ 0 tasks blocked this fire
+- ⏸ 0 tasks marked waiting this fire
+- ↩ 0 commits reverted this fire
+
+## At a glance
+
+Total tasks: 112   Done: 17 (15%)   Blocked: 0   Waiting: 0   Open: 95   Skipped: 0
+
+## Recent commits
+
+(pending T-20 commit)
 
 ## CI status (origin/main)
 

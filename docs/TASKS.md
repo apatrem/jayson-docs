@@ -179,7 +179,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 
 ### Sub-phase 1B — Brand-token consumption
 
-### T-20 [ ] · Implement `BrandProvider` + `useBrandTokens` hook
+### T-20 [x] · Implement `BrandProvider` + `useBrandTokens` hook
 - **Depends-on:** T-16
 - **Reads:** none
 - **Outputs:** `src/brand-tokens/BrandProvider.tsx`, `src/brand-tokens/useBrandTokens.ts` + tests
