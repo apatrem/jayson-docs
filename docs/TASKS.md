@@ -163,7 +163,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** SlideSchema enforces layout enum; SectionSchema requires `blocks.min(1)`.
 - **est.** 1h
 
-### T-18 [ ] · Implement `DocModelSchema` (top-level)
+### T-18 [x] · Implement `DocModelSchema` (top-level)
 - **Depends-on:** T-17
 - **Reads:** `docs/TYPES.md` §1
 - **Outputs:** `src/schema/docmodel.ts` + tests

@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T14:10:00Z
+**Last fire:** 2026-05-22T14:12:00Z
 **State:** RUNNING
 **Running on:** Cursor Composer (effort unknown)
 
@@ -10,17 +10,17 @@
 
 ## Next eligible task
 
-T-18 · Implement `DocModelSchema` (top-level)
+T-19 · Implement `validateDocModel` entry point
 
 ## Progress since the previous fire
 
-- ✅ T-17 completed: SectionSchema + SlideSchema with layout enum and blocks.min(1)
-- Total done: 37 (33%) · skipped: 1
+- ✅ T-18 completed: DocModelSchema discriminated union on kind
+- Total done: 38 (34%) · skipped: 1
 
 ## Recent commits
 
+a6d4487 T-17: implement SectionSchema and SlideSchema
 647f3a4 Step 1 PICK: halt on pointer-stub and malformed-task entries
-2dcb306 T-33: skip — callout implemented via T-23b
 
 ## CI status (origin/main)
 
