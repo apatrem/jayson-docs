@@ -223,7 +223,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 ### T-24 [x] · Implement `prose` block (4 files)
 - **est.** 4h
 
-### T-25 [ ] · Implement `heading` block (4 files)
+### T-25 [x] · Implement `heading` block (4 files)
 - **est.** 3h
 
 ### T-26 [ ] · Implement `bullet-list` block (4 files)
