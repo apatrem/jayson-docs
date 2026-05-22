@@ -83,7 +83,7 @@ Foundation. Nothing else compiles until this is done.
 - **Acceptance:** all listed scripts exist; `dev` and `build` run clean; the `setup:*` scripts can be empty stubs.
 - **est.** 0.5h
 
-### T-08 [ ] · Set up CI (GitHub Actions or equivalent)
+### T-08 [x] · Set up CI (GitHub Actions or equivalent)
 - **Depends-on:** T-04, T-05
 - **Reads:** none
 - **Outputs:** `.github/workflows/ci.yml` running `scripts/check-specs`, lint, test, and build on every push
