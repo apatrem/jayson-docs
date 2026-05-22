@@ -62,7 +62,7 @@ Foundation. Nothing else compiles until this is done.
 - **Acceptance:** `npm run lint` runs and reports zero issues on the empty app.
 - **est.** 1h
 
-### T-05 [ ] · Set up Vitest with one passing sample test
+### T-05 [x] · Set up Vitest with one passing sample test
 - **Depends-on:** T-01
 - **Reads:** none
 - **Outputs:** `vitest.config.ts`, `tests/sample.test.ts`
