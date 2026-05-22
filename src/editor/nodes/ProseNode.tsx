@@ -1,5 +1,4 @@
 import { Node, mergeAttributes } from "@tiptap/core";
-import type { ProseMirrorFragment } from "../../schema/prosemirror-fragment";
 import type { ProseAlign, ProseBlock } from "../../schema/blocks/prose";
 
 declare module "@tiptap/core" {
@@ -20,21 +19,24 @@ export const ProseTipTapNode = Node.create({
     return {
       blockId: {
         default: null,
-        parseHTML: (el) => el.getAttribute("data-block-id"),
+        parseHTML: (el: HTMLElement): string | null =>
+          el.getAttribute("data-block-id"),
         renderHTML: (attrs: { blockId: string | null }) => ({
           "data-block-id": attrs.blockId,
         }),
       },
       align: {
         default: "left",
-        parseHTML: (el) => el.getAttribute("data-align") ?? "left",
+        parseHTML: (el: HTMLElement): string =>
+          el.getAttribute("data-align") ?? "left",
         renderHTML: (attrs: { align: ProseAlign }) => ({
           "data-align": attrs.align,
         }),
       },
       note: {
         default: "",
-        parseHTML: (el) => el.getAttribute("data-note") ?? "",
+        parseHTML: (el: HTMLElement): string =>
+          el.getAttribute("data-note") ?? "",
         renderHTML: (attrs: { note: string }) => ({ "data-note": attrs.note }),
       },
     };
@@ -72,7 +74,10 @@ export const ProseTipTapNode = Node.create({
 
 type ProseMirrorNode = {
   attrs: { blockId: string; align: ProseAlign; note: string };
-  content: ProseMirrorFragment["content"];
+  // ProseMirror content nodes — structure validated by TipTap's own schema,
+  // not by us. We treat the array opaquely here and let the round-trip
+  // through `block.content.content` carry the real shape.
+  content: unknown[];
 };
 
 export function proseBlockToProseMirror(block: ProseBlock): {
