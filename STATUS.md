@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T11:55:00Z
+**Last fire:** 2026-05-22T11:56:30Z
 **State:** RUNNING
 **Running on:** Composer (Cursor Auto) at (effort unknown)
 
@@ -10,15 +10,16 @@
 
 ## Next eligible task
 
-T-23 · Move `reference/primitives/` to production paths
+T-24 · Implement `prose` block (4 files)
 
-## At a glance
+## Progress since the previous fire
 
-Total tasks: 112   Done: 19 (17%)   Open: 93
+- ✅ 3 tasks completed this fire: T-21, T-22, T-23
+- Total done: 20 (18%)
 
 ## Recent commits
 
-(pending T-22 STATUS bundle)
+T-22 resolveAssetPath (latest)
 
 ## CI status (origin/main)
 

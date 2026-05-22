@@ -206,7 +206,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 **Estimation guide:** simple blocks (heading, prose, image, divider) ~4h each. Medium (callout, bullet/numbered list, kpi-cards, timeline, team) ~6h. Complex (chart, table, risk-matrix, roadmap, diagram) ~10–12h.
 
-### T-23 [ ] · Move `reference/primitives/` to `src/brand-tokens/` + `src/block-primitives/`
+### T-23 [x] · Move `reference/primitives/` to `src/brand-tokens/` + `src/block-primitives/`
 - **Depends-on:** none
 - **Reads:** `reference/primitives/{BrandProvider,useBrandTokens,resolve,resolve-asset,ProseRenderer,block-primitives}.{ts,tsx}`
 - **Outputs:** files moved to production paths per `reference/primitives/README.md`; tests in `tests/primitives/`
