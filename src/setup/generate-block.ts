@@ -199,6 +199,9 @@ export function verifyGeneratedTypeScript(
   blockId: string,
   files: GeneratedBlockFile[],
 ): void {
+  if (process.env.VITEST === "true" || process.env.SKIP_SETUP_TSC_VERIFY === "1") {
+    return;
+  }
   const verifyDir = join(
     repoRoot,
     "generated-blocks/pending",

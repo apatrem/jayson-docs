@@ -382,7 +382,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ## Phase 2 — M2: Renderer + HTML/PDF
 
-### T-50 [ ] · Implement `ProseRenderer` (rich-text serializer)
+### T-50 [x] · Implement `ProseRenderer` (rich-text serializer)
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` §3c
 - **Outputs:** `src/renderer/ProseRenderer.tsx` + tests

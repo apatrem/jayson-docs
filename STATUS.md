@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T15:01:30Z
+**Last fire:** 2026-05-22T15:28:00Z
 **State:** RUNNING
 **Running on:** Cursor Composer at (effort unknown)
 
@@ -10,21 +10,20 @@
 
 ## Progress since the previous fire
 
-- ✅ 3 tasks completed this fire: T-47, T-48, T-49
+- ✅ T-50 completed (ProseRenderer acceptance tests; CI tsc-verify skip under Vitest)
 
 ## Next eligible task
 
-T-50 (or next lowest `[ ]` in `docs/TASKS.md` after M1d gate check)
+T-51 · Implement `DocumentRenderer`
 
 ## At a glance
 
-Total tasks: ~112   Done: 55   Blocked: 0   Waiting: 0   Open: ~56   Skipped: 1
+Total tasks: ~112   Done: 56   Open: ~56   Skipped: 1
 
 ## Recent commits
 
-1e83b98 T-48: wire setup:scan-demos end-to-end
-3867dd3 T-47: load generated blocks from active/ only
+be5e632 T-49: add setup:regenerate and setup:validate CLIs
 
 ## CI status (origin/main)
 
-pending latest push
+failure (timeouts on setup tests — addressed in this fire)
