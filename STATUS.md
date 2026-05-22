@@ -10,16 +10,17 @@
 
 ## Next eligible task
 
-T-27 · Implement `numbered-list` block (4 files)
+T-28 · Wire up the `BlockSchema` discriminated union
 
 ## Progress since the previous fire
 
-- ✅ 2 tasks completed this fire: T-23b, T-26
-- Total done: 25 (22%)
+- ✅ 3 tasks completed this fire: T-23b, T-26, T-27
+- Total done: 26 (23%)
 
 ## Recent commits
 
-(pending T-26 push)
+6427bca T-26: implement bullet-list block (4 files)
+88f9c24 T-23b: copy reference callout block to production paths
 
 ## CI status (origin/main)
 

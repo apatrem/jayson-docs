@@ -229,7 +229,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 ### T-26 [x] · Implement `bullet-list` block (4 files)
 - **est.** 5h
 
-### T-27 [ ] · Implement `numbered-list` block (4 files)
+### T-27 [x] · Implement `numbered-list` block (4 files)
 - **est.** 4h
 - **Note:** May share most code with T-26 — refactor common list logic into `src/block-primitives/List.tsx`.
 
