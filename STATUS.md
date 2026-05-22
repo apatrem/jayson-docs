@@ -1,26 +1,29 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T15:05:00Z
-**State:** RUNNING
+**Last fire:** 2026-05-22T14:26:00Z
+**State:** HALTED (user requested stop after T-41)
 **Running on:** Cursor Composer (effort unknown)
 
 ---
 
-## Loop is running cleanly — no action needed.
+## Stopped per user request — resume with `/next-task` or **continue** for T-42.
 
-## Next eligible task
+## Last completed task
 
 T-41 · Implement document ingestion (DOCX/PPTX/PDF -> analysis JSON)
 
-## Progress since the previous fire
+## Next eligible task (not started)
 
-- ✅ T-40 completed: YAML canonicalize + serialize + byte-stable round-trip tests
-- Total done: 45 (41%) · skipped: 1
+T-42 · Implement brand-extraction LLM call (Stage 2) — **escalation tier**
+
+## Progress
+
+- ✅ T-41 completed: `src/setup/ingestion/` (docx, pptx, pdf, analyze)
+- Total done: 46 (41%) · skipped: 1
 
 ## Recent commits
 
-91b8617 T-39: implement divider block (4 files)
-0211a28 T-38: implement diagram block (4 files)
+26177ce T-40: YAML round-trip + losslessness test
 
 ## CI status (origin/main)
 

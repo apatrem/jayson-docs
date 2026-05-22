@@ -300,7 +300,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ### Sub-phase 1D — Setup AI pipeline
 
-### T-41 [ ] · Implement document ingestion (DOCX/PPTX/PDF -> analysis JSON)
+### T-41 [x] · Implement document ingestion (DOCX/PPTX/PDF -> analysis JSON)
 - **Depends-on:** none
 - **Reads:** `docs/SETUP_PIPELINE.md` §1 Stage 1
 - **Outputs:** `src/setup/ingestion/` with one file per format (docx.ts, pptx.ts, pdf.ts) + a combined `analyze.ts`
