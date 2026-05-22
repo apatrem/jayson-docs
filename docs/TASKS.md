@@ -265,7 +265,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 ### T-34 [x] · Implement `timeline` block (4 files)
 - **est.** 6h
 
-### T-35 [ ] · Implement `roadmap` block (4 files)
+### T-35 [x] · Implement `roadmap` block (4 files)
 - **Depends-on:** none
 - **Reads:** `docs/BLOCK_IMPLEMENTATION_GUIDE.md` §3 (roadmap notes)
 - **est.** 12h (custom ECharts series; date math)

@@ -10,16 +10,16 @@
 
 ## Next eligible task
 
-T-35 · Implement `roadmap` block (4 files)
+T-36 · Implement `risk-matrix` block (4 files)
 
 ## Progress since the previous fire
 
-- ✅ 1 task completed this fire: T-34
-- Total done: 34 (30%)
+- ✅ 2 tasks completed this fire: T-34, T-35
+- Total done: 36 (32%)
 
 ## Recent commits
 
-bfaf50f T-32: implement chart block with ECharts and data panel
+2b0f2fe T-34: implement timeline block (4 files)
 
 ## CI status (origin/main)
 
