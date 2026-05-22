@@ -186,7 +186,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** components inside `<BrandProvider tokens={...}>` get the tokens via `useBrandTokens()`; throws if used outside provider.
 - **est.** 1.5h
 
-### T-21 [ ] · Implement `resolveBrandToken(brand, ref)`
+### T-21 [x] · Implement `resolveBrandToken(brand, ref)`
 - **Depends-on:** T-16
 - **Reads:** none
 - **Outputs:** `src/brand-tokens/resolve.ts` + tests
