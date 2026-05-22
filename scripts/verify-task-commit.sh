@@ -164,6 +164,44 @@ fi
 # Pure title/Outputs/Reads edits leave the marker unchanged for every task
 # and are exempt — those are structural spec edits, not loop commits.
 
+# ── Assertion 5: Q2 enforcement — one [x] completion per commit ──────────
+# The fe49d83 mega-commit (six tasks bundled — T-42, T-43, T-44, T-45, T-46,
+# T-46b) revealed that the existing assertions catch staging discipline but
+# not the "one commit per task" rule from Q2. The driver collapsed six
+# separable diffs into one, defeating per-task git bisect / cherry-pick /
+# review.
+#
+# Rule: at most one marker transition to [x] per commit. Cold-recovery
+# resets ([~]→[ ]) and failure markings ([ ]/[~]→[?] or [!]) are exempt
+# because the protocol explicitly produces ONE such transition per fire.
+# Skip cascades are exempt too but rare (none have happened in practice).
+
+if [[ "$LOOP_COMMIT" == "true" ]]; then
+  # Lines unique to new_pairs = the new state of changed tasks. Count those
+  # ending in `=x` — those are completions.
+  old_pairs_a5=$(git diff --cached -- docs/TASKS.md \
+    | grep -E '^-### T-[0-9]' \
+    | sed -E 's/^-### (T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)*) \[([^]]+)\] ·.*/\1=\3/' \
+    | sort -u)
+  new_pairs_a5=$(git diff --cached -- docs/TASKS.md \
+    | grep -E '^\+### T-[0-9]' \
+    | sed -E 's/^\+### (T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)*) \[([^]]+)\] ·.*/\1=\3/' \
+    | sort -u)
+
+  completions=$(comm -13 <(echo "$old_pairs_a5") <(echo "$new_pairs_a5") 2>/dev/null \
+    | grep -cE '=x$' || true)
+
+  if [[ "$completions" -gt 1 ]]; then
+    completed_ids=$(comm -13 <(echo "$old_pairs_a5") <(echo "$new_pairs_a5") 2>/dev/null \
+      | grep -E '=x$' | sed -E 's/=.*//' | tr '\n' ' ')
+    fail "Multi-task commit detected: $completions tasks transitioned to [x]
+   in this commit ($completed_ids).
+   Per Q2, one commit per task. If the tasks are too tightly coupled to
+   separate (e.g., a pipeline whose stages can't be staged independently),
+   propose a spec carve-out first — don't bundle silently."
+  fi
+fi
+
 # ── Assertion 2: forbidden paths in the staged set ────────────────────────
 
 FORBIDDEN_REGEX='(^|/)(node_modules|target|dist|build|\.next|\.turbo|\.cache|coverage)/|\.DS_Store$|\.env(\..+)?$|/\.idea/|/\.vscode/settings\.json$'
