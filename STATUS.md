@@ -10,16 +10,16 @@
 
 ## Next eligible task
 
-T-30 · Implement `image` block (4 files)
+T-31 · Implement `table` block (4 files)
 
 ## Progress since the previous fire
 
-- ✅ 1 task completed this fire: T-29
-- Total done: 28 (25%)
+- ✅ 2 tasks completed this fire: T-29, T-30
+- Total done: 30 (27%)
 
 ## Recent commits
 
-98fd9b8 T-28: wire BlockSchema discriminated union
+7591104 T-29: implement kpi-cards block (4 files)
 
 ## CI status (origin/main)
 

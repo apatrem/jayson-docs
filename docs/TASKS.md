@@ -244,7 +244,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 ### T-29 [x] · Implement `kpi-cards` block (4 files)
 - **est.** 6h
 
-### T-30 [ ] · Implement `image` block (4 files)
+### T-30 [x] · Implement `image` block (4 files)
 - **est.** 4h
 
 ### T-31 [ ] · Implement `table` block (4 files)
