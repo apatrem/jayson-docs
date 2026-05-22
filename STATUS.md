@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T16:05:00Z
+**Last fire:** 2026-05-22T16:08:00Z
 **State:** RUNNING
 **Running on:** Cursor Composer at (effort unknown)
 
@@ -10,19 +10,19 @@
 
 ## Progress since the previous fire
 
-- ✅ T-52 completed (Playwright headless Chromium PDF export)
+- ✅ T-53 completed (Playwright headerTemplate/footerTemplate with logo, title, confidentiality, page numbers)
 
 ## Next eligible task
 
-T-53 · Implement running headers and footers via Playwright `page.pdf()`
+T-54 · Implement page-break CSS rules
 
 ## At a glance
 
-Total tasks: ~112   Done: 58   Open: ~54   Skipped: 1
+Total tasks: ~112   Done: 59   Open: ~53   Skipped: 1
 
 ## Recent commits
 
-(pending T-52 commit)
+6cececf T-52: add Playwright headless Chromium PDF export
 
 ## CI status (origin/main)
 

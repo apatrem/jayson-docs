@@ -403,7 +403,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** `npm run export:pdf -- examples/sample-proposal.yaml output.pdf` produces a PDF file > 0 bytes.
 - **est.** 4h
 
-### T-53 [ ] · Implement running headers and footers via Playwright `page.pdf()`
+### T-53 [x] · Implement running headers and footers via Playwright `page.pdf()`
 - **Depends-on:** T-52
 - **Reads:** `brand.example.yaml` `page.header`/`page.footer`
 - **Outputs:** updated `src/export/pdf.ts` with `headerTemplate` / `footerTemplate`
