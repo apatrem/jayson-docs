@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T11:43:35Z
+**Last fire:** 2026-05-22T11:44:20Z
 **State:** RUNNING
 **Running on:** Composer (Cursor Auto) at (effort unknown)
 **Halt reason:** —
@@ -12,25 +12,25 @@
 
 ## Next eligible task
 
-T-10 · Implement `StableIdSchema` and `AssetPathSchema`
+T-11 · Implement `ProseMirrorFragmentSchema`
 
 ## Progress since the previous fire
 
-- ✅ 4 tasks completed this fire: T-06, T-07, T-08, T-09
+- ✅ 5 tasks completed this fire: T-06, T-07, T-08, T-09, T-10
 - ⚠ 0 tasks blocked this fire
 - ⏸ 0 tasks marked waiting this fire
 - ↩ 0 commits reverted this fire
 
 ## At a glance
 
-Total tasks: 112   Done: 9 (8%)   Blocked: 0   Waiting: 0   Open: 103   Skipped: 0
+Total tasks: 112   Done: 10 (9%)   Blocked: 0   Waiting: 0   Open: 102   Skipped: 0
 
 ## Recent commits
 
+86c0bf5 T-09: write project README with quickstart
 907de50 T-08: set up CI (GitHub Actions or equivalent)
 ade7828 T-07: add npm scripts
 73ba74f T-06: create the full folder structure (empty)
-15667d6 Document Cursor Auto tier and terminal safety for the task loop.
 712ef38 T-05: set up Vitest with one passing sample test
 7fc9830 T-04: set up ESLint + Prettier + EditorConfig
 33d9fa3 T-03: pin exact dependency versions
@@ -38,4 +38,4 @@ ade7828 T-07: add npm scripts
 
 ## CI status (origin/main)
 
-pending — workflow pushed this fire; poll on next pick
+pending — poll on next pick

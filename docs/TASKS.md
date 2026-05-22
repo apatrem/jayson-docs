@@ -107,7 +107,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 
 ### Sub-phase 1A — Core schema (no blocks yet)
 
-### T-10 [ ] · Implement `StableIdSchema` and `AssetPathSchema`
+### T-10 [x] · Implement `StableIdSchema` and `AssetPathSchema`
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` §3a, §3b
 - **Outputs:** `src/schema/stable-id.ts`, `src/schema/asset-path.ts` + tests
