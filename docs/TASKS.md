@@ -260,7 +260,8 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** 6 test layers pass; cross-field validation works; SSR option-builder produces deterministic output; side panel handles Excel paste (English locale only per O-05).
 - **est.** 8h (down from 12h thanks to the worked reference)
 
-### T-33 [ ] · Implement `callout` block — see T-23 (reference) ✅
+### T-33 [skip] · Implement `callout` block — see T-23 (reference) ✅
+**[SKIPPED]:** Callout block was implemented end-to-end via T-23b (copy of `reference/callout/` to production paths) and registered in `src/schema/blocks/index.ts` via T-28's scope expansion. All five expected outputs exist on disk (`src/schema/blocks/callout.ts`, `src/renderer/blocks/Callout.tsx`, `src/editor/nodes/CalloutNode.tsx`, `tests/blocks/callout.test.ts`, union entry). Nothing for a fresh T-33 to add.  (2026-05-22)
 
 ### T-34 [x] · Implement `timeline` block (4 files)
 - **est.** 6h
