@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit (bake-off variant)
 
-**Last fire:** 2026-05-22T07:30:00Z
+**Last fire:** 2026-05-22T07:45:00Z
 **State:** RUNNING
 **Driver branch:** bakeoff/cursor-v2
 **Running on:** Composer (Cursor auto) at (effort unknown)
@@ -15,22 +15,22 @@
 
 ## Next eligible task (when human unblocks)
 
-T-02 · Set up Tauri 2.x desktop shell
+T-03 · Pin exact dependency versions
 
 ## Progress this fire
 
-- ✅ 1 tasks completed: T-01
+- ✅ 2 tasks completed: T-01, T-02
 - ⚠ 0 tasks blocked:
 - ⏸ 0 tasks marked waiting:
 
 ## Bake-off scope (T-01..T-05)
 
 T-01: [x]
-T-02: [ ]
+T-02: [x]
 T-03: [ ]
 T-04: [ ]
 T-05: [ ]
 
 ## Recent commits (this branch)
 
-(none yet on this branch since bakeoff-start-v2)
+T-01: initialize repo and Vite + React + TypeScript app

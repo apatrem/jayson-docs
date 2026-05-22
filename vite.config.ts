@@ -51,17 +51,10 @@ export default defineConfig(async () => ({
     sourcemap: !!process.env["TAURI_DEBUG"],
     rollupOptions: {
       output: {
-        // Split ECharts and Mermaid out — they're large and we want PDF
-        // export to be able to load them on demand.
-        manualChunks: {
-          echarts: ["echarts"],
-          mermaid: ["mermaid"],
-          tiptap: [
-            "@tiptap/core",
-            "@tiptap/react",
-            "@tiptap/pm",
-            "@tiptap/starter-kit",
-          ],
+        manualChunks(id: string) {
+          if (id.includes("node_modules/echarts")) return "echarts";
+          if (id.includes("node_modules/mermaid")) return "mermaid";
+          if (id.includes("node_modules/@tiptap/")) return "tiptap";
         },
       },
     },
