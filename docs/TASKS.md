@@ -156,7 +156,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** validates `brand.example.yaml` (parsed); rejects missing required `colors.brand.primary`; rejects invalid hex colors.
 - **est.** 3h
 
-### T-17 [ ] · Implement `SectionSchema` and `SlideSchema`
+### T-17 [x] · Implement `SectionSchema` and `SlideSchema`
 - **Depends-on:** T-28
 - **Reads:** `docs/TYPES.md` §4
 - **Outputs:** `src/schema/containers.ts` + tests
