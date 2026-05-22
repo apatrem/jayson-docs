@@ -12,3 +12,6 @@
 node_modules/
 dist/
 build/
+
+# Setup pipeline verify artifacts (T-45 tsc check)
+generated-blocks/pending/.tsc-verify-*/

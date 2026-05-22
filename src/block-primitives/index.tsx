@@ -156,3 +156,13 @@ export { resolveBrandToken, resolveChartPalette } from "../brand-tokens/resolve"
 export { resolveAssetPath } from "../brand-tokens/resolve-asset";
 export { ProseRenderer } from "../renderer/ProseRenderer";
 export { BrandProvider } from "../brand-tokens/BrandProvider";
+export { RenderFailedPlaceholder } from "./RenderFailedPlaceholder";
+export type {
+  RenderFailedPlaceholderProps,
+  RenderFailedReason,
+} from "./RenderFailedPlaceholder";
+export {
+  withRenderWatchdog,
+  DEFAULT_RENDER_BUDGET_MS,
+  WATCHDOG_UNMOUNT_GRACE_MS,
+} from "./RenderWatchdog";

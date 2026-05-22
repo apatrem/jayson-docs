@@ -307,42 +307,42 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Given a fixture DOCX in `tests/fixtures/setup-demos/`, produces a `demo-analysis.json` with text content, observed colors, and font families. Same for PPTX, PDF.
 - **est.** 8h
 
-### T-42 [ ] · Implement brand-extraction LLM call (Stage 2)
+### T-42 [x] · Implement brand-extraction LLM call (Stage 2)
 - **Depends-on:** T-41
 - **Reads:** `docs/SETUP_PIPELINE.md` §5 Stage 2 prompt
 - **Outputs:** `src/setup/extract-brand.ts` + tests
 - **Acceptance:** Given a sample demo-analysis.json, calls the LLM and produces a `brand.draft.yaml` that passes `BrandTokensSchema`. On validation failure, retries up to 2× with corrective re-prompt.
 - **est.** 6h
 
-### T-43 [ ] · Implement catalogue-diff LLM call (Stage 3)
+### T-43 [x] · Implement catalogue-diff LLM call (Stage 3)
 - **Depends-on:** none
 - **Reads:** `docs/SETUP_PIPELINE.md` §5 Stage 3 prompt
 - **Outputs:** `src/setup/catalogue-diff.ts` + tests
 - **Acceptance:** Produces a valid `catalogue-diff.json` with `usedBlocks`, `unusedBlocks`, `newBlockProposals`. Returns `{escalate: true}` if proposals > 10.
 - **est.** 4h
 
-### T-44 [ ] · Implement the scaffold templates (literal files)
+### T-44 [x] · Implement the scaffold templates (literal files)
 - **Depends-on:** none
 - **Reads:** `docs/SETUP_PIPELINE.md` §3
 - **Outputs:** `src/setup/scaffold/SCHEMA_SCAFFOLD.ts.template`, `RENDERER_SCAFFOLD.tsx.template`, `NODE_SCAFFOLD.tsx.template`, `TEST_SCAFFOLD.test.ts.template`
 - **Acceptance:** Each template has the AI_FILL regions marked clearly; non-AI_FILL regions match the reference callout block's pattern exactly.
 - **est.** 4h
 
-### T-45 [ ] · Implement code-generation LLM call (Stage 4)
+### T-45 [x] · Implement code-generation LLM call (Stage 4)
 - **Depends-on:** T-44, T-43
 - **Reads:** `docs/SETUP_PIPELINE.md` §5 Stage 4 prompt
 - **Outputs:** `src/setup/generate-block.ts` + tests
 - **Acceptance:** Given a sample proposal from T-43, produces four files. Each file is syntactically valid TypeScript (verified by running `tsc --noEmit` against them).
 - **est.** 8h
 
-### T-46 [ ] · Implement the lint enforcement (whitelist + forbidden patterns + hex colors)
+### T-46 [x] · Implement the lint enforcement (whitelist + forbidden patterns + hex colors)
 - **Depends-on:** none
 - **Reads:** `docs/SETUP_PIPELINE.md` §4, `docs/adr/ADR-0001.md`, D-36
 - **Outputs:** `src/setup/lint-generated.ts` + tests
 - **Acceptance:** A deliberately-malicious generated file (containing `dangerouslySetInnerHTML`) fails lint. A clean generated file passes. Hex colors in string literals are rejected. **Per ADR-0001:** also rejects `parent`, `top`, `window.localStorage`, `document.cookie`, `postMessage`, and obvious intrinsic monkey-patching (`Array.prototype.X = ...`).
 - **est.** 7h (extended pattern list adds ~1h)
 
-### T-46b [ ] · Implement the runtime render-budget watchdog (D-36, ADR-0001)
+### T-46b [x] · Implement the runtime render-budget watchdog (D-36, ADR-0001)
 - **Depends-on:** none
 - **Reads:** `docs/adr/ADR-0001.md`
 - **Outputs:** `src/block-primitives/RenderWatchdog.tsx` — a higher-order component that wraps every generated-block React component and measures per-render duration via `performance.now()`. If a render exceeds 50ms, the watchdog unmounts the block and replaces it with an error placeholder (`<RenderFailedPlaceholder reason="render-budget-exceeded" />`).
