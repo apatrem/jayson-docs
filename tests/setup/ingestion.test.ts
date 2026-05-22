@@ -1,10 +1,11 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { mkdtempSync, rmSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import pptxgen from "pptxgenjs";
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import {
   analyzeDemoDirectory,
   analyzeDemoFile,
@@ -12,15 +13,13 @@ import {
 } from "../../src/setup/ingestion/analyze";
 import { DEMO_ANALYSIS_SCHEMA_VERSION } from "../../src/setup/ingestion/types";
 
-const fixtureDir = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "../fixtures/setup-demos",
-);
+// Generated samples land in a temp dir so test runs never mutate the tracked
+// fixtures under tests/fixtures/setup-demos/ (those are read-only goldens
+// consumed by catalogue-diff and scan-demos tests).
+let fixtureDir: string;
 
-async function ensureSetupFixtures(): Promise<void> {
-  await mkdir(fixtureDir, { recursive: true });
-
-  const docxPath = join(fixtureDir, "sample.docx");
+async function writeSetupFixtures(targetDir: string): Promise<void> {
+  const docxPath = join(targetDir, "sample.docx");
   const doc = new Document({
     sections: [
       {
@@ -49,7 +48,7 @@ async function ensureSetupFixtures(): Promise<void> {
   });
   await writeFile(docxPath, await Packer.toBuffer(doc));
 
-  const pptxPath = join(fixtureDir, "sample.pptx");
+  const pptxPath = join(targetDir, "sample.pptx");
   const pptx = new pptxgen();
   const slide = pptx.addSlide();
   slide.addText("Strategic context", {
@@ -71,7 +70,7 @@ async function ensureSetupFixtures(): Promise<void> {
   const pptxData = (await pptx.write({ outputType: "nodebuffer" })) as Buffer;
   await writeFile(pptxPath, pptxData);
 
-  const pdfPath = join(fixtureDir, "sample.pdf");
+  const pdfPath = join(targetDir, "sample.pdf");
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([612, 792]);
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -86,7 +85,14 @@ async function ensureSetupFixtures(): Promise<void> {
 
 describe("setup ingestion (T-41)", () => {
   beforeAll(async () => {
-    await ensureSetupFixtures();
+    fixtureDir = mkdtempSync(join(tmpdir(), "setup-ingestion-"));
+    await writeSetupFixtures(fixtureDir);
+  });
+
+  afterAll(() => {
+    if (fixtureDir) {
+      rmSync(fixtureDir, { recursive: true, force: true });
+    }
   });
 
   it.each([
