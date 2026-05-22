@@ -121,7 +121,7 @@ The single largest phase. Plan ≥ 6 weeks of focused work.
 - **Acceptance:** accepts a minimal `{ type: "doc", content: [] }`; rejects bare strings.
 - **est.** 1h
 
-### T-12 [ ] · Implement `BlockBaseSchema`
+### T-12 [x] · Implement `BlockBaseSchema`
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` §3
 - **Outputs:** `src/schema/blocks/index.ts` (just the base for now; union added in T-28)
