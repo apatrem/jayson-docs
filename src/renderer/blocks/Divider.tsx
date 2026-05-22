@@ -91,6 +91,7 @@ export const Divider: FC<DividerProps> = ({ block, context = "document" }) => {
 
   return (
     <hr
+      className="doc-page-break"
       data-block-id={block.id}
       data-block-type="divider"
       data-render-context="document"

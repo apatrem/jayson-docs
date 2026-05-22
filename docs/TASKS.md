@@ -417,7 +417,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Charts, tables, headings don't split across pages (verified by exporting a long fixture with a chart near the page boundary and checking the PDF visually + via PDF text extraction).
 - **est.** 3h
 
-### T-55 [ ] · Add the `divider` block's page-break handling
+### T-55 [x] · Add the `divider` block's page-break handling
 - **Depends-on:** T-39, T-54
 - **Reads:** none
 - **Outputs:** updates to `src/renderer/blocks/Divider.tsx`

@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-22T16:25:00Z
+**Last fire:** 2026-05-22T16:27:00Z
 **State:** RUNNING
 **Running on:** Cursor Composer at (effort unknown)
 
@@ -10,19 +10,19 @@
 
 ## Progress since the previous fire
 
-- ✅ T-54 completed (page-break CSS for PDF export)
+- ✅ T-55 completed (divider doc-page-break class)
 
 ## Next eligible task
 
-T-55 · Add the `divider` block's page-break handling
+T-56 · Add Mermaid pre-rendering for PDF export
 
 ## At a glance
 
-Total tasks: ~112   Done: 60   Open: ~52   Skipped: 1
+Total tasks: ~112   Done: 61   Open: ~51   Skipped: 1
 
 ## Recent commits
 
-(pending)
+T-54 on main
 
 ## CI status (origin/main)
 
