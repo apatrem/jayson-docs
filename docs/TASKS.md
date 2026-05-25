@@ -579,7 +579,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Editor can insert any of the 15 block types via the `insertXxx` commands.
 - **est.** 2h
 
-### T-76 + T-77 [ ] · Implement DocModel ⇄ ProseMirror orchestrator
+### T-76 + T-77 [x] · Implement DocModel ⇄ ProseMirror orchestrator
 - **Depends-on:** T-23b, T-24, T-25, T-26, T-27, T-29, T-30, T-31, T-32, T-34, T-35, T-36, T-37, T-38, T-39
 - **Reads:** `reference/mapping/mapping.ts`
 - **Outputs:** `src/editor/mapping.ts` implementing both `docModelToProseMirror` and `proseMirrorToDocModel` with the per-block dispatch + `assertNever` exhaustiveness check.
