@@ -593,7 +593,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** The editor cannot produce content with unknown block types or off-schema attrs. Pasting HTML with disallowed elements drops them.
 - **est.** 3h
 
-### T-79 [ ] · Implement block-palette UI
+### T-79 [x] · Implement block-palette UI
 - **Depends-on:** none
 - **Reads:** `blocks.catalogue.yaml`
 - **Outputs:** `src/editor/BlockPalette.tsx`
