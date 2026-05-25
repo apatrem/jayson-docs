@@ -677,7 +677,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Fixture validates against `DocModelSchema`. Loading the fixture into the editor produces 200±20 mounted node-views.
 - **est.** 1.5h
 
-### T-89c [ ] · Build the perf benchmark harness (D-39)
+### T-89c [x] · Build the perf benchmark harness (D-39)
 - **Depends-on:** T-89b
 - **Reads:** D-37, D-38
 - **Outputs:** `tests/perf/benchmark.test.ts` + `tests/perf/README.md` + CI hook
