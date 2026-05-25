@@ -173,9 +173,19 @@ export const Editor: FC<EditorProps> = ({
   onUpdate,
 }) => {
   const deck = docModel?.kind === "deck" ? docModel : null;
+  // M6 known limitation (see BLOCKERS.md drift-2026-05-25b): the deck surface
+  // strips the slide wrapper when feeding a slide into TipTap, so there is no
+  // inverse mapping from edited editor JSON back to the deck DocModel. Until
+  // that round-trip exists, force editable=false for decks — silently allowing
+  // edits would lose user input on the next slide switch.
+  const effectiveEditable = deck === null ? editable : false;
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const activeSlideIndex =
-    deck === null ? 0 : Math.min(currentSlideIndex, deck.slides.length - 1);
+    deck === null
+      ? 0
+      : // Math.max guards the empty-deck case (slides.length === 0 would
+        // otherwise yield -1 and an undefined slide lookup downstream).
+        Math.max(0, Math.min(currentSlideIndex, deck.slides.length - 1));
   const activeSlide = deck?.slides[activeSlideIndex];
   const editorContent = useMemo(
     () =>
@@ -187,7 +197,7 @@ export const Editor: FC<EditorProps> = ({
   const editor = useEditor({
     extensions: createEditorExtensions(),
     content: editorContent,
-    editable,
+    editable: effectiveEditable,
     editorProps: {
       attributes: {
         "aria-label": "Document editor",
@@ -218,7 +228,7 @@ export const Editor: FC<EditorProps> = ({
         <ToolbarButton
           label="Bold"
           active={editor?.isActive("bold") ?? false}
-          disabled={editor === null || !editable}
+          disabled={editor === null || !effectiveEditable}
           onClick={() => {
             editor?.chain().focus().toggleBold().run();
           }}
@@ -226,7 +236,7 @@ export const Editor: FC<EditorProps> = ({
         <ToolbarButton
           label="Italic"
           active={editor?.isActive("italic") ?? false}
-          disabled={editor === null || !editable}
+          disabled={editor === null || !effectiveEditable}
           onClick={() => {
             editor?.chain().focus().toggleItalic().run();
           }}

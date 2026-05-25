@@ -55,19 +55,30 @@ describe("PDF header/footer templates (T-53)", () => {
     expect(html).toContain('data-slide-layout="closing"');
   });
 
-  it("uses deck dimensions for PDF page options", () => {
+  it("defers deck page size to CSS @page and disables headers/footers", () => {
     const options = buildPdfOptions(
       brand,
       { headerTemplate: "<span></span>", footerTemplate: "<span></span>" },
       "deck",
     );
 
+    // Page geometry comes from `@page { size: ... }` injected in
+    // renderDocumentHtml; preferCSSPageSize tells Playwright to honor it
+    // and ignore width/height/format. The deck options object intentionally
+    // omits those fields to keep the source of truth in one place.
     expect(options).toMatchObject({
-      width: "1920px",
-      height: "1080px",
       printBackground: true,
       displayHeaderFooter: false,
+      preferCSSPageSize: true,
       margin: { top: "0", right: "0", bottom: "0", left: "0" },
     });
+    expect(options).not.toHaveProperty("width");
+    expect(options).not.toHaveProperty("height");
+    expect(options).not.toHaveProperty("format");
+
+    // Sanity-check that the brand has a non-trivial deck dimension so the
+    // CSS @page block produced elsewhere actually has something to bind to.
+    expect(brand.deck.dimensionsPx.width).toBeGreaterThan(0);
+    expect(brand.deck.dimensionsPx.height).toBeGreaterThan(0);
   });
 });

@@ -159,9 +159,12 @@ export function buildPdfOptions(
   kind: PdfModel["kind"] = "document",
 ) {
   if (kind === "deck") {
+    // Deck page geometry is driven entirely by the `@page { size: <w>px <h>px }`
+    // declaration injected into the HTML head by renderDocumentHtml. With
+    // preferCSSPageSize: true, Playwright honours that CSS and IGNORES the
+    // width/height/format options — passing both would be dead config and
+    // make it ambiguous which side owns page size. Leave the size to CSS.
     return {
-      width: `${brand.deck.dimensionsPx.width}px`,
-      height: `${brand.deck.dimensionsPx.height}px`,
       printBackground: true,
       displayHeaderFooter: false,
       preferCSSPageSize: true,

@@ -70,3 +70,36 @@ that prevents recurrence is linked in each entry.
   3. The prep diff MUST be independently reviewable — no orphan changes that don't serve at least one named downstream task.
   4. The prep commit's subject SHOULD reference the spanning tasks (e.g., "T-60/T-61/T-68: extend LlmEndpointSchema") rather than picking one arbitrarily, so the audit trail is honest.
 **No fix needed:** the precedent is recorded here so future reviewers don't flag it as a violation when they encounter "T-NN:" prep commits between marker-transition commits. The hook stays as-is.
+
+### [drift-2026-05-25a] M6 slide layouts are structural stubs, not per-design slots
+
+**Detected at:** 2026-05-25T16:00:00Z (M6 review)
+**Tasks affected:** T-104 (commit `7800995` "implement slide layout components")
+**Driver tier at commit time:** GPT-5.5 (Cursor Composer co-author) — default tier, T-104 not on escalation list
+**What happened:** All 15 slide layout components (`src/renderer/layouts/<Layout>.tsx`) export a near-identical body — they wrap `<SlideFrame>` and dump `slide.blocks` through a shared `<SlideBlocks>` helper. Per-layout differentiation is limited to the `contentStyle` prop (column count, alignment, padding). For example:
+  - `ChartCommentaryLayout` sets `gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)"` but does not place the chart block in the 2fr column and the prose commentary in the 1fr column — both blocks just fall into the grid in YAML order.
+  - `TeamLayout`, `KpisLayout`, `ProcessTimelineLayout` use a generic grid and do not render headshot strips, KPI cards, or timeline rails respectively — they're indistinguishable from `TitleBodyLayout` except for centering.
+  - Only `CoverLayout` (with its `CoverFallback`) and `SectionDividerLayout` (with `variant="section"` background inversion) have any structural identity beyond styling.
+**What the spec said:** T-104 acceptance — "Each layout renders a slide using brand tokens; **block-content slots resolved per layout's design.**" The "block-content slots resolved per layout's design" bar is not met today; slots are resolved by YAML insertion order into a generic grid.
+**Why this is acceptable (for now):** The structural contract — closed set of 15 layouts, exhaustive dispatch via `satisfies Record<SlideLayout, SlideLayoutComponent>`, brand-token consumption, registry-matches-schema runtime test — is correct and verifiable. A consultant can author a deck today and it will render with the right layout family, brand colors, and 16:9 pagination. The visual fidelity gap is fillable layout-by-layout without re-architecting the dispatch surface.
+**Acceptance criteria for M7 follow-up (when fleshing out layouts):**
+  1. Each layout SHOULD declare its slot contract (which block types it expects, how many, in which positions) at the top of its component file as a JSDoc / typed schema.
+  2. Layouts with named slots (chart-commentary, two-column, three-column, kpis, team, image-caption) SHOULD route blocks to slots by `block.role` or block-type discrimination rather than insertion order.
+  3. The closed-set dispatch + brand-token + watchdog wiring established in T-103/T-104 MUST be preserved — the per-layout fleshing-out is additive, not a rewrite.
+  4. Add per-layout snapshot or visual-regression tests (one per layout) so future layout edits can't silently regress the slot contract.
+**No marker change:** T-104 stays `[x]`. The work meets the structural acceptance bar; the design-fidelity bar is a known scope gap, recorded here so M7 reviewers start with a clear inventory.
+
+### [drift-2026-05-25b] Deck editor surface is navigation-only, not edit-capable
+
+**Detected at:** 2026-05-25T16:00:00Z (M6 review)
+**Tasks affected:** T-107 (commit `daac1dc` "add deck slide navigation to editor")
+**Driver tier at commit time:** GPT-5.5 (Cursor Composer co-author) — default tier
+**What happened:** `src/editor/Editor.tsx` accepts a `docModel?: DocModel` prop. When `docModel.kind === "deck"`, it renders the slide-strip + focus-area chrome and feeds the active slide's block content into TipTap via `editorContentForDeckSlide()`. That helper calls `docModelToProseMirror(deck)` and **strips the slide wrapper**, presenting only the slide's blocks as a flat `{ type: "doc", content: [...] }`. The slide-id binding is lost the moment content reaches TipTap. There is no inverse function (`proseMirrorToDeckSlide`) that would let `onUpdate` reconstruct a slide and merge it back into the deck DocModel.
+**What the spec said:** T-107 acceptance — "the editor shows slides as a vertical strip with a current-slide focus area; consultant can jump between slides." The acceptance bar is **navigation**, which the implementation meets. The spec does NOT require deck editing per se — but the `editable` prop defaults to `true` on the `Editor` component, which means a caller passing a deck would get a typeable surface whose edits are silently dropped on the next slide switch (since the focus-area re-mounts from the original deck DocModel, not from any captured edits).
+**Mitigation landed in this same review:** `src/editor/Editor.tsx` now forces `effectiveEditable = false` when `docModel.kind === "deck"`, regardless of the `editable` prop value. The toolbar buttons (`Bold`, `Italic`) and the TipTap editor instance both honour the forced read-only state. A regression test (`tests/editor/deck-navigation.test.tsx` — "forces read-only mode for decks even when editable=true is passed") guards this invariant. The forced read-only also closes an empty-deck underflow guard (`Math.max(0, …)` around the slide index).
+**Acceptance criteria for the M7 follow-up that re-enables deck editing:**
+  1. Implement `proseMirrorToDeckSlide(node: ProseMirrorNode, slideId: string): Slide` and a higher-level `editorContentToDeck(deck, slideIndex, editorContent): DeckModel` that merges edits back without disturbing other slides.
+  2. Add a deck round-trip test (analogous to `tests/deck-reuse.test.ts`) that proves `deck → slide focus → edit → reassemble → validateDocModel` is loss-less for at least one block type with prose marks.
+  3. Remove the `effectiveEditable = false` force in `Editor.tsx` and update the regression test to assert that bold/italic become available again when a deck is passed with `editable={true}`.
+  4. Preserve the slide-strip navigation chrome and the `currentSlideIndex` reset-on-deck-identity-change behavior — they are working as intended.
+**No marker change:** T-107 stays `[x]`. The navigation contract is met; the editing-back gap is recorded here so M7 reviewers know what's wired vs. what's stubbed.
