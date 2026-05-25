@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This runbook lets a devops admin set up Document System for a new consultancy install in less than one hour of hands-on time, excluding LLM-call latency and human review time for generated blocks.
+This runbook lets a devops admin set up Document System for a new consultancy install in roughly one hour of hands-on devops admin clock time, **excluding** LLM-call latency, human review time for proposed brand tokens, and human review time for proposed generated blocks. A real-world install with 5–10 generated-block proposals plus a careful brand review can easily run 2–3 wall-clock hours; the one-hour figure is the floor, not the ceiling.
 
 The setup flow turns curated demo files into:
 
@@ -119,13 +119,15 @@ npm run setup:validate -- \
   --generated-blocks generated-blocks/active
 ```
 
-Then run:
+That command checks the runtime install state — the approved `brand.yaml`, every approved generated block, and the cross-references between them.
+
+Then, **inside the repository checkout** (not the shared folder), run:
 
 ```bash
 bash scripts/verify-gates.sh
 ```
 
-Both commands must pass before configuring consultant machines.
+This is the dev-loop gate runner (tsc + lint + tests). It validates that the **repository checkout** the consultancy will ship from is internally consistent — it does NOT re-validate the shared folder. Both checks must pass before configuring consultant machines.
 
 ## Per-Consultant Machine Setup
 
@@ -146,10 +148,14 @@ The wizard asks for:
 
 The consultant must accept the privacy notice before setup writes config. The notice explains that no telemetry is collected and that the local cost ledger stores only operational spend fields.
 
-For scripted rollout, use:
+For scripted rollout, read the keys interactively so they never enter shell history:
 
 ```bash
-FAST_API_KEY="..." THINKING_API_KEY="..." npm run setup:install -- \
+read -rs -p "Fast API key: " FAST_API_KEY; echo
+read -rs -p "Thinking API key: " THINKING_API_KEY; echo
+export FAST_API_KEY THINKING_API_KEY
+
+npm run setup:install -- \
   --name "Jane Smith" \
   --email j.smith@boutique.example \
   --role consultant \
@@ -161,9 +167,66 @@ FAST_API_KEY="..." THINKING_API_KEY="..." npm run setup:install -- \
   --thinking-model claude-opus-4-7 \
   --monthly-cap-usd 50 \
   --accept-privacy-notice
+
+unset FAST_API_KEY THINKING_API_KEY
 ```
 
-Do not place API keys in shell history on shared machines. Prefer a secured devops shell, temporary environment injection, or manual interactive entry.
+`read -rs` suppresses echo so the typed key never appears on the terminal; the keys live in the environment only for the lifetime of the `npm run setup:install` process and are unset immediately after. **Never** prefix the command with `FAST_API_KEY="..." THINKING_API_KEY="..." npm run ...` — that form ends up in `~/.bash_history` / `~/.zsh_history` on shared machines and is hard to scrub.
+
+## Rollback
+
+If validation fails partway through, back the shared state out before re-running. The pieces written by this runbook are all on disk and reversible by hand.
+
+### Rollback after step 3 (brand approved + copied)
+
+```bash
+# Remove the approved brand from the shared folder.
+rm ~/Consultancy-Shared/brand.yaml
+# (Optional) wipe the setup-output folder so the next run starts clean.
+rm -rf /tmp/docsystem-setup-output
+```
+
+### Rollback after step 4 (some generated blocks moved into active/)
+
+```bash
+# Identify blocks moved this run and move them back to pending/ for review.
+# Replace <block-folder> with the folder name reported in step 4 output.
+mkdir -p /tmp/docsystem-setup-output/generated-blocks/pending
+mv generated-blocks/active/<block-folder> /tmp/docsystem-setup-output/generated-blocks/pending/
+
+# After moving all this-run blocks back, re-run validation:
+npm run setup:validate -- \
+  --shared ~/Consultancy-Shared \
+  --generated-blocks generated-blocks/active
+```
+
+Do not blanket-delete `generated-blocks/active/` — earlier installs may have approved blocks there that you must not lose. Only move back the folders this run added.
+
+### Rollback after a failed per-consultant install
+
+```bash
+# Per-consultant config lives in the app config directory. Remove the
+# config file; the wizard will recreate it on the next run.
+# macOS:   ~/Library/Application Support/DocSystem/config.yaml
+# Windows: %APPDATA%\DocSystem\config.yaml
+# Linux:   $XDG_CONFIG_HOME/DocSystem/config.yaml (default: ~/.config/DocSystem/)
+
+# Also clear keychain entries (macOS example — adjust per OS):
+security delete-generic-password -s DocSystem-fast || true
+security delete-generic-password -s DocSystem-thinking || true
+```
+
+The cost ledger (`cost.db`) in the same folder is **not** touched by rollback — historical spend rows are operational data, not install state. Wipe explicitly via `Settings -> My LLM Spend -> Clear all cost history` if you also want to reset spend tracking.
+
+## First-Launch Notes (Unsigned Installers)
+
+Until T-108 (code signing) lands, installers are unsigned on macOS and Windows. The first launch will trigger OS protection prompts:
+
+- **macOS Gatekeeper:** opening the `.dmg` will show "DocSystem can't be opened because it is from an unidentified developer." Right-click the `.app` in Finder → **Open** → confirm in the dialog. macOS then remembers the choice. Do not bypass globally with `sudo spctl --master-disable` — that weakens system-wide security for one app.
+- **Windows SmartScreen:** Microsoft Defender SmartScreen shows "Windows protected your PC." Click **More info** → **Run anyway**. SmartScreen also remembers the per-binary choice.
+- **Linux AppImage:** mark executable (`chmod +x DocSystem-*.AppImage`); no Gatekeeper-equivalent prompt.
+
+Document this in the consultancy onboarding email so consultants know it's expected. Once T-108 ships, both prompts disappear and this section can be removed from the runbook.
 
 ## Verification Checklist
 

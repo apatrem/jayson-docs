@@ -104,6 +104,24 @@ that prevents recurrence is linked in each entry.
   4. Preserve the slide-strip navigation chrome and the `currentSlideIndex` reset-on-deck-identity-change behavior — they are working as intended.
 **No marker change:** T-107 stays `[x]`. The navigation contract is met; the editing-back gap is recorded here so M7 reviewers know what's wired vs. what's stubbed.
 
+### [drift-2026-05-25c] Cost-ledger 13-month auto-prune is implemented but not wired into app startup
+
+**Detected at:** 2026-05-25T17:30:00Z (Phase 7 review of T-111)
+**Tasks affected:** T-111 (privacy notice), with root cause in app-shell wiring (no specific task yet)
+**What happened:** The `docs/privacy-notice.md` text promises "Rows older than 13 months are pruned automatically" in both EN and FR, and the install wizard repeats the same promise. The mechanism exists and is tested:
+  - `src/cost-ledger/prune.ts` exports `pruneCostLedgerOnLaunch(db, now)` (one-shot, fires once when called) and `scheduleCostLedgerPruning(db, options)` (24h interval timer).
+  - `tests/cost-ledger/prune.test.ts` covers the retention cutoff math, the one-shot deletion, and the scheduled-interval behavior with injected `setInterval`.
+  - `COST_LEDGER_RETENTION_MONTHS = 13` is the single source of truth.
+**Why this is a drift, not a bug today:** Both functions are exported but **never called from the runtime app**. `src/App.tsx` returns `null` (no shell wired), `src/main.tsx` only mounts the empty App, and the only `openCostLedger` callsite (`src/setup/install.ts:142`) is the install-time wizard — which uses the ledger for setup validation, then exits. So the prune never runs on a consultant's machine today.
+**Privacy-invariant exposure:** Until the app shell is wired and `pruneCostLedgerOnLaunch` (or `scheduleCostLedgerPruning`) is called on a long-running session, rows will accumulate indefinitely. A consultant who installs v0.1.0 and runs it for two years will have a `cost.db` with 24 months of rows even though the privacy notice promised 13.
+**Why this is acceptable for today's repo:** The app shell hasn't been built yet — every milestone task is module-level (schema, renderer, editor, comments, deck). There is no atomic task in `docs/TASKS.md` for "wire app startup" because that's implied by `T-01` scaffolding which produced an empty `App.tsx`. The prune-wiring gap is one of several wiring gaps that surface during the v1.0.0 integration pass.
+**Acceptance criteria for the follow-up:**
+  1. When the app shell mounts the main window for the first time after launch, it MUST call `pruneCostLedgerOnLaunch(db)` exactly once with the runtime cost-ledger handle.
+  2. The shell MUST also call `scheduleCostLedgerPruning(db)` and retain the returned cancel function for clean teardown on app quit.
+  3. v1.0.0 MUST NOT ship until both calls exist in `src/App.tsx` (or whatever shell entry point owns the cost-ledger lifecycle). The privacy notice promise is part of the v1 install-time disclosure — shipping without the wired prune would be a written-promise violation, not just a bug.
+  4. A smoke test (integration-level, not the existing unit test) SHOULD verify that opening the app on a clock-jumped session (e.g., system date set 14 months forward) deletes the expected rows.
+**No marker change:** T-111 stays `[x]` — the notice text is correct and the prune mechanism is implemented. T-67 (cost-ledger init) stays `[x]` — schema and CRUD are correct. The gap is in the app-shell wiring layer, which has no dedicated task yet.
+
 ---
 
 ## T-108 — Set up code signing (macOS, Windows)
@@ -124,8 +142,10 @@ that prevents recurrence is linked in each entry.
 **Fires unresolved:** 0
 **Reason:** Tauri updater configuration requires a real updater signing key pair and a hosted release-feed URL. The loop runner cannot safely invent these values or commit private updater keys.
 **Last attempt:** no commit — waiting on external dependency
+**Coupling with T-110:** `.github/workflows/release.yml` originally set `includeUpdaterJson: true` (T-110 commit `23ba48e`), which would have asked `tauri-action` to emit `latest.json` during a tag release. Without T-109's signing key + feed URL, that output is either skipped silently or partial. The follow-up commit `1ce7e7f`+ (Phase 7 review hardening) flips the flag back to `false` and adds a comment pointing here. When you land T-109, flip it back to `true` and the release pipeline will start emitting `latest.json` alongside the signed installers.
 **Suggested action for human:**
 - Generate/provide the Tauri updater signing key pair and decide where the JSON release feed will be hosted.
 - Store the private key outside the repository/CI secrets, provide the public key and feed URL, then change T-109 back to `[ ]`.
+- Re-enable `includeUpdaterJson: true` in `.github/workflows/release.yml` and add the feed URL to `tauri.conf.json` updater config.
 
 ---

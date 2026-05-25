@@ -32,9 +32,17 @@ The cost ledger never stores:
 - Editing patterns.
 - Any behavioral signal beyond what is required to compute spend.
 
-The cost ledger is a local SQLite database at the app config path, for example `~/Library/Application Support/DocSystem/cost.db` on macOS. It is never written to the cloud-sync folder and is never transmitted off the machine by the app. Rows older than 13 months are pruned automatically.
+The cost ledger is a local SQLite database at the app config path. Per platform:
 
-Consultants can view cost rows in `Settings -> My LLM Spend`, clear all cost history with the wipe button, or disable cost tracking entirely. Disabling cost tracking also disables monthly limits because the limits depend on the ledger.
+- macOS: `~/Library/Application Support/DocSystem/cost.db`
+- Windows: `%APPDATA%\DocSystem\cost.db`
+- Linux: `$XDG_CONFIG_HOME/DocSystem/cost.db` (falls back to `~/.config/DocSystem/cost.db`)
+
+It is never written to the cloud-sync folder and is never transmitted off the machine by the app. Rows older than 13 months are pruned automatically.
+
+Consultants can view cost rows in `Settings -> My LLM Spend`, clear all cost history with the wipe button, or disable cost tracking entirely.
+
+**Important:** disabling cost tracking also disables the monthly LLM spend cap, because the cap is computed from the ledger. If you disable tracking, the app cannot warn you before a bill arrives. Re-enable tracking to restore cap protection — historical spend during the disabled period is not recoverable.
 
 ## Français
 
@@ -68,6 +76,14 @@ Le registre des coûts ne stocke jamais :
 - Les schémas d'édition.
 - Tout signal comportemental autre que ce qui est nécessaire au calcul du coût.
 
-Le registre des coûts est une base SQLite locale située dans le dossier de configuration de l'application, par exemple `~/Library/Application Support/DocSystem/cost.db` sur macOS. L'application ne l'écrit jamais dans le dossier synchronisé et ne le transmet jamais hors de la machine. Les lignes de plus de 13 mois sont supprimées automatiquement.
+Le registre des coûts est une base SQLite locale située dans le dossier de configuration de l'application. Selon la plateforme :
 
-Les consultants peuvent consulter les lignes de coût dans `Settings -> My LLM Spend`, effacer tout l'historique avec le bouton de suppression, ou désactiver complètement le suivi des coûts. Désactiver le suivi des coûts désactive aussi les plafonds mensuels, car ces plafonds dépendent du registre.
+- macOS : `~/Library/Application Support/DocSystem/cost.db`
+- Windows : `%APPDATA%\DocSystem\cost.db`
+- Linux : `$XDG_CONFIG_HOME/DocSystem/cost.db` (par défaut `~/.config/DocSystem/cost.db`)
+
+L'application ne l'écrit jamais dans le dossier synchronisé et ne le transmet jamais hors de la machine. Les lignes de plus de 13 mois sont supprimées automatiquement.
+
+Les consultants peuvent consulter les lignes de coût dans `Settings -> My LLM Spend`, effacer tout l'historique avec le bouton de suppression, ou désactiver complètement le suivi des coûts.
+
+**Important :** désactiver le suivi des coûts désactive aussi le plafond mensuel de dépenses LLM, car ce plafond est calculé à partir du registre. Si vous désactivez le suivi, l'application ne peut pas vous alerter avant l'arrivée d'une facture. Réactivez le suivi pour restaurer la protection du plafond — les dépenses historiques pendant la période de désactivation ne sont pas récupérables.
