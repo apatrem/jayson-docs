@@ -774,7 +774,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Two proposed patches targeting overlapping ranges in the same block are flagged with a yellow "Conflict" badge; consultant must pick one before either can be accepted.
 - **est.** 3h
 
-### T-100 [ ] · Implement reviewer mode (read-only with comments)
+### T-100 [x] · Implement reviewer mode (read-only with comments)
 - **Depends-on:** none
 - **Reads:** D-26
 - **Outputs:** `src/comments/ReviewerMode.tsx`
