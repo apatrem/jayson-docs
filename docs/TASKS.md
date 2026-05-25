@@ -702,7 +702,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ---
 
-## Phase 5 — M5: Comment-to-AI
+## Phase 5 — M5: Comment-to-AI [GATE FAILED]
 
 ### T-90 [ ] · Implement the comment mark (inline highlight)
 - **Depends-on:** none
