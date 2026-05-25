@@ -531,7 +531,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** When current-month spend ≥ 80%, returns a warning flag. At 100%, blocks further LLM calls until next month (or admin override). Limit values come from AppConfig.
 - **est.** 4h
 
-### T-70 [ ] · Implement 13-month sliding-window retention
+### T-70 [x] · Implement 13-month sliding-window retention
 - **Depends-on:** T-67
 - **Reads:** D-34
 - **Outputs:** `src/cost-ledger/prune.ts` (runs on app launch + nightly via a setInterval)
