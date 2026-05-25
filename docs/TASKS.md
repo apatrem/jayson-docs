@@ -621,7 +621,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** After each edit, saves the YAML to disk after a debounce (default 2s). Existing in-memory undo stack unaffected.
 - **est.** 3h
 
-### T-83 [ ] · Implement undo/redo with operation-level granularity
+### T-83 [x] · Implement undo/redo with operation-level granularity
 - **Depends-on:** none
 - **Reads:** D-06, D-07
 - **Outputs:** Reuse TipTap's history extension; ensure each comment-accept also pushes an undo entry.

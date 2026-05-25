@@ -1,4 +1,4 @@
-import type { Extensions } from "@tiptap/core";
+import type { Editor as TipTapEditor, Extensions } from "@tiptap/core";
 import { Blockquote } from "@tiptap/extension-blockquote";
 import { Bold } from "@tiptap/extension-bold";
 import { Code } from "@tiptap/extension-code";
@@ -13,6 +13,7 @@ import { Paragraph } from "@tiptap/extension-paragraph";
 import { Strike } from "@tiptap/extension-strike";
 import { Text } from "@tiptap/extension-text";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
+import { closeHistory } from "@tiptap/pm/history";
 import type { CSSProperties, FC } from "react";
 import { BulletListTipTapNode } from "./nodes/BulletListNode";
 import { CalloutTipTapNode } from "./nodes/CalloutNode";
@@ -133,6 +134,15 @@ export function createEditorExtensions(): Extensions {
 
 export function assertClosedEditorContent(content: JSONContent): void {
   assertClosedNode(content);
+}
+
+export function runAsSeparateUndoStep(
+  editor: TipTapEditor,
+  operation: (editor: TipTapEditor) => void,
+): void {
+  editor.view.dispatch(closeHistory(editor.state.tr));
+  operation(editor);
+  editor.view.dispatch(closeHistory(editor.state.tr));
 }
 
 export function sanitizePastedHtml(html: string): string {
