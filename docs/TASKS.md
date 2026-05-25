@@ -614,7 +614,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** When editing a slide, blocks snap to the layout's defined slots; consultant cannot place blocks outside slots.
 - **est.** 6h (slated to v1.1 — flag with TODO in M4)
 
-### T-82 [ ] · Implement autosave with debounce
+### T-82 [x] · Implement autosave with debounce
 - **Depends-on:** none
 - **Reads:** D-05, `docs/TYPES.md` AppConfig.editor.autosaveDebounceMs
 - **Outputs:** `src/editor/autosave.ts`
