@@ -822,7 +822,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Deck exports to a PDF with one page per slide, 16:9 aspect by default.
 - **est.** 3h
 
-### T-106 [ ] · Test: deck reuses schema, editor, and comment system unchanged
+### T-106 [x] · Test: deck reuses schema, editor, and comment system unchanged
 - **Depends-on:** T-103
 - **Reads:** M4, M5
 - **Outputs:** `tests/deck-reuse.test.ts`
