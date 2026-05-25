@@ -5,6 +5,7 @@ import type { Comment } from "../schema/comment";
 import type { DocModel } from "../schema/docmodel";
 import { acceptCommentProposal, rejectCommentProposal } from "./ApplyComment";
 import { BulkActions } from "./BulkActions";
+import { detectCommentConflicts } from "./ConflictDetector";
 import {
   latestAiProposal,
   ProposalCard,
@@ -256,22 +257,28 @@ export function buildReviewProposals(
   uiState: Record<string, Partial<ProposalUiState>> = {},
 ): ReviewProposal[] {
   const locations = blockLocations(doc);
+  const conflictMap = detectCommentConflicts(comments);
   return comments
     .filter((comment) => comment.status === "open")
     .map((comment) => {
       const aiProposal = latestAiProposal(comment);
       const location = locations.get(comment.blockId);
       const stateOverride = uiState[comment.id] ?? {};
+      const conflictsWith = stateOverride.conflictsWith ?? conflictMap[comment.id];
       const ui: ProposalUiState = {
         commentId: comment.id,
-        uiStatus: stateOverride.uiStatus ?? "pending",
+        uiStatus:
+          stateOverride.uiStatus ??
+          (conflictsWith === undefined || conflictsWith.length === 0
+            ? "pending"
+            : "conflict"),
         retryCount: stateOverride.retryCount ?? 0,
         ...(stateOverride.pendingFollowUp === undefined
           ? {}
           : { pendingFollowUp: stateOverride.pendingFollowUp }),
-        ...(stateOverride.conflictsWith === undefined
+        ...(conflictsWith === undefined
           ? {}
-          : { conflictsWith: stateOverride.conflictsWith }),
+          : { conflictsWith }),
         ...(stateOverride.rawFailedOutput === undefined
           ? {}
           : { rawFailedOutput: stateOverride.rawFailedOutput }),

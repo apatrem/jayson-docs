@@ -767,7 +767,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Accept applies the patch to the DocModel and updates the comment's status. Each accept is its own undo step. Reject marks the comment rejected without modifying the doc.
 - **est.** 3h
 
-### T-99 [ ] · Implement conflict detection (overlapping patches in same block)
+### T-99 [x] · Implement conflict detection (overlapping patches in same block)
 - **Depends-on:** T-92
 - **Reads:** none
 - **Outputs:** `src/comments/ConflictDetector.ts`

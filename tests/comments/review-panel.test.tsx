@@ -205,4 +205,25 @@ describe("ReviewPanel", () => {
     expect(updatedDoc?.comments[0]?.status).toBe("applied");
     expect(JSON.stringify(updatedDoc)).toContain("block-a updated");
   });
+
+  it("marks overlapping proposals as conflicts and blocks accept", () => {
+    render(
+      <ReviewPanel
+        doc={doc}
+        comments={[
+          comment("comment-a", "block-a", "First block instruction"),
+          comment("comment-b", "block-a", "Second block instruction"),
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("conflict with comment-b")).toBeTruthy();
+    expect(
+      screen
+        .getByRole("button", {
+        name: "Accept proposal for comment-a in Section 1 > Block 1",
+        })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+  });
 });
