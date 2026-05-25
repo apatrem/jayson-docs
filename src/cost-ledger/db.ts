@@ -17,6 +17,7 @@ export const CostLedgerRowSchema = z
     computedCostUsd: z.number().nonnegative(),
     docId: z.string().uuid().optional(),
     callKind: z.enum(["generation", "comment-batch", "comment-single", "setup"]),
+    pricingSource: z.enum(["lookup", "adapter-default", "config-fallback"]),
   })
   .strict();
 
@@ -33,6 +34,7 @@ export const COST_LEDGER_COLUMNS = [
   "computed_cost_usd",
   "doc_id",
   "call_kind",
+  "pricing_source",
 ] as const;
 
 interface CostLedgerRowRecord {
@@ -46,6 +48,7 @@ interface CostLedgerRowRecord {
   computed_cost_usd: number;
   doc_id: string | null;
   call_kind: CostLedgerRow["callKind"];
+  pricing_source: CostLedgerRow["pricingSource"];
 }
 
 interface TableInfoRow {
@@ -77,6 +80,9 @@ export function migrateCostLedger(db: SqliteDatabase): void {
       doc_id TEXT,
       call_kind TEXT NOT NULL CHECK (
         call_kind IN ('generation', 'comment-batch', 'comment-single', 'setup')
+      ),
+      pricing_source TEXT NOT NULL CHECK (
+        pricing_source IN ('lookup', 'adapter-default', 'config-fallback')
       )
     );
 
@@ -105,7 +111,8 @@ export class CostLedgerDb {
             cached_tokens,
             computed_cost_usd,
             doc_id,
-            call_kind
+            call_kind,
+            pricing_source
           ) VALUES (
             @id,
             @timestamp,
@@ -116,7 +123,8 @@ export class CostLedgerDb {
             @cached_tokens,
             @computed_cost_usd,
             @doc_id,
-            @call_kind
+            @call_kind,
+            @pricing_source
           )
         `,
       )
@@ -154,6 +162,7 @@ function toRecord(row: CostLedgerRow): CostLedgerRowRecord {
     computed_cost_usd: row.computedCostUsd,
     doc_id: row.docId ?? null,
     call_kind: row.callKind,
+    pricing_source: row.pricingSource,
   };
 }
 
@@ -168,6 +177,7 @@ function fromRecord(record: CostLedgerRowRecord): CostLedgerRow {
     cachedTokens: record.cached_tokens,
     computedCostUsd: record.computed_cost_usd,
     callKind: record.call_kind,
+    pricingSource: record.pricing_source,
     ...(record.doc_id === null ? {} : { docId: record.doc_id }),
   };
   return CostLedgerRowSchema.parse(row);

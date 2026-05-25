@@ -517,7 +517,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** SQLite db created at the OS config path; schema matches `CostLedgerRowSchema`. Schema enforces only the cost columns (no prompt/response content column exists).
 - **est.** 3h
 
-### T-68 [ ] · Implement cost-ledger insert on every LLM call
+### T-68 [x] · Implement cost-ledger insert on every LLM call
 - **Depends-on:** T-60, T-67
 - **Reads:** none
 - **Outputs:** updates to `src/llm/client.ts` to insert a row after each call. Cost computation is table-driven: `src/llm/pricing.ts` exports a `Pricing` map keyed by `${provider}:${model}` with `{ inputPer1k, cachedInputPer1k, outputPer1k }`. When a `${provider}:${model}` key is missing, fall back to an adapter-declared default (or, last resort, a configured `fallbackPricingPer1k` in `AppConfig`) and tag the row with `pricingSource: "lookup" | "adapter-default" | "config-fallback"` in a single non-content column for later analytics. No call ever fails because pricing is unknown.

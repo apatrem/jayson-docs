@@ -21,6 +21,7 @@ const exampleRow: CostLedgerRow = {
   computedCostUsd: 0.0124,
   docId: "22222222-2222-4222-8222-222222222222",
   callKind: "comment-batch",
+  pricingSource: "lookup",
 };
 
 describe("cost ledger SQLite setup (T-67)", () => {
