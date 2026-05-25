@@ -572,7 +572,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Editor renders, accepts text input, basic formatting (bold/italic) works.
 - **est.** 3h
 
-### T-75 [ ] · Register all 15 block TipTap nodes in the editor
+### T-75 [x] · Register all 15 block TipTap nodes in the editor
 - **Depends-on:** T-23, T-23b, T-24, T-25, T-26, T-27, T-29, T-30, T-31, T-32, T-34, T-35, T-36, T-37, T-38, T-39, T-74
 - **Reads:** none
 - **Outputs:** updates to `src/editor/Editor.tsx`

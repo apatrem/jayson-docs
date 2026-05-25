@@ -1,6 +1,21 @@
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import type { CSSProperties, FC } from "react";
+import { BulletListTipTapNode } from "./nodes/BulletListNode";
+import { CalloutTipTapNode } from "./nodes/CalloutNode";
+import { ChartTipTapNode } from "./nodes/ChartNode";
+import { DiagramTipTapNode } from "./nodes/DiagramNode";
+import { DividerTipTapNode } from "./nodes/DividerNode";
+import { HeadingTipTapNode } from "./nodes/HeadingNode";
+import { ImageTipTapNode } from "./nodes/ImageNode";
+import { KpiCardsTipTapNode } from "./nodes/KpiCardsNode";
+import { NumberedListTipTapNode } from "./nodes/NumberedListNode";
+import { ProseTipTapNode } from "./nodes/ProseNode";
+import { RiskMatrixTipTapNode } from "./nodes/RiskMatrixNode";
+import { RoadmapTipTapNode } from "./nodes/RoadmapNode";
+import { DocTableTipTapNode } from "./nodes/TableNode";
+import { TeamTipTapNode } from "./nodes/TeamNode";
+import { TimelineTipTapNode } from "./nodes/TimelineNode";
 
 export interface EditorProps {
   initialContent?: JSONContent | string;
@@ -18,13 +33,37 @@ const DEFAULT_CONTENT: JSONContent = {
   ],
 };
 
+const blockExtensions = [
+  BulletListTipTapNode,
+  CalloutTipTapNode,
+  ChartTipTapNode,
+  DiagramTipTapNode,
+  DividerTipTapNode,
+  HeadingTipTapNode,
+  ImageTipTapNode,
+  KpiCardsTipTapNode,
+  NumberedListTipTapNode,
+  ProseTipTapNode,
+  RiskMatrixTipTapNode,
+  RoadmapTipTapNode,
+  DocTableTipTapNode,
+  TeamTipTapNode,
+  TimelineTipTapNode,
+];
+
 export const Editor: FC<EditorProps> = ({
   initialContent = DEFAULT_CONTENT,
   editable = true,
   onUpdate,
 }) => {
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit.configure({
+        bulletList: false,
+        heading: false,
+      }),
+      ...blockExtensions,
+    ],
     content: initialContent,
     editable,
     editorProps: {
