@@ -586,7 +586,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** matches T-89 (the round-trip test fixture). Adding a new block type without adding both dispatch arms is a compile-time error.
 - **est.** 3h (down from 8h thanks to the worked reference)
 
-### T-78 [ ] · Implement closed-schema enforcement in the editor
+### T-78 [x] · Implement closed-schema enforcement in the editor
 - **Depends-on:** T-75
 - **Reads:** none
 - **Outputs:** TipTap schema config + tests
