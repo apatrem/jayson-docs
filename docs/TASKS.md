@@ -510,7 +510,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Given a comment with a multi-round thread, produces the correctly-ordered `thread[]` array of `{role, content}` for the LLM request. Matches `examples/sample-llm-batch-request.json` structure.
 - **est.** 2h
 
-### T-67 [ ] · Set up SQLite for cost ledger
+### T-67 [x] · Set up SQLite for cost ledger
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` §9 CostLedgerRow, D-34
 - **Outputs:** `src/cost-ledger/db.ts` (better-sqlite3 wrapper), schema migration
