@@ -552,17 +552,31 @@ Telemetry: NONE
 const PRIVACY_NOTICE = `
 Document System — Setup
 
-This wizard configures the app for your machine.
+This wizard configures the app for your machine. Before continuing, review
+the privacy notice in docs/privacy-notice.md.
 
-Stored locally:
-- Your user identity, cloud-sync paths, and model preferences in config.yaml.
+What is stored locally:
+- Your identity for attribution: name, email, role, and initials.
+- Cloud-sync and shared brand folder paths.
+- LLM provider and model preferences.
 - LLM API keys in your OS keychain, never in config.yaml.
-- Per-call LLM cost fields used to enforce monthly limits.
+- Operational LLM cost rows: timestamp, model, input/output tokens,
+  computed cost, document ID, and cost aggregates by document/day/month.
 
-Not stored:
-- Prompt content, response content, behavioral analytics, or telemetry.
+What is never stored:
+- Prompt contents, response contents, block IDs, comment IDs, comment text,
+  accept/reject outcomes, editing patterns, analytics, or usage telemetry.
 
-You can view, wipe, or disable cost tracking from Settings.
+Where cost data lives:
+- A local SQLite database in the app config folder.
+- Never in the cloud-sync folder.
+- Never transmitted off this machine by the app.
+- Rows older than 13 months are pruned automatically.
+
+Controls:
+- View rows in Settings -> My LLM Spend.
+- Clear all cost history with the wipe button.
+- Disable cost tracking entirely. This also disables monthly limits.
 `;
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {

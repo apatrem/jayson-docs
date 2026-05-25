@@ -857,7 +857,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Pushing a `v1.0.0` tag produces 3 installers in the release artifacts.
 - **est.** 6h
 
-### T-111 [ ] · Write the privacy notice (install-time disclosure)
+### T-111 [x] · Write the privacy notice (install-time disclosure)
 - **Depends-on:** none
 - **Reads:** D-32, D-34
 - **Outputs:** `docs/privacy-notice.md` + install-flow integration (T-73)
