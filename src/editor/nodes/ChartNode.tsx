@@ -43,6 +43,7 @@ interface ChartAttrs {
   axes?: ChartAxes;
   palette: "qualitative" | "sequential";
   showLegend: boolean;
+  legendPosition: "bottom" | "right" | "top";
   showDataLabels: boolean;
   note: string;
 }
@@ -105,6 +106,7 @@ export const ChartTipTapNode = Node.create({
             },
             palette: attrs.palette ?? "qualitative",
             showLegend: attrs.showLegend ?? true,
+            legendPosition: attrs.legendPosition ?? "bottom",
             showDataLabels: attrs.showDataLabels ?? false,
             note: attrs.note ?? "",
           };
@@ -152,6 +154,7 @@ const ChartNodeView: FC<NodeViewProps> = ({ node, selected }) => {
       data: parsed.data,
       palette: parsed.palette,
       showLegend: parsed.showLegend,
+      legendPosition: parsed.legendPosition,
       showDataLabels: parsed.showDataLabels,
       note: parsed.note || undefined,
       ...(parsed.axes ? { axes: parsed.axes } : {}),
@@ -204,6 +207,7 @@ export function chartBlockToProseMirror(block: ChartBlock): unknown {
     data: block.data,
     palette: block.palette,
     showLegend: block.showLegend,
+    legendPosition: block.legendPosition,
     showDataLabels: block.showDataLabels,
     note: block.note ?? "",
   };
@@ -231,6 +235,7 @@ export function proseMirrorToChartBlock(node: {
     data: parsed.data,
     palette: parsed.palette,
     showLegend: parsed.showLegend,
+    legendPosition: parsed.legendPosition,
     showDataLabels: parsed.showDataLabels,
   };
   if (parsed.takeaway) {

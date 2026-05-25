@@ -165,7 +165,7 @@ export function getEChartsOption(
     return {
       color: palette,
       textStyle: baseTextStyle,
-      legend: block.showLegend ? { bottom: 0, textStyle: baseTextStyle } : { show: false },
+      legend: legendOption(block, baseTextStyle),
       tooltip: { trigger: "item" },
       series: [
         {
@@ -240,10 +240,8 @@ export function getEChartsOption(
   return {
     color: palette,
     textStyle: baseTextStyle,
-    grid: { top: 30, right: 24, bottom: block.showLegend ? 60 : 30, left: 56 },
-    legend: block.showLegend
-      ? { bottom: 0, textStyle: baseTextStyle }
-      : { show: false },
+    grid: gridForLegend(block),
+    legend: legendOption(block, baseTextStyle),
     tooltip: { trigger: "axis" },
     xAxis: {
       type: isCategoryX ? ("category" as const) : ("value" as const),
@@ -271,6 +269,37 @@ export function getEChartsOption(
     },
     series,
   } as EChartsOption;
+}
+
+function legendOption(
+  block: ChartBlock,
+  textStyle: { fontFamily: string; fontSize: number; color: string },
+) {
+  if (!block.showLegend) {
+    return { show: false };
+  }
+  switch (block.legendPosition) {
+    case "top":
+      return { top: 0, textStyle };
+    case "right":
+      return { right: 0, orient: "vertical" as const, textStyle };
+    case "bottom":
+      return { bottom: 0, textStyle };
+  }
+}
+
+function gridForLegend(block: ChartBlock) {
+  if (!block.showLegend) {
+    return { top: 30, right: 24, bottom: 30, left: 56 };
+  }
+  switch (block.legendPosition) {
+    case "top":
+      return { top: 60, right: 24, bottom: 30, left: 56 };
+    case "right":
+      return { top: 30, right: 120, bottom: 30, left: 56 };
+    case "bottom":
+      return { top: 30, right: 24, bottom: 60, left: 56 };
+  }
 }
 
 /** Pack a flat [x, y, x, y, ...] array into [[x, y], [x, y], ...] for scatter. */

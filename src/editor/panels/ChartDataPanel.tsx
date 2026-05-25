@@ -205,6 +205,22 @@ export const ChartDataPanel: FC<ChartDataPanelProps> = ({
           Show legend
         </label>
       </Field>
+      <Field label="Legend position">
+        <select
+          value={draft.legendPosition}
+          disabled={!draft.showLegend}
+          onChange={(e) =>
+            updateField(
+              "legendPosition",
+              e.target.value as ChartBlock["legendPosition"],
+            )
+          }
+        >
+          <option value="bottom">Bottom</option>
+          <option value="right">Right</option>
+          <option value="top">Top</option>
+        </select>
+      </Field>
       <Field>
         <label>
           <input

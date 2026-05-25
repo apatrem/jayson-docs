@@ -32,6 +32,7 @@ const minimalBarChart: ChartBlock = {
   },
   palette: "qualitative",
   showLegend: true,
+  legendPosition: "bottom",
   showDataLabels: false,
 };
 
@@ -53,6 +54,7 @@ const stackedBarChart: ChartBlock = {
   axes: { yTitle: "Annual OPEX" },
   palette: "qualitative",
   showLegend: true,
+  legendPosition: "bottom",
   showDataLabels: false,
 };
 
@@ -67,6 +69,7 @@ const validPieChart: ChartBlock = {
   },
   palette: "qualitative",
   showLegend: true,
+  legendPosition: "bottom",
   showDataLabels: true,
 };
 

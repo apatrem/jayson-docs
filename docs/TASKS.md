@@ -656,7 +656,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** On open, the editor banners missing referenced assets + orphan files in the assets/ folder. Both are warnings, not blockers. "Locate" button lets consultant point to a moved file.
 - **est.** 4h
 
-### T-88 [ ] · Implement chart-data side panel
+### T-88 [x] · Implement chart-data side panel
 - **Depends-on:** T-32
 - **Reads:** D-24
 - **Outputs:** `src/editor/panels/ChartDataPanel.tsx`

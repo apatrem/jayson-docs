@@ -88,6 +88,7 @@ export const ChartBlockDataSchema = BlockBaseSchema.extend({
   /** Which palette from brand tokens to use. */
   palette: z.enum(["qualitative", "sequential"]).default("qualitative"),
   showLegend: z.boolean().default(true),
+  legendPosition: z.enum(["bottom", "right", "top"]).default("bottom"),
   showDataLabels: z.boolean().default(false),
 }).strict();
 
