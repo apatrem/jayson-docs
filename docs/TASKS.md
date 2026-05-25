@@ -711,7 +711,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Consultant can highlight text and apply the mark; the marked range is visually distinguished; the mark survives text editing (anchored by id).
 - **est.** 4h
 
-### T-91 [ ] · Implement comment creation flow
+### T-91 [x] · Implement comment creation flow
 - **Depends-on:** T-90, T-14
 - **Reads:** none
 - **Outputs:** `src/comments/CreateComment.tsx` (popup on highlight)
