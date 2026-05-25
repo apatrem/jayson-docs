@@ -21,7 +21,7 @@ files.each do |relative_path|
     when ".json"
       JSON.parse(File.read(absolute_path))
     when ".yaml", ".yml"
-      YAML.load_file(absolute_path)
+      YAML.parse_file(absolute_path)
     end
     puts "OK #{relative_path}"
   rescue StandardError => e
