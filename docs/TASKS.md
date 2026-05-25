@@ -801,7 +801,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ## Phase 6 — M6: Deck Renderer (v1.1)
 
-### T-103 [ ] · Implement DeckRenderer with layout dispatch
+### T-103 [x] · Implement DeckRenderer with layout dispatch
 - **Depends-on:** T-51
 - **Reads:** none
 - **Outputs:** `src/renderer/DeckRenderer.tsx`
