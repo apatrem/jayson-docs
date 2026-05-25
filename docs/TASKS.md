@@ -545,7 +545,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Shows a table of all cost rows; aggregate panels for current month, 30-day rolling, per-doc breakdown; "Clear all cost history" button works with confirmation.
 - **est.** 4h
 
-### T-72 [ ] · Implement an automated test verifying the ledger never records prompt content
+### T-72 [x] · Implement an automated test verifying the ledger never records prompt content
 - **Depends-on:** T-67, T-68
 - **Reads:** none
 - **Outputs:** `tests/cost-ledger-no-content.test.ts`
