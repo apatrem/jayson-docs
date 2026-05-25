@@ -92,6 +92,14 @@ export const ALLOWED_EDITOR_NODE_NAMES = [
   "numberedList",
 ] as const;
 
+export const ALLOWED_EDITOR_MARK_NAMES = [
+  "bold",
+  "italic",
+  "strike",
+  "code",
+  "commentMark",
+] as const;
+
 const ALLOWED_HTML_TAGS = new Set([
   "A",
   "BLOCKQUOTE",
@@ -113,6 +121,7 @@ const ALLOWED_HTML_TAGS = new Set([
 ]);
 
 const ALLOWED_NODE_NAMES = new Set<string>(ALLOWED_EDITOR_NODE_NAMES);
+const ALLOWED_MARK_NAMES = new Set<string>(ALLOWED_EDITOR_MARK_NAMES);
 
 export function createEditorExtensions(): Extensions {
   return [
@@ -213,8 +222,27 @@ function assertClosedNode(node: JSONContent): void {
       }
     }
   }
+  for (const mark of node.marks ?? []) {
+    assertClosedMark(mark);
+  }
   for (const child of node.content ?? []) {
     assertClosedNode(child);
+  }
+}
+
+function assertClosedMark(mark: NonNullable<JSONContent["marks"]>[number]): void {
+  if (mark.type === undefined || !ALLOWED_MARK_NAMES.has(mark.type)) {
+    throw new Error(`Unknown editor mark type: ${mark.type ?? "(missing)"}`);
+  }
+  if (mark.attrs !== undefined) {
+    const allowedAttrs = allowedAttrsForMark(mark.type);
+    for (const attrName of Object.keys(mark.attrs)) {
+      if (!allowedAttrs.has(attrName)) {
+        throw new Error(
+          `Unknown attr "${attrName}" on editor mark type "${mark.type}"`,
+        );
+      }
+    }
   }
 }
 
@@ -250,6 +278,15 @@ function allowedAttrsForNode(nodeType: string): Set<string> {
       return new Set(["blockId", "syntax", "source", "caption", "note"]);
     case "docDivider":
       return new Set(["blockId", "label", "note"]);
+    default:
+      return new Set();
+  }
+}
+
+function allowedAttrsForMark(markType: string): Set<string> {
+  switch (markType) {
+    case "commentMark":
+      return new Set(["commentId"]);
     default:
       return new Set();
   }

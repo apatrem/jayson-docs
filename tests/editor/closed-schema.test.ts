@@ -1,6 +1,7 @@
 import { Editor as CoreEditor } from "@tiptap/core";
 import { describe, expect, it } from "vitest";
 import {
+  ALLOWED_EDITOR_MARK_NAMES,
   ALLOWED_EDITOR_NODE_NAMES,
   assertClosedEditorContent,
   createEditorExtensions,
@@ -17,6 +18,21 @@ describe("closed editor schema (T-78)", () => {
     try {
       expect(Object.keys(editor.schema.nodes).sort()).toEqual(
         [...ALLOWED_EDITOR_NODE_NAMES].sort(),
+      );
+    } finally {
+      editor.destroy();
+    }
+  });
+
+  it("registers only the closed set of editor mark names", () => {
+    const editor = new CoreEditor({
+      extensions: createEditorExtensions(),
+      content: { type: "doc", content: [{ type: "paragraph" }] },
+    });
+
+    try {
+      expect(Object.keys(editor.schema.marks).sort()).toEqual(
+        [...ALLOWED_EDITOR_MARK_NAMES].sort(),
       );
     } finally {
       editor.destroy();
@@ -51,6 +67,54 @@ describe("closed editor schema (T-78)", () => {
         ],
       }),
     ).toThrow('Unknown attr "unexpected" on editor node type "heading"');
+  });
+
+  it("rejects unknown editor marks", () => {
+    expect(() =>
+      assertClosedEditorContent({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Commented",
+                marks: [{ type: "unknownMark" }],
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow("Unknown editor mark type: unknownMark");
+  });
+
+  it("rejects off-schema attrs on known marks", () => {
+    expect(() =>
+      assertClosedEditorContent({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Commented",
+                marks: [
+                  {
+                    type: "commentMark",
+                    attrs: {
+                      commentId: "comment-1",
+                      unexpected: "not allowed",
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow('Unknown attr "unexpected" on editor mark type "commentMark"');
   });
 
   it("drops disallowed pasted HTML elements", () => {
