@@ -691,7 +691,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Failure mode:** any missed target fails CI on PRs touching `src/editor/`, `src/renderer/blocks/`, or `src/block-primitives/`. Maintainer must either fix the regression or explicitly bump the target in DECISIONS.md D-39.
 - **est.** 5h
 
-### T-89d [ ] · Build the watchdog adversarial test (D-39)
+### T-89d [x] · Build the watchdog adversarial test (D-39)
 - **Depends-on:** T-46b, T-89b
 - **Reads:** none
 - **Outputs:** `tests/perf/watchdog-validation.test.ts`

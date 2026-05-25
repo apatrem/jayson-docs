@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-25T11:08:30Z
+**Last fire:** 2026-05-25T11:10:41Z
 **State:** RUNNING
 **Running on:** GPT-5.5 at high
 
@@ -10,21 +10,22 @@
 
 ## Next eligible task
 
-T-89d · Build the watchdog adversarial test (D-39) (M4)
+T-90 · Implement the comment mark (inline highlight) (M5)
 
 ## Progress since the previous fire
 
-- ✅ 1 task completed this fire: T-89c
+- ✅ 1 task completed this fire: T-89d
 - ⚠ 0 tasks blocked this fire: none
 - ⏸ 0 tasks marked waiting this fire: none
 - ↩ 0 commits reverted this fire (regressions): none
 
 ## At a glance
 
-Total tasks: 117   Done: 92 (79%)   Blocked: 0   Waiting: 0   Open: 24   Skipped: 1
+Total tasks: 117   Done: 93 (79%)   Blocked: 0   Waiting: 0   Open: 23   Skipped: 1
 
 ## Recent commits
 
+765e445 T-89c: add perf benchmark harness
 ad42825 T-89b: add perf anchor fixture
 e091379 T-89: verify mapping roundtrip losslessness
 da50ae6 T-88: complete chart data side panel
@@ -32,7 +33,6 @@ da50ae6 T-88: complete chart data side panel
 713b1e7 T-86: implement folder-aware open flow
 ee75f62 T-85: implement folder-based save as
 8cf5bad T-84: implement library UI
-1e6476d T-83: add operation-level undo boundaries
 
 ## CI status (origin/main)
 
