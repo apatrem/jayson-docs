@@ -663,7 +663,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Selecting a chart block opens a side panel with: data grid, chart type, title, axis labels, brand-constrained color choice, legend position. Excel paste fills the grid.
 - **est.** 8h
 
-### T-89 [ ] · DocModel <-> editor mapping losslessness test (acceptance criterion)
+### T-89 [x] · DocModel <-> editor mapping losslessness test (acceptance criterion)
 - **Depends-on:** T-76, T-77
 - **Reads:** `reference/mapping/*`
 - **Outputs:** `src/editor/mapping.ts`, `tests/mapping-roundtrip.test.ts`

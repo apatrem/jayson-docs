@@ -126,7 +126,7 @@ export function proseMirrorToDocModel(pm: unknown): DocModel {
   }
 
   if (kind === "document") {
-    return {
+    return stripUndefined({
       kind,
       schemaVersion,
       meta: attrs.meta as DocModel["meta"],
@@ -134,9 +134,9 @@ export function proseMirrorToDocModel(pm: unknown): DocModel {
         proseMirrorToSection(asProseMirrorNode(child)),
       ),
       comments: (attrs.comments ?? []) as Comment[],
-    };
+    }) as DocModel;
   }
-  return {
+  return stripUndefined({
     kind,
     schemaVersion,
     meta: attrs.meta as DocModel["meta"],
@@ -144,7 +144,7 @@ export function proseMirrorToDocModel(pm: unknown): DocModel {
       proseMirrorToSlide(asProseMirrorNode(child)),
     ),
     comments: (attrs.comments ?? []) as Comment[],
-  };
+  }) as DocModel;
 }
 
 function rootAttrs(doc: DocModel): ProseMirrorDocument["attrs"] {
@@ -333,4 +333,18 @@ function stringOrUndefined(value: unknown): string | undefined {
 
 function assertNever(_block: never): never {
   throw new MappingError("Unhandled block type in mapping dispatch", ["blocks"]);
+}
+
+function stripUndefined(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(stripUndefined);
+  }
+  if (typeof value !== "object" || value === null) {
+    return value;
+  }
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([, entryValue]) => entryValue !== undefined)
+      .map(([key, entryValue]) => [key, stripUndefined(entryValue)]),
+  );
 }

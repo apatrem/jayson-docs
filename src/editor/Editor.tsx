@@ -223,8 +223,9 @@ function allowedAttrsForNode(nodeType: string): Set<string> {
     case "prose":
       return new Set(["blockId", "align", "note"]);
     case "bulletList":
-    case "numberedList":
       return new Set(["blockId", "items", "note"]);
+    case "numberedList":
+      return new Set(["blockId", "items", "startAt", "note"]);
     case "callout":
       return new Set(["blockId", "variant", "title", "attribution", "note"]);
     case "kpiCards":

@@ -16,6 +16,7 @@ declare module "@tiptap/core" {
     numberedList: {
       insertNumberedList: (attrs?: {
         items?: NumberedListItem[];
+        startAt?: number;
       }) => ReturnType;
     };
   }
@@ -49,6 +50,15 @@ export const NumberedListTipTapNode = Node.create({
           "data-items": JSON.stringify(attrs.items),
         }),
       },
+      startAt: {
+        default: null,
+        parseHTML: (el) => {
+          const raw = el.getAttribute("start");
+          return raw === null ? null : Number(raw);
+        },
+        renderHTML: (attrs: { startAt: number | null }) =>
+          attrs.startAt === null ? {} : { start: String(attrs.startAt) },
+      },
       note: {
         default: "",
         parseHTML: (el) => el.getAttribute("data-note") ?? "",
@@ -78,6 +88,7 @@ export const NumberedListTipTapNode = Node.create({
             attrs: {
               blockId: crypto.randomUUID(),
               items: attrs.items ?? [emptyNumberedListItem()],
+              startAt: attrs.startAt ?? null,
               note: "",
             },
           }),
@@ -106,6 +117,7 @@ type NumberedListPmNode = {
   attrs: {
     blockId: string;
     items: NumberedListItem[];
+    startAt: number | null;
     note: string;
   };
 };
@@ -119,6 +131,7 @@ export function numberedListBlockToProseMirror(block: NumberedListBlock): {
     attrs: {
       blockId: block.id,
       items: block.items,
+      startAt: block.startAt ?? null,
       note: block.note ?? "",
     },
   };
@@ -131,6 +144,7 @@ export function proseMirrorToNumberedListBlock(
     id: node.attrs.blockId,
     type: "numbered-list",
     items: node.attrs.items,
-    note: node.attrs.note || undefined,
+    ...(node.attrs.startAt === null ? {} : { startAt: node.attrs.startAt }),
+    ...(node.attrs.note ? { note: node.attrs.note } : {}),
   };
 }
