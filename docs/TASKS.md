@@ -635,7 +635,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** matches UI_LIBRARY.md §"Acceptance checklist (per T-84)" — 11 items including 500-doc index in < 2s, all five filter groups, grid+list views, lazy thumbnails.
 - **est.** 8h (split into 3 sub-tasks per the design: scan + cards, filters, thumbnails)
 
-### T-85 [ ] · Implement Save As (creates a folder, not a file)
+### T-85 [x] · Implement Save As (creates a folder, not a file)
 - **Depends-on:** none
 - **Reads:** D-19
 - **Outputs:** updates to file-save flow in editor
