@@ -760,7 +760,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Clicking "Follow up" on a card opens a text input; queues the follow-up locally. Footer shows "[Send N follow-ups]" button to ship the queue in the next batch.
 - **est.** 4h
 
-### T-98 [ ] · Implement Accept/Reject (with undo)
+### T-98 [x] · Implement Accept/Reject (with undo)
 - **Depends-on:** T-63, T-83
 - **Reads:** none
 - **Outputs:** updates to ReviewPanel.tsx, ApplyComment.ts

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import type { Block } from "../schema/blocks";
 import type { Comment } from "../schema/comment";
 import type { DocModel } from "../schema/docmodel";
+import { acceptCommentProposal, rejectCommentProposal } from "./ApplyComment";
 import { BulkActions } from "./BulkActions";
 import {
   latestAiProposal,
@@ -17,6 +18,9 @@ export interface ReviewPanelProps {
   uiState?: Record<string, Partial<ProposalUiState>>;
   onAccept?: ((proposal: ReviewProposal) => void) | undefined;
   onReject?: ((proposal: ReviewProposal) => void) | undefined;
+  onDocChange?: ((doc: DocModel) => void) | undefined;
+  now?: (() => string) | undefined;
+  runAsSeparateUndoStep?: ((operation: () => void) => void) | undefined;
   onEditPatch?: ((proposal: ReviewProposal) => void) | undefined;
   onClose?: (() => void) | undefined;
   onClickJumpToBlock?: ((proposal: ReviewProposal) => void) | undefined;
@@ -40,6 +44,9 @@ export const ReviewPanel: FC<ReviewPanelProps> = ({
   uiState = {},
   onAccept,
   onReject,
+  onDocChange,
+  now,
+  runAsSeparateUndoStep,
   onEditPatch,
   onClose,
   onClickJumpToBlock,
@@ -69,6 +76,30 @@ export const ReviewPanel: FC<ReviewPanelProps> = ({
   const queueFollowUp = (proposal: ReviewProposal, text: string) => {
     updateFollowUps((current) => ({ ...current, [proposal.comment.id]: text }));
     onFollowUpQueued?.(proposal.comment.id, text);
+  };
+
+  const acceptProposal = (proposal: ReviewProposal) => {
+    if (onDocChange !== undefined) {
+      onDocChange(
+        acceptCommentProposal(doc, proposal.comment, {
+          now,
+          runAsSeparateUndoStep,
+        }),
+      );
+    }
+    onAccept?.(proposal);
+  };
+
+  const rejectProposal = (proposal: ReviewProposal) => {
+    if (onDocChange !== undefined) {
+      onDocChange(
+        rejectCommentProposal(doc, proposal.comment, {
+          now,
+          runAsSeparateUndoStep,
+        }),
+      );
+    }
+    onReject?.(proposal);
   };
 
   const updateFollowUps = (
@@ -112,14 +143,14 @@ export const ReviewPanel: FC<ReviewPanelProps> = ({
       case "y":
         event.preventDefault();
         if (focusedProposal !== null) {
-          onAccept?.(focusedProposal);
+          acceptProposal(focusedProposal);
         }
         break;
       case "Delete":
       case "n":
         event.preventDefault();
         if (focusedProposal !== null) {
-          onReject?.(focusedProposal);
+          rejectProposal(focusedProposal);
         }
         break;
       case "f":
@@ -183,8 +214,8 @@ export const ReviewPanel: FC<ReviewPanelProps> = ({
               onFollowUpOpenChange={(open) => {
                 setOpenFollowUpId(open ? proposal.comment.id : null);
               }}
-              onAccept={onAccept}
-              onReject={onReject}
+              onAccept={acceptProposal}
+              onReject={rejectProposal}
               onEditPatch={onEditPatch}
               onClickJumpToBlock={onClickJumpToBlock}
               onFollowUp={queueFollowUp}

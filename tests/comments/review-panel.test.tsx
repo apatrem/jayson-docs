@@ -175,4 +175,34 @@ describe("ReviewPanel", () => {
     expect(queued).toEqual([{ "comment-a": "Use a less urgent tone." }]);
     expect(queueChanges).toEqual([{ "comment-a": "Use a less urgent tone." }, {}]);
   });
+
+  it("applies accept through DocModel update when requested", () => {
+    let updatedDoc: DocModel | undefined;
+    let undoSteps = 0;
+
+    render(
+      <ReviewPanel
+        doc={doc}
+        comments={[comment("comment-a", "block-a", "First block instruction")]}
+        now={() => "2026-05-25T12:05:00Z"}
+        runAsSeparateUndoStep={(operation) => {
+          undoSteps += 1;
+          operation();
+        }}
+        onDocChange={(nextDoc) => {
+          updatedDoc = nextDoc;
+        }}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Accept proposal for comment-a in Section 1 > Block 1",
+      }),
+    );
+
+    expect(undoSteps).toBe(1);
+    expect(updatedDoc?.comments[0]?.status).toBe("applied");
+    expect(JSON.stringify(updatedDoc)).toContain("block-a updated");
+  });
 });
