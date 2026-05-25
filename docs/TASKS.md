@@ -642,7 +642,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** "Save As" prompts for a folder name; creates `<name>/` containing `<name>.yaml` (or `doc.yaml`); future saves overwrite the same YAML in place.
 - **est.** 3h
 
-### T-86 [ ] · Implement Open (accepts folder or YAML inside one)
+### T-86 [x] · Implement Open (accepts folder or YAML inside one)
 - **Depends-on:** none
 - **Reads:** D-19
 - **Outputs:** updates to file-open flow
