@@ -538,7 +538,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Rows older than 13 months are deleted on each prune cycle. Verified by inserting an old fixture row and confirming it's gone after pruning.
 - **est.** 2h
 
-### T-71 [ ] · Implement `Settings → My LLM Spend` view
+### T-71 [x] · Implement `Settings → My LLM Spend` view
 - **Depends-on:** T-67, T-69
 - **Reads:** none
 - **Outputs:** `src/ui/settings/CostLedgerView.tsx`
