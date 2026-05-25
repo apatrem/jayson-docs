@@ -600,7 +600,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Floating palette shows all 15 blocks + any active generated blocks; clicking inserts the block; description text comes from `llmUsage.when`.
 - **est.** 4h
 
-### T-80 [ ] · Implement block drag-reorder
+### T-80 [x] · Implement block drag-reorder
 - **Depends-on:** T-74
 - **Reads:** none
 - **Outputs:** `src/editor/extensions/DragReorder.ts`
