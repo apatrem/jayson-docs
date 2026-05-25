@@ -739,7 +739,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Toggle to diff mode shows current doc on left, proposed doc on right; keyboard nav (j/k/y/n) works.
 - **est.** 6h
 
-### T-95 [ ] · Implement review-mode toggle + per-consultant persistence
+### T-95 [x] · Implement review-mode toggle + per-consultant persistence
 - **Depends-on:** T-92, T-93, T-94
 - **Reads:** AppConfig.editor.reviewMode
 - **Outputs:** `src/ui/ReviewModeToggle.tsx`
