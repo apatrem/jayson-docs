@@ -781,7 +781,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** "Open as reviewer" loads the doc read-only; comment creation works but block editing is disabled; reviewer comments are tagged role: "reviewer"; reviewers cannot trigger AI from their comments.
 - **est.** 4h
 
-### T-101 [ ] · Test: comments survive save/reload and YAML round-trip
+### T-101 [x] · Test: comments survive save/reload and YAML round-trip
 - **Depends-on:** T-91, T-40
 - **Reads:** none
 - **Outputs:** `tests/comments-roundtrip.test.ts`
