@@ -1,0 +1,161 @@
+import {
+  LLMProviderError,
+  type BaseLlmEndpoint,
+  type LLMMessage,
+  type LLMResponse,
+  type LLMUsage,
+  type Provider,
+  type ProviderCallInput,
+} from "../client";
+
+interface OpenAIProviderOptions {
+  key?: string;
+  baseUrl?: (endpoint: BaseLlmEndpoint) => string | undefined;
+}
+
+interface OpenAIUsage {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  prompt_tokens_details?: {
+    cached_tokens?: number;
+  };
+}
+
+interface OpenAIResponseBody {
+  choices?: Array<{
+    message?: {
+      content?: string | null;
+    };
+  }>;
+  usage?: OpenAIUsage;
+}
+
+export function createOpenAIProvider(
+  options: OpenAIProviderOptions = {},
+): Provider {
+  const key = options.key ?? "openai";
+  return {
+    key,
+    cacheCapability: "automatic",
+    validateEndpoint: (endpoint) => {
+      resolveBaseUrl(endpoint, options);
+    },
+    validateKeyFormat: (apiKey) => {
+      if (apiKey.trim().length === 0) {
+        throw new LLMProviderError("OpenAI API key is empty.", key);
+      }
+      if (key === "openai" && !apiKey.startsWith("sk-")) {
+        throw new LLMProviderError("OpenAI API key must start with sk-.", key);
+      }
+    },
+    parseUsage: parseOpenAIUsage,
+    call: async (input) => callOpenAICompatible(input, key, options),
+  };
+}
+
+async function callOpenAICompatible(
+  input: ProviderCallInput,
+  providerKey: string,
+  options: OpenAIProviderOptions,
+): Promise<LLMResponse> {
+  const baseUrl = resolveBaseUrl(input.endpoint, options);
+  const body = buildOpenAIRequestBody(input);
+  const response = await input.fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Authorization: `Bearer ${input.apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const raw = (await response.json()) as unknown;
+  if (!response.ok) {
+    throw new LLMProviderError(
+      `${providerKey} request failed with HTTP ${response.status}.`,
+      providerKey,
+    );
+  }
+
+  const content = extractOpenAIContent(raw, providerKey);
+  return {
+    content,
+    raw,
+    usage: parseOpenAIUsage(raw),
+  };
+}
+
+function resolveBaseUrl(
+  endpoint: BaseLlmEndpoint,
+  options: OpenAIProviderOptions,
+): string {
+  const rawBaseUrl =
+    options.baseUrl === undefined
+      ? "https://api.openai.com/v1"
+      : options.baseUrl(endpoint);
+  if (rawBaseUrl === undefined || rawBaseUrl.trim().length === 0) {
+    throw new LLMProviderError(
+      `${endpoint.provider} endpoint requires baseUrl.`,
+      endpoint.provider,
+    );
+  }
+  return rawBaseUrl.replace(/\/+$/, "");
+}
+
+function buildOpenAIRequestBody(input: ProviderCallInput): Record<string, unknown> {
+  const messages = toOpenAIMessages(
+    input.request.systemPrompt,
+    input.request.messages,
+  );
+  const body: Record<string, unknown> = {
+    model: input.endpoint.model,
+    messages,
+  };
+
+  if (input.request.responseFormat === "json") {
+    body.response_format = { type: "json_object" };
+  }
+  if (input.request.temperature !== undefined) {
+    body.temperature = input.request.temperature;
+  }
+  if (input.request.maxTokens !== undefined) {
+    body.max_tokens = input.request.maxTokens;
+  }
+
+  return body;
+}
+
+function toOpenAIMessages(
+  systemPrompt: string | undefined,
+  messages: LLMMessage[],
+): Array<{ role: LLMMessage["role"]; content: string }> {
+  const converted = messages.map((message) => ({
+    role: message.role,
+    content: message.content,
+  }));
+  if (systemPrompt === undefined || systemPrompt.length === 0) {
+    return converted;
+  }
+  return [{ role: "system", content: systemPrompt }, ...converted];
+}
+
+function extractOpenAIContent(raw: unknown, providerKey: string): string {
+  const parsed = raw as OpenAIResponseBody;
+  const content = parsed.choices?.[0]?.message?.content;
+  if (typeof content !== "string") {
+    throw new LLMProviderError(
+      `${providerKey} response did not include message content.`,
+      providerKey,
+    );
+  }
+  return content;
+}
+
+function parseOpenAIUsage(raw: unknown): LLMUsage {
+  const usage = (raw as OpenAIResponseBody).usage;
+  return {
+    inputTokens: usage?.prompt_tokens ?? 0,
+    outputTokens: usage?.completion_tokens ?? 0,
+    cachedTokens: usage?.prompt_tokens_details?.cached_tokens ?? 0,
+  };
+}

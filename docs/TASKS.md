@@ -458,7 +458,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ## Phase 3 — M3: LLM Interface
 
-### T-60 [ ] · Implement provider-agnostic LLM client
+### T-60 [x] · Implement provider-agnostic LLM client
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` §10 (`LlmEndpointSchema`, `AppConfig`)
 - **Outputs:** `src/llm/client.ts` defining a `Provider` interface (`call`, `parseUsage`, `cacheCapability: "explicit" | "automatic" | "none"`, `validateKeyFormat`); one adapter file per provider in `src/llm/providers/{openai,anthropic,azure,mistral,openai-compatible,local}.ts`. The `openai-compatible` adapter accepts a `baseUrl` and covers lightning.ai, OpenRouter, Together, Groq, vLLM, Anyscale, etc.; `local` accepts a `baseUrl` for Ollama / llama.cpp servers. Adding a new vendor is a new adapter file — no edits to `client.ts` or schemas.
