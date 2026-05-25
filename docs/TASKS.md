@@ -503,7 +503,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** When a patch in a batch response fails validation, the failure is retried one-at-a-time (max 2 retries) with a corrective re-prompt. After exhaustion, the comment is marked failed with raw output available.
 - **est.** 4h
 
-### T-66 [ ] · Implement threaded comment context assembly
+### T-66 [x] · Implement threaded comment context assembly
 - **Depends-on:** T-14
 - **Reads:** D-12
 - **Outputs:** `src/llm/thread-context.ts`
