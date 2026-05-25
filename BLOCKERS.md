@@ -122,6 +122,19 @@ that prevents recurrence is linked in each entry.
   4. A smoke test (integration-level, not the existing unit test) SHOULD verify that opening the app on a clock-jumped session (e.g., system date set 14 months forward) deletes the expected rows.
 **No marker change:** T-111 stays `[x]` — the notice text is correct and the prune mechanism is implemented. T-67 (cost-ledger init) stays `[x]` — schema and CRUD are correct. The gap is in the app-shell wiring layer, which has no dedicated task yet.
 
+### [drift-2026-05-25d] T-02 starter scaffold missing icons/ — tightened spec never propagated to starter/
+
+**Detected at:** 2026-05-25T20:00:00Z (first-time `npm run tauri:dev` attempt from a fresh clone)
+**Tasks affected:** T-02 (set up Tauri 2.x desktop shell). The tightened-spec follow-up (Task #30 "Tighten T-02 Outputs to require Cargo.lock + icons") landed on `docs/TASKS.md:47-48` but the starter scaffold was not updated to comply.
+**What happened:** `docs/TASKS.md` T-02 reads from `starter/src-tauri/{tauri.conf.json,Cargo.toml,build.rs,capabilities/,src/main.rs,src/lib.rs,src/ipc/}` and lists the output as needing `src-tauri/Cargo.lock` and `src-tauri/icons/*` committed. The spec was tightened (Task #30) to make those outputs mandatory at acceptance time. But the **source** of the drop-in — `starter/src-tauri/` — was never updated to ship the icons. A consumer who clones `starter/` as a template and runs `cargo build` panics at `tauri::generate_context!()` with `failed to open icon .../starter/src-tauri/icons/icon.png: No such file or directory`. The acceptance check in T-02 verifies the **output** `src-tauri/icons/` is committed, but doesn't verify that the **input** `starter/src-tauri/icons/` was also committed — so the drop-in is broken even though the live app builds fine.
+**Compounding bug:** running `npm run tauri:dev` from the repo root auto-discovered `starter/src-tauri/` ahead of the main `src-tauri/` (Tauri 2.x CLI walks the tree with `ignore::WalkBuilder` and picks the first `tauri.conf.json` it finds). Result: the dev command spent ~3 minutes compiling against the starter Cargo crate, then panicked on the missing icon. The main `src-tauri/icons/` was fine the whole time.
+**Fix landed:**
+  1. Copied the icon set from `src-tauri/icons/` into `starter/src-tauri/icons/` (49 files: PNG/ICNS/ICO + android/ + ios/). Identical content, no policy change.
+  2. Added `.taurignore` at the repo root containing `starter/`. Tauri 2.x CLI honors this file via `WalkBuilder::add_custom_ignore_filename(".taurignore")` (confirmed in `node_modules/@tauri-apps/cli-darwin-arm64/cli.darwin-arm64.node` strings and via `npx tauri info -vvv` showing `ignoring /…/starter: Ignore(IgnoreMatch(Gitignore(…)))`). The walker now skips `starter/` so `npm run tauri:dev` deterministically targets the main `src-tauri/`.
+  3. Updated `scripts/verify-bakeoff-v2.sh check_7_tauri_icons_committed` to assert both `src-tauri/icons/` AND `starter/src-tauri/icons/` are non-empty on the branch. Future bake-off branches that branch off `main` will catch the drop-in gap at PR time, not at first-developer time.
+**Why no marker change:** T-02 stays `[x]`. The live app builds — the output side of T-02 is correct. The fix closes the gap on the input/template side so the next developer using the drop-in won't hit the same wall.
+**Acceptance criteria for follow-up (none required — closed by this fix):** A developer running `npm run tauri:dev` from a fresh clone (with Rust + Xcode CLT installed) MUST see a native window open without ever needing to copy icons by hand. The bakeoff-v2 assertion #7 enforces this at branch-verification time.
+
 ---
 
 ## T-108 — Set up code signing (macOS, Windows)

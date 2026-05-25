@@ -1,0 +1,10 @@
+# Tells the Tauri 2.x CLI which directories to skip when auto-discovering
+# src-tauri/. Same syntax as .gitignore. The CLI's walker
+# (`ignore::WalkBuilder::add_custom_ignore_filename(".taurignore")`) picks
+# this up at the repo root.
+#
+# Why: the starter/ directory is a drop-in scaffold for T-01..T-09 and
+# contains its own src-tauri/. Without this file, `npm run tauri:dev` from
+# the repo root may pick up starter/src-tauri/ ahead of the project's real
+# src-tauri/, causing the build to target the wrong Cargo crate and config.
+starter/

@@ -178,13 +178,20 @@ check_6_lockfiles_committed() {
 }
 
 check_7_tauri_icons_committed() {
-  # At least one icon file in src-tauri/icons/.
-  local n
-  n=$(git ls-tree -r "$BRANCH" -- src-tauri/icons 2>/dev/null | wc -l | tr -d ' ')
-  if [[ "$n" -gt 0 ]]; then
-    assert "7. Tauri icons committed ($n files in src-tauri/icons/)" pass
+  # At least one icon file in src-tauri/icons/ AND starter/src-tauri/icons/.
+  # T-02's `Reads:` points at starter/src-tauri/{...}, so the drop-in source
+  # must be self-contained — otherwise `cargo build` in starter/ panics at
+  # `tauri::generate_context!()` because `./icons/icon.png` is missing.
+  local n_main n_starter
+  n_main=$(git ls-tree -r "$BRANCH" -- src-tauri/icons 2>/dev/null | wc -l | tr -d ' ')
+  n_starter=$(git ls-tree -r "$BRANCH" -- starter/src-tauri/icons 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$n_main" -gt 0 ]] && [[ "$n_starter" -gt 0 ]]; then
+    assert "7. Tauri icons committed (main: $n_main, starter: $n_starter)" pass
   else
-    assert "7. Tauri icons committed" fail "0 files in src-tauri/icons/"
+    local missing=""
+    [[ "$n_main" -eq 0 ]] && missing+="src-tauri/icons/ "
+    [[ "$n_starter" -eq 0 ]] && missing+="starter/src-tauri/icons/ "
+    assert "7. Tauri icons committed" fail "0 files in: ${missing% }"
   fi
 }
 
