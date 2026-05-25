@@ -489,7 +489,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** `applyPatch(doc, patch)` produces a new DocModel with the patch applied. The target block is modified; all other blocks are byte-identical. Invalid patches (wrong blockId, off-schema) are rejected before application.
 - **est.** 4h
 
-### T-64 [ ] · Implement batched comment-to-AI request builder
+### T-64 [x] · Implement batched comment-to-AI request builder
 - **Depends-on:** T-60, T-61
 - **Reads:** D-13
 - **Outputs:** `src/llm/batch-comments.ts`
