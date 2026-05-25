@@ -746,7 +746,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Segmented control in toolbar; cmd+shift+R cycles; choice persists in config; switching modes preserves accept/reject/pending state.
 - **est.** 3h
 
-### T-96 [ ] · Implement batch submit ("Process all")
+### T-96 [x] · Implement batch submit ("Process all")
 - **Depends-on:** T-64, T-91
 - **Reads:** none
 - **Outputs:** `src/comments/BatchSubmit.tsx`
