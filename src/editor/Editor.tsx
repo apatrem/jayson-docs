@@ -288,6 +288,11 @@ function allowedAttrsForMark(markType: string): Set<string> {
     case "commentMark":
       return new Set(["commentId"]);
     default:
+      // Marks listed in ALLOWED_EDITOR_MARK_NAMES without an explicit case
+      // here (bold, italic, strike, code) are attr-free by design. If you
+      // add a mark with attrs, add a case above — the empty-set default
+      // means a forgotten case rejects all attrs, which is the safe failure
+      // mode for a security boundary.
       return new Set();
   }
 }

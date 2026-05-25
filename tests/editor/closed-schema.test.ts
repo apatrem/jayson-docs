@@ -117,6 +117,31 @@ describe("closed editor schema (T-78)", () => {
     ).toThrow('Unknown attr "unexpected" on editor mark type "commentMark"');
   });
 
+  it("accepts a valid commentMark with only the commentId attr (happy path)", () => {
+    expect(() =>
+      assertClosedEditorContent({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Commented",
+                marks: [
+                  {
+                    type: "commentMark",
+                    attrs: { commentId: "comment-1" },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    ).not.toThrow();
+  });
+
   it("drops disallowed pasted HTML elements", () => {
     expect(
       sanitizePastedHtml("<p>Keep</p><script>alert(1)</script><custom>Drop</custom>"),
