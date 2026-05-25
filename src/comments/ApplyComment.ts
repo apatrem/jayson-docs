@@ -21,6 +21,7 @@ export function acceptCommentProposal(
 ): DocModel {
   return runUndoBounded(options, () => {
     const proposal = latestProposal(comment);
+    assertPatchTargetsCommentBlock(comment, proposal);
     const patched = applyPatch(doc, proposal.patch);
     return withCommentStatus(patched, comment, "applied", timestamp(options));
   });
@@ -47,6 +48,21 @@ function latestProposal(comment: Comment): Extract<
     }
   }
   throw new ApplyCommentError(`Comment '${comment.id}' has no AI proposal.`);
+}
+
+function assertPatchTargetsCommentBlock(
+  comment: Comment,
+  proposal: Extract<ThreadEntry, { kind: "ai-proposal" }>,
+): void {
+  const targetBlockId =
+    proposal.patch.op === "insert-after"
+      ? proposal.patch.afterBlockId
+      : proposal.patch.blockId;
+  if (targetBlockId !== comment.blockId) {
+    throw new ApplyCommentError(
+      `AI proposal for comment '${comment.id}' targets block '${targetBlockId}' outside comment anchor '${comment.blockId}'.`,
+    );
+  }
 }
 
 function withCommentStatus(

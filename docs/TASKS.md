@@ -788,7 +788,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Create comments, save, reload — all comments present with original block anchors. YAML round-trip preserves comments byte-stably.
 - **est.** 2h
 
-### T-102 [ ] · Test: AI never edits outside the comment's target block
+### T-102 [x] · Test: AI never edits outside the comment's target block
 - **Depends-on:** T-63, T-64
 - **Reads:** none
 - **Outputs:** `tests/ai-scope-enforcement.test.ts`
