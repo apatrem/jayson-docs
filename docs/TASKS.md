@@ -482,7 +482,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Given a structured outline, produces a schema-valid DocModel. Invalid output is rejected, never silently used.
 - **est.** 6h
 
-### T-63 [ ] · Implement `BlockPatch` application logic
+### T-63 [x] · Implement `BlockPatch` application logic
 - **Depends-on:** T-15
 - **Reads:** `docs/TYPES.md` §6
 - **Outputs:** `src/docmodel/patch.ts` + tests
