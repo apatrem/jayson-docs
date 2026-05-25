@@ -524,7 +524,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** After a successful LLM call, exactly one row appears in the ledger with the correct token counts and computed cost. Failed calls also insert a row (with zero output tokens). A call to an unpriced `openai-compatible:lightning/llama-3.1-70b` model still inserts a row using the configured fallback, with `pricingSource` set accordingly. Adding a new model is a one-line entry in `pricing.ts`.
 - **est.** 3h (up from 2h: pricing table + fallback seam)
 
-### T-69 [ ] · Implement monthly limit enforcement
+### T-69 [x] · Implement monthly limit enforcement
 - **Depends-on:** T-67
 - **Reads:** `docs/TYPES.md` §9 CostSummary
 - **Outputs:** `src/cost-ledger/limits.ts` + tests
