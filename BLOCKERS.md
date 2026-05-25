@@ -103,3 +103,29 @@ that prevents recurrence is linked in each entry.
   3. Remove the `effectiveEditable = false` force in `Editor.tsx` and update the regression test to assert that bold/italic become available again when a deck is passed with `editable={true}`.
   4. Preserve the slide-strip navigation chrome and the `currentSlideIndex` reset-on-deck-identity-change behavior — they are working as intended.
 **No marker change:** T-107 stays `[x]`. The navigation contract is met; the editing-back gap is recorded here so M7 reviewers know what's wired vs. what's stubbed.
+
+---
+
+## T-108 — Set up code signing (macOS, Windows)
+**Status:** [!]
+**Detected at:** 2026-05-25T14:46:37Z
+**Fires unresolved:** 0
+**Reason:** T-108 acceptance requires real macOS and Windows signing certificates plus CI secret values. This cannot be safely fabricated by the loop runner, and producing actual signed `.dmg` / `.msi` artifacts requires those external credentials.
+**Last attempt:** no commit — waiting on external dependency
+**Suggested action for human:**
+- Procure or provide the macOS Developer ID / notarization credentials and Windows code-signing certificate material.
+- Add the required CI secrets, then change T-108 back to `[ ]` so the loop can configure and verify signing with real credentials.
+
+---
+
+## T-109 — Set up Tauri updater
+**Status:** [!]
+**Detected at:** 2026-05-25T14:46:37Z
+**Fires unresolved:** 0
+**Reason:** Tauri updater configuration requires a real updater signing key pair and a hosted release-feed URL. The loop runner cannot safely invent these values or commit private updater keys.
+**Last attempt:** no commit — waiting on external dependency
+**Suggested action for human:**
+- Generate/provide the Tauri updater signing key pair and decide where the JSON release feed will be hosted.
+- Store the private key outside the repository/CI secrets, provide the public key and feed URL, then change T-109 back to `[ ]`.
+
+---

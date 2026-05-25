@@ -842,17 +842,17 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ## Phase 7 — Deployment & Release
 
-### T-108 [ ] · Set up code signing (macOS, Windows)
+### T-108 [!] · Set up code signing (macOS, Windows) ← waiting: requires real macOS/Windows signing certificates and CI secrets
 - **Outputs:** signing certs in CI secrets; signed build outputs
 - **Acceptance:** `npm run tauri build` produces a signed `.dmg` (macOS) and `.msi` (Windows). Linux uses unsigned AppImage.
 - **est.** 6h (mostly cert procurement bureaucracy)
 
-### T-109 [ ] · Set up Tauri updater
+### T-109 [!] · Set up Tauri updater ← waiting: requires updater signing key and hosted release-feed URL
 - **Outputs:** updater config in `tauri.conf.json`; release feed
 - **Acceptance:** App checks for updates on launch; updates from a manually-hosted JSON feed.
 - **est.** 4h
 
-### T-110 [ ] · Build release pipeline (3 OSes)
+### T-110 [x] · Build release pipeline (3 OSes)
 - **Outputs:** GitHub Actions workflow that builds + signs + publishes installers on tag push
 - **Acceptance:** Pushing a `v1.0.0` tag produces 3 installers in the release artifacts.
 - **est.** 6h
