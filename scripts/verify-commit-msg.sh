@@ -84,9 +84,21 @@ fi
 # Rule 2: if Tier: line does NOT name an escalation-tier model, require
 # Tier-mismatch acknowledgment.
 TIER_LINE=$(echo "$MSG_BODY" | grep -E '^Tier:' | head -1)
-ESCALATION_TIER_RE='Opus 4\.7|GPT-5 Pro|Gemini 2\.5 Pro Thinking|escalation'
 
-if ! echo "$TIER_LINE" | grep -qE "$ESCALATION_TIER_RE"; then
+# Models / effort combos that count as escalation tier.
+# Source of truth: .claude/commands/next-task.md §"Escalation tier" table.
+#   - Opus 4.7 (Claude Code escalation; any effort)
+#   - GPT-5 Pro (Codex / ChatGPT escalation; any effort)
+#   - GPT-5.5 at xhigh — GPT-5.5 High is DEFAULT tier per the M3 audit
+#     clarification, so only xhigh counts as the escalation bump
+#   - Gemini 2.5 Pro Thinking (Gemini Code escalation)
+#   - bare keyword "escalation" — catch-all for future models the spec
+#     adds before this regex is updated; intentional escape valve
+#
+# Case-insensitive (-i below) so "xHigh", "XHIGH", "xhigh" all match.
+ESCALATION_TIER_RE='Opus 4\.7|GPT-5 Pro|GPT-5\.5[[:space:]]+(at[[:space:]]+)?xhigh|Gemini 2\.5 Pro Thinking|escalation'
+
+if ! echo "$TIER_LINE" | grep -iqE "$ESCALATION_TIER_RE"; then
   if ! echo "$MSG_BODY" | grep -qE '^Tier-mismatch acknowledged:[[:space:]]+\S'; then
     red ""
     red "✗ commit-msg hook: Escalation-tier task $TASK_ID is being committed"

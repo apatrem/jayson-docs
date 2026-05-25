@@ -37,10 +37,11 @@ For the task IDs listed below, a stronger model is recommended. The agent does N
 | App | Stronger model | Effort |
 |---|---|---|
 | Claude Code | Claude Opus 4.7 | **high** (escalate to **xhigh** only after a failed retry on `high`) |
-| Cursor (Composer) | **GPT-5.5 High** | escalation tier (per AGENTS.md) |
-| Cursor (Composer) | **GPT-5.5 xHigh**  | alternate if High unavailable |
+| Cursor (Composer) | GPT-5.5 | **xHigh** — GPT-5.5 High stays in the default tier; xHigh is the bump for escalation-list tasks |
 | Codex / ChatGPT | GPT-5 Pro | **xHigh**|
 | Gemini Code | Gemini 2.5 Pro Thinking | extended thinking ON |
+
+**Note on GPT-5.5 (M3 audit clarification):** earlier versions of this table listed `GPT-5.5 High` as the Cursor escalation tier. That contradicted the default-tier table (where `GPT-5.5 High` is the Auto fallback). The escalation tier is now unambiguously `GPT-5.5 xHigh` — the same model, one effort level higher. The commit-msg hook (`scripts/verify-commit-msg.sh`) only recognizes the xHigh form as escalation; commits on `GPT-5.5 High` for an escalation-list task MUST include `Tier-mismatch acknowledged:` per the standard rule.
 
 ## Tiers that should NOT run this loop
 
