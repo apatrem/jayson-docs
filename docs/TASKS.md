@@ -628,7 +628,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Each text edit and each comment accept is a separate undo step. Cmd-Z undoes one operation at a time.
 - **est.** 4h
 
-### T-84 [ ] · Implement library UI (D-27)
+### T-84 [x] · Implement library UI (D-27)
 - **Depends-on:** none
 - **Reads:** `docs/TYPES.md` MetaSchema, AppConfig.paths.cloudSyncRoot, `docs/UI_LIBRARY.md`
 - **Outputs:** all components per UI_LIBRARY.md §"File locations" (LibraryView, FilterSidebar, SearchBar, DocList, DocCard, index-builder, filter, thumbnail).
