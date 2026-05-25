@@ -5,6 +5,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { chromium } from "playwright";
 import { parse } from "yaml";
+import { DeckRenderer, type DeckModel } from "../renderer/DeckRenderer";
 import { DocumentRenderer, type DocumentModel } from "../renderer/DocumentRenderer";
 import type { BrandTokens } from "../schema/brand";
 import { BrandTokensSchema } from "../schema/brand";
@@ -32,6 +33,8 @@ export interface PdfExportInput {
   options?: PdfExportOptions;
 }
 
+export type PdfModel = DocumentModel | DeckModel;
+
 function mm(value: number): string {
   return `${value}mm`;
 }
@@ -41,7 +44,7 @@ export function loadBrandTokens(brandPath: string): BrandTokens {
   return BrandTokensSchema.parse(raw);
 }
 
-export function loadDocumentModel(yamlPath: string): DocumentModel {
+export function loadDocumentModel(yamlPath: string): PdfModel {
   const raw: unknown = parse(readFileSync(yamlPath, "utf8"));
   const result = validateDocModel(raw);
   if (!result.ok) {
@@ -49,22 +52,21 @@ export function loadDocumentModel(yamlPath: string): DocumentModel {
       `invalid DocModel: ${result.errors.map((e) => `${e.path}: ${e.message}`).join("; ")}`,
     );
   }
-  if (result.doc.kind !== "document") {
-    throw new Error(`PDF export requires kind: document (got ${result.doc.kind})`);
-  }
   return result.doc;
 }
 
-function blocksInDocument(doc: DocumentModel): Block[] {
-  return doc.sections.flatMap((section) => section.blocks);
+function blocksInModel(doc: PdfModel): Block[] {
+  return doc.kind === "document"
+    ? doc.sections.flatMap((section) => section.blocks)
+    : doc.slides.flatMap((slide) => slide.blocks);
 }
 
 export async function preRenderDiagramSvgs(
-  doc: DocumentModel,
+  doc: PdfModel,
   brand: BrandTokens,
 ): Promise<Record<string, string>> {
   const svgs: Record<string, string> = {};
-  for (const block of blocksInDocument(doc)) {
+  for (const block of blocksInModel(doc)) {
     if (block.type === "diagram") {
       svgs[block.id] = await renderMermaidSvg(block.source, brand);
     }
@@ -73,11 +75,11 @@ export async function preRenderDiagramSvgs(
 }
 
 export function preRenderChartSvgs(
-  doc: DocumentModel,
+  doc: PdfModel,
   brand: BrandTokens,
 ): Record<string, string> {
   const svgs: Record<string, string> = {};
-  for (const block of blocksInDocument(doc)) {
+  for (const block of blocksInModel(doc)) {
     if (block.type !== "chart") continue;
     const instance = echarts.init(null, null, {
       renderer: "svg",
@@ -93,7 +95,7 @@ export function preRenderChartSvgs(
 }
 
 export async function renderDocumentHtml(
-  doc: DocumentModel,
+  doc: PdfModel,
   brand: BrandTokens,
   paths?: { sharedFolderPath?: string; docFolderPath?: string },
 ): Promise<string> {
@@ -103,15 +105,28 @@ export async function renderDocumentHtml(
   const chartSvgs = preRenderChartSvgs(doc, brand);
 
   const body = renderToStaticMarkup(
-    createElement(DocumentRenderer, {
-      doc,
-      brand,
-      sharedFolderPath,
-      docFolderPath,
-      diagramSvgs,
-      chartSvgs,
-    }),
+    doc.kind === "document"
+      ? createElement(DocumentRenderer, {
+          doc,
+          brand,
+          sharedFolderPath,
+          docFolderPath,
+          diagramSvgs,
+          chartSvgs,
+        })
+      : createElement(DeckRenderer, {
+          deck: doc,
+          brand,
+          sharedFolderPath,
+          docFolderPath,
+          diagramSvgs,
+          chartSvgs,
+        }),
   );
+  const deckPageCss =
+    doc.kind === "deck"
+      ? `@page { size: ${brand.deck.dimensionsPx.width}px ${brand.deck.dimensionsPx.height}px; margin: 0; }`
+      : "";
 
   return `<!DOCTYPE html>
 <html lang="${doc.meta.language ?? "en"}">
@@ -122,6 +137,7 @@ export async function renderDocumentHtml(
     <style>
       * { box-sizing: border-box; }
       body { margin: 0; }
+      ${deckPageCss}
     </style>
     <style>${pageBreakCss}</style>
   </head>
@@ -137,10 +153,27 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function pdfOptionsFromBrand(
+export function buildPdfOptions(
   brand: BrandTokens,
   templates: { headerTemplate: string; footerTemplate: string },
+  kind: PdfModel["kind"] = "document",
 ) {
+  if (kind === "deck") {
+    return {
+      width: `${brand.deck.dimensionsPx.width}px`,
+      height: `${brand.deck.dimensionsPx.height}px`,
+      printBackground: true,
+      displayHeaderFooter: false,
+      preferCSSPageSize: true,
+      margin: {
+        top: "0",
+        right: "0",
+        bottom: "0",
+        left: "0",
+      },
+    } as const;
+  }
+
   const { page } = brand;
   return {
     format: page.size,
@@ -171,7 +204,7 @@ function logoDataUri(brand: BrandTokens, sharedFolderPath: string): string {
 }
 
 export function buildHeaderTemplate(
-  doc: DocumentModel,
+  doc: PdfModel,
   brand: BrandTokens,
   sharedFolderPath: string,
 ): string {
@@ -193,7 +226,7 @@ export function buildHeaderTemplate(
 }
 
 export function buildFooterTemplate(
-  doc: DocumentModel,
+  doc: PdfModel,
   brand: BrandTokens,
 ): string {
   const footer = brand.page.footer;
@@ -223,6 +256,7 @@ export async function exportHtmlToPdf(
   outputPdfPath: string,
   brand: BrandTokens,
   templates: { headerTemplate: string; footerTemplate: string },
+  kind: PdfModel["kind"] = "document",
 ): Promise<void> {
   const browser = await chromium.launch({ headless: true });
   try {
@@ -236,7 +270,7 @@ export async function exportHtmlToPdf(
     await page.setContent(html, { waitUntil: "load" });
     await page.pdf({
       path: outputPdfPath,
-      ...pdfOptionsFromBrand(brand, templates),
+      ...buildPdfOptions(brand, templates, kind),
     });
   } finally {
     await browser.close();
@@ -244,7 +278,7 @@ export async function exportHtmlToPdf(
 }
 
 export async function exportPdfFromDocument(
-  doc: DocumentModel,
+  doc: PdfModel,
   outputPdfPath: string,
   brand: BrandTokens,
   paths?: { sharedFolderPath?: string; docFolderPath?: string },
@@ -255,7 +289,7 @@ export async function exportPdfFromDocument(
     headerTemplate: buildHeaderTemplate(doc, brand, sharedFolderPath),
     footerTemplate: buildFooterTemplate(doc, brand),
   };
-  await exportHtmlToPdf(html, outputPdfPath, brand, templates);
+  await exportHtmlToPdf(html, outputPdfPath, brand, templates, doc.kind);
 }
 
 export async function exportPdfFromYaml(

@@ -815,7 +815,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Each layout renders a slide using brand tokens; block-content slots resolved per layout's design.
 - **est.** 25h total (~1.5h per layout)
 
-### T-105 [ ] · Implement deck PDF export
+### T-105 [x] · Implement deck PDF export
 - **Depends-on:** T-103, T-52
 - **Reads:** none
 - **Outputs:** updates to `src/export/pdf.ts` to handle `kind: "deck"`
