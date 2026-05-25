@@ -1,44 +1,41 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-25T12:38:11Z
-**State:** CI-FAILED
+**Last fire:** 2026-05-25T12:49:05Z
+**State:** RUNNING
 **Running on:** GPT-5.5 at high
-**Halt reason:** origin/main CI poll returned `failure`; M5 was not started.
-**Halted since:** 2026-05-25T12:38:11Z
 
 ---
 
-## What needs your attention
+## Loop is running cleanly — no action needed.
 
-1. **origin/main CI** — latest main-branch run concluded `failure`
-   → Suggested fix: inspect the failing GitHub Actions run, fix or rerun it, then re-fire `/next-task`.
+M5 resumed after main CI returned green; the prior `[GATE FAILED]` marker was cleared with T-90.
 
-## Next eligible task (when human unblocks)
+## Next eligible task
 
-T-90 · Implement the comment mark (inline highlight)
+T-91 · Implement comment creation flow
 
 ## Progress since the previous fire
 
-- ✅ 0 tasks completed this fire: none
+- ✅ 1 task completed this fire: T-90
 - ⚠ 0 tasks blocked this fire: none
 - ⏸ 0 tasks marked waiting this fire: none
 - ↩ 0 commits reverted this fire (regressions): none
 
 ## At a glance
 
-Total tasks: 117   Done: 93 (79%)   Blocked: 0   Waiting: 0   Open: 23   Skipped: 1
+Total tasks: 117   Done: 94 (80%)   Blocked: 0   Waiting: 0   Open: 22   Skipped: 1
 
 ## Recent commits
 
+f7a9ea1 ci: parse YAML specs without object loading
+c10a668 M5: halt next-task on red main CI
 6c9d408 tests: add unit tests for src/library/ pure-logic modules
 fb19778 T-89d: add watchdog adversarial test
 765e445 T-89c: add perf benchmark harness
 ad42825 T-89b: add perf anchor fixture
 e091379 T-89: verify mapping roundtrip losslessness
 da50ae6 T-88: complete chart data side panel
-694d73f T-87: implement asset linting
-713b1e7 T-86: implement folder-aware open flow
 
 ## CI status (origin/main)
 
-failure
+success

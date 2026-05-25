@@ -15,6 +15,7 @@ import { Text } from "@tiptap/extension-text";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import { closeHistory } from "@tiptap/pm/history";
 import type { CSSProperties, FC } from "react";
+import { CommentMark } from "../comments/CommentMark";
 import { BulletListTipTapNode } from "./nodes/BulletListNode";
 import { CalloutTipTapNode } from "./nodes/CalloutNode";
 import { ChartTipTapNode } from "./nodes/ChartNode";
@@ -128,6 +129,7 @@ export function createEditorExtensions(): Extensions {
     History,
     ListItem,
     OrderedList,
+    CommentMark,
     ...blockExtensions,
   ];
 }

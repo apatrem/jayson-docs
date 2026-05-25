@@ -702,9 +702,9 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ---
 
-## Phase 5 — M5: Comment-to-AI [GATE FAILED]
+## Phase 5 — M5: Comment-to-AI
 
-### T-90 [ ] · Implement the comment mark (inline highlight)
+### T-90 [x] · Implement the comment mark (inline highlight)
 - **Depends-on:** none
 - **Reads:** D-12
 - **Outputs:** `src/comments/CommentMark.ts` (custom ProseMirror mark)
