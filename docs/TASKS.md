@@ -475,7 +475,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** A second call within the cache TTL returns a high `cachedTokens` value for `explicit` and `automatic` adapters; the value is `0` for `"none"` adapters without failing the call. Cost computation reflects the cache discount when present and falls back to full-rate input pricing otherwise. A unit test exercises one provider per capability bucket.
 - **est.** 4h (up from 3h: per-capability branches + the automatic-cache `usage` parsing for OpenAI-shaped responses)
 
-### T-62 [ ] · Implement outline-driven generation (initial doc creation)
+### T-62 [x] · Implement outline-driven generation (initial doc creation)
 - **Depends-on:** T-60
 - **Reads:** `docs/TYPES.md`, `examples/sample-proposal.yaml`
 - **Outputs:** `src/llm/generate-doc.ts` + tests
