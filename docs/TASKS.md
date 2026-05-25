@@ -753,7 +753,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Button submits all open comments with new follow-ups in one batch. UI shows per-comment status (pending/done/failed).
 - **est.** 4h
 
-### T-97 [ ] · Implement follow-up queue
+### T-97 [x] · Implement follow-up queue
 - **Depends-on:** T-92
 - **Reads:** D-12
 - **Outputs:** updates to ReviewPanel.tsx

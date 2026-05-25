@@ -23,6 +23,8 @@ export interface ReviewPanelProps {
   onAcceptAllVisible?: ((proposals: ReviewProposal[]) => void) | undefined;
   onRejectAllVisible?: ((proposals: ReviewProposal[]) => void) | undefined;
   onFollowUpQueued?: ((commentId: string, text: string) => void) | undefined;
+  initialFollowUps?: Record<string, string> | undefined;
+  onFollowUpQueueChange?: ((followUps: Record<string, string>) => void) | undefined;
   onSendFollowUps?: ((followUps: Record<string, string>) => void) | undefined;
 }
 
@@ -44,11 +46,15 @@ export const ReviewPanel: FC<ReviewPanelProps> = ({
   onAcceptAllVisible,
   onRejectAllVisible,
   onFollowUpQueued,
+  initialFollowUps = {},
+  onFollowUpQueueChange,
   onSendFollowUps,
 }) => {
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [openFollowUpId, setOpenFollowUpId] = useState<string | null>(null);
-  const [followUps, setFollowUps] = useState<Record<string, string>>({});
+  const [followUps, setFollowUps] = useState<Record<string, string>>(
+    () => initialFollowUps,
+  );
 
   const proposals = useMemo(
     () => buildReviewProposals(doc, comments, uiState),
@@ -61,8 +67,18 @@ export const ReviewPanel: FC<ReviewPanelProps> = ({
   const followUpCount = Object.keys(followUps).length;
 
   const queueFollowUp = (proposal: ReviewProposal, text: string) => {
-    setFollowUps((current) => ({ ...current, [proposal.comment.id]: text }));
+    updateFollowUps((current) => ({ ...current, [proposal.comment.id]: text }));
     onFollowUpQueued?.(proposal.comment.id, text);
+  };
+
+  const updateFollowUps = (
+    update: (current: Record<string, string>) => Record<string, string>,
+  ) => {
+    setFollowUps((current) => {
+      const next = update(current);
+      onFollowUpQueueChange?.(next);
+      return next;
+    });
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
@@ -72,7 +88,7 @@ export const ReviewPanel: FC<ReviewPanelProps> = ({
     if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === "Enter") {
       event.preventDefault();
       onSendFollowUps?.(followUps);
-      setFollowUps({});
+      updateFollowUps(() => ({}));
       return;
     }
     if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
@@ -156,22 +172,25 @@ export const ReviewPanel: FC<ReviewPanelProps> = ({
       </header>
 
       <div style={styles.list}>
-        {proposals.map((proposal, index) => (
-          <ProposalCard
-            key={proposal.comment.id}
-            proposal={proposal}
-            focused={index === focusedIndex}
-            followUpOpen={openFollowUpId === proposal.comment.id}
-            onFollowUpOpenChange={(open) => {
-              setOpenFollowUpId(open ? proposal.comment.id : null);
-            }}
-            onAccept={onAccept}
-            onReject={onReject}
-            onEditPatch={onEditPatch}
-            onClickJumpToBlock={onClickJumpToBlock}
-            onFollowUp={queueFollowUp}
-          />
-        ))}
+        {proposals.map((proposal, index) => {
+          const cardProposal = withQueuedFollowUp(proposal, followUps);
+          return (
+            <ProposalCard
+              key={proposal.comment.id}
+              proposal={cardProposal}
+              focused={index === focusedIndex}
+              followUpOpen={openFollowUpId === proposal.comment.id}
+              onFollowUpOpenChange={(open) => {
+                setOpenFollowUpId(open ? proposal.comment.id : null);
+              }}
+              onAccept={onAccept}
+              onReject={onReject}
+              onEditPatch={onEditPatch}
+              onClickJumpToBlock={onClickJumpToBlock}
+              onFollowUp={queueFollowUp}
+            />
+          );
+        })}
       </div>
 
       <BulkActions
@@ -192,7 +211,7 @@ export const ReviewPanel: FC<ReviewPanelProps> = ({
             ? undefined
             : () => {
                 onSendFollowUps(followUps);
-                setFollowUps({});
+                updateFollowUps(() => ({}));
               }
         }
       />
@@ -237,6 +256,23 @@ export function buildReviewProposals(
       };
     })
     .sort((left, right) => left.blockOrder - right.blockOrder);
+}
+
+function withQueuedFollowUp(
+  proposal: ReviewProposal,
+  followUps: Record<string, string>,
+): ReviewProposal {
+  const pendingFollowUp = followUps[proposal.comment.id];
+  if (pendingFollowUp === undefined) {
+    return proposal;
+  }
+  return {
+    ...proposal,
+    uiState: {
+      ...proposal.uiState,
+      pendingFollowUp,
+    },
+  };
 }
 
 function blockLocations(doc: DocModel): Map<string, BlockLocation> {

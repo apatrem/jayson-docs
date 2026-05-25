@@ -144,11 +144,16 @@ describe("ReviewPanel", () => {
 
   it("queues follow-ups and sends them as a batch payload", () => {
     const queued: Record<string, string>[] = [];
+    const queueChanges: Record<string, string>[] = [];
 
     render(
       <ReviewPanel
         doc={doc}
         comments={[comment("comment-a", "block-a", "First block instruction")]}
+        initialFollowUps={{ "comment-a": "Existing queued text." }}
+        onFollowUpQueueChange={(followUps) => {
+          queueChanges.push(followUps);
+        }}
         onSendFollowUps={(followUps) => {
           queued.push(followUps);
         }}
@@ -156,6 +161,11 @@ describe("ReviewPanel", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Follow up on comment-a" }));
+    const followUpInput = screen.getByLabelText("Follow-up for comment-a");
+    if (!(followUpInput instanceof HTMLTextAreaElement)) {
+      throw new Error("Expected follow-up input to be a textarea.");
+    }
+    expect(followUpInput.value).toBe("Existing queued text.");
     fireEvent.change(screen.getByLabelText("Follow-up for comment-a"), {
       target: { value: "Use a less urgent tone." },
     });
@@ -163,5 +173,6 @@ describe("ReviewPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send 1 follow-up" }));
 
     expect(queued).toEqual([{ "comment-a": "Use a less urgent tone." }]);
+    expect(queueChanges).toEqual([{ "comment-a": "Use a less urgent tone." }, {}]);
   });
 });
