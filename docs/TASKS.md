@@ -607,7 +607,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Blocks can be reordered via drag handle. Order persists in the DocModel.
 - **est.** 4h
 
-### T-81 [ ] · Implement grid-anchored placement for slide layouts
+### T-81 [x] · Implement grid-anchored placement for slide layouts
 - **Depends-on:** T-77
 - **Reads:** slide layouts
 - **Outputs:** `src/editor/SlideLayoutEditor.tsx`
