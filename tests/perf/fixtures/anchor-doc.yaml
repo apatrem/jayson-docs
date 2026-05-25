@@ -1,0 +1,4207 @@
+kind: document
+schemaVersion: 1.0.0
+meta:
+  client: Anchor Client
+  project: M4 Performance Anchor Fixture
+  docKind: report
+  sector: energy
+  tags:
+    - performance
+    - anchor
+    - m4
+  language: en
+  status: draft
+  archived: false
+  confidentialityLevel: medium
+  owner: j.smith@boutique.example
+  reviewers: []
+  createdAt: 2026-05-25T09:00:00Z
+  updatedAt: 2026-05-25T09:00:00Z
+  brandRef: $brand:default
+sections:
+  - id: anchor-section
+    title: Anchor fixture
+    blocks:
+      - id: chart-01
+        type: chart
+        chartType: bar
+        title: Anchor chart 1
+        takeaway: Chart 1 exercises lazy ECharts mount.
+        data:
+          series:
+            - name: Base
+              values:
+                - 11
+                - 13
+                - 15
+                - 17
+                - 19
+            - name: Upside
+              values:
+                - 13
+                - 15
+                - 18
+                - 21
+                - 25
+          xLabels:
+            - "2026"
+            - "2027"
+            - "2028"
+            - "2029"
+            - "2030"
+          unit: €M
+        axes:
+          yTitle: Value
+          ySuffix: €M
+        palette: qualitative
+        showLegend: true
+        legendPosition: bottom
+        showDataLabels: false
+      - id: chart-02
+        type: chart
+        chartType: bar
+        title: Anchor chart 2
+        takeaway: Chart 2 exercises lazy ECharts mount.
+        data:
+          series:
+            - name: Base
+              values:
+                - 12
+                - 14
+                - 16
+                - 18
+                - 20
+            - name: Upside
+              values:
+                - 14
+                - 16
+                - 19
+                - 22
+                - 26
+          xLabels:
+            - "2026"
+            - "2027"
+            - "2028"
+            - "2029"
+            - "2030"
+          unit: €M
+        axes:
+          yTitle: Value
+          ySuffix: €M
+        palette: qualitative
+        showLegend: true
+        legendPosition: right
+        showDataLabels: false
+      - id: chart-03
+        type: chart
+        chartType: line
+        title: Anchor chart 3
+        takeaway: Chart 3 exercises lazy ECharts mount.
+        data:
+          series:
+            - name: Base
+              values:
+                - 13
+                - 15
+                - 17
+                - 19
+                - 21
+            - name: Upside
+              values:
+                - 15
+                - 17
+                - 20
+                - 23
+                - 27
+          xLabels:
+            - "2026"
+            - "2027"
+            - "2028"
+            - "2029"
+            - "2030"
+          unit: €M
+        axes:
+          yTitle: Value
+          ySuffix: €M
+        palette: qualitative
+        showLegend: true
+        legendPosition: bottom
+        showDataLabels: false
+      - id: chart-04
+        type: chart
+        chartType: bar
+        title: Anchor chart 4
+        takeaway: Chart 4 exercises lazy ECharts mount.
+        data:
+          series:
+            - name: Base
+              values:
+                - 14
+                - 16
+                - 18
+                - 20
+                - 22
+            - name: Upside
+              values:
+                - 16
+                - 18
+                - 21
+                - 24
+                - 28
+          xLabels:
+            - "2026"
+            - "2027"
+            - "2028"
+            - "2029"
+            - "2030"
+          unit: €M
+        axes:
+          yTitle: Value
+          ySuffix: €M
+        palette: qualitative
+        showLegend: true
+        legendPosition: right
+        showDataLabels: false
+      - id: chart-05
+        type: chart
+        chartType: bar
+        title: Anchor chart 5
+        takeaway: Chart 5 exercises lazy ECharts mount.
+        data:
+          series:
+            - name: Base
+              values:
+                - 15
+                - 17
+                - 19
+                - 21
+                - 23
+            - name: Upside
+              values:
+                - 17
+                - 19
+                - 22
+                - 25
+                - 29
+          xLabels:
+            - "2026"
+            - "2027"
+            - "2028"
+            - "2029"
+            - "2030"
+          unit: €M
+        axes:
+          yTitle: Value
+          ySuffix: €M
+        palette: qualitative
+        showLegend: true
+        legendPosition: bottom
+        showDataLabels: false
+      - id: chart-06
+        type: chart
+        chartType: line
+        title: Anchor chart 6
+        takeaway: Chart 6 exercises lazy ECharts mount.
+        data:
+          series:
+            - name: Base
+              values:
+                - 16
+                - 18
+                - 20
+                - 22
+                - 24
+            - name: Upside
+              values:
+                - 18
+                - 20
+                - 23
+                - 26
+                - 30
+          xLabels:
+            - "2026"
+            - "2027"
+            - "2028"
+            - "2029"
+            - "2030"
+          unit: €M
+        axes:
+          yTitle: Value
+          ySuffix: €M
+        palette: qualitative
+        showLegend: true
+        legendPosition: right
+        showDataLabels: false
+      - id: chart-07
+        type: chart
+        chartType: bar
+        title: Anchor chart 7
+        takeaway: Chart 7 exercises lazy ECharts mount.
+        data:
+          series:
+            - name: Base
+              values:
+                - 17
+                - 19
+                - 21
+                - 23
+                - 25
+            - name: Upside
+              values:
+                - 19
+                - 21
+                - 24
+                - 27
+                - 31
+          xLabels:
+            - "2026"
+            - "2027"
+            - "2028"
+            - "2029"
+            - "2030"
+          unit: €M
+        axes:
+          yTitle: Value
+          ySuffix: €M
+        palette: qualitative
+        showLegend: true
+        legendPosition: bottom
+        showDataLabels: false
+      - id: chart-08
+        type: chart
+        chartType: bar
+        title: Anchor chart 8
+        takeaway: Chart 8 exercises lazy ECharts mount.
+        data:
+          series:
+            - name: Base
+              values:
+                - 18
+                - 20
+                - 22
+                - 24
+                - 26
+            - name: Upside
+              values:
+                - 20
+                - 22
+                - 25
+                - 28
+                - 32
+          xLabels:
+            - "2026"
+            - "2027"
+            - "2028"
+            - "2029"
+            - "2030"
+          unit: €M
+        axes:
+          yTitle: Value
+          ySuffix: €M
+        palette: qualitative
+        showLegend: true
+        legendPosition: right
+        showDataLabels: false
+      - id: chart-09
+        type: chart
+        chartType: line
+        title: Anchor chart 9
+        takeaway: Chart 9 exercises lazy ECharts mount.
+        data:
+          series:
+            - name: Base
+              values:
+                - 19
+                - 21
+                - 23
+                - 25
+                - 27
+            - name: Upside
+              values:
+                - 21
+                - 23
+                - 26
+                - 29
+                - 33
+          xLabels:
+            - "2026"
+            - "2027"
+            - "2028"
+            - "2029"
+            - "2030"
+          unit: €M
+        axes:
+          yTitle: Value
+          ySuffix: €M
+        palette: qualitative
+        showLegend: true
+        legendPosition: bottom
+        showDataLabels: false
+      - id: chart-10
+        type: chart
+        chartType: bar
+        title: Anchor chart 10
+        takeaway: Chart 10 exercises lazy ECharts mount.
+        data:
+          series:
+            - name: Base
+              values:
+                - 20
+                - 22
+                - 24
+                - 26
+                - 28
+            - name: Upside
+              values:
+                - 22
+                - 24
+                - 27
+                - 30
+                - 34
+          xLabels:
+            - "2026"
+            - "2027"
+            - "2028"
+            - "2029"
+            - "2030"
+          unit: €M
+        axes:
+          yTitle: Value
+          ySuffix: €M
+        palette: qualitative
+        showLegend: true
+        legendPosition: right
+        showDataLabels: false
+      - id: table-1
+        type: table
+        columns:
+          - header: Column 1
+            align: left
+          - header: Column 2
+            align: right
+          - header: Column 3
+            align: right
+          - header: Column 4
+            align: right
+          - header: Column 5
+            align: right
+          - header: Column 6
+            align: right
+        rows:
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R1C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R1C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R1C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R1C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R1C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R1C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R2C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R2C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R2C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R2C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R2C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R2C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R3C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R3C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R3C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R3C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R3C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R3C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R4C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R4C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R4C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R4C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R4C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R4C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R5C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R5C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R5C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R5C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R5C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R5C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R6C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R6C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R6C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R6C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R6C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R6C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R7C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R7C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R7C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R7C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R7C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R7C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R8C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R8C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R8C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R8C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R8C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R8C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R9C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R9C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R9C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R9C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R9C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R9C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R10C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R10C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R10C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R10C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R10C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R10C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R11C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R11C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R11C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R11C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R11C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R11C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R12C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R12C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R12C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R12C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R12C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R12C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R13C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R13C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R13C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R13C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R13C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R13C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R14C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R14C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R14C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R14C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R14C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R14C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R15C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R15C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R15C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R15C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R15C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R15C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R16C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R16C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R16C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R16C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R16C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R16C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R17C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R17C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R17C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R17C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R17C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R17C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R18C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R18C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R18C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R18C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R18C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R18C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R19C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R19C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R19C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R19C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R19C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R19C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R20C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R20C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R20C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R20C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R20C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R20C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R21C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R21C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R21C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R21C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R21C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R21C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R22C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R22C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R22C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R22C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R22C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R22C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R23C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R23C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R23C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R23C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R23C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R23C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R24C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R24C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R24C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R24C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R24C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R24C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R25C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R25C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R25C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R25C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R25C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R25C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R26C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R26C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R26C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R26C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R26C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R26C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R27C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R27C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R27C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R27C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R27C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R27C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R28C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R28C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R28C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R28C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R28C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R28C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R29C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R29C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R29C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R29C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R29C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R29C6
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R30C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R30C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R30C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R30C4
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 5 R30C5
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 6 R30C6
+        caption: Thirty-by-six anchor table
+      - id: table-2
+        type: table
+        columns:
+          - header: Column 1
+            align: left
+          - header: Column 2
+            align: right
+          - header: Column 3
+            align: right
+          - header: Column 4
+            align: right
+        rows:
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R1C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R1C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R1C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R1C4
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R2C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R2C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R2C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R2C4
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R3C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R3C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R3C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R3C4
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R4C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R4C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R4C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R4C4
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R5C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R5C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R5C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R5C4
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R6C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R6C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R6C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R6C4
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R7C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R7C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R7C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R7C4
+          - cells:
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 1 R8C1
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 2 R8C2
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 3 R8C3
+              - type: doc
+                content:
+                  - type: paragraph
+                    content:
+                      - type: text
+                        text: Column 4 R8C4
+        caption: Secondary comparison table
+      - id: prose-001
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 1 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-01
+        align: left
+      - id: prose-002
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 2 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-02
+        align: left
+      - id: prose-003
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 3 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-03
+        align: left
+      - id: prose-004
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 4 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-04
+        align: left
+      - id: prose-005
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 5 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-05
+        align: left
+      - id: prose-006
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 6 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-06
+        align: left
+      - id: prose-007
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 7 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-07
+        align: left
+      - id: prose-008
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 8 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-08
+        align: left
+      - id: prose-009
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 9 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-09
+        align: left
+      - id: prose-010
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 10 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-10
+        align: left
+      - id: prose-011
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 11 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-11
+        align: left
+      - id: prose-012
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 12 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-12
+        align: left
+      - id: prose-013
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 13 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-13
+        align: left
+      - id: prose-014
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 14 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-14
+        align: left
+      - id: prose-015
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 15 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-15
+        align: left
+      - id: prose-016
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 16 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-16
+        align: left
+      - id: prose-017
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 17 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-17
+        align: left
+      - id: prose-018
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 18 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-18
+        align: left
+      - id: prose-019
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 19 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-19
+        align: left
+      - id: prose-020
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 20 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-20
+        align: left
+      - id: prose-021
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 21 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-21
+        align: left
+      - id: prose-022
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 22 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-22
+        align: left
+      - id: prose-023
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 23 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-23
+        align: left
+      - id: prose-024
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 24 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-24
+        align: left
+      - id: prose-025
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 25 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-25
+        align: left
+      - id: prose-026
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 26 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-26
+        align: left
+      - id: prose-027
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 27 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-27
+        align: left
+      - id: prose-028
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 28 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-28
+        align: left
+      - id: prose-029
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 29 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-29
+        align: left
+      - id: prose-030
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 30 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-30
+        align: left
+      - id: prose-031
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 31 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-31
+        align: left
+      - id: prose-032
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 32 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-32
+        align: left
+      - id: prose-033
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 33 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-33
+        align: left
+      - id: prose-034
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 34 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-34
+        align: left
+      - id: prose-035
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 35 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-35
+        align: left
+      - id: prose-036
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 36 with enough text to mount as a node view.
+                  marks:
+                    - type: comment
+                      attrs:
+                        commentId: comment-36
+        align: left
+      - id: prose-037
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 37 with enough text to mount as a node view.
+        align: left
+      - id: prose-038
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 38 with enough text to mount as a node view.
+        align: left
+      - id: prose-039
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 39 with enough text to mount as a node view.
+        align: left
+      - id: prose-040
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 40 with enough text to mount as a node view.
+        align: left
+      - id: prose-041
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 41 with enough text to mount as a node view.
+        align: left
+      - id: prose-042
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 42 with enough text to mount as a node view.
+        align: left
+      - id: prose-043
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 43 with enough text to mount as a node view.
+        align: left
+      - id: prose-044
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 44 with enough text to mount as a node view.
+        align: left
+      - id: prose-045
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 45 with enough text to mount as a node view.
+        align: left
+      - id: prose-046
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 46 with enough text to mount as a node view.
+        align: left
+      - id: prose-047
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 47 with enough text to mount as a node view.
+        align: left
+      - id: prose-048
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 48 with enough text to mount as a node view.
+        align: left
+      - id: prose-049
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 49 with enough text to mount as a node view.
+        align: left
+      - id: prose-050
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 50 with enough text to mount as a node view.
+        align: left
+      - id: prose-051
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 51 with enough text to mount as a node view.
+        align: left
+      - id: prose-052
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 52 with enough text to mount as a node view.
+        align: left
+      - id: prose-053
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 53 with enough text to mount as a node view.
+        align: left
+      - id: prose-054
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 54 with enough text to mount as a node view.
+        align: left
+      - id: prose-055
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 55 with enough text to mount as a node view.
+        align: left
+      - id: prose-056
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 56 with enough text to mount as a node view.
+        align: left
+      - id: prose-057
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 57 with enough text to mount as a node view.
+        align: left
+      - id: prose-058
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 58 with enough text to mount as a node view.
+        align: left
+      - id: prose-059
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 59 with enough text to mount as a node view.
+        align: left
+      - id: prose-060
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 60 with enough text to mount as a node view.
+        align: left
+      - id: prose-061
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 61 with enough text to mount as a node view.
+        align: left
+      - id: prose-062
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 62 with enough text to mount as a node view.
+        align: left
+      - id: prose-063
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 63 with enough text to mount as a node view.
+        align: left
+      - id: prose-064
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 64 with enough text to mount as a node view.
+        align: left
+      - id: prose-065
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 65 with enough text to mount as a node view.
+        align: left
+      - id: prose-066
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 66 with enough text to mount as a node view.
+        align: left
+      - id: prose-067
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 67 with enough text to mount as a node view.
+        align: left
+      - id: prose-068
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 68 with enough text to mount as a node view.
+        align: left
+      - id: prose-069
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 69 with enough text to mount as a node view.
+        align: left
+      - id: prose-070
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 70 with enough text to mount as a node view.
+        align: left
+      - id: prose-071
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 71 with enough text to mount as a node view.
+        align: left
+      - id: prose-072
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 72 with enough text to mount as a node view.
+        align: left
+      - id: prose-073
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 73 with enough text to mount as a node view.
+        align: left
+      - id: prose-074
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 74 with enough text to mount as a node view.
+        align: left
+      - id: prose-075
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 75 with enough text to mount as a node view.
+        align: left
+      - id: prose-076
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 76 with enough text to mount as a node view.
+        align: left
+      - id: prose-077
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 77 with enough text to mount as a node view.
+        align: left
+      - id: prose-078
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 78 with enough text to mount as a node view.
+        align: left
+      - id: prose-079
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 79 with enough text to mount as a node view.
+        align: left
+      - id: prose-080
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 80 with enough text to mount as a node view.
+        align: left
+      - id: prose-081
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 81 with enough text to mount as a node view.
+        align: left
+      - id: prose-082
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 82 with enough text to mount as a node view.
+        align: left
+      - id: prose-083
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 83 with enough text to mount as a node view.
+        align: left
+      - id: prose-084
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 84 with enough text to mount as a node view.
+        align: left
+      - id: prose-085
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 85 with enough text to mount as a node view.
+        align: left
+      - id: prose-086
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 86 with enough text to mount as a node view.
+        align: left
+      - id: prose-087
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 87 with enough text to mount as a node view.
+        align: left
+      - id: prose-088
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 88 with enough text to mount as a node view.
+        align: left
+      - id: prose-089
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 89 with enough text to mount as a node view.
+        align: left
+      - id: prose-090
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 90 with enough text to mount as a node view.
+        align: left
+      - id: prose-091
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 91 with enough text to mount as a node view.
+        align: left
+      - id: prose-092
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 92 with enough text to mount as a node view.
+        align: left
+      - id: prose-093
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 93 with enough text to mount as a node view.
+        align: left
+      - id: prose-094
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 94 with enough text to mount as a node view.
+        align: left
+      - id: prose-095
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 95 with enough text to mount as a node view.
+        align: left
+      - id: prose-096
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 96 with enough text to mount as a node view.
+        align: left
+      - id: prose-097
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 97 with enough text to mount as a node view.
+        align: left
+      - id: prose-098
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 98 with enough text to mount as a node view.
+        align: left
+      - id: prose-099
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 99 with enough text to mount as a node view.
+        align: left
+      - id: prose-100
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 100 with enough text to mount as a node view.
+        align: left
+      - id: prose-101
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 101 with enough text to mount as a node view.
+        align: left
+      - id: prose-102
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 102 with enough text to mount as a node view.
+        align: left
+      - id: prose-103
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 103 with enough text to mount as a node view.
+        align: left
+      - id: prose-104
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 104 with enough text to mount as a node view.
+        align: left
+      - id: prose-105
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 105 with enough text to mount as a node view.
+        align: left
+      - id: prose-106
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 106 with enough text to mount as a node view.
+        align: left
+      - id: prose-107
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 107 with enough text to mount as a node view.
+        align: left
+      - id: prose-108
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 108 with enough text to mount as a node view.
+        align: left
+      - id: prose-109
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 109 with enough text to mount as a node view.
+        align: left
+      - id: prose-110
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 110 with enough text to mount as a node view.
+        align: left
+      - id: prose-111
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 111 with enough text to mount as a node view.
+        align: left
+      - id: prose-112
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 112 with enough text to mount as a node view.
+        align: left
+      - id: prose-113
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 113 with enough text to mount as a node view.
+        align: left
+      - id: prose-114
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 114 with enough text to mount as a node view.
+        align: left
+      - id: prose-115
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 115 with enough text to mount as a node view.
+        align: left
+      - id: prose-116
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 116 with enough text to mount as a node view.
+        align: left
+      - id: prose-117
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 117 with enough text to mount as a node view.
+        align: left
+      - id: prose-118
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 118 with enough text to mount as a node view.
+        align: left
+      - id: prose-119
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 119 with enough text to mount as a node view.
+        align: left
+      - id: prose-120
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 120 with enough text to mount as a node view.
+        align: left
+      - id: prose-121
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 121 with enough text to mount as a node view.
+        align: left
+      - id: prose-122
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 122 with enough text to mount as a node view.
+        align: left
+      - id: prose-123
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 123 with enough text to mount as a node view.
+        align: left
+      - id: prose-124
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 124 with enough text to mount as a node view.
+        align: left
+      - id: prose-125
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 125 with enough text to mount as a node view.
+        align: left
+      - id: prose-126
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 126 with enough text to mount as a node view.
+        align: left
+      - id: prose-127
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 127 with enough text to mount as a node view.
+        align: left
+      - id: prose-128
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 128 with enough text to mount as a node view.
+        align: left
+      - id: prose-129
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 129 with enough text to mount as a node view.
+        align: left
+      - id: prose-130
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 130 with enough text to mount as a node view.
+        align: left
+      - id: prose-131
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 131 with enough text to mount as a node view.
+        align: left
+      - id: prose-132
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 132 with enough text to mount as a node view.
+        align: left
+      - id: prose-133
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 133 with enough text to mount as a node view.
+        align: left
+      - id: prose-134
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 134 with enough text to mount as a node view.
+        align: left
+      - id: prose-135
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 135 with enough text to mount as a node view.
+        align: left
+      - id: prose-136
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 136 with enough text to mount as a node view.
+        align: left
+      - id: prose-137
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 137 with enough text to mount as a node view.
+        align: left
+      - id: prose-138
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 138 with enough text to mount as a node view.
+        align: left
+      - id: prose-139
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 139 with enough text to mount as a node view.
+        align: left
+      - id: prose-140
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 140 with enough text to mount as a node view.
+        align: left
+      - id: prose-141
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 141 with enough text to mount as a node view.
+        align: left
+      - id: prose-142
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 142 with enough text to mount as a node view.
+        align: left
+      - id: prose-143
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 143 with enough text to mount as a node view.
+        align: left
+      - id: prose-144
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 144 with enough text to mount as a node view.
+        align: left
+      - id: prose-145
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 145 with enough text to mount as a node view.
+        align: left
+      - id: prose-146
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 146 with enough text to mount as a node view.
+        align: left
+      - id: prose-147
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 147 with enough text to mount as a node view.
+        align: left
+      - id: prose-148
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 148 with enough text to mount as a node view.
+        align: left
+      - id: prose-149
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 149 with enough text to mount as a node view.
+        align: left
+      - id: prose-150
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 150 with enough text to mount as a node view.
+        align: left
+      - id: prose-151
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 151 with enough text to mount as a node view.
+        align: left
+      - id: prose-152
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 152 with enough text to mount as a node view.
+        align: left
+      - id: prose-153
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 153 with enough text to mount as a node view.
+        align: left
+      - id: prose-154
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 154 with enough text to mount as a node view.
+        align: left
+      - id: prose-155
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 155 with enough text to mount as a node view.
+        align: left
+      - id: prose-156
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 156 with enough text to mount as a node view.
+        align: left
+      - id: prose-157
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 157 with enough text to mount as a node view.
+        align: left
+      - id: prose-158
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 158 with enough text to mount as a node view.
+        align: left
+      - id: prose-159
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 159 with enough text to mount as a node view.
+        align: left
+      - id: prose-160
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 160 with enough text to mount as a node view.
+        align: left
+      - id: prose-161
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 161 with enough text to mount as a node view.
+        align: left
+      - id: prose-162
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 162 with enough text to mount as a node view.
+        align: left
+      - id: prose-163
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 163 with enough text to mount as a node view.
+        align: left
+      - id: prose-164
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 164 with enough text to mount as a node view.
+        align: left
+      - id: prose-165
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 165 with enough text to mount as a node view.
+        align: left
+      - id: prose-166
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 166 with enough text to mount as a node view.
+        align: left
+      - id: prose-167
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 167 with enough text to mount as a node view.
+        align: left
+      - id: prose-168
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 168 with enough text to mount as a node view.
+        align: left
+      - id: prose-169
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 169 with enough text to mount as a node view.
+        align: left
+      - id: prose-170
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 170 with enough text to mount as a node view.
+        align: left
+      - id: prose-171
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 171 with enough text to mount as a node view.
+        align: left
+      - id: prose-172
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 172 with enough text to mount as a node view.
+        align: left
+      - id: prose-173
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 173 with enough text to mount as a node view.
+        align: left
+      - id: prose-174
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 174 with enough text to mount as a node view.
+        align: left
+      - id: prose-175
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 175 with enough text to mount as a node view.
+        align: left
+      - id: prose-176
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 176 with enough text to mount as a node view.
+        align: left
+      - id: prose-177
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 177 with enough text to mount as a node view.
+        align: left
+      - id: prose-178
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 178 with enough text to mount as a node view.
+        align: left
+      - id: prose-179
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 179 with enough text to mount as a node view.
+        align: left
+      - id: prose-180
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 180 with enough text to mount as a node view.
+        align: left
+      - id: prose-181
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 181 with enough text to mount as a node view.
+        align: left
+      - id: prose-182
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 182 with enough text to mount as a node view.
+        align: left
+      - id: prose-183
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 183 with enough text to mount as a node view.
+        align: left
+      - id: prose-184
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 184 with enough text to mount as a node view.
+        align: left
+      - id: prose-185
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 185 with enough text to mount as a node view.
+        align: left
+      - id: prose-186
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 186 with enough text to mount as a node view.
+        align: left
+      - id: prose-187
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 187 with enough text to mount as a node view.
+        align: left
+      - id: prose-188
+        type: prose
+        content:
+          type: doc
+          content:
+            - type: paragraph
+              content:
+                - type: text
+                  text: Anchor prose block 188 with enough text to mount as a node view.
+        align: left
+comments:
+  - id: comment-01
+    blockId: prose-001
+    quotedText: Marked text 1
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 1.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-02
+    blockId: prose-002
+    quotedText: Marked text 2
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 2.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-03
+    blockId: prose-003
+    quotedText: Marked text 3
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 3.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-04
+    blockId: prose-004
+    quotedText: Marked text 4
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 4.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-05
+    blockId: prose-005
+    quotedText: Marked text 5
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 5.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-06
+    blockId: prose-006
+    quotedText: Marked text 6
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 6.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-07
+    blockId: prose-007
+    quotedText: Marked text 7
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 7.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-08
+    blockId: prose-008
+    quotedText: Marked text 8
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 8.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-09
+    blockId: prose-009
+    quotedText: Marked text 9
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 9.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-10
+    blockId: prose-010
+    quotedText: Marked text 10
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 10.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-11
+    blockId: prose-011
+    quotedText: Marked text 11
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 11.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-12
+    blockId: prose-012
+    quotedText: Marked text 12
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 12.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-13
+    blockId: prose-013
+    quotedText: Marked text 13
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 13.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-14
+    blockId: prose-014
+    quotedText: Marked text 14
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 14.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-15
+    blockId: prose-015
+    quotedText: Marked text 15
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 15.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-16
+    blockId: prose-016
+    quotedText: Marked text 16
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 16.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-17
+    blockId: prose-017
+    quotedText: Marked text 17
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 17.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-18
+    blockId: prose-018
+    quotedText: Marked text 18
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 18.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-19
+    blockId: prose-019
+    quotedText: Marked text 19
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 19.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-20
+    blockId: prose-020
+    quotedText: Marked text 20
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 20.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-21
+    blockId: prose-021
+    quotedText: Marked text 21
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 21.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-22
+    blockId: prose-022
+    quotedText: Marked text 22
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 22.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-23
+    blockId: prose-023
+    quotedText: Marked text 23
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 23.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-24
+    blockId: prose-024
+    quotedText: Marked text 24
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 24.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-25
+    blockId: prose-025
+    quotedText: Marked text 25
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 25.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-26
+    blockId: prose-026
+    quotedText: Marked text 26
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 26.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-27
+    blockId: prose-027
+    quotedText: Marked text 27
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 27.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-28
+    blockId: prose-028
+    quotedText: Marked text 28
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 28.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-29
+    blockId: prose-029
+    quotedText: Marked text 29
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 29.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-30
+    blockId: prose-030
+    quotedText: Marked text 30
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 30.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-31
+    blockId: prose-031
+    quotedText: Marked text 31
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 31.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-32
+    blockId: prose-032
+    quotedText: Marked text 32
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 32.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-33
+    blockId: prose-033
+    quotedText: Marked text 33
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 33.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-34
+    blockId: prose-034
+    quotedText: Marked text 34
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 34.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-35
+    blockId: prose-035
+    quotedText: Marked text 35
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 35.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z
+  - id: comment-36
+    blockId: prose-036
+    quotedText: Marked text 36
+    status: open
+    thread:
+      - kind: instruction
+        author: Jane Smith
+        authorEmail: j.smith@boutique.example
+        authorRole: consultant
+        text: Review anchor comment 36.
+        createdAt: 2026-05-25T09:00:00Z
+    createdAt: 2026-05-25T09:00:00Z
+    updatedAt: 2026-05-25T09:00:00Z

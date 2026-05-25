@@ -670,7 +670,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** For every fixture in `examples/`, `proseMirrorToDocModel(docModelToProseMirror(doc))` deep-equals `doc`. The compile-time `assertNever(_b: never)` catches missing block-type dispatch arms.
 - **est.** 1.5h (mostly copy from reference; was 2h)
 
-### T-89b [ ] · Build the perf-spike anchor fixture (D-35, D-39)
+### T-89b [x] · Build the perf-spike anchor fixture (D-35, D-39)
 - **Depends-on:** T-23b, T-24, T-25, T-26, T-27, T-29, T-30, T-31, T-32, T-34, T-35, T-36, T-37, T-38, T-39
 - **Reads:** D-35
 - **Outputs:** `tests/perf/fixtures/anchor-doc.yaml` — a DocModel matching the D-35 anchor: ~200 node-views, 10 chart blocks (mixed types), 2 tables (one 30×6), dozens of inline comment marks.
