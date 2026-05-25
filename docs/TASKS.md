@@ -829,7 +829,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** A sample deck loads in the editor; comments work; same schema validates; no deck-specific schema branches exist outside the kind discriminator.
 - **est.** 2h
 
-### T-107 [ ] · Editor support for `kind: "deck"` (slide-aware navigation)
+### T-107 [x] · Editor support for `kind: "deck"` (slide-aware navigation)
 - **Depends-on:** T-103, T-74
 - **Reads:** none
 - **Outputs:** updates to `src/editor/Editor.tsx` with slide-by-slide navigation

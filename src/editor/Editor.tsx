@@ -14,8 +14,10 @@ import { Strike } from "@tiptap/extension-strike";
 import { Text } from "@tiptap/extension-text";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import { closeHistory } from "@tiptap/pm/history";
-import type { CSSProperties, FC } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type FC } from "react";
 import { CommentMark } from "../comments/CommentMark";
+import type { DocModel } from "../schema/docmodel";
+import { docModelToProseMirror } from "./mapping";
 import { BulletListTipTapNode } from "./nodes/BulletListNode";
 import { CalloutTipTapNode } from "./nodes/CalloutNode";
 import { ChartTipTapNode } from "./nodes/ChartNode";
@@ -34,6 +36,7 @@ import { TimelineTipTapNode } from "./nodes/TimelineNode";
 
 export interface EditorProps {
   initialContent?: JSONContent | string;
+  docModel?: DocModel;
   editable?: boolean;
   onUpdate?: (content: JSONContent) => void;
 }
@@ -165,12 +168,25 @@ export function sanitizePastedHtml(html: string): string {
 
 export const Editor: FC<EditorProps> = ({
   initialContent = DEFAULT_CONTENT,
+  docModel,
   editable = true,
   onUpdate,
 }) => {
+  const deck = docModel?.kind === "deck" ? docModel : null;
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const activeSlideIndex =
+    deck === null ? 0 : Math.min(currentSlideIndex, deck.slides.length - 1);
+  const activeSlide = deck?.slides[activeSlideIndex];
+  const editorContent = useMemo(
+    () =>
+      deck === null
+        ? initialContent
+        : editorContentForDeckSlide(deck, activeSlideIndex),
+    [activeSlideIndex, deck, initialContent],
+  );
   const editor = useEditor({
     extensions: createEditorExtensions(),
-    content: initialContent,
+    content: editorContent,
     editable,
     editorProps: {
       attributes: {
@@ -182,6 +198,19 @@ export const Editor: FC<EditorProps> = ({
       onUpdate?.(updatedEditor.getJSON());
     },
   });
+
+  useEffect(() => {
+    setCurrentSlideIndex(0);
+  }, [deck]);
+
+  useEffect(() => {
+    if (editor === null || deck === null) {
+      return;
+    }
+    editor.commands.setContent(editorContent, false);
+  }, [deck, editor, editorContent]);
+
+  const editorSurface = <EditorContent editor={editor} style={styles.surface} />;
 
   return (
     <section style={styles.shell} aria-label="WYSIWYG editor">
@@ -203,10 +232,69 @@ export const Editor: FC<EditorProps> = ({
           }}
         />
       </div>
-      <EditorContent editor={editor} style={styles.surface} />
+      {deck === null ? (
+        editorSurface
+      ) : (
+        <div style={styles.deckShell}>
+          <nav aria-label="Slide navigation" style={styles.slideStrip}>
+            {deck.slides.map((slide, index) => {
+              const isActive = index === activeSlideIndex;
+              return (
+                <button
+                  key={slide.id}
+                  type="button"
+                  aria-current={isActive ? "true" : undefined}
+                  aria-label={`Slide ${index + 1} ${slide.layout}`}
+                  onClick={() => {
+                    setCurrentSlideIndex(index);
+                  }}
+                  style={{
+                    ...styles.slideButton,
+                    ...(isActive ? styles.slideButtonActive : {}),
+                  }}
+                >
+                  <span>Slide {index + 1}</span>
+                  <span style={styles.slideLayoutLabel}>{slide.layout}</span>
+                </button>
+              );
+            })}
+          </nav>
+          <section
+            aria-label="Current slide"
+            data-current-slide-id={activeSlide?.id ?? ""}
+            style={styles.slideFocus}
+          >
+            <p style={styles.slideMeta}>
+              Slide {activeSlideIndex + 1} of {deck.slides.length} ·{" "}
+              {activeSlide?.layout ?? "unknown"}
+            </p>
+            {editorSurface}
+          </section>
+        </div>
+      )}
     </section>
   );
 };
+
+function editorContentForDeckSlide(
+  deck: Extract<DocModel, { kind: "deck" }>,
+  slideIndex: number,
+): JSONContent {
+  const mapped = docModelToProseMirror(deck);
+  const slide = mapped.content[slideIndex];
+  const content = (slide?.content ?? []).filter(isJsonContentNode);
+  return {
+    type: "doc",
+    content: content.length > 0 ? content : [{ type: "paragraph" }],
+  };
+}
+
+function isJsonContentNode(value: unknown): value is JSONContent {
+  if (value === null || typeof value !== "object") {
+    return false;
+  }
+  return typeof (value as { type?: unknown }).type === "string";
+}
 
 function assertClosedNode(node: JSONContent): void {
   if (node.type === undefined || !ALLOWED_NODE_NAMES.has(node.type)) {
@@ -351,6 +439,47 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: "0.5rem",
     minHeight: "16rem",
     padding: "1rem",
+  },
+  deckShell: {
+    display: "grid",
+    gap: "1rem",
+    gridTemplateColumns: "12rem minmax(0, 1fr)",
+  },
+  slideStrip: {
+    alignContent: "start",
+    display: "grid",
+    gap: "0.5rem",
+  },
+  slideButton: {
+    background: "Canvas",
+    border: "1px solid ButtonBorder",
+    borderRadius: "0.5rem",
+    color: "CanvasText",
+    cursor: "pointer",
+    display: "grid",
+    gap: "0.25rem",
+    padding: "0.625rem",
+    textAlign: "left",
+  },
+  slideButtonActive: {
+    outline: "2px solid Highlight",
+    outlineOffset: "2px",
+  },
+  slideLayoutLabel: {
+    color: "GrayText",
+    fontSize: "0.75rem",
+  },
+  slideFocus: {
+    border: "1px solid ButtonBorder",
+    borderRadius: "0.75rem",
+    display: "grid",
+    gap: "0.75rem",
+    padding: "0.75rem",
+  },
+  slideMeta: {
+    color: "GrayText",
+    fontSize: "0.875rem",
+    margin: 0,
   },
 };
 
