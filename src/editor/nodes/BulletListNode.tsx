@@ -13,7 +13,7 @@ import {
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    bulletList: {
+    documentBulletList: {
       insertBulletList: (attrs?: { items?: BulletListItem[] }) => ReturnType;
     };
   }
@@ -69,7 +69,7 @@ export const BulletListTipTapNode = Node.create({
   addCommands() {
     return {
       insertBulletList:
-        (attrs = {}) =>
+        (attrs: { items?: BulletListItem[] } = {}) =>
         ({ commands }) =>
           commands.insertContent({
             type: this.name,

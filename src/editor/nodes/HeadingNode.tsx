@@ -9,7 +9,7 @@ import type { HeadingBlock, HeadingLevel } from "../../schema/blocks/heading";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    heading: {
+    documentHeading: {
       insertHeading: (attrs?: {
         level?: HeadingLevel;
         text?: string;
@@ -75,7 +75,13 @@ export const HeadingTipTapNode = Node.create({
   addCommands() {
     return {
       insertHeading:
-        (attrs = {}) =>
+        (
+          attrs: {
+            level?: HeadingLevel;
+            text?: string;
+            numbered?: boolean;
+          } = {},
+        ) =>
         ({ commands }) =>
           commands.insertContent({
             type: this.name,

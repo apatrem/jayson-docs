@@ -565,7 +565,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ## Phase 4 — M4: WYSIWYG Editor
 
-### T-74 [ ] · Set up TipTap editor with StarterKit
+### T-74 [x] · Set up TipTap editor with StarterKit
 - **Depends-on:** T-01
 - **Reads:** none
 - **Outputs:** `src/editor/Editor.tsx` (initial)
