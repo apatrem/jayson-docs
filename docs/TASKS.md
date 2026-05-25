@@ -808,7 +808,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Given a DocModel (kind: "deck"), renders one HTML "slide" per slide entry. Layout determined by `slide.layout`.
 - **est.** 4h
 
-### T-104 [ ] · Implement the 15 slide layouts (one component each)
+### T-104 [x] · Implement the 15 slide layouts (one component each)
 - **Depends-on:** T-103
 - **Reads:** D-30, `brand.deck.*`
 - **Outputs:** `src/renderer/layouts/<Layout>.tsx` × 15 (cover, section-divider, agenda, title-body, two-column, three-column, chart-full, chart-commentary, table, quote, process-timeline, team, kpis, image-caption, closing)
