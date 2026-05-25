@@ -552,7 +552,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** After 10 LLM calls with varied prompts, the SQLite db contains zero rows where any field matches even partial prompt text (verified by searching every column for a sentinel string in the prompts).
 - **est.** 2h
 
-### T-73 [ ] · Install CLI flow + privacy notice + cost-tracking toggle
+### T-73 [x] · Install CLI flow + privacy notice + cost-tracking toggle
 - **Depends-on:** none
 - **Reads:** `docs/SETUP_INSTALL_FLOW.md`, D-34
 - **Outputs:** `src/setup/install.ts` implementing all 7 steps; cost-tracking enable/disable toggle in Settings; non-interactive mode via CLI flags + env vars.
