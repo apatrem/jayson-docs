@@ -725,7 +725,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** matches UI_REVIEW_PANEL.md §"Acceptance checklist (per T-92)" — 11 items including keyboard shortcuts, conflict detection (T-99), failed proposals, bulk actions with confirmation.
 - **est.** 8h
 
-### T-93 [ ] · Implement inline track-changes review (mode A)
+### T-93 [x] · Implement inline track-changes review (mode A)
 - **Depends-on:** T-91
 - **Reads:** D-25
 - **Outputs:** `src/comments/InlineReview.tsx`

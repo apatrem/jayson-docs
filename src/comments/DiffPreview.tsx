@@ -64,10 +64,16 @@ export function extractPlainText(value: unknown): string {
     if (typeof record.text === "string") {
       return record.text;
     }
-    return Object.values(record).map(extractPlainText).filter(Boolean).join(" ");
+    return Object.entries(record)
+      .filter(([key]) => !TEXT_METADATA_KEYS.has(key))
+      .map(([, entry]) => extractPlainText(entry))
+      .filter(Boolean)
+      .join(" ");
   }
   return "";
 }
+
+const TEXT_METADATA_KEYS = new Set(["id", "type", "align", "note", "variant"]);
 
 const styles: Record<string, CSSProperties> = {
   preview: {
