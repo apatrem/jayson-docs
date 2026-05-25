@@ -732,7 +732,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Toggle to inline mode shows AI proposals inline (red strikethrough + green inserts) with floating accept/reject pills.
 - **est.** 6h
 
-### T-94 [ ] · Implement two-pane diff review (mode C)
+### T-94 [x] · Implement two-pane diff review (mode C)
 - **Depends-on:** T-91
 - **Reads:** D-25
 - **Outputs:** `src/comments/DiffReview.tsx`
