@@ -649,7 +649,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Open dialog accepts a folder containing a valid YAML, or any YAML inside one (auto-resolves to the parent). Bare YAML in cloud root prompts "wrap in folder?".
 - **est.** 3h
 
-### T-87 [ ] · Implement asset-missing and orphaned-asset linting
+### T-87 [x] · Implement asset-missing and orphaned-asset linting
 - **Depends-on:** none
 - **Reads:** D-10, D-21
 - **Outputs:** `src/editor/asset-linter.ts`
