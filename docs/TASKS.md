@@ -718,7 +718,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** On highlight, a popup lets consultant type an instruction. Submit creates a Comment in `DocModel.comments[]` with status "open" and a single "instruction" thread entry.
 - **est.** 3h
 
-### T-92 [ ] · Implement comment review panel (mode B — default)
+### T-92 [x] · Implement comment review panel (mode B — default)
 - **Depends-on:** T-91
 - **Reads:** D-25, `docs/UI_REVIEW_PANEL.md`
 - **Outputs:** all components per UI_REVIEW_PANEL.md §"File locations" (ReviewPanel, ProposalCard, DiffPreview, ProseDiff, FieldsDiff, FollowUpInput, BulkActions).
