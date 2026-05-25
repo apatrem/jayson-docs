@@ -37,6 +37,19 @@ const batchInput: BatchedCommentRequest = {
   docContext: requestFixture.docContext,
   comments: requestFixture.comments,
 };
+const singleCommentBatch: BatchedCommentRequest = {
+  ...batchInput,
+  comments: [batchInput.comments[0]!],
+};
+const invalidPatch = {
+  op: "replace",
+  blockId: "b1-callout-01",
+  block: { type: "callout" },
+};
+const validPatch = {
+  op: "remove",
+  blockId: "b1-callout-01",
+};
 
 describe("batched comment request builder (T-64)", () => {
   it("builds one request with cached context and fresh comments", () => {
@@ -88,7 +101,87 @@ describe("batched comment request builder (T-64)", () => {
       ),
     ).toThrow(/failed validation/);
   });
+
+  it("retries invalid patches one-at-a-time with a corrective prompt", async () => {
+    const call = vi.fn<BatchedCommentClient["call"]>();
+    call.mockImplementationOnce(() =>
+      Promise.resolve({
+        content: batchResponse([
+          {
+            status: "ok",
+            commentId: singleCommentBatch.comments[0]!.commentId,
+            patch: invalidPatch,
+          },
+        ]),
+        raw: {},
+        usage: { inputTokens: 100, outputTokens: 10, cachedTokens: 80 },
+      }),
+    );
+    call.mockImplementationOnce(() =>
+      Promise.resolve({
+        content: batchResponse([
+          {
+            status: "ok",
+            commentId: singleCommentBatch.comments[0]!.commentId,
+            patch: validPatch,
+          },
+        ]),
+        raw: {},
+        usage: { inputTokens: 50, outputTokens: 10, cachedTokens: 40 },
+      }),
+    );
+    const client: BatchedCommentClient = { call };
+
+    const response = await runBatchedCommentRequest(client, singleCommentBatch);
+
+    expect(response.results[0]).toMatchObject({
+      status: "ok",
+      commentId: singleCommentBatch.comments[0]!.commentId,
+      patch: validPatch,
+    });
+    expect(call).toHaveBeenCalledTimes(2);
+    expect(call.mock.calls[1]?.[1].messages[0]?.content).toContain(
+      "Corrective retry 1",
+    );
+  });
+
+  it("marks a comment failed with raw output after retry exhaustion", async () => {
+    const call = vi.fn<BatchedCommentClient["call"]>(() =>
+      Promise.resolve({
+        content: batchResponse([
+          {
+            status: "ok",
+            commentId: singleCommentBatch.comments[0]!.commentId,
+            patch: invalidPatch,
+          },
+        ]),
+        raw: {},
+        usage: { inputTokens: 100, outputTokens: 10, cachedTokens: 80 },
+      }),
+    );
+    const client: BatchedCommentClient = { call };
+
+    const response = await runBatchedCommentRequest(client, singleCommentBatch, {
+      maxPatchRetries: 2,
+    });
+
+    expect(response.results[0]).toMatchObject({
+      status: "failed",
+      commentId: singleCommentBatch.comments[0]!.commentId,
+    });
+    expect(response.results[0]?.status === "failed" && response.results[0].rawOutput).toContain(
+      "\"type\":\"callout\"",
+    );
+    expect(call).toHaveBeenCalledTimes(3);
+  });
 });
+
+function batchResponse(results: unknown[]): string {
+  return JSON.stringify({
+    results,
+    usage: { inputTokens: 1, outputTokens: 1, cachedTokens: 0 },
+  });
+}
 
 function stripMetadata(value: unknown): unknown {
   if (Array.isArray(value)) {

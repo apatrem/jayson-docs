@@ -496,7 +496,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Given an array of pending comments, builds one structured request with prompt-cached context. Returns parsed `BatchedCommentResponse`.
 - **est.** 4h
 
-### T-65 [ ] · Implement per-patch validation + corrective retry
+### T-65 [x] · Implement per-patch validation + corrective retry
 - **Depends-on:** T-64, T-15
 - **Reads:** none
 - **Outputs:** updates to `src/llm/batch-comments.ts`
