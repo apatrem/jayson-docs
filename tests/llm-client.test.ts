@@ -7,11 +7,24 @@ import {
   type LLMRequest,
   type Provider,
 } from "../src/llm/client";
+import { createAnthropicProvider } from "../src/llm/providers/anthropic";
+import { createLocalProvider } from "../src/llm/providers/local";
 import { createOpenAIProvider } from "../src/llm/providers/openai";
 
 const request: LLMRequest = {
   systemPrompt: "Return JSON only.",
   messages: [{ role: "user", content: "Draft the executive summary." }],
+  responseFormat: "json",
+};
+
+const cachedRequest: LLMRequest = {
+  systemPrompt: "Use the schema exactly.",
+  cachedContexts: [
+    { kind: "schemaContext", content: "BlockPatchSchema" },
+    { kind: "brandTokensContext", content: "colors.brand.primary: #0B3D91" },
+    { kind: "docContext", content: "doc-state-v1" },
+  ],
+  messages: [{ role: "user", content: "Patch comment c1." }],
   responseFormat: "json",
 };
 
@@ -176,7 +189,7 @@ describe("LLMClient (T-60)", () => {
     });
   });
 
-  it("registers explicit stubs for azure and local", async () => {
+  it("registers an explicit stub for azure", async () => {
     const client = new LLMClient({
       config: {
         llm: {
@@ -186,10 +199,9 @@ describe("LLMClient (T-60)", () => {
             keychainEntry: "azure-key",
           },
           thinkingModel: {
-            provider: "local",
-            model: "llama3",
-            keychainEntry: "local-key",
-            baseUrl: "http://127.0.0.1:11434/v1",
+            provider: "azure",
+            model: "deployment-name",
+            keychainEntry: "azure-key",
           },
         },
       },
@@ -199,8 +211,122 @@ describe("LLMClient (T-60)", () => {
     await expect(client.call("fast", request)).rejects.toBeInstanceOf(
       NotImplementedError,
     );
-    await expect(client.call("thinking", request)).rejects.toBeInstanceOf(
-      NotImplementedError,
+  });
+});
+
+describe("LLM adapter prompt caching (T-61)", () => {
+  it("emits explicit cache markers for Anthropic context blocks", async () => {
+    const fetchImpl = vi.fn<typeof fetch>(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: "{\"patches\":[]}" }],
+            usage: {
+              input_tokens: 300,
+              output_tokens: 50,
+              cache_read_input_tokens: 240,
+            },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+      ),
     );
+    const provider = createAnthropicProvider();
+
+    const response = await provider.call({
+      apiKey: "anthropic-key",
+      endpoint: {
+        provider: "anthropic",
+        model: "claude-opus-4-7",
+        keychainEntry: "anthropic-key",
+      },
+      request: cachedRequest,
+      fetch: fetchImpl,
+    });
+
+    const body = JSON.parse(
+      String(fetchImpl.mock.calls[0]?.[1]?.body),
+    ) as Record<string, unknown>;
+    const system = body.system as Array<{
+      text: string;
+      cache_control?: { type: string };
+    }>;
+    expect(system).toHaveLength(4);
+    expect(system.every((block) => block.cache_control?.type === "ephemeral")).toBe(
+      true,
+    );
+    expect(system.map((block) => block.text).join("\n")).toContain(
+      "BlockPatchSchema",
+    );
+    expect(response.usage.cachedTokens).toBe(240);
+  });
+
+  it("keeps OpenAI automatic caching marker-free while reading cached tokens", async () => {
+    const fetchImpl = vi.fn<typeof fetch>(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: "{\"patches\":[]}" } }],
+            usage: {
+              prompt_tokens: 300,
+              completion_tokens: 50,
+              prompt_tokens_details: { cached_tokens: 180 },
+            },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+      ),
+    );
+    const provider = createOpenAIProvider();
+
+    const response = await provider.call({
+      apiKey: "sk-test",
+      endpoint: {
+        provider: "openai",
+        model: "gpt-5.5",
+        keychainEntry: "openai-key",
+      },
+      request: cachedRequest,
+      fetch: fetchImpl,
+    });
+
+    const bodyText = String(fetchImpl.mock.calls[0]?.[1]?.body);
+    expect(bodyText).toContain("BlockPatchSchema");
+    expect(bodyText).not.toContain("cache_control");
+    expect(response.usage.cachedTokens).toBe(180);
+  });
+
+  it("returns zero cached tokens for local no-cache endpoints", async () => {
+    const fetchImpl = vi.fn<typeof fetch>(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: "{\"patches\":[]}" } }],
+            usage: { prompt_tokens: 300, completion_tokens: 50 },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+      ),
+    );
+    const provider = createLocalProvider();
+
+    const response = await provider.call({
+      apiKey: "",
+      endpoint: {
+        provider: "local",
+        model: "llama3",
+        keychainEntry: "local-key",
+        baseUrl: "http://127.0.0.1:11434/v1",
+      },
+      request: cachedRequest,
+      fetch: fetchImpl,
+    });
+
+    expect(provider.cacheCapability).toBe("none");
+    expect(response.usage).toEqual({
+      inputTokens: 300,
+      outputTokens: 50,
+      cachedTokens: 0,
+    });
   });
 });

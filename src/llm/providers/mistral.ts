@@ -1,5 +1,6 @@
 import {
   LLMProviderError,
+  type LLMCachedContext,
   type LLMMessage,
   type LLMResponse,
   type LLMUsage,
@@ -70,6 +71,7 @@ function buildMistralRequestBody(
     model: input.endpoint.model,
     messages: toMistralMessages(
       input.request.systemPrompt,
+      input.request.cachedContexts,
       input.request.messages,
     ),
   };
@@ -89,16 +91,45 @@ function buildMistralRequestBody(
 
 function toMistralMessages(
   systemPrompt: string | undefined,
+  cachedContexts: LLMCachedContext[] | undefined,
   messages: LLMMessage[],
-): Array<{ role: LLMMessage["role"]; content: string }> {
+): Array<{
+  role: LLMMessage["role"];
+  content: string;
+  cache_control?: { type: "ephemeral" };
+}> {
   const converted = messages.map((message) => ({
     role: message.role,
     content: message.content,
   }));
-  if (systemPrompt === undefined || systemPrompt.length === 0) {
-    return converted;
+  const cacheablePrefix: Array<{
+    role: "system";
+    content: string;
+    cache_control: { type: "ephemeral" };
+  }> = [];
+  if (systemPrompt !== undefined && systemPrompt.length > 0) {
+    cacheablePrefix.push(toCacheableSystemMessage(systemPrompt));
   }
-  return [{ role: "system", content: systemPrompt }, ...converted];
+  for (const context of cachedContexts ?? []) {
+    cacheablePrefix.push(toCacheableSystemMessage(formatCachedContext(context)));
+  }
+  return [...cacheablePrefix, ...converted];
+}
+
+function toCacheableSystemMessage(content: string): {
+  role: "system";
+  content: string;
+  cache_control: { type: "ephemeral" };
+} {
+  return {
+    role: "system",
+    content,
+    cache_control: { type: "ephemeral" },
+  };
+}
+
+function formatCachedContext(context: LLMCachedContext): string {
+  return `<${context.kind}>\n${context.content}\n</${context.kind}>`;
 }
 
 function extractMistralContent(raw: unknown): string {

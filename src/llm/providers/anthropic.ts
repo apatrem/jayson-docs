@@ -1,5 +1,6 @@
 import {
   LLMProviderError,
+  type LLMCachedContext,
   type LLMMessage,
   type LLMResponse,
   type LLMUsage,
@@ -67,14 +68,56 @@ function buildAnthropicRequestBody(
     messages: toAnthropicMessages(input.request.messages),
   };
 
-  if (input.request.systemPrompt !== undefined) {
-    body.system = input.request.systemPrompt;
+  const system = toAnthropicSystemBlocks(
+    input.request.systemPrompt,
+    input.request.cachedContexts,
+  );
+  if (system.length > 0) {
+    body.system = system;
   }
   if (input.request.temperature !== undefined) {
     body.temperature = input.request.temperature;
   }
 
   return body;
+}
+
+function toAnthropicSystemBlocks(
+  systemPrompt: string | undefined,
+  cachedContexts: LLMCachedContext[] | undefined,
+): Array<{
+  type: "text";
+  text: string;
+  cache_control: { type: "ephemeral" };
+}> {
+  const blocks: Array<{
+    type: "text";
+    text: string;
+    cache_control: { type: "ephemeral" };
+  }> = [];
+  if (systemPrompt !== undefined && systemPrompt.length > 0) {
+    blocks.push(toCacheableTextBlock(systemPrompt));
+  }
+  for (const context of cachedContexts ?? []) {
+    blocks.push(toCacheableTextBlock(formatCachedContext(context)));
+  }
+  return blocks;
+}
+
+function toCacheableTextBlock(text: string): {
+  type: "text";
+  text: string;
+  cache_control: { type: "ephemeral" };
+} {
+  return {
+    type: "text",
+    text,
+    cache_control: { type: "ephemeral" },
+  };
+}
+
+function formatCachedContext(context: LLMCachedContext): string {
+  return `<${context.kind}>\n${context.content}\n</${context.kind}>`;
 }
 
 function toAnthropicMessages(

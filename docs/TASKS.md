@@ -465,7 +465,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** `LLMClient.call(modelKind, request)` routes by `provider` from `LlmEndpointSchema`; API key fetched from OS keychain via Tauri command; `openai`, `anthropic`, `mistral`, and `openai-compatible` are fully implemented; `azure` and `local` may be stubs that throw `NotImplemented` but are registered in the dispatch table. A unit test asserts that registering a fake `"acme"` adapter only requires adding one file + extending the `LlmEndpointSchema` enum.
 - **est.** 8h (up from 6h: real `mistral` + `openai-compatible` adapters, plus the interface seam)
 
-### T-61 [ ] · Implement prompt caching as a per-adapter capability
+### T-61 [x] · Implement prompt caching as a per-adapter capability
 - **Depends-on:** T-60
 - **Reads:** D-13
 - **Outputs:** updates to each adapter in `src/llm/providers/`. Adapters declare `cacheCapability`:

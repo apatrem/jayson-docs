@@ -1,6 +1,7 @@
 import {
   LLMProviderError,
   type BaseLlmEndpoint,
+  type LLMCachedContext,
   type LLMMessage,
   type LLMResponse,
   type LLMUsage,
@@ -105,6 +106,7 @@ function resolveBaseUrl(
 function buildOpenAIRequestBody(input: ProviderCallInput): Record<string, unknown> {
   const messages = toOpenAIMessages(
     input.request.systemPrompt,
+    input.request.cachedContexts,
     input.request.messages,
   );
   const body: Record<string, unknown> = {
@@ -127,16 +129,24 @@ function buildOpenAIRequestBody(input: ProviderCallInput): Record<string, unknow
 
 function toOpenAIMessages(
   systemPrompt: string | undefined,
+  cachedContexts: LLMCachedContext[] | undefined,
   messages: LLMMessage[],
 ): Array<{ role: LLMMessage["role"]; content: string }> {
   const converted = messages.map((message) => ({
     role: message.role,
     content: message.content,
   }));
-  if (systemPrompt === undefined || systemPrompt.length === 0) {
-    return converted;
+  const prefix: Array<{ role: "system"; content: string }> = [];
+  if (systemPrompt !== undefined && systemPrompt.length > 0) {
+    prefix.push({ role: "system", content: systemPrompt });
   }
-  return [{ role: "system", content: systemPrompt }, ...converted];
+  for (const context of cachedContexts ?? []) {
+    prefix.push({
+      role: "system",
+      content: `<${context.kind}>\n${context.content}\n</${context.kind}>`,
+    });
+  }
+  return [...prefix, ...converted];
 }
 
 function extractOpenAIContent(raw: unknown, providerKey: string): string {

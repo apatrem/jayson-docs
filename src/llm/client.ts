@@ -46,8 +46,14 @@ export interface LLMMessage {
   content: string;
 }
 
+export interface LLMCachedContext {
+  kind: "schemaContext" | "brandTokensContext" | "docContext";
+  content: string;
+}
+
 export interface LLMRequest {
   systemPrompt?: string;
+  cachedContexts?: LLMCachedContext[];
   messages: LLMMessage[];
   responseFormat?: "text" | "json";
   jsonSchema?: unknown;
