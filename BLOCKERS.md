@@ -54,3 +54,19 @@ that prevents recurrence is linked in each entry.
 **Impact:** Medium. Code quality is high (spot-checked watchdog, lint runner — both implement their spec contracts), gates pass, tests cover the new surface. But `git bisect` can't pin a regression to T-43 vs T-46b; cherry-picking T-46b alone requires `git revert` gymnastics; per-task code review is impossible without manual diff slicing.
 **Fix landed:** `scripts/verify-task-commit.sh` Assertion 5 — rejects any commit with more than one `[ ]→[x]` (or `[~]→[x]`) marker transition. Cold-recovery / failure-marking / skip transitions are exempt (they each produce one transition per fire by construction).
 **Resolved:** 2026-05-22T15:30:00Z — future multi-task commits will be rejected at the pre-commit stage. The fe49d83 commit itself stays as-is; only future occurrences are prevented.
+
+### [drift-2026-05-25] T-60 "prep + impl" dual commit precedent — ACCEPTABLE pattern
+
+**Detected at:** 2026-05-25T11:00:00Z (M3 review)
+**Commits affected:** `1a72238` (prep) followed later by `0c7475b` (T-60 implementation proper). Both prefixed `T-60:` in the subject; only the second carries the marker transition `[ ]→[x]` for T-60.
+**What happened:** The driver split T-60 into two commits:
+  - `1a72238` ("T-60: open LLM provider surface for mistral, lightning.ai, and local") — body explicitly says "Closes T-60, T-61, T-68 (specs only)". Extends `LlmEndpointSchema` with new adapter values, adds `src/llm/pricing.ts` with a fallback table, and updates `SETUP_INSTALL_FLOW.md`. No marker transitions.
+  - `0c7475b` ("T-60: implement provider-agnostic LLM client") — the actual `src/llm/client.ts` + five provider adapters + tests. Marks T-60 `[ ]→[x]`.
+**Why Assertion 5 didn't fire:** Assertion 5 counts `→[x]` transitions per commit. The prep commit has zero transitions; the implementation commit has exactly one. Both pass.
+**Why this is acceptable (not a violation to fix):** The prep commit broadens shared infrastructure (LlmEndpointSchema, pricing fallback) that THREE subsequent task commits depend on (T-60, T-61, T-68). The alternative — duplicating the shared edits across each task commit — is messier than a single prep commit. The driver made a defensible engineering judgment.
+**Acceptance criteria for the "prep commit" pattern going forward:**
+  1. The prep commit body MUST explicitly say "spec changes only, no marker transitions" (or equivalent) so a reviewer can see the intent at a glance.
+  2. Each subsequent task commit MUST cleanly map to exactly one `[ ]→[x]` transition (Assertion 5 enforces).
+  3. The prep diff MUST be independently reviewable — no orphan changes that don't serve at least one named downstream task.
+  4. The prep commit's subject SHOULD reference the spanning tasks (e.g., "T-60/T-61/T-68: extend LlmEndpointSchema") rather than picking one arbitrarily, so the audit trail is honest.
+**No fix needed:** the precedent is recorded here so future reviewers don't flag it as a violation when they encounter "T-NN:" prep commits between marker-transition commits. The hook stays as-is.
