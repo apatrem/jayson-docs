@@ -864,7 +864,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Acceptance:** Notice is shown at install; covers what cost data is stored, where, why, and how to view/wipe it. Notice text in EN and FR (D-28).
 - **est.** 2h
 
-### T-112 [ ] · Write the setup runbook
+### T-112 [x] · Write the setup runbook
 - **Depends-on:** none
 - **Reads:** `docs/SETUP_PIPELINE.md` §10
 - **Outputs:** `docs/setup-runbook.md`
