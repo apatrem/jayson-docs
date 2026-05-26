@@ -871,7 +871,7 @@ Post-M6 audit surfaced two scaffold drift entries. Commit `e893e64` shipped icon
 
 First integration milestone. Deliberately narrow: prove a consultant can open a YAML, edit it, insert blocks via the palette, save, and export to PDF via the user's default browser — WITHOUT a library, install wizard, AI, comments, deck rendering, or settings. Those surfaces stay disconnected modules until M8+ where their scope can be informed by what M7-spike user testing reveals.
 
-### T-115 [ ] · Write UI_APP_SHELL.md (spike-scope spec)
+### T-115 [x] · Write UI_APP_SHELL.md (spike-scope spec)
 - **Depends-on:** none
 - **Reads:** `docs/UI_LIBRARY.md`, `docs/UI_REVIEW_PANEL.md`, `docs/SETUP_INSTALL_FLOW.md`, `docs/TAURI_IPC.md`
 - **Outputs:** `docs/UI_APP_SHELL.md` — describes the single-document shell: no router (just a switch between "no doc loaded" and "doc loaded" states), no install wizard, no library, no settings. Documents File menu wiring, the open-in-browser PDF handoff, and the watchdog wrap. Cross-references the deferred work (library, comments, etc.) so a future plan can pick up the M8+ design.
