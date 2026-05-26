@@ -925,7 +925,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** the integration test passes both states; the welcome screen has accessible labels.
 - **est.** 3h
 
-### T-120 [ ] · DocumentView (kind = "document") with autosave
+### T-120 [x] · DocumentView (kind = "document") with autosave
 - **Depends-on:** T-117, T-119
 - **Reads:** `src/renderer/DocumentRenderer.tsx`, `src/editor/Editor.tsx`, `brand.example.yaml` (hardcoded brand for the spike per T-116 Decision #1)
 - **Outputs:**

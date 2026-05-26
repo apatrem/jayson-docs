@@ -61,9 +61,9 @@ describe("App shell", () => {
     fireEvent.click(screen.getByRole("button", { name: "Open Document" }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Document view")).toBeTruthy();
+      expect(screen.getByLabelText("Document shell")).toBeTruthy();
     });
-    expect(screen.getByText("proposal.yaml")).toBeTruthy();
+    expect(screen.getAllByText("proposal.yaml").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Loaded document").getAttribute("data-document-kind")).toBe(
       "document",
     );

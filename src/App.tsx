@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import type { DocModel } from "./schema/docmodel";
+import { DocumentView } from "./ui/views/DocumentView";
 
 interface LoadedDocument {
   path: string;
@@ -81,7 +82,7 @@ export default function App({
           </section>
         </main>
       ) : (
-        <main aria-label="Document view" style={styles.documentShell}>
+        <main aria-label="Document shell" style={styles.documentShell}>
           <header style={styles.documentHeader}>
             <span>{basename(state.path)}</span>
             {state.dirty ? <span aria-label="Unsaved changes">●</span> : null}
@@ -92,7 +93,21 @@ export default function App({
             data-document-kind={state.doc.kind}
             style={styles.documentPlaceholder}
           >
-            DocumentView
+            {state.doc.kind === "document" ? (
+              <DocumentView
+                path={state.path}
+                initialDoc={state.doc}
+                onDocumentChange={(doc) => {
+                  setState((current) =>
+                    current.kind === "document"
+                      ? { ...current, doc, dirty: true }
+                      : current,
+                  );
+                }}
+              />
+            ) : (
+              "DocumentView"
+            )}
           </section>
         </main>
       )}
