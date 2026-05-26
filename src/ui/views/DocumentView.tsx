@@ -32,6 +32,7 @@ export interface DocumentViewProps {
   writeYamlFile?: (path: string, yaml: string) => Promise<void>;
   autosaveDebounceMs?: number;
   onDocumentChange?: (doc: DocumentModel) => void;
+  onBackToWelcome?: () => void;
   EditorComponent?: FC<EditorSurfaceProps>;
 }
 
@@ -64,6 +65,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
   writeYamlFile = defaultWriteYamlFile,
   autosaveDebounceMs = DEFAULT_AUTOSAVE_DEBOUNCE_MS,
   onDocumentChange,
+  onBackToWelcome,
   EditorComponent = DefaultEditorSurface,
 }) => {
   const [doc, setDoc] = useState<DocumentModel | null>(initialDoc ?? null);
@@ -148,6 +150,30 @@ export const DocumentView: FC<DocumentViewProps> = ({
     return (
       <main aria-label="Document view" style={styles.shell}>
         <p>Loading document…</p>
+      </main>
+    );
+  }
+
+  if (doc.sections.length > 1) {
+    return (
+      <main aria-label="Document view" style={styles.shell}>
+        <section role="alert" style={styles.constraintPanel}>
+          <p style={styles.errorText}>
+            {
+              "Multi-section documents aren't editable yet — that lands in M8. Open a single-section document, or close this and try again."
+            }
+          </p>
+          {onBackToWelcome ? (
+            <button
+              type="button"
+              onClick={() => {
+                onBackToWelcome();
+              }}
+            >
+              Back to welcome screen
+            </button>
+          ) : null}
+        </section>
       </main>
     );
   }
@@ -333,6 +359,14 @@ const styles = {
   },
   palettePane: {
     minWidth: "18rem",
+  },
+  constraintPanel: {
+    border: "1px solid ButtonBorder",
+    borderRadius: "0.75rem",
+    display: "grid",
+    gap: "1rem",
+    justifyItems: "start",
+    padding: "1rem",
   },
   errorText: {
     color: "CanvasText",

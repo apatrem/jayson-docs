@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "../../src/App";
@@ -67,5 +68,32 @@ describe("App shell", () => {
     expect(screen.getByLabelText("Loaded document").getAttribute("data-document-kind")).toBe(
       "document",
     );
+  });
+
+  it("returns to the welcome state from the multi-section constraint", async () => {
+    render(
+      <App
+        fileActions={{
+          selectOpenPath: () => Promise.resolve("/Users/me/Documents/sample-proposal.yaml"),
+          readYamlFile: () =>
+            Promise.resolve(readFileSync("examples/sample-proposal.yaml", "utf8")),
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Multi-section documents aren't editable yet/u),
+      ).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Back to welcome screen" }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Welcome")).toBeTruthy();
+    });
+    expect(screen.getByRole("button", { name: "Open Document" })).toBeTruthy();
   });
 });

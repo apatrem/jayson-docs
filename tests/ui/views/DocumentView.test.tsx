@@ -1,13 +1,24 @@
+import { readFileSync } from "node:fs";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useEffect, type FC } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { serializeDocModel } from "../../../src/docmodel/serialize";
+import { defaultBrand } from "../../../src/brand/defaultBrand";
+import { BrandProvider } from "../../../src/brand-tokens/BrandProvider";
+import { parseDocModelYaml, serializeDocModel } from "../../../src/docmodel/serialize";
 import {
   DocumentView,
   documentToEditorContent,
   type EditorSurfaceProps,
 } from "../../../src/ui/views/DocumentView";
-import type { DocModel } from "../../../src/schema/docmodel";
+import { DocModelSchema, type DocModel } from "../../../src/schema/docmodel";
+
+vi.mock("echarts", () => ({
+  init: () => ({
+    setOption: vi.fn(),
+    resize: vi.fn(),
+    dispose: vi.fn(),
+  }),
+}));
 
 const doc: Extract<DocModel, { kind: "document" }> = {
   kind: "document",
@@ -62,6 +73,34 @@ const editedDoc: Extract<DocModel, { kind: "document" }> = {
     },
   ],
 };
+
+const multiSectionDoc: Extract<DocModel, { kind: "document" }> = {
+  ...doc,
+  sections: [
+    doc.sections[0]!,
+    {
+      id: "section-2",
+      title: "Second section",
+      blocks: [
+        {
+          id: "heading-2",
+          type: "heading",
+          level: 2,
+          text: "Second section",
+          numbered: false,
+        },
+      ],
+    },
+  ],
+};
+
+function loadSingleSectionFixture(): Extract<DocModel, { kind: "document" }> {
+  return DocModelSchema.parse(
+    parseDocModelYaml(
+      readFileSync("tests/fixtures/m7-single-section-proposal.yaml", "utf8"),
+    ),
+  ) as Extract<DocModel, { kind: "document" }>;
+}
 
 const FakeEditor: FC<EditorSurfaceProps> = ({ initialContent, onUpdate }) => (
   <button
@@ -205,5 +244,53 @@ describe("DocumentView", () => {
     });
 
     expect(screen.getByLabelText("Document editor")).toBe(editorBefore);
+  });
+
+  it("constrains multi-section documents and can return to welcome", () => {
+    const onBackToWelcome = vi.fn();
+    render(
+      <DocumentView
+        path="/Users/me/Documents/multi-section.yaml"
+        initialDoc={multiSectionDoc}
+        onBackToWelcome={onBackToWelcome}
+      />,
+    );
+
+    expect(screen.getByText(/Multi-section documents aren't editable yet/u)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Back to welcome screen" }));
+
+    expect(onBackToWelcome).toHaveBeenCalledOnce();
+  });
+
+  it("omits the back-to-welcome action when the app has not provided one", () => {
+    render(
+      <DocumentView
+        path="/Users/me/Documents/multi-section.yaml"
+        initialDoc={multiSectionDoc}
+      />,
+    );
+
+    expect(screen.getByText(/Multi-section documents aren't editable yet/u)).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Back to welcome screen" }),
+    ).toBeNull();
+  });
+
+  it("renders the shared single-section M7 fixture normally", () => {
+    render(
+      <BrandProvider tokens={defaultBrand}>
+        <DocumentView
+          path="/Users/me/Documents/m7-single-section-proposal.yaml"
+          initialDoc={loadSingleSectionFixture()}
+        />
+      </BrandProvider>,
+    );
+
+    expect(screen.queryByText(/Multi-section documents aren't editable yet/u)).toBeNull();
+    expect(screen.getAllByText("Executive summary").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Projected annual OPEX by scenario").length,
+    ).toBeGreaterThan(0);
   });
 });

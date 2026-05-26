@@ -216,6 +216,7 @@ export default function App({
                   <WatchdoggedDocumentView
                     path={state.path}
                     initialDoc={state.doc}
+                    onBackToWelcome={returnToWelcome}
                     {...(fileActions.readYamlFile === undefined
                       ? {}
                       : { readYamlFile: fileActions.readYamlFile })}

@@ -992,7 +992,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1h
 - **Note: confirmed by code review as BLOCKER-1 (M7 review verdict 2026-05-26).** Defeats the M7 mission "consultant can touch the editor surface" the moment a real user types. **Implementation note:** the keying lives on the EditorComponent (parent-owned) rather than inside `DefaultEditorSurface` because adding `path` to `EditorSurfaceProps` would leak persistence concerns into a pure-render component. If a future M8/M9 introduces multi-doc tabs, the parent-keying pattern extends naturally (key on `activeDocId`).
 
-### T-123b [ ] · Constrain multi-section documents in M7-spike (+ create shared single-section fixture)
+### T-123b [x] · Constrain multi-section documents in M7-spike (+ create shared single-section fixture)
 - **Depends-on:** T-123
 - **Reads:** `src/ui/views/DocumentView.tsx` (esp. `documentToEditorContent` + `editorContentToDocument`), `src/App.tsx` (the welcome ↔ document state transitions that the "Back to welcome" button needs to invoke), `examples/sample-proposal.yaml` (the canonical multi-section fixture this constraint protects against), `BLOCKERS.md` §[drift-2026-05-26d] (existing drift entry — already appended by the 2026-05-26 planning commit `4a670c5`)
 - **Outputs:**
