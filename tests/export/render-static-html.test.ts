@@ -103,10 +103,24 @@ describe("renderStaticHtmlForExport", () => {
 
   it("uses a placeholder when the binary IPC rejects the 5 MB image cap", async () => {
     const imageDoc = docWithImages([{ id: "image-1", src: "assets/photo.jpg" }]);
+    // Tauri invoke() rejects with the raw IpcError JSON object, NOT an Error
+    // instance. Mocking with `new Error(...)` (which the test originally did)
+    // creates a test-vs-runtime gap that hid a real placeholder-never-fires
+    // bug surfaced during M7 manual validation. See AGENTS.md §Review
+    // playbook convention #8 + src/ipc/errors.ts.
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
       value: {
-        invoke: vi.fn(() => Promise.reject(new Error("file exceeds 5MB export limit"))),
+        invoke: vi.fn(() =>
+          // Tauri rejects with the raw IpcError JSON object (not an Error).
+          // We deliberately mirror that shape; the typescript-eslint rule
+          // assumes Error-only rejections which doesn't match runtime here.
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+          Promise.reject({
+            kind: "invalid",
+            message: "file exceeds 5MB export limit",
+          }),
+        ),
       },
     });
 
@@ -212,10 +226,22 @@ describe("renderStaticHtmlForExport without Node Buffer", () => {
 
   it("emits the oversized-image placeholder without throwing ReferenceError", async () => {
     const imageDoc = docWithImages([{ id: "image-1", src: "assets/photo.jpg" }]);
+    // See sibling test's comment: mock with the IpcError JSON shape, not
+    // with an Error instance. The runtime parity matters; see AGENTS.md
+    // §Review playbook convention #8.
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
       value: {
-        invoke: vi.fn(() => Promise.reject(new Error("file exceeds 5MB export limit"))),
+        invoke: vi.fn(() =>
+          // Tauri rejects with the raw IpcError JSON object (not an Error).
+          // We deliberately mirror that shape; the typescript-eslint rule
+          // assumes Error-only rejections which doesn't match runtime here.
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+          Promise.reject({
+            kind: "invalid",
+            message: "file exceeds 5MB export limit",
+          }),
+        ),
       },
     });
 

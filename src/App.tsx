@@ -7,6 +7,7 @@ import { BrandProvider } from "./brand-tokens/BrandProvider";
 import { withRenderWatchdog } from "./block-primitives/RenderWatchdog";
 import { parseDocModelYaml, serializeDocModel } from "./docmodel/serialize";
 import { renderStaticHtmlForExport } from "./export/render-static-html";
+import { formatErrorMessage } from "./ipc/errors";
 import type { DocModel } from "./schema/docmodel";
 import { DocModelSchema } from "./schema/docmodel";
 import { AppErrorBoundary } from "./ui/AppErrorBoundary";
@@ -87,7 +88,7 @@ export default function App({
         paletteOpen: false,
       });
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : String(error));
+      setActionError(formatErrorMessage(error));
     }
   };
 
@@ -99,7 +100,7 @@ export default function App({
       setState({ ...state, dirty: false });
       setStatusMessage("Saved.");
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : String(error));
+      setActionError(formatErrorMessage(error));
     }
   };
 
@@ -138,7 +139,7 @@ export default function App({
           : "Saved As.",
       );
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : String(error));
+      setActionError(formatErrorMessage(error));
     }
   };
 
@@ -164,7 +165,7 @@ export default function App({
       await (fileActions.openPath ?? openShellPath)(exportHandoff.path);
       setStatusMessage("Opened in your browser — use Cmd-P / Ctrl-P to save as PDF.");
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : String(error));
+      setActionError(formatErrorMessage(error));
     }
   };
 

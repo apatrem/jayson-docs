@@ -402,4 +402,22 @@ include these explicit checks in the prompt:
   `fn` returning `IpcResult<T>` that does ≥2 filesystem mutations, count
   the corresponding test cases per failure window, flag any function
   with <3 negative-path tests.
+- **JS-side error handling for Tauri `invoke()` must use `isIpcError` /
+  `formatErrorMessage`, not `instanceof Error`.** Tauri's `invoke()`
+  REJECTS WITH THE RAW JSON OBJECT (`{ kind, message }`), NOT an `Error`
+  instance. So `catch (e) { e instanceof Error }` is ALWAYS FALSE for
+  IPC failures, and any `error instanceof Error ? error.message :
+  String(error)` pattern falls through to `String({kind, message})` →
+  `"[object Object]"`, silently hiding the actual Rust error. M7 manual
+  validation surfaced this in `src/App.tsx` (4 sites) — the user clicked
+  Export PDF, got `[object Object]` in the error toast, and the real
+  underlying failure was invisible. The fix lives at `src/ipc/errors.ts`
+  (`isIpcError`, `formatErrorMessage`); every renderer-side `catch`
+  block around an `invoke()` call must use `formatErrorMessage(error)`.
+  Sweep: `grep -rE 'error instanceof Error|String\(error\)' src/ |
+  grep -v 'ipc/errors\.ts'` should find zero hits outside the helper
+  module. Tests that mock IPC rejection with `Error` instances (rather
+  than the JSON shape) reproduce the test-vs-runtime gap the prior
+  conventions warn about — mock with the JSON shape instead, mirroring
+  `tests/ipc/errors.test.ts`.
 

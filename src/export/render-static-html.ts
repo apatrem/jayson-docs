@@ -3,6 +3,7 @@ import * as echarts from "echarts";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { resolveAssetPath } from "../brand-tokens/resolve-asset";
+import { isIpcError } from "../ipc/errors";
 import { getEChartsOption } from "../renderer/blocks/Chart";
 import { DocumentRenderer, type DocumentModel } from "../renderer/DocumentRenderer";
 import { renderMermaidSvg } from "../renderer/mermaid";
@@ -116,7 +117,14 @@ async function preloadImageDataUris(
       const safeEncoded = mimeType === "image/svg+xml" ? svgBase64ToSafeBase64(encoded) : encoded;
       dataUris[block.id] = `data:${mimeType};base64,${safeEncoded}`;
     } catch (error) {
-      if (String(error).includes("file exceeds 5MB export limit")) {
+      // Tauri invoke() rejects with the raw IpcError JSON object, not an
+      // Error instance, so `String(error)` gives "[object Object]". Match
+      // against the typed shape via the canonical helper. See
+      // AGENTS.md §Review playbook convention #8.
+      if (
+        isIpcError(error) &&
+        error.message.includes("file exceeds 5MB export limit")
+      ) {
         dataUris[block.id] = imagePlaceholderDataUri("Image too large to export");
         continue;
       }
