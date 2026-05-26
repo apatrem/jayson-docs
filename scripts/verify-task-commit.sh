@@ -179,12 +179,18 @@ fi
 if [[ "$LOOP_COMMIT" == "true" ]]; then
   # Lines unique to new_pairs = the new state of changed tasks. Count those
   # ending in `=x` — those are completions.
+  # NOTE: `grep || true` on each line is required because `grep -E` exits 1
+  # when there are no matches, and `set -euo pipefail` at the top of this
+  # script would then kill the hook silently on commits that ADD new task
+  # entries without modifying any existing markers (no `-### T-` lines at
+  # all in the diff). Without `|| true`, plan-execution commits that queue
+  # new pending tasks die at this assignment with no error message.
   old_pairs_a5=$(git diff --cached -- docs/TASKS.md \
-    | grep -E '^-### T-[0-9]' \
+    | { grep -E '^-### T-[0-9]' || true; } \
     | sed -E 's/^-### (T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)*) \[([^]]+)\] ·.*/\1=\3/' \
     | sort -u)
   new_pairs_a5=$(git diff --cached -- docs/TASKS.md \
-    | grep -E '^\+### T-[0-9]' \
+    | { grep -E '^\+### T-[0-9]' || true; } \
     | sed -E 's/^\+### (T-[0-9]+[a-z]?( \+ T-[0-9]+[a-z]?)*) \[([^]]+)\] ·.*/\1=\3/' \
     | sort -u)
 

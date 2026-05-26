@@ -840,7 +840,274 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 ---
 
-## Phase 7 — Deployment & Release
+## Phase 6.5 — Scaffold hardening
+
+Post-M6 audit surfaced two scaffold drift entries. Commit `e893e64` shipped icons + `.taurignore` + one verifier assertion; the remaining two tasks close the Cargo.toml feature pin + lockfile parity gaps so `npm run tauri:dev` from a fresh clone never auto-mutates committed files.
+
+### T-113 [ ] · Lock `protocol-asset` feature + treat starter as runnable
+- **Depends-on:** none
+- **Reads:** `src-tauri/tauri.conf.json` (the `assetProtocol` block that requires the feature), `src-tauri/Cargo.toml`, `starter/src-tauri/Cargo.toml`, this file §T-02 Outputs
+- **Outputs:**
+  1. `src-tauri/Cargo.toml` AND `starter/src-tauri/Cargo.toml` — both updated to `tauri = { version = "2.0.4", features = ["protocol-asset"] }`.
+  2. `starter/src-tauri/Cargo.lock` — newly generated and committed (it doesn't exist today; e893e64 made starter a runnable drop-in by shipping icons + `.taurignore`, so the lockfile parity gap needs closing).
+  3. This file §T-02 Outputs — append `starter/src-tauri/Cargo.lock` and add a sentence explaining that the starter scaffold is treated as a runnable drop-in (not template-only) per the post-e893e64 state.
+- **Acceptance:** `cargo check --locked` from `src-tauri/` AND from `starter/src-tauri/` both succeed AND leave Cargo.toml + Cargo.lock byte-identical (no auto-mutation in either tree). Verified by `git diff --quiet` after both checks.
+- **est.** 2h
+
+### T-114 [ ] · Extend verify-bakeoff-v2.sh with Cargo.toml feature + lockfile-parity assertions
+- **Depends-on:** T-113
+- **Reads:** `scripts/verify-bakeoff-v2.sh` (post-e893e64 state: assertion #7 already covers icons for both `src-tauri/` and `starter/src-tauri/`), this file §T-02 Outputs (as updated by T-113)
+- **Outputs:** `scripts/verify-bakeoff-v2.sh` — two new assertions added beneath the existing icons check:
+  1. Each `src-tauri/Cargo.toml` (main + starter) declares the `protocol-asset` feature in its tauri dep line (regex check on the committed file).
+  2. Each `src-tauri/` directory (main + starter, per the post-T-113 policy) has a committed Cargo.lock and `cargo check --locked` succeeds from it (lockfile parity — fails if Cargo.toml drift would force a lockfile rewrite).
+- **Acceptance:** Running the script after T-113 passes all assertions. Removing the `protocol-asset` feature from either Cargo.toml OR deleting either Cargo.lock OR forcing a Cargo.toml mutation makes the corresponding new assertion fail.
+- **est.** 2h
+
+**Phase 6.5 acceptance gate:** `npm run tauri:dev` from a fresh clone of the repo boots without auto-mutating any committed file; `verify-bakeoff-v2.sh` fails fast on any future Cargo.toml / Cargo.lock drift; the gap that allowed T-30's spec tightening to silently rot until 2026-05-25 cannot recur.
+
+---
+
+## Phase 7 — M7: Document Editor Spike (minimum runnable app)
+
+First integration milestone. Deliberately narrow: prove a consultant can open a YAML, edit it, insert blocks via the palette, save, and export to PDF via the user's default browser — WITHOUT a library, install wizard, AI, comments, deck rendering, or settings. Those surfaces stay disconnected modules until M8+ where their scope can be informed by what M7-spike user testing reveals.
+
+### T-115 [ ] · Write UI_APP_SHELL.md (spike-scope spec)
+- **Depends-on:** none
+- **Reads:** `docs/UI_LIBRARY.md`, `docs/UI_REVIEW_PANEL.md`, `docs/SETUP_INSTALL_FLOW.md`, `docs/TAURI_IPC.md`
+- **Outputs:** `docs/UI_APP_SHELL.md` — describes the single-document shell: no router (just a switch between "no doc loaded" and "doc loaded" states), no install wizard, no library, no settings. Documents File menu wiring, the open-in-browser PDF handoff, and the watchdog wrap. Cross-references the deferred work (library, comments, etc.) so a future plan can pick up the M8+ design.
+- **Acceptance:** spec covers every aspect the spike actually implements + explicitly lists what's deferred to M8+ and why.
+- **est.** 2h
+
+### T-116 [ ] · Resolve M7-spike architectural decisions (2 questions)
+- **Depends-on:** T-115
+- **Reads:** `docs/UI_APP_SHELL.md` (from T-115), `brand.example.yaml`
+- **Outputs:** `docs/UI_APP_SHELL.md` — appended decisions section with explicit calls on TWO questions (down from six since most of the M7 surface is deferred):
+  1. **Brand source for the spike.** Hardcoded `brand.example.yaml` (the recommendation) vs File → Open Brand surface. Hardcoded keeps the spike scope minimal; brand-picker is M8 work.
+  2. **Temp HTML file location + cleanup policy.** System temp dir (`std::env::temp_dir()` + UUID subfolder) vs app config dir. Cleanup: on app quit, on next launch, or never (rely on OS temp-dir cleanup). Recommended: system temp dir + cleanup on next launch.
+- **Acceptance:** **T-117..T-123 must NOT fire until T-116 is `[x]`.** The spike's two decisions affect T-118 (temp path) and T-120 (brand reference). Recording them keeps downstream tasks unambiguous.
+- **est.** 2h
+
+### T-117 [ ] · Harden read_yaml_file + write_yaml_file IPC (spike scope)
+- **Depends-on:** T-116
+- **Reads:** `docs/UI_APP_SHELL.md` (matrix), `src-tauri/src/ipc/fs.rs`, `src-tauri/tauri.conf.json` (assetProtocol.scope)
+- **Outputs:**
+  - `src-tauri/src/ipc/fs.rs` — harden ONLY `read_yaml_file` and `write_yaml_file` (the two commands the spike calls). Scope validation against `assetProtocol.scope`; atomic write for write_yaml_file (.tmp sibling → fsync → rename). The other 4 fs commands stay as their existing implementations — they're not called by the spike. Hardening them is M8 work.
+  - `src-tauri/src/ipc/fs.rs `#[cfg(test)] mod tests`` — happy + error path cargo tests for the 2 hardened commands only.
+  - `tests/ipc/fs.smoke.test.ts` — JS-side smoke test invoking read + write in happy + error scenarios.
+- **Acceptance:** cargo test passes for the 2 hardened commands; the JS smoke test passes for read + write. The other 15 IPC commands stay registered and their no-op stubs continue to respond.
+- **est.** 3h
+
+### T-118 [ ] · Implement export_pdf IPC as browser-handoff
+- **Depends-on:** T-116, T-117
+- **Reads:** `docs/UI_APP_SHELL.md`, `src-tauri/src/ipc/pdf.rs`, `src/renderer/DocumentRenderer.tsx`, `src/renderer/blocks/Diagram.tsx`, `src/renderer/blocks/Chart.tsx`, `package.json`
+- **Outputs:**
+  - `src/export/render-static-html.ts` (NEW) — renderer-safe pure function `renderStaticHtmlForExport(doc, brand): Promise<string>`. Reuses DocumentRenderer via `renderToStaticMarkup`, pre-bakes Mermaid SVGs via `mermaid.render('m-<id>', source)`, pre-bakes ECharts SVGs via `echarts.init(el, null, { renderer: 'svg' })` + `instance.renderToSVGString()`, injects `@page` CSS (A4 portrait), wraps in a `<!doctype html>` shell. Returns a single self-contained HTML string — no external asset refs, no JS.
+  - `src-tauri/src/ipc/pdf.rs` — replace the no-op stub. Accepts `{ html: String, suggestedName: String }`, writes the HTML to `<tmpdir>/docsystem-export/<uuid>/<suggestedName>.html`, returns `{ kind: 'browser_handoff', path: String }`.
+  - `src-tauri/Cargo.toml` — add `uuid = { version = "1", features = ["v4"] }`.
+  - `src-tauri/Cargo.lock` — regenerated.
+  - `src-tauri/src/lib.rs` — register `tauri_plugin_shell::init()` in the plugin chain.
+  - `src-tauri/capabilities/main-window.json` — add `shell:allow-open` permission.
+  - `package.json` — add `@tauri-apps/plugin-shell` dep.
+  - `package-lock.json` — updated.
+  - `src/ui/menu/ExportPdfMenuItem.tsx` (NEW) — handles the File → Export PDF user action. Invokes export_pdf IPC, then calls `shell.open(path)`, shows a confirmation toast.
+  - `src-tauri/src/ipc/pdf.rs `#[cfg(test)] mod tests`` — temp-file happy path; temp dir not writable error path; suggested-name sanitization.
+  - `tests/ipc/pdf.smoke.test.ts` — JS-side smoke test invoking export_pdf.
+  - `tests/export/render-static-html.test.ts` (NEW) — covers the pre-render function.
+  - `docs/TAURI_IPC.md` — update the `export_pdf` section. The command name is KEPT (preserves the 17-command IPC registration count) but the SEMANTICS shift from "produces a PDF and returns its path" to "writes print-ready HTML to temp and returns a browser-handoff path." Spec MUST clearly state: **Request:** `{ html: string, suggestedName: string }`; **Response:** `{ kind: 'browser_handoff', path: string }` — NOT a completed PDF; the user finishes export in their browser via Cmd-P / Ctrl-P → Save as PDF. **Name caveat:** the command is named `export_pdf` for historical reasons (preserves the 17-command gate); a v1.1 task may rename to `prepare_print_handoff` for honesty.
+- **Acceptance:** smoke test confirms export_pdf produces a temp HTML file at the returned path containing the input HTML. The render-static-html test confirms the output is well-formed + safe.
+- **est.** 4h
+
+### T-119 [ ] · App entry — single-document shell
+- **Depends-on:** T-116, T-117
+- **Reads:** `docs/UI_APP_SHELL.md`
+- **Outputs:**
+  - `src/App.tsx` — replaces the null stub. Renders a "welcome" state with a single "Open Document" button when no document is loaded. When a document is loaded, renders DocumentView (from T-120). State is held in a single React state hook — no router, no install wizard.
+  - `tests/ui/App.test.tsx` — covers (a) initial render shows the Open Document button, (b) loading a document switches to DocumentView.
+- **Acceptance:** the integration test passes both states; the welcome screen has accessible labels.
+- **est.** 3h
+
+### T-120 [ ] · DocumentView (kind = "document") with autosave
+- **Depends-on:** T-117, T-119
+- **Reads:** `src/renderer/DocumentRenderer.tsx`, `src/editor/Editor.tsx`, `brand.example.yaml` (hardcoded brand for the spike per T-116 matrix #1)
+- **Outputs:**
+  - `src/ui/views/DocumentView.tsx` — opens a doc via `read_yaml_file` IPC, renders + edits via DocumentRenderer + Editor (with hardcoded `brand.example.yaml` loaded via Vite raw import), honours the autosave debounce from T-82 (writes via `write_yaml_file` IPC).
+  - `tests/ui/views/DocumentView.test.tsx` — covers open + edit + save flow with mocked IPC.
+- **Acceptance:** opening sample-proposal.yaml renders correctly; editing prose triggers a debounced save via IPC; closing + reopening the doc shows the edits.
+- **est.** 6h
+
+### T-120b [ ] · Wire BlockPalette into DocumentView (block-insertion UI)
+- **Depends-on:** T-120
+- **Reads:** `src/editor/BlockPalette.tsx` (existing component, already implements all 15 default blocks + `generatedBlocks` prop + `onInsert` callback + renders inside BrandProvider so theming works), `src/editor/Editor.tsx`
+- **Outputs:**
+  - `src/ui/views/DocumentView.tsx` — mount BlockPalette in a side panel or popup, triggered by a `+` button in the editor toolbar AND by the `/` keyboard shortcut. Wire `onInsert` to dispatch the matching TipTap insertion command (e.g., `insertProse`, `insertHeading`, `insertCallout`). For M7-spike, pass an empty array to `generatedBlocks` (the runtime loading lands in M8 T-132).
+  - `tests/ui/views/DocumentView.test.tsx` — extended to cover (a) `+` click opens the palette, (b) selecting an item inserts the matching block via TipTap, (c) `/` keyboard shortcut also opens the palette.
+- **Acceptance:** the editor surface now has a usable block insertion mechanism. A consultant testing the spike can insert any of the 15 standard blocks via the palette without leaving the editor.
+- **est.** 2h
+
+### T-121 [ ] · File menu (Open / Save / Save As / Export PDF)
+- **Depends-on:** T-117, T-118, T-119, T-120
+- **Reads:** `@tauri-apps/plugin-dialog`, `@tauri-apps/plugin-shell` (added in T-118), `src/setup/install.ts` pattern
+- **Outputs:**
+  - `src/ui/menu/FileMenu.tsx` — wires File → Open / Save / Save As / Export PDF. Semantics (standard convention):
+    - **Save**: write current doc to its existing path via `write_yaml_file` IPC. If no path yet, falls through to Save As.
+    - **Save As**: native save dialog, write to user-chosen path, switch the active path. Does NOT delete original. If new path is OUTSIDE the configured cloud-sync folder (relevant only in M8+; in M7-spike no folder is configured), show a toast "Saved to {path}. This document is outside your library folder and won't appear in the library."
+    - **Export PDF**: per T-118 — pre-render HTML, write temp via IPC, open in default browser via shell.open. Show "Opened in your browser — use Cmd-P / Ctrl-P to save as PDF" toast.
+    - **Autosave**: always writes to the active path. Save As changes the active path → autosave switches with it.
+  - `src/ui/menu/MenuBar.tsx` — top-level menu container hosting FileMenu. Mounted from `src/App.tsx`.
+  - `src/App.tsx` — mounts MenuBar above the welcome screen / DocumentView.
+  - `tests/ui/menu/FileMenu.test.tsx` — covers Open / Save / Save As / Export PDF flows with mocked dialog + IPC + shell.open. Save As tests cover both inside-folder (no toast) and outside-folder (toast appears) cases.
+- **Acceptance:** native Open dialog → file path → loads via read_yaml_file → DocumentView mounts. Save round-trips through write_yaml_file. Save As prompts, writes, switches active path. Export PDF invokes IPC + shell.open in sequence (shell.open mocked in test).
+- **est.** 4h
+
+### T-122 [ ] · Top-level error boundary + watchdog wrap
+- **Depends-on:** T-119, T-120
+- **Reads:** `src/block-primitives/RenderWatchdog.tsx` (existing HOC), ADR-0001 (perf budgets)
+- **Outputs:**
+  - `src/ui/AppErrorBoundary.tsx` — error boundary that wraps DocumentView in `src/App.tsx`.
+  - `src/App.tsx` — mounts AppErrorBoundary around the document area; DocumentView wrapped with `withRenderWatchdog` per ADR-0001.
+  - `tests/ui/AppErrorBoundary.test.tsx` — covers throwing-block-doesn't-crash invariant + watchdog-fires-on-slow-render invariant.
+- **Acceptance:** a deliberately-throwing block does not crash the whole app; watchdog instrumentation reports per-view render time; the perf benchmark harness from T-89c continues to pass.
+- **est.** 3h
+
+### T-123 [ ] · M7-spike integration test (open → edit + insert block → save → export)
+- **Depends-on:** T-115, T-116, T-117, T-118, T-119, T-120, T-120b, T-121, T-122
+- **Reads:** all M7-spike task outputs, `examples/sample-proposal.yaml`, `brand.example.yaml`
+- **Outputs:**
+  - `tests/integration/m7-spike-harness.ts` — spins up Tauri (or RTL+IPC-mocks), exposes invoke helpers.
+  - `tests/integration/m7-spike-happy-path.test.ts` — happy path: launch → welcome → click Open Document → mocked dialog returns sample-proposal.yaml → DocumentView renders with BlockPalette mounted → edit prose → open BlockPalette → insert callout → Save → write_yaml_file IPC invoked with new content including callout → Open same file → edits + inserted block preserved (lossless) → Export PDF → export_pdf IPC invoked → shell.open mocked invocation receives the temp HTML path → temp HTML file verified to contain expected content with inline SVGs + @page CSS AND the inserted callout block.
+  - `tests/integration/m7-spike-error-paths.test.ts` — IPC error responses (file not found, write failure, malformed YAML); UI shows appropriate error state without crashing.
+- **Acceptance:** both tests pass in CI. No system Chrome install needed (browser-handoff path mocks shell.open).
+- **est.** 4h
+
+**M7-spike acceptance gate:** T-123 passing. The minimum runnable build a consultant can install, open a YAML, edit it, insert blocks via palette, save, and export to PDF via their default browser.
+
+---
+
+## Phase 8 — M8: Library + Templates + Generated Blocks
+
+Second integration milestone. Fires AFTER M7-spike ships and consultant testing of the editor surface has had a chance to surface any UX rework. Adds router infrastructure, first-launch folder picker, library card grid (with empty-state "Use Sample" button), 4 standard document templates with a "Create from Template" surface, generated-blocks runtime loading, and pipeline end-to-end validation.
+
+### T-124 [ ] · Update UI_APP_SHELL.md for M8 architecture
+- **Depends-on:** T-123 (M7-spike complete + validated by consultant testing)
+- **Reads:** `docs/UI_APP_SHELL.md` (M7-spike state from T-115), `docs/UI_LIBRARY.md`, `docs/SETUP_INSTALL_FLOW.md`, `src/setup/install.ts` (esp. line 41: `InstallAppConfigSchema`), `docs/TYPES.md`
+- **Outputs:** `docs/UI_APP_SHELL.md` — appended M8 section describing:
+  - the router (`src/ui/router/Routes.tsx`) — route types for welcome, folder-picker, library, document; route-intent contract
+  - folder-picker routing (config-absent OR folder-missing → folder-picker route)
+  - library state model
+  - **Partial-config schema decision:** the existing `InstallAppConfigSchema` requires full identity + LLM keys + paths. M8 ships only `paths.cloudSyncRoot`. The spec MUST pick one of: (a) introduce `M8PartialConfigSchema` requiring only `paths.cloudSyncRoot` and widened to `InstallAppConfigSchema` in M9; (b) make M9-bound fields optional in `InstallAppConfigSchema` itself; (c) write a stub config with sentinel placeholders. **Recommended: (a) — separate schema, clean migration surface.** T-125 (config IPC) and T-127 (folder picker) both consume this.
+  - any other architectural decisions M8 needs (router library choice, etc.)
+- **Acceptance:** spec covers every M8 surface concretely enough that T-125..T-134 can execute without further architectural latitude.
+- **est.** 4h
+
+### T-125 [ ] · Harden remaining fs + config IPC commands
+- **Depends-on:** T-124
+- **Reads:** `docs/UI_APP_SHELL.md` (M8 decisions), `src-tauri/src/ipc/fs.rs` (post-M7-spike state — 2 of 6 hardened), `src-tauri/src/ipc/config.rs` (all 3 commands no-op stubs)
+- **Outputs:**
+  - `src-tauri/src/ipc/fs.rs` — harden the 4 remaining fs commands (`list_directory`, `file_exists`, `ensure_directory`, `move_file`). Scope validation. Error-path cargo tests.
+  - `src-tauri/src/ipc/config.rs` — replace stub bodies for `read_app_config`, `write_app_config`, `get_config_dir`. Atomic write. Error paths (return typed `{ kind: 'not_found' }`). Inline `#[cfg(test)] mod tests`.
+  - `tests/ipc/fs-remaining.smoke.test.ts` — JS smoke for the 4 newly-hardened fs commands.
+  - `tests/ipc/config.smoke.test.ts` — JS smoke for the 3 config commands.
+- **Acceptance:** cargo test in src-tauri passes for the 7 newly-hardened commands; JS smoke tests pass for all 7.
+- **est.** 4h
+
+### T-126 [ ] · Router infrastructure (Routes.tsx + types) + folder-existence check
+- **Depends-on:** T-124
+- **Reads:** `docs/UI_APP_SHELL.md` (M8 decisions, esp. router-library choice), `src/App.tsx` (M7-spike state — single-document shell)
+- **Outputs:**
+  - `src/ui/router/Routes.tsx` (NEW) — the route table. Routes for welcome, folder-picker (used for BOTH first-launch install AND re-pick when configured folder is missing), library, document. Each route is wrapped with `withRenderWatchdog`.
+  - **Boot-time folder-existence check:** on app boot, after `read_app_config` returns, the router additionally calls `file_exists` IPC against the configured `paths.cloudSyncRoot`. If missing, route to folder-picker with `reason: 'missing'` flag. Folder-picker uses this flag to swap copy from "Choose where your documents are saved" to "Your documents folder isn't where it used to be. Choose a new location." Once user picks, config is updated and router proceeds to library.
+  - `src/ui/router/types.ts` (NEW) — typed route definitions including the folder-picker `reason: 'first-launch' | 'missing'` variant. Document route shape: `{ kind: 'document', openDocs: Array<{ id: string, path: string }>, activeIndex: number }` — M8 only renders one document at a time but the route type MUST support multi-doc (tabs in M9+) without rearchitecting.
+  - `src/App.tsx` — refactored from M7-spike's single-document shell to mount Routes.tsx. "Open Document" button becomes a route intent dispatch.
+  - `tests/ui/router/Routes.test.tsx` — covers (a) the 4 route transitions, (b) boot-time folder-existence check routes to folder-picker with `reason: 'missing'` when folder is gone, (c) future-proof assertion that document route accepts an array of open docs.
+- **Acceptance:** M7-spike happy-path test (T-123) still passes after refactor — opening a document via file menu still works, just now goes through the router. New router transitions work (including missing-folder → folder-picker → library).
+- **Note: don't lock out future tabs.** M8 ships single-doc UX but route shape supports multi-doc. **Note: app always starts at library — never at a previously-open document.** Do NOT add `lastOpenPath` persistence to config; M9+ may revisit.
+- **est.** 4h
+
+### T-127 [ ] · First-launch folder picker (single-dialog install) + missing-folder re-pick
+- **Depends-on:** T-125 (needs config IPC), T-126 (needs router)
+- **Reads:** `docs/UI_APP_SHELL.md`
+- **Outputs:**
+  - `src/ui/install/FolderPickerScreen.tsx` (NEW) — single-screen welcome with app name, a one-sentence prompt that varies based on `reason` prop (`'first-launch'` → "Choose where your documents are saved"; `'missing'` → "Your documents folder isn't where it used to be. Choose a new location."), and a "Choose Folder…" button. On pick, writes config.yaml via `write_app_config` IPC with `{ paths: { cloudSyncRoot: <path> } }` (nested per the existing `InstallAppConfigSchema` in `src/setup/install.ts:41`) and routes to library. On cancel, stays on the screen with the button still showing.
+  - `tests/ui/install/FolderPickerScreen.test.tsx` — covers first-launch render, missing-folder render shows the "isn't where it used to be" copy, click → dialog → pick → config persisted → routes to library (both reasons), click → dialog → cancel → stays on screen.
+- **Acceptance:** first-launch (no config) shows welcome with picker; missing-folder (config present but folder gone per T-126's boot check) shows the alternate copy with the same picker; both paths persist + route correctly.
+- **est.** 1h
+
+### T-128 [ ] · Library view: scaffold + folder scan + empty-state "Use Sample"
+- **Depends-on:** T-125 (fs IPC), T-126 (router), T-127 (folder picker writes the config the library reads)
+- **Reads:** `docs/UI_LIBRARY.md`, `src/library/` (buildLibraryIndex), `examples/sample-proposal.yaml`
+- **Outputs:**
+  - `src/ui/library/LibraryView.tsx` — basic scaffold that scans the configured cloud-sync folder via `list_directory` + `read_yaml_file` IPCs and renders the card grid. No filters yet (T-129).
+  - `src/ui/library/EmptyLibraryState.tsx` (NEW) — rendered when folder scan returns zero YAML docs. Shows "No documents yet" + a single "Use Sample Document" button. On click, copies `examples/sample-proposal.yaml` from the app bundle into the configured cloud-sync folder as `Sample Proposal.yaml` via `write_yaml_file` IPC, then re-runs the folder scan so the sample appears as a card.
+  - `tests/ui/library/LibraryView.test.tsx` — covers folder scan + card render + empty-state render + "Use Sample" click → copy → refresh → sample appears.
+- **Acceptance:** opening the library against a non-empty folder shows cards; clicking a card dispatches a route-intent through Routes.tsx and lands on DocumentView. Opening against an empty folder shows the empty-state; clicking "Use Sample" copies the sample in and shows it as a card.
+- **est.** 4h
+
+### T-129 [ ] · Library view: filters + sort + search
+- **Depends-on:** T-128
+- **Reads:** `docs/UI_LIBRARY.md`, `src/library/` (applyFilters, applySort, toggleFilterValue)
+- **Outputs:**
+  - `src/ui/library/` — filter controls, sort controls, search input wired to the existing pure-logic modules. Card grid styling polish per UI_LIBRARY.md.
+  - `tests/ui/library/filters.test.tsx` — covers filter + sort + search behavior with the existing library-module fixtures.
+- **Acceptance:** the card grid filters/sorts/searches per the existing 28+16+8 library-module tests; UX matches UI_LIBRARY.md wireframe.
+- **est.** 4h
+
+### T-130 [ ] · Create 4 standard document templates
+- **Depends-on:** none (template content is self-contained YAML)
+- **Reads:** `examples/sample-proposal.yaml`, `examples/sample-deck.yaml`, `brand.example.yaml`
+- **Outputs:**
+  - `templates/commercial-proposal.yaml` — kind: document. Sections: cover page, executive summary, client situation, proposed approach, deliverables + timeline, team, pricing, appendix. Populated with placeholder copy + `[REPLACE: …]` markers.
+  - `templates/commercial-proposal-deck.yaml` — kind: deck. Slides: cover, agenda, situation, proposed approach, deliverables, timeline, team, pricing, next steps, closing.
+  - `templates/standard-report.yaml` — kind: document. Sections: cover, executive summary, methodology, findings, recommendations, risk matrix, next steps, appendix.
+  - `templates/standard-report-deck.yaml` — kind: deck. Slides: cover, agenda, executive summary, methodology, key findings (×3), recommendations, risks, closing.
+  - `tests/templates/template-validity.test.ts` — asserts each of the 4 template files parses via DocModelSchema with no errors, uses only the 15 standard block types, and contains at least one `[REPLACE:` placeholder per template.
+- **Acceptance:** all 4 templates parse + validate; the validity test passes; previewing any template in the existing DocumentRenderer / DeckRenderer renders without errors.
+- **est.** 3h
+
+### T-131 [ ] · Library "Create from Template" surface
+- **Depends-on:** T-128 (library scaffold), T-130 (4 templates)
+- **Reads:** `templates/` directory, `src/ui/library/LibraryView.tsx`, `docs/UI_LIBRARY.md`
+- **Outputs:**
+  - `src/ui/library/CreateFromTemplateButton.tsx` (NEW) — a button in the library toolbar; opens a modal.
+  - `src/ui/library/CreateFromTemplateModal.tsx` (NEW) — the modal: lists the 4 templates (loaded via Vite raw imports), each with name + one-line description + a preview thumbnail (uses the existing src/library/thumbnail.ts utility if applicable). User picks a template + types a new document name → confirm → app clones the template YAML to `<configured-cloud-sync-root>/<userName>.yaml` (read from `config.paths.cloudSyncRoot`) via `write_yaml_file` IPC → routes to DocumentView for the new doc.
+  - `tests/ui/library/CreateFromTemplateModal.test.tsx` — covers (a) modal shows all 4 templates, (b) pick + name + confirm → IPC write happens with correct content, (c) routes to DocumentView afterwards.
+- **Acceptance:** clicking "Create from Template" → picking a template → naming it → confirming → produces a new YAML in the cloud-sync folder + opens it in the editor; the library card grid refreshes to show the new card.
+- **est.** 3h
+
+### T-132 [ ] · Wire generated-blocks runtime loading + BlockPalette extension
+- **Depends-on:** T-126 (router), T-120b (BlockPalette mounted in M7-spike)
+- **Reads:** `src/setup/load-generated-blocks.ts` (existing — loads from `generated-blocks/active/`), `src/editor/BlockPalette.tsx` (existing — has the `generatedBlocks` prop slot)
+- **Outputs:**
+  - `src/App.tsx` — on startup, after config is loaded, call `loadGeneratedBlocks(generatedBlocksPath)` and stash the result in a context (`GeneratedBlocksContext`) accessible to the editor.
+  - `src/contexts/GeneratedBlocksContext.tsx` (NEW) — React context exposing the loaded generated-block list.
+  - `src/ui/views/DocumentView.tsx` — reads `GeneratedBlocksContext` and passes the list to BlockPalette's `generatedBlocks` prop. Palette now shows the 15 default blocks AND any approved generated blocks.
+  - `tests/ui/lifecycle/generated-blocks-load.test.tsx` — covers (a) empty `active/` → palette shows only defaults, (b) populated `active/` → palette shows defaults + generated, (c) load failure → palette degrades gracefully to defaults only + logs error.
+- **Acceptance:** any blocks in `generated-blocks/active/` appear in the editor's block palette alongside the 15 standard blocks. Removing blocks + restarting hides them.
+- **est.** 2h
+
+### T-133 [ ] · Validate generated-block pipeline end-to-end
+- **Depends-on:** T-132
+- **Reads:** `src/setup/scan-demos.ts`, `src/setup/generate-block.ts`, `src/setup/lint-generated.ts`, `src/setup/regenerate.ts`, `docs/SETUP_PIPELINE.md`, `generated-blocks/{pending,active}/`
+- **Outputs:**
+  - `tests/integration/setup-pipeline-e2e.test.ts` (NEW) — runs the full pipeline against a fixture demo set: feeds 2-3 small DOCX/PPTX fixtures (committed under `tests/fixtures/demos/`), runs `setup:scan-demos` programmatically, asserts (a) brand draft was written, (b) catalogue diff is structurally valid, (c) 0-10 generated-block proposals appear in `pending/`, (d) the lint pass catches a deliberately-malicious fixture (containing `dangerouslySetInnerHTML`) and rejects it.
+  - `tests/fixtures/demos/` (NEW directory) — 2-3 small DOCX/PPTX/PDF files crafted to exercise the scan-demos pipeline. Includes a deliberately-malicious one to validate the lint pass.
+  - `docs/SETUP_PIPELINE.md` — updated with a "Validation" section describing the test fixture + how to run the e2e test locally.
+- **Acceptance:** the e2e test passes in CI; deliberately-malicious block is rejected; the pipeline is provably end-to-end functional.
+- **est.** 3h
+
+### T-134 [ ] · M8 integration test (install → library → create from template → open doc)
+- **Depends-on:** T-124, T-125, T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133
+- **Reads:** all M8 task outputs, `examples/sample-proposal.yaml`, `brand.example.yaml`, `tests/integration/m7-spike-harness.ts` (extends it)
+- **Outputs:**
+  - `tests/integration/m8-happy-path.test.ts` — happy path: (a) launch with no config → folder picker, (b) pick folder → config persisted, (c) routes to library → folder scan finds 0 docs → empty-state with "Use Sample", (d) click Use Sample → sample-proposal.yaml copied → card appears, (e) click "Create from Template" → pick commercial-proposal → name it "Acme Q3 Proposal" → confirm, (f) library now shows 2 cards; clicking the new proposal opens DocumentView with template content, (g) edit prose → save → reopen → edits preserved, (h) BlockPalette shows 15 defaults + injected fake generated block (mocked), (i) File → Export PDF still works per M7-spike.
+  - `tests/integration/m8-error-paths.test.ts` — folder picker cancellation, config write failure, library scan against missing/moved folder (graceful "folder not found, pick again" state), Create-from-Template against invalid template, generated-blocks load failure (palette degrades).
+- **Acceptance:** both tests pass in CI. The full first-launch-to-export flow works end-to-end including templates + generated-blocks.
+- **est.** 4h
+
+**M8 acceptance gate:** T-134 passing. Full first-launch-to-export consultant flow works end-to-end including templates and generated blocks.
+
+---
+
+## Phase 9 — Deployment & Release
 
 ### T-108 [!] · Set up code signing (macOS, Windows) ← waiting: requires real macOS/Windows signing certificates and CI secrets
 - **Outputs:** signing certs in CI secrets; signed build outputs
@@ -887,10 +1154,13 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 | 4 | M4 (editor + perf gate) | T-74 — T-89 incl. T-89b/c/d | ~74 | +perf harness per D-39 |
 | 5 | M5 (comments) | T-90 — T-102 | 52 | |
 | 6 | M6 (deck) | T-103 — T-107 | 38 | v1.1 |
-| 7 | Deployment | T-108 — T-112 | 21 | |
-| | | | **~462h** | ≈ 12 weeks full-time for a strong dev, or ~6 months at half-time |
+| 6.5 | Scaffold hardening | T-113 — T-114 | 4 | post-M6 audit fixes |
+| 7 | M7 (document editor spike) | T-115 — T-123 (incl. T-120b) | ~33 | minimum runnable app |
+| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after M7-spike + consultant testing |
+| 9 | Deployment | T-108 — T-112 | 21 | renumbered from Phase 7 |
+| | | | **~535h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
 
-**Realistic v1 (excluding M6 deck path):** ~424 hours ≈ 10.5–11 weeks full-time. The ~12h additions from O-08 resolution (watchdog + perf harness) pay for themselves the first time a perf regression is caught in CI rather than in pilot.
+**Realistic v1 (excluding M6 deck path, including M7-spike + M8):** ~497 hours ≈ 12–13 weeks full-time. The ~73h of M7-spike + M8 + scaffold hardening is the new integration work that turns the disconnected M1–M5 modules into a runnable consultancy app. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
 
 These numbers match the architecture memo's §11 estimate of "6–12 months commitment" — the lower bound is achievable with a strong developer focused full-time; the upper bound includes M6 and a real-world overhead (review, debug, refactor, meetings).
 

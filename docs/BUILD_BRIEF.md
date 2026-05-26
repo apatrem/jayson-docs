@@ -196,6 +196,48 @@ docsystem/
 - [ ] `DeckRenderer` over the **same** DocModel; a fixed, closed library of slide layouts.
 - **Acceptance:** the same DocModel renders as a deck; layouts are a closed set; no free positioning; deck reuses the schema, editor, and comment system unchanged.
 
+### M7 — Document Editor Spike (minimum runnable app)
+
+Deliberately narrow first integration milestone: prove a real consultant can open a YAML document, edit it, insert blocks via the palette, save it, and export it to PDF via the user's default browser — WITHOUT a library, install wizard, AI, comments, deck rendering, or settings. Those surfaces stay disconnected modules until M8+ where their scope can be informed by what M7-spike user testing reveals.
+
+- [ ] `UI_APP_SHELL.md` spec describes the single-document shell architecture (no router, no install wizard, no library scan).
+- [ ] Two Tauri IPC commands hardened: `read_yaml_file` and `write_yaml_file`. `export_pdf` IPC reimplemented as a browser-handoff (pre-renders HTML, writes to temp via Rust, opens in user's default browser via `shell.open`). The other 14 IPC commands stay as registered no-op stubs (not called by the spike).
+- [ ] `src/App.tsx` no longer returns null — boots a single-document shell. Welcome screen with "Open Document" button; once a document is open, DocumentView fills the window.
+- [ ] DocumentView wires DocumentRenderer + Editor + the autosave debounce from T-82. File → Save / Save As work via fs IPC.
+- [ ] BlockPalette (existing 15-block component) mounted in DocumentView with `+` button + `/` keyboard shortcut to insert blocks; `generatedBlocks` slot empty for M7-spike (filled by M8 T-132).
+- [ ] File → Export PDF: pre-renders self-contained HTML + opens in user's default browser via `shell.open` (Tauri shell plugin). User completes the export with Cmd-P → Save as PDF.
+- [ ] Top-level `withRenderWatchdog` wrap on DocumentView honours D-39 perf budget; top-level error boundary so a thrown block doesn't crash the whole app.
+- **Acceptance:**
+  - launching the app shows a blank welcome screen with a single "Open Document" button.
+  - clicking Open Document opens the native file dialog; selecting `examples/sample-proposal.yaml` renders the document in the editor with BlockPalette mounted.
+  - editing prose, inserting a block from the palette, then File → Save, then File → Open + reload → the edits and inserted block are preserved (lossless round-trip).
+  - File → Export PDF pre-renders a self-contained HTML file, opens it in the user's default browser; the user can then save as PDF natively.
+  - T-123 integration test covers the full open → edit + insert block → save → reopen → export-pdf-handoff happy path end-to-end.
+  - the brand is hardcoded to `brand.example.yaml` for the spike (no brand-picker UI yet).
+  - the empty-document fixture loads without throwing.
+
+### M8 — Integrated App + Library (library + templates + generated blocks)
+
+Second integration milestone. Fires AFTER M7-spike ships and consultant testing of the editor surface has had a chance to surface any UX rework. Adds router infrastructure, first-launch folder picker, library card grid (with empty-state "Use Sample" button), 4 standard document templates with a "Create from Template" surface, generated-blocks runtime loading, and pipeline end-to-end validation.
+
+- [ ] Update `UI_APP_SHELL.md` to reflect M8 architecture (router, folder-picker routing, library state model, partial-config schema decision).
+- [ ] Harden the 4 remaining fs IPC commands (`list_directory`, `file_exists`, `ensure_directory`, `move_file`) + all 3 config IPC commands.
+- [ ] App boot reads config via IPC; routes to folder picker if absent OR if the configured `paths.cloudSyncRoot` no longer exists; otherwise routes to library.
+- [ ] First-launch folder-picker screen (single dialog — just "Choose where your documents are saved", per grilling Q4 Option B). Identity (name/email) and brand-folder NOT collected here — deferred to M9.
+- [ ] Library view per `UI_LIBRARY.md` (card grid + filter + sort + search; reuses `src/library/` pure-logic modules; empty-state shows "Use Sample" button).
+- [ ] Router (`src/ui/router/Routes.tsx`) mediates welcome ↔ folder-picker ↔ library ↔ document; M7-spike's File → Open stays available as an "Open from disk" escape hatch.
+- [ ] **Document templates:** 4 standards shipped (commercial proposal doc + deck, standard report doc + deck) in `templates/`; library has "Create from Template" button + modal.
+- [ ] **Generated blocks runtime loading:** `generated-blocks/active/` contents loaded on app startup, available in the BlockPalette alongside the 15 standard blocks.
+- [ ] **End-to-end pipeline validation:** the M1d setup pipeline gets an integration test proving scan-demos → AI-propose → lint reject malicious → approve cycle works on committed fixture demos.
+- **Acceptance:**
+  - first launch with no config opens the folder picker; completing it lands in the library view.
+  - empty cloud-sync folder shows the empty-state with "Use Sample" button; clicking copies sample-proposal.yaml in.
+  - library lists all YAML docs; filter + sort + search work.
+  - "Create from Template" → pick any of 4 → name it → opens in editor; new doc appears in the card grid.
+  - BlockPalette shows any blocks from `generated-blocks/active/` alongside the 15 defaults.
+  - Clicking any library card routes to DocumentView (same view M7-spike built); the M7-spike File menu (Open / Save / Save As / Export PDF) still works.
+  - **Not in M8 (deferred to M9+):** AI / comments / cost-ledger UI; deck rendering; reviewer mode; settings panel features beyond folder re-pick; in-app surface to trigger generated-block creation (still devops CLI for M8); consultant-facing "request a new block" flow.
+
 ---
 
 ## 4. Per-component "done means"
@@ -209,6 +251,8 @@ docsystem/
 | Editor | DocModel⇄editor mapping lossless (tested); off-schema content impossible |
 | Comment-to-AI | Proposals never auto-apply; comments survive serialization; batch works |
 | Deck renderer | Closed layout set; reuses all shared layers unchanged |
+| Document Editor Spike (M7) | Single-document shell wired (File → Open → edit → save → Export PDF via browser handoff); 2 fs IPC commands hardened (`read_yaml_file`, `write_yaml_file`); `export_pdf` IPC reimplemented as HTML browser-handoff; BlockPalette mounted; T-123 integration test passes in CI |
+| Integrated App + Library (M8) | First-launch folder picker → library card grid; 4 standard document templates ship; library "Create from Template" surface works; `generated-blocks/active/` loaded at startup and surfaced in BlockPalette; M1d pipeline validated end-to-end; T-134 integration test passes in CI. M8 still does NOT include AI/comments/cost-ledger UI, deck rendering, reviewer mode, or signed installers — those are M9-M11 + Phase 9 |
 
 ---
 
