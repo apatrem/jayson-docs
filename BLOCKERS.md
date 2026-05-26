@@ -40,6 +40,14 @@ that prevents recurrence is linked in each entry.
 **Fix landed:** T-123h adds the `plugins.shell.open` regex, a static config-shape/security test, an integration test that omits the `openPath` mock and exercises `plugin:shell|open`, and docs noting the dual-layer requirement.
 **Review lesson:** Tauri IPC/plugin reviews must verify both the capability JSON and the plugin's own source/docs (`~/.cargo/registry/src/*tauri-plugin-*` plus `node_modules/@tauri-apps/plugin-*/dist-js/*.d.ts`). Stopping at the ACL misses plugin-level gates.
 
+### [drift-2026-05-26g] ProseRenderer link-mark href XSS
+
+**Detected at:** 2026-05-26T16:50:00Z (M7 security audit carry-over)
+**Tasks affected:** T-50 / renderer link mark handling, fixed by T-123i.
+**What happened:** `src/renderer/ProseRenderer.tsx` rendered link marks by passing `mark.attrs?.href` directly into `<a href>`. Consultant-authored YAML can therefore carry `javascript:`, `data:`, `vbscript:`, or `file:` hrefs into the renderer.
+**Impact:** A renderer-origin XSS is especially sensitive now that keychain IPC (`get_secret` / `set_secret`) exists on the broader app surface. The M7 spike does not intentionally expose arbitrary HTML, but link marks are a user-authored navigation surface and need scheme validation.
+**Fix landed:** T-123i collapses non-allowlisted href schemes to `#`, preserves `http:`, `https:`, `mailto:`, `tel:`, and fragment links, and adds focused sanitization coverage for nine unsafe and five safe cases.
+
 ### [drift-2026-05-22a] Escalation-tier tasks ran on default tier without acknowledgment
 
 **Detected at:** 2026-05-22T15:30:00Z (post-hoc audit)

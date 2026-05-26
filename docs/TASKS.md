@@ -1116,7 +1116,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1h
 - **Note: NEW BLOCKER discovered by a fifth-round review LLM after the first four review rounds + 3 reviewer agents all stopped at the capability ACL. M7's "consultant can export PDF via browser handoff" promise is broken in real Tauri builds until this lands.** The lesson is captured in `AGENTS.md §Review playbook`: future Tauri IPC/plugin reviews must verify against `~/.cargo/registry/src/*tauri-plugin-*` source AND `node_modules/@tauri-apps/plugin-*/dist-js/*.d.ts` docs, not just capability JSON shape.
 
-### T-123i [ ] · Sanitize ProseRenderer link-mark `href` (block `javascript:`/`data:`/`vbscript:`)
+### T-123i [x] · Sanitize ProseRenderer link-mark `href` (block `javascript:`/`data:`/`vbscript:`)
 - **Depends-on:** T-123g
 - **Reads:** `src/renderer/ProseRenderer.tsx` (esp. `wrapWithMark` line ~113-127 — current behavior passes `mark.attrs?.href` directly to `<a href>`), `src/schema/blocks/` (Zod schemas — for the optional schema-level refinement)
 - **Outputs:**

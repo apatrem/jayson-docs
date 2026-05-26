@@ -19,6 +19,8 @@ const ALLOWED_MARKS = new Set([
   "underline",
 ]);
 
+const SAFE_HREF = /^(?:https?:|mailto:|tel:|#)/iu;
+
 interface ProseRendererProps {
   fragment: ProseMirrorFragment;
 }
@@ -111,7 +113,7 @@ function wrapWithMark(
       );
 
     case "link": {
-      const href = (mark.attrs?.href as string | undefined) ?? "#";
+      const href = sanitizeHref(mark.attrs?.href);
       return (
         <a
           href={href}
@@ -129,6 +131,12 @@ function wrapWithMark(
     default:
       return children;
   }
+}
+
+function sanitizeHref(rawHref: unknown): string {
+  if (typeof rawHref !== "string") return "#";
+  const href = rawHref.trim();
+  return SAFE_HREF.test(href) ? href : "#";
 }
 
 interface ProseNode {
