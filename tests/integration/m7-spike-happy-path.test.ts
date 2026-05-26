@@ -12,6 +12,7 @@ function countCallouts(yaml: string): number {
 describe("M7 spike happy path", () => {
   afterEach(() => {
     cleanup();
+    Reflect.deleteProperty(window, "__TAURI_INTERNALS__");
     vi.restoreAllMocks();
   });
 
@@ -69,8 +70,21 @@ describe("M7 spike happy path", () => {
       expect(reopened.exportPdf).toHaveBeenCalled();
     });
     expect(reopened.openPath).toHaveBeenCalledWith(reopened.getExportedPath());
-    expect(reopened.getExportedHtml()).toContain("@page");
-    expect(reopened.getExportedHtml()).toContain("<svg");
-    expect(reopened.getExportedHtml()).toContain('data-block-type="callout"');
+    const exportedHtml = reopened.getExportedHtml();
+    const svgPayloads = decodedSvgPayloads(exportedHtml);
+    expect(exportedHtml).toContain("@page { size: A4 portrait; margin: 1.5cm; }");
+    expect(svgPayloads.filter((payload) => payload.includes("<svg")).length).toBeGreaterThanOrEqual(2);
+    expect(exportedHtml).toContain('src="data:image/jpeg;base64,/9j/"');
+    expect(exportedHtml).not.toContain("/docs/assets/");
+    expect(exportedHtml).not.toContain("assets/team-meeting.jpg");
+    expect(exportedHtml).not.toMatch(/<script\b/iu);
+    expect(exportedHtml).toContain('data-block-type="callout"');
   });
 });
+
+function decodedSvgPayloads(html: string): string[] {
+  return Array.from(
+    html.matchAll(/data:image\/svg\+xml(?:;charset=utf-8)?,([^"]+)/giu),
+    (match) => decodeURIComponent(match[1] ?? ""),
+  );
+}

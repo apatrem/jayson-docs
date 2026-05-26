@@ -1,10 +1,15 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { m7SpikeDoc, renderM7SpikeHarness } from "./m7-spike-harness";
+import {
+  renderM7SpikeHarness,
+  sampleProposalYaml,
+  singleSectionProposalDoc,
+} from "./m7-spike-harness";
 
 describe("M7 spike error paths", () => {
   afterEach(() => {
     cleanup();
+    Reflect.deleteProperty(window, "__TAURI_INTERNALS__");
     vi.restoreAllMocks();
   });
 
@@ -38,7 +43,7 @@ describe("M7 spike error paths", () => {
     renderM7SpikeHarness({
       initialDocument: {
         path: "/Users/me/Documents/sample-proposal.yaml",
-        doc: m7SpikeDoc,
+        doc: singleSectionProposalDoc,
       },
       writeYamlFile: () => Promise.reject(new Error("write failed")),
     });
@@ -47,6 +52,20 @@ describe("M7 spike error paths", () => {
 
     await waitFor(() => {
       expect(screen.getByText("write failed")).toBeTruthy();
+    });
+  });
+
+  it("constrains the real multi-section sample proposal", async () => {
+    renderM7SpikeHarness({
+      initialYaml: sampleProposalYaml,
+    });
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Multi-section documents aren't editable yet/u),
+      ).toBeTruthy();
     });
   });
 });

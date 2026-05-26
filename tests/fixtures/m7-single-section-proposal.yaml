@@ -1,4 +1,4 @@
-# M7 single-section proposal fixture.
+# Extended in T-123d to add image + diagram (T-123e image inlining + real renderer test).
 # Composite fixture derived from examples/sample-proposal.yaml for the M7 editor spike.
 
 kind: document
@@ -89,5 +89,20 @@ sections:
         palette: "qualitative"
         showLegend: true
         showDataLabels: false
+
+      - id: "b4-image-01"
+        type: "image"
+        src: "assets/team-meeting.jpg"
+        alt: "Three team members reviewing site plans at a whiteboard."
+        caption: "Kickoff workshop, May 2026."
+        width: "large"
+        align: "center"
+
+      - id: "b4-diagram-01"
+        type: "diagram"
+        title: "Engagement flow"
+        source: "graph TD\n  A[Discovery] --> B[Site model]\n  B --> C[Recommendation]"
+        caption: "M7 fixture diagram for export SSR."
+        width: "large"
 
 comments: []

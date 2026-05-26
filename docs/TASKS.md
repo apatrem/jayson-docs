@@ -1027,7 +1027,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1.5h
 - **Note: confirmed by security audit as CRITICAL-1 + CRITICAL-2 (combined). Either of these alone would block M9 external distribution. The test strategy explicitly uses static JSON-shape assertions because the existing `tests/ipc/*.smoke.test.ts` mock `window.__TAURI_INTERNALS__.invoke` — those mocks can't prove Tauri's actual ACL rejects; only a static check on the committed capability JSON gives a portable regression guard.**
 
-### T-123d [ ] · Real-fixture integration test (open sample-proposal + real export renderer)
+### T-123d [x] · Real-fixture integration test (open sample-proposal + real export renderer)
 - **Depends-on:** T-123a, T-123b, T-123e
 - **Reads:** `tests/integration/m7-spike-harness.ts` (esp. line 12: real fixture read; line 82: synthetic default), `tests/integration/m7-spike-happy-path.test.ts`, `tests/fixtures/m7-single-section-proposal.yaml` (created by T-123b — single-section subset of sample-proposal containing prose/callout/chart/KPI-cards), `examples/sample-proposal.yaml`, `src/export/render-static-html.ts`
 - **Outputs:**

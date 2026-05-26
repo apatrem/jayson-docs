@@ -4,73 +4,40 @@ import { join } from "node:path";
 import { createElement } from "react";
 import { render } from "@testing-library/react";
 import { vi } from "vitest";
+import type * as EChartsModule from "echarts";
 import App from "../../src/App";
-import { serializeDocModel } from "../../src/docmodel/serialize";
+import { parseDocModelYaml } from "../../src/docmodel/serialize";
+import { DocModelSchema } from "../../src/schema/docmodel";
 import type { DocModel } from "../../src/schema/docmodel";
+
+vi.mock("echarts", async () => {
+  const actual = await vi.importActual<typeof EChartsModule>("echarts");
+  type InitArgs = Parameters<typeof actual.init>;
+  return {
+    ...actual,
+    init: (dom: InitArgs[0], theme?: InitArgs[1], opts?: InitArgs[2]) =>
+      dom === null
+        ? actual.init(dom, theme, opts)
+        : {
+            setOption: vi.fn(),
+            resize: vi.fn(),
+            dispose: vi.fn(),
+          },
+  };
+});
 
 export const sampleProposalPath = "/Users/me/Documents/sample-proposal.yaml";
 export const sampleProposalYaml = readFileSync(
   "examples/sample-proposal.yaml",
   "utf8",
 );
-
-export const m7SpikeDoc: Extract<DocModel, { kind: "document" }> = {
-  kind: "document",
-  schemaVersion: "1.0.0",
-  meta: {
-    client: "Acme Industrial",
-    project: "SMR Heat Strategy Assessment",
-    docKind: "proposal",
-    sector: "energy",
-    tags: ["nuclear", "industrial heat", "decarbonization"],
-    language: "en",
-    status: "draft",
-    archived: false,
-    confidentialityLevel: "high",
-    owner: "j.smith@boutique.example",
-    reviewers: ["p.dubois@boutique.example"],
-    createdAt: "2026-05-21T09:00:00Z",
-    updatedAt: "2026-05-21T14:32:00Z",
-    brandRef: "$brand:default",
-  },
-  sections: [
-    {
-      id: "section-1",
-      title: "Executive summary",
-      blocks: [
-        {
-          id: "b1-heading-01",
-          type: "heading",
-          level: 1,
-          text: "Executive summary",
-          numbered: false,
-        },
-        {
-          id: "b1-prose-01",
-          type: "prose",
-          content: {
-            type: "doc",
-            content: [
-              {
-                type: "paragraph",
-                content: [
-                  {
-                    type: "text",
-                    text: "Acme Industrial is evaluating SMR process-heat applications.",
-                  },
-                ],
-              },
-            ],
-          },
-          align: "left",
-        },
-      ],
-    },
-  ],
-  comments: [],
-};
-
-export const m7SpikeYaml = serializeDocModel(m7SpikeDoc);
+export const singleSectionProposalYaml = readFileSync(
+  "tests/fixtures/m7-single-section-proposal.yaml",
+  "utf8",
+);
+export const singleSectionProposalDoc = DocModelSchema.parse(
+  parseDocModelYaml(singleSectionProposalYaml),
+) as Extract<DocModel, { kind: "document" }>;
 
 export interface M7HarnessOptions {
   initialYaml?: string;
@@ -80,9 +47,20 @@ export interface M7HarnessOptions {
 }
 
 export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
-  let currentYaml = options.initialYaml ?? m7SpikeYaml;
+  installSvgLayoutPolyfill();
+  let currentYaml = options.initialYaml ?? singleSectionProposalYaml;
   let exportedHtml = "";
   let exportedPath = "";
+  const invokeMock = vi.fn((cmd: string) => {
+    if (cmd === "read_binary_file") {
+      return Promise.resolve([0xff, 0xd8, 0xff]);
+    }
+    return Promise.reject(new Error(`unexpected invoke ${cmd}`));
+  });
+  Object.defineProperty(window, "__TAURI_INTERNALS__", {
+    configurable: true,
+    value: { invoke: invokeMock },
+  });
 
   const readYamlFile = vi.fn(
     options.readYamlFile ??
@@ -120,7 +98,7 @@ export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
         writeYamlFile,
         exportPdf,
         openPath,
-        renderHtmlForExport: () => Promise.resolve(renderHarnessHtml(currentYaml)),
+        sharedFolderPath: "/Users/me/Consultancy-Shared",
       },
     }),
   );
@@ -131,13 +109,23 @@ export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
     writeYamlFile,
     exportPdf,
     openPath,
+    invokeMock,
     getCurrentYaml: () => currentYaml,
     getExportedHtml: () => exportedHtml,
     getExportedPath: () => exportedPath,
   };
 }
 
-function renderHarnessHtml(yaml: string): string {
-  const calloutCount = yaml.match(/type:\s*"?callout"?/gu)?.length ?? 0;
-  return `<!doctype html><html><head><style>@page { size: A4; margin: 20mm; }</style></head><body><svg role="img"></svg><aside data-block-type="callout">Inserted callouts: ${calloutCount}</aside></body></html>`;
+function installSvgLayoutPolyfill(): void {
+  if (typeof SVGElement === "undefined") return;
+  if ("getBBox" in SVGElement.prototype) return;
+  Object.defineProperty(SVGElement.prototype, "getBBox", {
+    configurable: true,
+    value: () => ({
+      x: 0,
+      y: 0,
+      width: 120,
+      height: 40,
+    }),
+  });
 }
