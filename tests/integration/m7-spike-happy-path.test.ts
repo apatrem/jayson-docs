@@ -1,0 +1,76 @@
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  renderM7SpikeHarness,
+  sampleProposalPath,
+} from "./m7-spike-harness";
+
+function countCallouts(yaml: string): number {
+  return yaml.match(/type:\s*"?callout"?/gu)?.length ?? 0;
+}
+
+describe("M7 spike happy path", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("opens, inserts a block, saves, reopens, and exports through browser handoff", async () => {
+    const harness = renderM7SpikeHarness();
+    const baselineCallouts = countCallouts(harness.getCurrentYaml());
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Document shell")).toBeTruthy();
+    });
+    expect(harness.readYamlFile).toHaveBeenCalledWith(sampleProposalPath);
+    expect(screen.getAllByText("Executive summary").length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole("button", { name: "Insert block" }));
+    const calloutButton = await screen.findByRole("button", { name: /Callout/u });
+    await waitFor(() => {
+      expect(calloutButton.hasAttribute("disabled")).toBe(false);
+    });
+    fireEvent.click(calloutButton);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Unsaved changes")).toBeTruthy();
+    });
+    fireEvent.click(screen.getByRole("menuitem", { name: "Save" }));
+    await waitFor(
+      () => {
+        expect(countCallouts(harness.getCurrentYaml())).toBeGreaterThan(
+          baselineCallouts,
+        );
+      },
+      { timeout: 4000 },
+    );
+    await waitFor(() => {
+      expect(harness.writeYamlFile).toHaveBeenCalledWith(
+        sampleProposalPath,
+        expect.stringContaining("type: callout"),
+      );
+    });
+
+    const savedYaml = harness.getCurrentYaml();
+    cleanup();
+    const reopened = renderM7SpikeHarness({ initialYaml: savedYaml });
+    fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
+    await waitFor(() => {
+      expect(screen.getAllByText("Executive summary").length).toBeGreaterThan(0);
+    });
+    expect(countCallouts(reopened.getCurrentYaml())).toBeGreaterThan(
+      baselineCallouts,
+    );
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Export PDF" }));
+    await waitFor(() => {
+      expect(reopened.exportPdf).toHaveBeenCalled();
+    });
+    expect(reopened.openPath).toHaveBeenCalledWith(reopened.getExportedPath());
+    expect(reopened.getExportedHtml()).toContain("@page");
+    expect(reopened.getExportedHtml()).toContain("<svg");
+    expect(reopened.getExportedHtml()).toContain('data-block-type="callout"');
+  });
+});

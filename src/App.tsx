@@ -54,7 +54,7 @@ export default function App({
           paletteOpen: false,
         },
   );
-  const [openError, setOpenError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [boundaryResetVersion, setBoundaryResetVersion] = useState(0);
   const WatchdoggedDocumentView = useMemo(
@@ -68,7 +68,7 @@ export default function App({
   );
 
   const openDocument = async (): Promise<void> => {
-    setOpenError(null);
+    setActionError(null);
     setStatusMessage(null);
     try {
       const loaded =
@@ -86,15 +86,20 @@ export default function App({
         paletteOpen: false,
       });
     } catch (error) {
-      setOpenError(error instanceof Error ? error.message : String(error));
+      setActionError(error instanceof Error ? error.message : String(error));
     }
   };
 
   const saveDocument = async (): Promise<void> => {
     if (state.kind !== "document") return;
-    await writeDocument(fileActions, state.path, state.doc);
-    setState({ ...state, dirty: false });
-    setStatusMessage("Saved.");
+    setActionError(null);
+    try {
+      await writeDocument(fileActions, state.path, state.doc);
+      setState({ ...state, dirty: false });
+      setStatusMessage("Saved.");
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error));
+    }
   };
 
   const reopenCurrentDocument = async (): Promise<void> => {
@@ -112,7 +117,7 @@ export default function App({
   };
 
   const returnToWelcome = (): void => {
-    setOpenError(null);
+    setActionError(null);
     setStatusMessage(null);
     setState({ kind: "welcome" });
     setBoundaryResetVersion((version) => version + 1);
@@ -120,31 +125,41 @@ export default function App({
 
   const saveDocumentAs = async (): Promise<void> => {
     if (state.kind !== "document") return;
-    const selected = await selectSavePath(fileActions, state.path);
-    if (selected === null) return;
-    await writeDocument(fileActions, selected, state.doc);
-    setState({ ...state, path: selected, dirty: false });
-    setStatusMessage(
-      fileActions.libraryRoot && !selected.startsWith(fileActions.libraryRoot)
-        ? `Saved to ${selected}. This document is outside your library folder and won't appear in the library.`
-        : "Saved As.",
-    );
+    setActionError(null);
+    try {
+      const selected = await selectSavePath(fileActions, state.path);
+      if (selected === null) return;
+      await writeDocument(fileActions, selected, state.doc);
+      setState({ ...state, path: selected, dirty: false });
+      setStatusMessage(
+        fileActions.libraryRoot && !selected.startsWith(fileActions.libraryRoot)
+          ? `Saved to ${selected}. This document is outside your library folder and won't appear in the library.`
+          : "Saved As.",
+      );
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error));
+    }
   };
 
   const exportPdf = async (): Promise<void> => {
     if (state.kind !== "document" || state.doc.kind !== "document") return;
-    const renderHtml =
-      fileActions.renderHtmlForExport ?? renderStaticHtmlForExport;
-    const html = await renderHtml(state.doc, defaultBrand);
-    const exportHandoff = await (
-      fileActions.exportPdf ??
-      ((input) => invoke<ExportHandoff>("export_pdf", input))
-    )({
-      html,
-      suggestedName: `${basename(state.path).replace(/\.ya?ml$/iu, "")}.pdf`,
-    });
-    await (fileActions.openPath ?? openShellPath)(exportHandoff.path);
-    setStatusMessage("Opened in your browser — use Cmd-P / Ctrl-P to save as PDF.");
+    setActionError(null);
+    try {
+      const renderHtml =
+        fileActions.renderHtmlForExport ?? renderStaticHtmlForExport;
+      const html = await renderHtml(state.doc, defaultBrand);
+      const exportHandoff = await (
+        fileActions.exportPdf ??
+        ((input) => invoke<ExportHandoff>("export_pdf", input))
+      )({
+        html,
+        suggestedName: `${basename(state.path).replace(/\.ya?ml$/iu, "")}.pdf`,
+      });
+      await (fileActions.openPath ?? openShellPath)(exportHandoff.path);
+      setStatusMessage("Opened in your browser — use Cmd-P / Ctrl-P to save as PDF.");
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error));
+    }
   };
 
   return (
@@ -158,6 +173,11 @@ export default function App({
         onExportPdf={exportPdf}
         statusMessage={statusMessage}
       />
+      {actionError ? (
+        <p role="alert" style={styles.errorText}>
+          {actionError}
+        </p>
+      ) : null}
       {state.kind === "welcome" ? (
         <main aria-label="Welcome" style={styles.welcome}>
           <section style={styles.welcomeCard}>
@@ -172,11 +192,6 @@ export default function App({
             >
               Open Document
             </button>
-            {openError ? (
-              <p role="alert" style={styles.errorText}>
-                {openError}
-              </p>
-            ) : null}
           </section>
         </main>
       ) : (
@@ -201,6 +216,12 @@ export default function App({
                   <WatchdoggedDocumentView
                     path={state.path}
                     initialDoc={state.doc}
+                    {...(fileActions.readYamlFile === undefined
+                      ? {}
+                      : { readYamlFile: fileActions.readYamlFile })}
+                    {...(fileActions.writeYamlFile === undefined
+                      ? {}
+                      : { writeYamlFile: fileActions.writeYamlFile })}
                     onDocumentChange={(doc) => {
                       setState((current) =>
                         current.kind === "document"

@@ -970,7 +970,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** a deliberately-throwing block does not crash the whole app; the error panel surfaces both recovery buttons; watchdog instrumentation reports per-view render time; the perf benchmark harness from T-89c continues to pass.
 - **est.** 3h
 
-### T-123 [ ] · M7-spike integration test (open → edit + insert block → save → export)
+### T-123 [x] · M7-spike integration test (open → edit + insert block → save → export)
 - **Depends-on:** T-115, T-116, T-117, T-118, T-119, T-120, T-120b, T-121, T-122
 - **Reads:** all M7-spike task outputs, `examples/sample-proposal.yaml`, `brand.example.yaml`
 - **Outputs:**
