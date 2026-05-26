@@ -240,26 +240,42 @@ Deletes rows older than `retention_days`. Returns the number deleted. Called on 
 
 ## §5 — PDF export
 
-### `export_pdf(input: PdfExportInput) -> void`
+### `export_pdf(input: PdfExportInput) -> ExportHandoff`
+
+The command name is kept as `export_pdf` for historical reasons and to preserve
+the registered IPC command count. In M7-spike it does **not** produce a finished
+PDF. It writes print-ready HTML to a scoped temp file and returns a browser
+handoff path; the user finishes the export in their browser with
+Cmd-P / Ctrl-P → Save as PDF. A v1.1 task may rename this to
+`prepare_print_handoff` for honesty.
 
 ```typescript
 interface PdfExportInput {
-  htmlPath: string;       // path to a temp HTML file produced by the renderer
-  outputPath: string;     // destination PDF path
-  options: {
-    format: "A4" | "Letter" | "Legal";
-    orientation: "portrait" | "landscape";
-    headerTemplate?: string;
-    footerTemplate?: string;
-    margins: { top: number; right: number; bottom: number; left: number };  // mm
-    displayHeaderFooter: boolean;
-  };
+  html: string;
+  suggestedName: string;
+}
+
+interface ExportHandoff {
+  kind: "browser_handoff";
+  path: string;
 }
 ```
 
-**Behavior:** spawns headless Chromium via Playwright (the Rust process invokes the Node `playwright` CLI as a subprocess; or — alternative implementation — exports via a JS-side function and writes the PDF to disk via `write_yaml_file`-style command).
+**Behavior:** writes `html` to
+`<tmpdir>/docsystem-export/<uuid>/<sanitized-base-name>.html`, returns
+`{ kind: "browser_handoff", path }`, and expects the frontend to open `path`
+with `@tauri-apps/plugin-shell`. `suggestedName` sanitization strips a trailing
+`.pdf` first, replaces non-`[A-Za-z0-9._ -]` characters with `_`, strips
+leading dots, clamps to 200 characters, appends `.html`, then canonicalizes the
+result to ensure it remains under the temp export root.
 
-**Why this is a Rust command and not pure JS:** Playwright spawns a browser process; we want that lifecycle managed by the Tauri shell, not the renderer process. Also keeps the renderer free of Node-specific code.
+**Cleanup:** on app startup, the Tauri setup hook sweeps
+`<tmpdir>/docsystem-export/` before any new export runs. Cleanup failures are
+logged and do not block app launch.
+
+**Why this is a Rust command and not pure JS:** the Rust side owns the privileged
+filesystem write and temp-root validation. The renderer remains responsible for
+creating safe, self-contained HTML.
 
 ---
 

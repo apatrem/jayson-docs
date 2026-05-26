@@ -897,7 +897,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** cargo test passes for the 2 hardened commands; the JS smoke test passes for read + write. The other 15 IPC commands stay registered and their no-op stubs continue to respond.
 - **est.** 3h
 
-### T-118 [ ] · Implement export_pdf IPC as browser-handoff
+### T-118 [x] · Implement export_pdf IPC as browser-handoff
 - **Depends-on:** T-116, T-117
 - **Reads:** `docs/UI_APP_SHELL.md`, `src-tauri/src/ipc/pdf.rs`, `src/renderer/DocumentRenderer.tsx`, `src/renderer/blocks/Diagram.tsx`, `src/renderer/blocks/Chart.tsx`, `package.json`
 - **Outputs:**

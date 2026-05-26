@@ -13,9 +13,13 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             env_logger::init();
             log::info!("Document System starting (Tauri {})", tauri::VERSION);
+            if let Err(error) = ipc::pdf::cleanup_export_temp_dir() {
+                log::warn!("failed to clean export temp dir: {error}");
+            }
 
             let _config_dir = app
                 .path()
