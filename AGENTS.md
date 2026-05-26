@@ -315,3 +315,33 @@ requires.
 - For any new block: copy the four-file pattern from `reference/callout/`.
 Do not invent a new shape.
 
+## Review playbook (conventions for code-review / security-audit / test-engineer agents)
+
+When briefing a review agent on Tauri 2.x IPC, capability, or plugin changes,
+include these explicit checks in the prompt:
+
+- **Verify against the actual plugin source in `~/.cargo/registry/src/*tauri-plugin-*`.**
+  Tauri 2.x's capability ACL is necessary but not always sufficient — many
+  plugins have a SECOND validation layer at the plugin level (e.g.,
+  `tauri.conf.json > plugins > shell > open` regex enforced by
+  `tauri-plugin-shell-*/src/scope.rs::OpenScope::open`). A review that stops
+  at the capability JSON shape misses these gaps. The shell-plugin gap was
+  found in the fifth review round of M7.5 (drift entry `[drift-2026-05-26f]`)
+  precisely because three prior agents only inspected the capability ACL.
+  Concrete pattern: `find ~/.cargo/registry/src -path '*tauri-plugin-<name>*/src/*.rs' | xargs grep -A 20 'pub.*fn <command>\|OpenScope\|impl.*Scope'`.
+- **Verify against the actual JS plugin docs in `node_modules/@tauri-apps/plugin-*/dist-js/*.d.ts`.**
+  The TypeScript-side signatures and runtime behavior notes (especially the
+  `@param` JSDoc on each exported function) often spell out the second-layer
+  config requirement that the capability JSON alone won't tell you.
+- **Tests that mock the IPC bridge (`window.__TAURI_INTERNALS__.invoke`)
+  cannot prove plugin-level scope works.** Flag any "the test passes, so
+  the boundary is closed" reasoning that depends on a mocked plugin invoke;
+  require either a static config-shape assertion or a real Tauri-runtime
+  integration check before treating the boundary as proven closed.
+- **Synthetic fixtures hide bugs.** If a multi-axis review finds the
+  integration harness uses a synthetic doc, or stubs the renderer/IPC under
+  test, automatically flag any "test passes" claim as inconclusive until the
+  harness uses the real fixture / real renderer. M7-spike shipped 5 BLOCKERs
+  hidden by this exact pattern (see `BLOCKERS.md [drift-2026-05-26c]` and
+  related entries).
+

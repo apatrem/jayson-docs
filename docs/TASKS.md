@@ -1086,7 +1086,119 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 0.5h
 - **Note: closes the "regex-count vs. parse-validate" gap surfaced by code review + test-engineer review.**
 
-**M7-spike acceptance gate (REVISED 2026-05-26):** T-123g passing (T-123a..T-123g all `[x]`). The original T-123 acceptance was structurally insufficient — multi-axis review found 5 BLOCKERs (editor remount, multi-section corruption, unscoped shell capability, unhardened fs IPC bypass, broken image export) hidden by the synthetic test harness. T-123a..T-123g close those defects + the harness now exercises the real fixture + real renderer.
+### T-123h [ ] · Configure shell plugin `open` regex + non-mocked smoke test
+- **Depends-on:** T-123g
+- **Reads:** `src-tauri/tauri.conf.json` (the missing `plugins.shell.open` block), `src-tauri/capabilities/main-window.json` (the capability ACL — necessary but not sufficient), `~/.cargo/registry/src/index.crates.io-*/tauri-plugin-shell-2.*/src/scope.rs` (the `OpenScope::open` validator — the smoking-gun source that proves the regex is required), `node_modules/@tauri-apps/plugin-shell/dist-js/index.d.ts` (line ~267 — JS-side docs that mention the regex), `src/App.tsx` (line ~156 — the `openShellPath` call site), `BLOCKERS.md` (drift-entry format)
+- **Outputs:**
+  - `src-tauri/tauri.conf.json` — add a top-level `plugins` block:
+    ```json
+    "plugins": {
+      "shell": {
+        "open": "^(?:https?://\\w+|.+[/\\\\]docsystem-export[/\\\\][0-9a-f-]+[/\\\\].+\\.html$)"
+      }
+    }
+    ```
+    Two alternations: (a) `https?://\w+` preserves default web-URL behavior; (b) `.+[/\\\\]docsystem-export[/\\\\][0-9a-f-]+[/\\\\].+\\.html$` matches OS-agnostic temp paths (macOS `/var/folders/...`, Linux `/tmp/...`, Windows `C:\...\Temp\...`) ending in our UUID subfolder + `.html`. The `[0-9a-f-]+` constrains the UUID segment to hex+dashes (defence-in-depth against renderer-injected `../`).
+  - `tests/security/shell-config.test.ts` (NEW) — static-assertion test that loads `tauri.conf.json` via `readFileSync` + `JSON.parse` and asserts:
+    1. `plugins.shell.open` is a string (NOT undefined, NOT `true`/`false`, NOT empty).
+    2. The regex matches representative temp-dir paths: `/var/folders/8b/abc/T/docsystem-export/123e4567-e89b-12d3-a456-426614174000/Proposal.html`, `/tmp/docsystem-export/.../...html`, `C:\Users\me\AppData\Local\Temp\docsystem-export\.../...html`.
+    3. The regex does NOT match `/etc/passwd`, `file:///etc/shadow`, `smb://attacker/share`, `javascript:alert(1)`, `data:text/html,<script>...</script>`.
+    4. The regex matches `https://example.com/foo` (preserves default web-URL behavior).
+  - `tests/integration/m7-spike-happy-path.test.ts` — add a sub-test that renders the App WITHOUT the `openPath` mock injection (let it fall through to the real `openShellPath`). Assert that `window.__TAURI_INTERNALS__.invoke` was called with `plugin:shell|open` and the temp path. This catches the case where a future refactor loses the `?? openShellPath` fallback in `App.tsx:156`.
+  - `BLOCKERS.md` — append `[drift-2026-05-26f] Tauri shell plugin `open` regex was unconfigured — runtime export PDF broken; capability ACL alone is insufficient`. Document the lesson: Tauri 2.x has TWO validation layers (capability + plugin scope); a review that stops at the ACL misses plugin-level gates. The smoking-gun citation is `tauri-plugin-shell-*/src/scope.rs::OpenScope::open` which returns a "purposefully impossible regex" error when `self.open` is `None`. Cite the lesson now codified in `AGENTS.md §Review playbook`.
+  - `docs/UI_APP_SHELL.md` §Browser PDF handoff — append a note: "Tauri 2.x's shell plugin requires BOTH a capability ACL (`shell:allow-open` with path scope in `main-window.json`) AND a `plugins.shell.open` regex in `tauri.conf.json`. The capability ACL gates WHICH renderer windows may invoke `open`; the plugin regex gates WHICH paths/URLs are accepted. Both layers must be configured; setting only the ACL produces a runtime 'purposefully impossible regex' error from `tauri-plugin-shell`."
+  - `docs/TAURI_IPC.md` §5 (PDF export) — note the dual-layer requirement at the top of the export section.
+- **Acceptance:**
+  - Running `npm run tauri:dev` against the rebuilt config does NOT log the "open() command called but the plugin configuration denies calls from JavaScript" warning when File → Export PDF fires.
+  - Static `shell-config.test.ts` passes all 4 assertions (string type, positive temp-dir patterns, negative attack patterns, https preservation).
+  - Integration sub-test confirms the fall-through to `openShellPath` is exercised.
+  - Manual verification on dev machine: clicking File → Export PDF on a real fixture document opens a browser tab (the temp HTML loads in default browser).
+- **est.** 1h
+- **Note: NEW BLOCKER discovered by a fifth-round review LLM after the first four review rounds + 3 reviewer agents all stopped at the capability ACL. M7's "consultant can export PDF via browser handoff" promise is broken in real Tauri builds until this lands.** The lesson is captured in `AGENTS.md §Review playbook`: future Tauri IPC/plugin reviews must verify against `~/.cargo/registry/src/*tauri-plugin-*` source AND `node_modules/@tauri-apps/plugin-*/dist-js/*.d.ts` docs, not just capability JSON shape.
+
+### T-123i [ ] · Sanitize ProseRenderer link-mark `href` (block `javascript:`/`data:`/`vbscript:`)
+- **Depends-on:** T-123g
+- **Reads:** `src/renderer/ProseRenderer.tsx` (esp. `wrapWithMark` line ~113-127 — current behavior passes `mark.attrs?.href` directly to `<a href>`), `src/schema/blocks/` (Zod schemas — for the optional schema-level refinement)
+- **Outputs:**
+  - `src/renderer/ProseRenderer.tsx` — in `wrapWithMark`'s `link` case, add a scheme allowlist before passing href to `<a>`:
+    ```ts
+    const SAFE_HREF = /^(?:https?:|mailto:|tel:|#)/i;
+    const raw = (mark.attrs?.href as string | undefined) ?? "#";
+    const href = SAFE_HREF.test(raw.trim()) ? raw : "#";
+    return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
+    ```
+    Also add `target="_blank"` + `rel="noopener noreferrer"` if not already present (defence against tab-nabbing).
+  - `tests/renderer/prose-href-sanitization.test.tsx` (NEW) — assert that the following href values all collapse to `"#"` in the rendered `<a>`:
+    - `javascript:alert(1)`
+    - `javascript:invoke('get_secret',{key:'anthropic_api_key'})`
+    - `JavaScript:alert(1)` (case-insensitive)
+    - `  javascript:alert(1)` (leading whitespace)
+    - `\tjavascript:alert(1)` (tab prefix)
+    - `data:text/html,<script>alert(1)</script>`
+    - `vbscript:msgbox(1)`
+    - `file:///etc/passwd`
+    - `javas\tcript:alert(1)` (embedded tab — should NOT match the allowlist, so should collapse)
+  - And that these values PASS through unchanged:
+    - `https://example.com/path`
+    - `http://example.com/path`
+    - `mailto:user@example.com`
+    - `tel:+1234567890`
+    - `#section-anchor`
+  - `BLOCKERS.md` — append `[drift-2026-05-26g] ProseRenderer link-mark href XSS — sanitized in T-123i (M7.5 follow-up)` documenting the carried-over HIGH from the M7 security audit.
+- **Acceptance:** a YAML containing `{ marks: [{ type: link, attrs: { href: "javascript:..." } }] }` renders an `<a href="#">` (not the original javascript: URL). The 14 sanitization tests pass.
+- **est.** 0.5h
+- **Note: HIGH security finding carried over from the M7 review. Defers escalated to BLOCKER-class for M7.5 closure because the now-hardened keychain IPC (`get_secret` / `set_secret`) is reachable from a renderer-origin XSS, and consultant-authored YAML is the threat-model input. 5-line fix.**
+
+### T-123j [ ] · Defense-in-depth security hardening (MEDIUM/LOW findings batch)
+- **Depends-on:** T-123g
+- **Reads:** `src-tauri/src/ipc/fs.rs` (esp. `read_binary_file_from_path` line ~115-125, `canonical_scoped_read_target` line ~174-185, the 4 deferred command bodies line ~46-89, the legacy `validate_path` line ~91-95), `src-tauri/src/ipc/pdf.rs` (esp. `cleanup_export_temp_dir_at` line ~61-66), `src/export/render-static-html.ts` (esp. the `mimeTypeForPath` SVG arm + the placeholder branch)
+- **Outputs:**
+  - `src-tauri/src/ipc/fs.rs` — three changes:
+    1. **Post-canonicalize extension recheck** in `canonical_scoped_read_target` (or in `read_binary_file_from_path` specifically): after `path.canonicalize()`, re-run `has_allowed_extension(&canonical_path, allowed_extensions)`. Closes the symlink-rename pivot where `safe.png → secret.yaml` passes the pre-canonicalize `.png` check, canonicalizes to `secret.yaml`, then `ensure_path_in_scope` accepts it because both endpoints are in scope. Add a test case where the raw path is `.png` but the canonical symlink target is `.yaml` → expect `IpcError::Invalid("canonical path extension is not allowed")`.
+    2. **Delete the 4 deferred command bodies** (`list_directory`, `file_exists`, `ensure_directory`, `move_file` at lines ~46-89) AND the legacy `validate_path` helper (lines ~91-95). They're not registered in `lib.rs` anymore, but leaving the `#[tauri::command] pub async fn` definitions makes restoring the bypass a 1-line `invoke_handler!` edit. M8 T-125 will re-implement them on top of `canonical_scoped_read_target` / `canonical_write_target` from scratch. The static-text regression test in `tests/ipc/fs.smoke.test.ts:78` should continue to pass (it greps `lib.rs`, not `fs.rs`).
+    3. **SVG allowlist code comment** — add a `// SAFETY:` doc comment next to the `.svg` entry in `read_binary_file`'s extension allowlist explaining why SVG is safe in M7-spike context (only consumed via `<img src="data:image/svg+xml,...">` where browser image sandboxing prevents embedded script execution) AND under what future change it becomes unsafe (any code path that loads SVG via `<object>` / `<iframe>` / `dangerouslySetInnerHTML`).
+  - `src-tauri/src/ipc/pdf.rs` — **symlink-follow check in `cleanup_export_temp_dir_at`** (line ~61-66): before `fs::remove_dir_all(root)`, call `fs::symlink_metadata(root)`; if `metadata.file_type().is_symlink()`, log a warning and skip the delete (returning `Ok(())` so app boot continues). Prevents the `ln -s "$HOME" /tmp/docsystem-export` pre-launch attack from wiping the home directory.
+  - `src/export/render-static-html.ts` — **SVG safety comment** mirroring the Rust side: add a one-line comment near `image/svg+xml` in `mimeTypeForPath` noting "SVG is safe here ONLY because consumed via `<img src=data:>`. See fs.rs allowlist comment for the full constraint."
+  - `tests/ipc/fs-binary.smoke.test.ts` (extension OR new) — three new cases:
+    1. Symlink rename pivot: create a symlink `safe.png → /etc/passwd-style-target.yaml`, invoke `read_binary_file` → expect `Invalid` (post-canonicalize extension rejected).
+    2. Confirm the 4 deleted command names no longer appear as `pub async fn` in `fs.rs` (file-text grep).
+    3. Confirm the legacy `validate_path` helper is gone.
+  - `tests/ipc/pdf.smoke.test.ts` (extension) — symlink cleanup test: pre-populate `/tmp/docsystem-export` as a symlink to a temp scratch dir, invoke the cleanup, confirm the symlink target is NOT recursively deleted (only the symlink itself, or it's preserved entirely).
+- **Acceptance:** the symlink pivot is now rejected; the 4 dead command bodies are gone; restoring the bypass requires writing the commands AND registering them (two-step, not one-step); cleanup-on-launch is symlink-safe.
+- **est.** 1.5h
+- **Note: batches the MEDIUM (symlink extension recheck), LOW (SVG constraint comment, dead-code cleanup), and pre-existing INFO (cleanup symlink race) findings into one cohesive security-hardening task. Each is small individually; bundling reduces ceremony.**
+
+### T-123k [ ] · Close the test gaps surfaced by M7.5 review
+- **Depends-on:** T-123g
+- **Reads:** `tests/ui/views/DocumentView.test.tsx` (esp. the existing palette-click "real editor stays mounted" test at line ~228), `tests/export/render-static-html.test.ts`, `tests/security/shell-config.test.ts` (from T-123h, if landed first), `src-tauri/src/ipc/fs.rs` (the drift-detector test ~line 468-501), `tests/integration/m7-spike-happy-path.test.ts` (the schema parse assertion from T-123g), `tests/ipc/fs.smoke.test.ts` (the tautological "command not registered" mock test at line ~86-110)
+- **Outputs:**
+  - `tests/ui/views/DocumentView.test.tsx` — add a real-`userEvent.type` test (separate from the palette-click test): render DocumentView with the real `<Editor>`, capture the editor's DOM node ref via `getByLabelText("Document editor")`, then `await userEvent.type(editorEl, "hello world")`. Assert (a) the editor's text content includes `"hello world"`, (b) the captured DOM node === post-typing `getByLabelText` result (Object.is identity preserved), (c) `document.activeElement === editorEl` after typing (focus retained). Closes the code-reviewer P1-1 finding ("test exercises palette click, not literal typing").
+  - `tests/export/render-static-html.test.ts` — three new tests:
+    1. **5 MB per-image cap fallback** — mock `read_binary_file` to reject with `IpcError::Invalid("file exceeds 5MB export limit")`, render export, assert the output contains a placeholder data URI (`data:image/svg+xml,...` with "Image too large to export" text) and NOT a JPEG/PNG data URI.
+    2. **50 MB total payload cap fallback** — mock multiple images that individually pass the per-file cap but exceed 50 MB cumulatively. Assert later images get the placeholder.
+    3. **SVG XSS sanitization in export** — mock `read_binary_file` to return SVG bytes containing `<script>alert(1)</script>` AND `<g onload="alert(1)">`. Assert the data URI in the output HTML, when decoded, does NOT contain executable script. (If T-123j chose option (a) "reject .svg from allowlist", this test asserts the placeholder shows instead.)
+  - `src-tauri/src/ipc/fs.rs` `#[cfg(test)] mod tests` — extend `asset_scope_roots_match_tauri_conf` to catch ADDITIONS to `tauri.conf.json`: build an `EXPECTED_SET` from the conf, then assert `roots.iter().all(|r| EXPECTED_SET.contains(r))`. Adding `$HOME/Secrets/**` to the conf without updating expectations should fail this test (rather than passing silently because length still matches).
+  - `tests/integration/m7-spike-happy-path.test.ts` — add a **negative** schema test alongside T-123g's positive one: tamper the captured `savedYaml` (e.g., delete a required `id` field from the inserted callout) and assert `DocModelSchema.parse` THROWS. Proves the assertion is wired up, not silently swallowed.
+  - `tests/ipc/fs.smoke.test.ts` — delete the tautological "surfaces deferred filesystem commands as not registered" mock test at lines ~86-110 (the mock asserts that the mock works). Keep the static-string check at lines ~78-84 (which IS the real guard). Add a one-line comment explaining why the deletion happened: `// the runtime mock check was tautological — removed; the static-string grep at line 78 is the real drift detector.`
+- **Acceptance:** the 6 test additions / 1 deletion all land; the regression coverage now genuinely catches the gaps the M7.5 review identified.
+- **est.** 2h
+- **Note: batches the test-engineer review findings into one cohesive task. Individually each is 5-20 minutes; bundling captures the rationale (closing review-identified gaps) in one commit.**
+
+### T-123l [ ] · Perf + cleanup polish (LOW findings batch)
+- **Depends-on:** T-123g
+- **Reads:** `src-tauri/src/ipc/fs.rs` (esp. `read_binary_file` return type), `src/export/render-static-html.ts` (esp. `bytesToBase64` function), `tests/integration/m7-spike-harness.ts` (the `documentWatchdogBudgetMs: 10_000` setting at line ~94), `tests/integration/m7-spike-error-paths.test.ts` (the `getByText("write failed")` replacement at line ~46 from `ce29a4c`)
+- **Outputs:**
+  - `src-tauri/src/ipc/fs.rs` — change `read_binary_file` return type from `IpcResult<Vec<u8>>` to `IpcResult<String>` where the string is base64-encoded (use `base64::engine::general_purpose::STANDARD.encode(&bytes)`). Add `base64` to `src-tauri/Cargo.toml` if not already present. This drops the JSON wire format from a number-array (~3.4× amplification) to a base64 string (~1.33× amplification). For a 50 MB export, IPC payload drops from ~170 MB to ~67 MB.
+  - `src/export/render-static-html.ts` — remove `bytesToBase64` (no longer needed since the Rust side base64-encodes). The data URI construction simplifies to `` `data:${mime};base64,${response}` ``.
+  - `src-tauri/Cargo.lock` — regenerated.
+  - `tests/integration/m7-spike-harness.ts` — replace `documentWatchdogBudgetMs: 10_000` with `documentWatchdogBudgetMs: 1_000` PLUS a code comment: `// jsdom + full DocumentRenderer + ECharts/Mermaid SSR is ~10× slower than production browser; production budget is 50ms. 1s is the lowest value that doesn't flake CI.` If 1s flakes CI on initial run, bump to 2s with the same justification — but document the chosen value either way.
+  - `tests/integration/m7-spike-error-paths.test.ts` — at the line of the `getByText("write failed")` query (the `ce29a4c` change), add a comment explaining WHY `getByText` is used instead of `getByRole("alert")`: `// Multiple alert nodes coexist when watchdog placeholder + App-level error are both visible; getByText scopes the query to the specific message.`
+  - `docs/TAURI_IPC.md` §1 — update the `read_binary_file` signature to reflect the new return type (`-> base64 string` not `-> number[]`).
+- **Acceptance:** image-bearing exports use ~3× less IPC bandwidth; the watchdog budget is honest (small enough to catch real perf regressions, large enough not to flake); the two supporting commits' rationale is captured in code comments instead of folklore.
+- **est.** 1h
+- **Note: batches the LOW perf + cleanup findings. Not security-critical but quality-of-life improvements that prevent future "why is this so slow / so generous" puzzles.**
+
+**M7-spike acceptance gate (REVISED 2026-05-26 v2):** T-123h passing (T-123a..T-123h all `[x]`). The previous "T-123g passing" gate (revised v1) missed a runtime BLOCKER in the Tauri shell plugin config that only surfaced in a fifth-round review (drift entry `[drift-2026-05-26f]`). T-123h closes that. T-123i (HIGH security carry-over) + T-123j / T-123k / T-123l (MEDIUM/LOW + test gaps + perf polish) are required BEFORE M8 T-124 fires so M8 doesn't inherit unfixed M7 debt.
 
 ---
 
@@ -1095,7 +1207,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 Second integration milestone. Fires AFTER M7-spike ships and consultant testing of the editor surface has had a chance to surface any UX rework. Adds router infrastructure, first-launch folder picker, library card grid (with empty-state "Use Sample" button), 4 standard document templates with a "Create from Template" surface, generated-blocks runtime loading, and pipeline end-to-end validation.
 
 ### T-124 [ ] · Update UI_APP_SHELL.md for M8 architecture
-- **Depends-on:** T-123g (M7-spike fully fixed per the 2026-05-26 multi-axis review + validated by consultant testing — see revised M7 acceptance gate above)
+- **Depends-on:** T-123l (M7-spike fully fixed per the 2026-05-26 multi-axis review + the 5th-round runtime BLOCKER + all P1/MEDIUM/LOW follow-ups — see "M7-spike acceptance gate (REVISED 2026-05-26 v2)" above)
 - **Reads:** `docs/UI_APP_SHELL.md` (M7-spike state from T-115), `docs/UI_LIBRARY.md`, `docs/SETUP_INSTALL_FLOW.md`, `src/setup/install.ts` (esp. line 41: `InstallAppConfigSchema`), `docs/TYPES.md`
 - **Outputs:** `docs/UI_APP_SHELL.md` — appended M8 section describing:
   - the router (`src/ui/router/Routes.tsx`) — route types for welcome, folder-picker, library, document; route-intent contract
@@ -1263,12 +1375,12 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 | 6 | M6 (deck) | T-103 — T-107 | 38 | v1.1 |
 | 6.5 | Scaffold hardening | T-113 — T-114 | 4 | post-M6 audit fixes |
 | 7 | M7 (document editor spike) | T-115 — T-123 (incl. T-120b) | ~33 | minimum runnable app |
-| 7.5 | M7 review fixes (5 BLOCKERs + harness rebuild) | T-123a — T-123g | ~9.5 | review verdict 2026-05-26 |
-| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after T-123g (revised M7 gate) + consultant testing |
+| 7.5 | M7 review fixes (5 BLOCKERs + 5-round review backlog) | T-123a — T-123l | ~15.5 | review verdict 2026-05-26 + 5th-round shell-config BLOCKER |
+| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after T-123l (revised M7 gate v2) + consultant testing |
 | 9 | Deployment | T-108 — T-112 | 21 | renumbered from Phase 7 |
-| | | | **~545h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
+| | | | **~551h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
 
-**Realistic v1 (excluding M6 deck path, including M7-spike + M7.5 fixes + M8):** ~506 hours ≈ 12–13 weeks full-time. The ~83h of M7-spike + M7.5 + M8 + scaffold hardening is the integration + review-fix work that turns the disconnected M1–M5 modules into a runnable consultancy app whose first user-visible surface actually works. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
+**Realistic v1 (excluding M6 deck path, including M7-spike + M7.5 fixes + M8):** ~512 hours ≈ 12–13 weeks full-time. The ~89h of M7-spike + M7.5 + M8 + scaffold hardening is the integration + review-fix work that turns the disconnected M1–M5 modules into a runnable consultancy app whose first user-visible surface actually works. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
 
 These numbers match the architecture memo's §11 estimate of "6–12 months commitment" — the lower bound is achievable with a strong developer focused full-time; the upper bound includes M6 and a real-world overhead (review, debug, refactor, meetings).
 
