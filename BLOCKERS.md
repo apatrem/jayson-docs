@@ -23,8 +23,6 @@ Example timeline:
 
 This ensures external blockers don't silently rot for days.
 
----
-
 ## Drift log — informational entries (do NOT trigger halt rules)
 
 This section captures protocol drift detected by post-hoc audit — cases
@@ -32,6 +30,15 @@ where the loop completed work but elided a spec step. Entries here are
 historical record only; they have no marker and are ignored by A-rule /
 C-rule / `[!]` auto-promotion logic. The corresponding spec / hook fix
 that prevents recurrence is linked in each entry.
+
+### [drift-2026-05-26f] Tauri shell plugin `open` regex was unconfigured
+
+**Detected at:** 2026-05-26T16:45:00Z (fifth-round M7.5 review of the browser handoff path)
+**Tasks affected:** T-118 / T-121 (PDF export browser handoff), fixed by T-123h.
+**What happened:** `src-tauri/capabilities/main-window.json` scoped `shell:allow-open` to `$TEMP/docsystem-export/**`, but `src-tauri/tauri.conf.json` did not configure `plugins.shell.open`. Tauri 2.x validates `open()` twice: the capability ACL decides which renderer windows may call the command, while the shell plugin's own regex decides which paths or URLs are accepted. With no regex, `tauri-plugin-shell-2.3.5/src/scope.rs::OpenScope::open` logs that calls are denied from JavaScript and returns the deliberately impossible validation regex `tauri^`.
+**Impact:** M7's mocked integration path passed because `fileActions.openPath` bypassed the real plugin call. A real Tauri build would write the temp HTML and then fail the browser handoff at runtime.
+**Fix landed:** T-123h adds the `plugins.shell.open` regex, a static config-shape/security test, an integration test that omits the `openPath` mock and exercises `plugin:shell|open`, and docs noting the dual-layer requirement.
+**Review lesson:** Tauri IPC/plugin reviews must verify both the capability JSON and the plugin's own source/docs (`~/.cargo/registry/src/*tauri-plugin-*` plus `node_modules/@tauri-apps/plugin-*/dist-js/*.d.ts`). Stopping at the ACL misses plugin-level gates.
 
 ### [drift-2026-05-22a] Escalation-tier tasks ran on default tier without acknowledgment
 

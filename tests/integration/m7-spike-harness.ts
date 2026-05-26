@@ -44,6 +44,7 @@ export interface M7HarnessOptions {
   readYamlFile?: (path: string) => Promise<string>;
   writeYamlFile?: (path: string, yaml: string) => Promise<void>;
   initialDocument?: { path: string; doc: DocModel };
+  useRealOpenPath?: boolean;
 }
 
 export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
@@ -54,6 +55,9 @@ export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
   const invokeMock = vi.fn((cmd: string) => {
     if (cmd === "read_binary_file") {
       return Promise.resolve([0xff, 0xd8, 0xff]);
+    }
+    if (cmd === "plugin:shell|open") {
+      return Promise.resolve();
     }
     return Promise.reject(new Error(`unexpected invoke ${cmd}`));
   });
@@ -97,7 +101,7 @@ export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
         readYamlFile,
         writeYamlFile,
         exportPdf,
-        openPath,
+        ...(options.useRealOpenPath ? {} : { openPath }),
         sharedFolderPath: "/Users/me/Consultancy-Shared",
       },
     }),

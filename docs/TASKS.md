@@ -1086,7 +1086,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 0.5h
 - **Note: closes the "regex-count vs. parse-validate" gap surfaced by code review + test-engineer review.**
 
-### T-123h [ ] · Configure shell plugin `open` regex + non-mocked smoke test
+### T-123h [x] · Configure shell plugin `open` regex + non-mocked smoke test
 - **Depends-on:** T-123g
 - **Reads:** `src-tauri/tauri.conf.json` (the missing `plugins.shell.open` block), `src-tauri/capabilities/main-window.json` (the capability ACL — necessary but not sufficient), `~/.cargo/registry/src/index.crates.io-*/tauri-plugin-shell-2.*/src/scope.rs` (the `OpenScope::open` validator — the smoking-gun source that proves the regex is required), `node_modules/@tauri-apps/plugin-shell/dist-js/index.d.ts` (line ~267 — JS-side docs that mention the regex), `src/App.tsx` (line ~156 — the `openShellPath` call site), `BLOCKERS.md` (drift-entry format)
 - **Outputs:**

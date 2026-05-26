@@ -44,6 +44,12 @@
     }
   },
 
+  "plugins": {
+    "shell": {
+      "open": "^(?:https?://\\w+|.+[/\\\\]docsystem-export[/\\\\][0-9a-f-]+[/\\\\].+\\.html$)"
+    }
+  },
+
   "bundle": {
     "active": true,
     "targets": "all",

@@ -84,6 +84,27 @@ describe("M7 spike happy path", () => {
     expect(exportedHtml).not.toMatch(/<script\b/iu);
     expect(exportedHtml).toContain('data-block-type="callout"');
   });
+
+  it("falls through to the Tauri shell plugin when no openPath test double is provided", async () => {
+    const harness = renderM7SpikeHarness({ useRealOpenPath: true });
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
+    await waitFor(() => {
+      expect(screen.getByLabelText("Document shell")).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Export PDF" }));
+
+    await waitFor(() => {
+      expect(harness.exportPdf).toHaveBeenCalled();
+    });
+    expect(harness.openPath).not.toHaveBeenCalled();
+    expect(harness.invokeMock).toHaveBeenCalledWith(
+      "plugin:shell|open",
+      { path: harness.getExportedPath(), with: undefined },
+      undefined,
+    );
+  });
 });
 
 function decodedSvgPayloads(html: string): string[] {

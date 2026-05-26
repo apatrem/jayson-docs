@@ -260,6 +260,8 @@ Deletes rows older than `retention_days`. Returns the number deleted. Called on 
 
 ## §5 — PDF export
 
+Browser handoff uses Tauri 2.x's shell plugin, which has two validation layers: `src-tauri/capabilities/main-window.json` grants `shell:allow-open` only for the export temp directory, and `src-tauri/tauri.conf.json` `plugins.shell.open` must also match the handoff path or accepted web URLs. The ACL alone is not sufficient; when `plugins.shell.open` is missing, the plugin rejects renderer calls with its deliberately impossible fallback regex.
+
 ### `export_pdf(input: PdfExportInput) -> ExportHandoff`
 
 The command name is kept as `export_pdf` for historical reasons and to preserve

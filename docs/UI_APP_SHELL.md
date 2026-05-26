@@ -228,6 +228,7 @@ Standard convention for Save / Save As (per grilling Q10):
 - Pre-renders the current doc to self-contained HTML via `renderStaticHtmlForExport(state.doc, brand)` (T-118).
 - `invoke('export_pdf', { html, suggestedName: '<docBasename>.pdf' })` → returns `{ kind: 'browser_handoff', path: '/tmp/.../docsystem-export/.../foo.pdf.html' }`.
 - `invoke('plugin:shell|open', { path: returnedTempPath })` (via `@tauri-apps/plugin-shell`) → opens the temp HTML in the user's default browser.
+- Tauri 2.x's shell plugin requires BOTH the capability ACL (`shell:allow-open` with the temp-dir path scope in `main-window.json`) and a `plugins.shell.open` regex in `tauri.conf.json`. The capability decides which windows may call `open`; the plugin regex decides which paths and URLs are accepted. Configuring only the ACL produces the plugin's "purposefully impossible regex" runtime denial.
 - Toast: "Opened in your browser — use Cmd-P / Ctrl-P to save as PDF."
 
 ### Autosave (inherited from T-82, not re-implemented)
