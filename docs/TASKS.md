@@ -902,14 +902,13 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Reads:** `docs/UI_APP_SHELL.md`, `src-tauri/src/ipc/pdf.rs`, `src/renderer/DocumentRenderer.tsx`, `src/renderer/blocks/Diagram.tsx`, `src/renderer/blocks/Chart.tsx`, `package.json`
 - **Outputs:**
   - `src/export/render-static-html.ts` (NEW) — renderer-safe pure function `renderStaticHtmlForExport(doc, brand): Promise<string>`. Reuses DocumentRenderer via `renderToStaticMarkup`, pre-bakes Mermaid SVGs via `mermaid.render('m-<id>', source)`, pre-bakes ECharts SVGs via `echarts.init(el, null, { renderer: 'svg' })` + `instance.renderToSVGString()`, injects `@page` CSS (A4 portrait), wraps in a `<!doctype html>` shell. Returns a single self-contained HTML string — no external asset refs, no JS.
-  - `src-tauri/src/ipc/pdf.rs` — replace the no-op stub. Accepts `{ html: String, suggestedName: String }`, writes the HTML to `<tmpdir>/docsystem-export/<uuid>/<suggestedName>.html`, returns `{ kind: 'browser_handoff', path: String }`.
+  - `src-tauri/src/ipc/pdf.rs` — replace the no-op stub. Accepts `{ html: String, suggestedName: String }`, writes the HTML to `<tmpdir>/docsystem-export/<uuid>/<sanitized-base-name>.html`, returns `{ kind: 'browser_handoff', path: String }`. Sanitization per T-116 Decision #2 (in order): (1) strip trailing `.pdf` (case-insensitive), so callers passing `"Proposal.pdf"` produce `Proposal.html` not `Proposal.pdf.html`; (2) replace non-`[A-Za-z0-9._ -]` chars with `_`, strip leading dots, clamp to 200 chars; (3) canonicalize the final path and confirm it lives under `<tmpdir>/docsystem-export/`. Also adds the `cleanup_export_temp_dir()` function called from the Tauri `setup` hook to sweep the root dir on launch.
   - `src-tauri/Cargo.toml` — add `uuid = { version = "1", features = ["v4"] }`.
   - `src-tauri/Cargo.lock` — regenerated.
   - `src-tauri/src/lib.rs` — register `tauri_plugin_shell::init()` in the plugin chain.
   - `src-tauri/capabilities/main-window.json` — add `shell:allow-open` permission.
   - `package.json` — add `@tauri-apps/plugin-shell` dep.
   - `package-lock.json` — updated.
-  - `src/ui/menu/ExportPdfMenuItem.tsx` (NEW) — handles the File → Export PDF user action. Invokes export_pdf IPC, then calls `shell.open(path)`, shows a confirmation toast.
   - `src-tauri/src/ipc/pdf.rs `#[cfg(test)] mod tests`` — temp-file happy path; temp dir not writable error path; suggested-name sanitization.
   - `tests/ipc/pdf.smoke.test.ts` — JS-side smoke test invoking export_pdf.
   - `tests/export/render-static-html.test.ts` (NEW) — covers the pre-render function.
@@ -928,11 +927,13 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 
 ### T-120 [ ] · DocumentView (kind = "document") with autosave
 - **Depends-on:** T-117, T-119
-- **Reads:** `src/renderer/DocumentRenderer.tsx`, `src/editor/Editor.tsx`, `brand.example.yaml` (hardcoded brand for the spike per T-116 matrix #1)
+- **Reads:** `src/renderer/DocumentRenderer.tsx`, `src/editor/Editor.tsx`, `brand.example.yaml` (hardcoded brand for the spike per T-116 Decision #1)
 - **Outputs:**
-  - `src/ui/views/DocumentView.tsx` — opens a doc via `read_yaml_file` IPC, renders + edits via DocumentRenderer + Editor (with hardcoded `brand.example.yaml` loaded via Vite raw import), honours the autosave debounce from T-82 (writes via `write_yaml_file` IPC).
+  - `src/brand/defaultBrand.ts` (NEW) — owns the Vite raw import + parse + `BrandTokensSchema` validation. From `src/brand/`, the raw import path is `'../../brand.example.yaml?raw'` (brand → src → repo root). Exports a single `defaultBrand` constant. This module is the ONLY place in the app that imports the YAML asset; DocumentView and `renderStaticHtmlForExport` (T-118) both import the constant from here.
+  - `src/ui/views/DocumentView.tsx` — opens a doc via `read_yaml_file` IPC, renders + edits via DocumentRenderer + Editor (passing `defaultBrand` from `src/brand/defaultBrand.ts`), honours the autosave debounce from T-82 (writes via `write_yaml_file` IPC).
+  - `tests/brand/defaultBrand.test.ts` — asserts the import resolves and the parsed brand passes `BrandTokensSchema`.
   - `tests/ui/views/DocumentView.test.tsx` — covers open + edit + save flow with mocked IPC.
-- **Acceptance:** opening sample-proposal.yaml renders correctly; editing prose triggers a debounced save via IPC; closing + reopening the doc shows the edits.
+- **Acceptance:** opening sample-proposal.yaml renders correctly with `defaultBrand`; editing prose triggers a debounced save via IPC; closing + reopening the doc shows the edits.
 - **est.** 6h
 
 ### T-120b [ ] · Wire BlockPalette into DocumentView (block-insertion UI)
@@ -961,12 +962,12 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 
 ### T-122 [ ] · Top-level error boundary + watchdog wrap
 - **Depends-on:** T-119, T-120
-- **Reads:** `src/block-primitives/RenderWatchdog.tsx` (existing HOC), ADR-0001 (perf budgets)
+- **Reads:** `src/block-primitives/RenderWatchdog.tsx` (existing HOC), ADR-0001 (perf budgets), `docs/UI_APP_SHELL.md` §State model + §Watchdog
 - **Outputs:**
-  - `src/ui/AppErrorBoundary.tsx` — error boundary that wraps DocumentView in `src/App.tsx`.
-  - `src/App.tsx` — mounts AppErrorBoundary around the document area; DocumentView wrapped with `withRenderWatchdog` per ADR-0001.
-  - `tests/ui/AppErrorBoundary.test.tsx` — covers throwing-block-doesn't-crash invariant + watchdog-fires-on-slow-render invariant.
-- **Acceptance:** a deliberately-throwing block does not crash the whole app; watchdog instrumentation reports per-view render time; the perf benchmark harness from T-89c continues to pass.
+  - `src/ui/AppErrorBoundary.tsx` — error boundary that wraps DocumentView in `src/App.tsx`. When an error escapes per-block boundaries, renders a panel with copy "Document failed to render — unsaved edits may be lost. Try reopening the file, or return to the welcome screen." and two buttons: "Try reopen" (re-invokes the open flow on the current `state.path`) and "Back to welcome screen" (the error-only reset transition documented in `UI_APP_SHELL.md` §State model — discards `state.doc` + `state.path`).
+  - `src/App.tsx` — mounts AppErrorBoundary around the document area; DocumentView wrapped with `withRenderWatchdog` per ADR-0001; wires the two button callbacks into the App state hook.
+  - `tests/ui/AppErrorBoundary.test.tsx` — covers (a) throwing-block-doesn't-crash invariant, (b) watchdog-fires-on-slow-render invariant, (c) "Try reopen" callback re-invokes the open flow with the same path, (d) "Back to welcome screen" callback transitions state back to `{ kind: 'welcome' }` (the error-only reset).
+- **Acceptance:** a deliberately-throwing block does not crash the whole app; the error panel surfaces both recovery buttons; watchdog instrumentation reports per-view render time; the perf benchmark harness from T-89c continues to pass.
 - **est.** 3h
 
 ### T-123 [ ] · M7-spike integration test (open → edit + insert block → save → export)

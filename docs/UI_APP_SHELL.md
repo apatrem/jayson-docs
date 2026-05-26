@@ -168,10 +168,15 @@ Transitions:
 welcome ── File → Open (or click "Open Document") ──> document
 document ── File → Open (a different file) ─────────> document (new path)
 document ── (Open dialog cancelled) ────────────────> unchanged
+document ── AppErrorBoundary reset (only on caught
+            top-level error; user clicks "Back to
+            welcome screen" in the error panel) ────> welcome  [recovery only]
 welcome ── (no exit — closing the window quits app)
 ```
 
-There is **no `welcome ← document` transition** in M7-spike. Once a doc is open, the user either opens another doc (replacing the current state) or closes the window. A "close document" action that returns to welcome is deferred — it adds a confirmation-dialog edge case (dirty doc on close) that's not worth the design surface for the spike.
+There is **no user-initiated `welcome ← document` transition** in M7-spike — no File → Close, no "X" on the document title. The only path back to welcome is the **error-only reset**: when `AppErrorBoundary` (T-122) catches a top-level render exception that escapes per-block boundaries, the error panel shows a "Back to welcome screen" button as the recovery escape hatch. This is exceptional, not part of normal use. A user-initiated "close document" action (with the dirty-doc confirmation it would need) is deferred to M8+ where library-then-document navigation needs a non-error close path.
+
+**Implication for T-122:** the error reset transition discards `state.doc` and `state.path` without saving (the document is already in an error state; any unsaved edits live only in the React state hook). T-122's design MUST make this consequence visible: the error panel copy reads "Document failed to render — unsaved edits may be lost. Try reopening the file, or return to the welcome screen." T-122 tests cover the transition.
 
 > **Note (M8 forward-ref):** M8 T-126 introduces `src/ui/router/Routes.tsx` with typed routes `{ kind: 'welcome' | 'folder-picker' | 'library' | 'document' }`. The `document` route in M8 carries `{ openDocs: Array<{ id, path }>, activeIndex }` to leave room for browser-style tabs in M9+. M7-spike's single React state hook is a deliberate simplification that the M8 router refactor will absorb without rearchitecting the underlying DocumentView component.
 
@@ -235,6 +240,8 @@ Standard convention for Save / Save As (per grilling Q10):
 
 ## Browser PDF handoff (T-118)
 
+**Task ownership.** T-118 ships the "engine" only — `renderStaticHtmlForExport` + the `export_pdf` Rust IPC + the shell-plugin registration + the temp-dir cleanup hook + Cargo/npm dep adds + tests + `TAURI_IPC.md` update. **T-118 produces no UI components.** The File → Export PDF menu item, the `shell.open` invocation, and the "Opened in your browser…" toast all live in `src/ui/menu/FileMenu.tsx` (T-121). This split keeps the IPC + pre-render contract independently testable (T-118's JS smoke test invokes `export_pdf` directly, no menu involved) and avoids duplicating menu items across two tasks.
+
 The M7-spike design for PDF export is a **two-step UX, zero-packaging** choice. Reasons:
 
 1. **Zero added install surface.** Shipping a one-click in-app PDF requires bundling Playwright + a Node sidecar + a Chromium binary — ~120-180 MB per platform, 2-3 days of packaging engineering. That's a v1.1 task (see `docs/TASKS.md` "Future task note — post-M7 / v1.1") and explicitly outside M7-spike scope.
@@ -280,7 +287,18 @@ Suggested-name sanitization: the `suggestedName` parameter is sanitized to `[A-Z
 
 ### Brand source
 
-**Hardcoded `brand.example.yaml`** for M7-spike (resolved by T-116 Decision #1 — see §Architectural decisions). Loaded via Vite raw import (`import brandYaml from '../brand.example.yaml?raw'`) at build time, parsed once on app boot. M8+ may add a brand-picker / brand-folder surface (see `docs/SETUP_INSTALL_FLOW.md` Step 3 for the future contract).
+**Hardcoded `brand.example.yaml`** for M7-spike (resolved by T-116 Decision #1 — see §Architectural decisions). Loaded via a shared module `src/brand/defaultBrand.ts` (T-120 output) that owns the Vite raw import + the one-time parse:
+
+```ts
+// src/brand/defaultBrand.ts
+import brandYaml from '../../brand.example.yaml?raw';  // src/brand → src → repo root
+import { parse } from 'yaml';
+import { BrandTokensSchema, type BrandTokens } from '../schema/brand';
+
+export const defaultBrand: BrandTokens = BrandTokensSchema.parse(parse(brandYaml));
+```
+
+DocumentView (and `renderStaticHtmlForExport`) both import `defaultBrand` from `src/brand/defaultBrand.ts`. This keeps the Vite raw import in exactly one place — readable, testable, and easy for M8/M9 to swap when a user-configurable brand-picker lands. M8+ may add a brand-picker / brand-folder surface (see `docs/SETUP_INSTALL_FLOW.md` Step 3 for the future contract).
 
 ---
 
@@ -289,7 +307,7 @@ Suggested-name sanitization: the `suggestedName` parameter is sanitized to `[A-Z
 Per ADR-0001 (no iframe sandbox; runtime watchdog is the trust boundary) and D-39 (perf budget):
 
 - `DocumentView` is wrapped with `withRenderWatchdog` (existing HOC in `src/block-primitives/RenderWatchdog.tsx`).
-- A new `AppErrorBoundary` (T-122) wraps DocumentView in `src/App.tsx`. A thrown block renders `RenderFailedPlaceholder` for that block; if the error escapes the per-block boundary, AppErrorBoundary catches it and renders a top-level "Document failed to render — error logged. Try reopening or check the file." panel with a button to return to the welcome screen.
+- A new `AppErrorBoundary` (T-122) wraps DocumentView in `src/App.tsx`. A thrown block renders `RenderFailedPlaceholder` for that block; if the error escapes the per-block boundary, AppErrorBoundary catches it and renders a top-level error panel reading "Document failed to render — unsaved edits may be lost. Try reopening the file, or return to the welcome screen." The panel has two buttons: "Try reopen" (re-invokes the open flow on the current `state.path`) and "Back to welcome screen" (the **error-only reset** transition documented in §State model — discards `state.doc` + `state.path` and returns to the welcome state).
 
 The combination of per-block placeholder + per-DocumentView error boundary means a single bad block never crashes the app, and a catastrophic doc-level failure surfaces gracefully.
 
@@ -309,8 +327,9 @@ The combination of per-block placeholder + per-DocumentView error boundary means
 - **Why (a):** the spike's purpose is to validate the editor surface end-to-end. Adding a brand-picker doubles the install surface (a second file dialog, brand-validation error states, brand-config persistence) for zero learning about the editor. `brand.example.yaml` is already maintained as the canonical reference brand for tests and demos; reusing it costs nothing.
 - **Why not (b):** brand-folder selection is a real consultancy concern (each firm has their own brand book), but the right place to surface it is the M8 install wizard or M9 settings panel — where multi-field config (folder + identity + LLM keys) already needs UI. Folding brand-picker into M7-spike would force half of M8's settings UI in early.
 - **Implementation contract for T-120:**
-  - DocumentView loads brand from `brand.example.yaml` (synchronous, via Vite raw import) once at module top-level — not per-render.
-  - The loaded `BrandTokens` value is passed to `<DocumentRenderer brand={brand}>` and to `renderStaticHtmlForExport(doc, brand)` (T-118).
+  - T-120 adds `src/brand/defaultBrand.ts` — a tiny module that performs `import brandYaml from '../../brand.example.yaml?raw'` (relative path from `src/brand/` up to repo root), parses with `yaml.parse`, validates against `BrandTokensSchema`, and exports a single `defaultBrand` constant. Module-level evaluation runs once at load time.
+  - DocumentView imports `defaultBrand` from `src/brand/defaultBrand.ts` and passes it to `<DocumentRenderer brand={defaultBrand}>`. `renderStaticHtmlForExport` (T-118) imports the same constant when called.
+  - The brand import lives in exactly one file. DocumentView does NOT do the Vite raw import directly — that would put a relative path (`../../../brand.example.yaml?raw`) in `src/ui/views/DocumentView.tsx`, which is both error-prone and harder to mock in tests.
   - No brand-related UI in M7-spike: no menu items, no settings, no toasts.
 - **M8 forward-reference:** T-127's folder-picker stays minimal (single dialog, just `paths.cloudSyncRoot`); brand-folder selection lands later — M9 or M9+ when AI cost attribution and identity entry also need surfacing.
 - **Consumer tasks:** T-120 (DocumentView mount), T-118 (`renderStaticHtmlForExport` signature).
@@ -326,10 +345,14 @@ The combination of per-block placeholder + per-DocumentView error boundary means
 - **Why (ii) — cleanup on next launch:** on-quit cleanup (i) requires an `app.on_window_event(WindowEvent::CloseRequested ...)` hook that runs reliably across macOS (Cmd-Q), Windows (X button), Linux (kill signals), AND crashes. On-launch cleanup (ii) is a single function called from `main()` before any export happens — works in 100% of scenarios including crash recovery. (iii) "never" is technically defensible (OS reaps temp eventually) but a consultant exporting 5 docs/day for a month would leave 150 abandoned ~2 MB HTML files in their temp dir — visible to `du` audits and "what's filling my disk?" investigations.
 - **Concrete contract for T-118:**
   - **Root path:** `<tmpdir>/docsystem-export/` where `<tmpdir> = std::env::temp_dir()`.
-  - **Per-export path:** `<tmpdir>/docsystem-export/<uuid-v4>/<sanitized-suggested-name>.html`. The UUID subfolder isolates concurrent exports and lets the next-launch sweep be a simple `remove_dir_all`.
-  - **Sanitization:** `suggestedName` is sanitized to `[A-Za-z0-9._ -]+` (other chars replaced with `_`); leading dots stripped; max length 200 chars (path-length safety on Windows); the final concatenated path is `Path::canonicalize`-checked to confirm it lives under `<tmpdir>/docsystem-export/` (defence-in-depth against path traversal even after sanitization).
+  - **Per-export path:** `<tmpdir>/docsystem-export/<uuid-v4>/<sanitized-base-name>.html`. The UUID subfolder isolates concurrent exports and lets the next-launch sweep be a simple `remove_dir_all`.
+  - **Sanitization:** the steps applied to `suggestedName` (in order):
+    1. **Strip a trailing `.pdf` (case-insensitive)** if present. The renderer-side FileMenu (T-121) passes a name like `"Proposal.pdf"` for consistency with the user's "Save as PDF" mental model, but the temp file is HTML — we don't want `Proposal.pdf.html` cluttering the temp dir. So the contract is: callers MAY include `.pdf`; Rust strips it before appending `.html`.
+    2. Sanitize the remaining base name to `[A-Za-z0-9._ -]+` (other characters replaced with `_`); strip leading dots; clamp to 200 chars (Windows path-length safety).
+    3. The final concatenated path is `Path::canonicalize`-checked to confirm it lives under `<tmpdir>/docsystem-export/` (defence-in-depth against path traversal even after sanitization).
   - **Cleanup function:** `cleanup_export_temp_dir()` called once from `lib.rs` `setup` hook (Tauri's startup phase, before any window opens). Implementation: `let root = env::temp_dir().join("docsystem-export"); if root.exists() { let _ = fs::remove_dir_all(&root); }`. Errors are logged (via `log::warn!`) but never propagate — the export still works on a fresh `<uuid>` subfolder created on demand.
   - **Per-export setup:** `export_pdf` creates `<tmpdir>/docsystem-export/<new-uuid>/` lazily via `fs::create_dir_all` before writing.
+  - **Known limitation (accept for M7-spike, revisit in M9+):** because cleanup wipes the entire `docsystem-export/` tree on launch, a previously-exported temp HTML disappears the next time the app starts — even if the user still has the export tab open in their browser and tries to reload it. Acceptable for the spike (consultants are guided to `Cmd-P` immediately after the tab opens, before reloading); M9+ may switch to TTL-based cleanup (sweep only entries older than 24h, or sweep individual `<uuid>` dirs on a per-export quit hook) once consultant testing surfaces the tab-reload friction in real workflows.
 - **Return contract:** `export_pdf(html, suggestedName) -> Result<ExportHandoff, IpcError>` where `ExportHandoff = { kind: 'browser_handoff', path: String }`. The `path` is what the renderer passes to `shell.open`.
 - **Why not write the user-facing PDF directly to the export dir:** the spike doesn't produce a PDF — the user does (via browser Cmd-P). The temp HTML is intermediate; once the browser opens it, the consultant saves the PDF wherever they want. We never own the final artefact.
 - **Consumer tasks:** T-118 (`export_pdf` Rust impl + the new `setup`-phase cleanup hook), T-121 (FileMenu invokes the IPC + `shell.open`).
@@ -389,22 +412,30 @@ No new accessibility commitments beyond existing-app surface conventions.
 ```
 src/
   App.tsx                                 # rewritten (T-119) — single-state shell
+  brand/
+    defaultBrand.ts                       # new (T-120) — owns the Vite raw import
+                                          #   of brand.example.yaml (only place the
+                                          #   asset path lives in source); parses
+                                          #   + validates once at module load
   ui/
-    AppErrorBoundary.tsx                  # new (T-122)
+    AppErrorBoundary.tsx                  # new (T-122) — panel w/ "Try reopen"
+                                          #   + "Back to welcome" (error-reset)
     menu/
       MenuBar.tsx                         # new (T-121)
-      FileMenu.tsx                        # new (T-121)
+      FileMenu.tsx                        # new (T-121) — Open/Save/Save As/Export PDF
     views/
       DocumentView.tsx                    # new (T-120 + T-120b)
       (WelcomeScreen optional inline)
   export/
-    render-static-html.ts                 # new (T-118)
+    render-static-html.ts                 # new (T-118) — engine, no UI
 src-tauri/
   src/
     ipc/
       fs.rs                               # hardened read+write only (T-117)
       pdf.rs                              # body replaced with browser-handoff (T-118)
-    lib.rs                                # register tauri_plugin_shell::init() (T-118)
+    lib.rs                                # register tauri_plugin_shell::init() +
+                                          #   call cleanup_export_temp_dir() from
+                                          #   setup hook (T-118)
   capabilities/
     main-window.json                      # add shell:allow-open (T-118)
   Cargo.toml                              # add uuid dep (T-118)
@@ -468,4 +499,5 @@ The M7-spike acceptance gate (per BUILD_BRIEF.md §3 M7) is equivalent to T-123 
 
 - 2026-05-26 — T-115: initial spec.
 - 2026-05-26 — T-116: rewrote the "Architectural decisions" section as CLOSED. Decision #1: brand = hardcoded `brand.example.yaml` (Vite raw import). Decision #2: temp HTML in `std::env::temp_dir()/docsystem-export/<uuid>/` + cleanup-on-next-launch via Tauri `setup` hook. T-117..T-123 unblocked.
+- 2026-05-26 — M7 spec review fixes (non-task amendment commit): (a) brand import now lives in `src/brand/defaultBrand.ts` instead of being raw-imported from inside DocumentView (the original `'../brand.example.yaml?raw'` path was wrong for `src/ui/views/`); T-120 outputs updated. (b) T-118 explicitly produces no UI — `ExportPdfMenuItem.tsx` removed from T-118 outputs; T-121's `FileMenu.tsx` owns ALL menu UI for Export PDF. (c) Added the error-only `document → welcome` reset transition (button on AppErrorBoundary panel; not a user-initiated close); T-122 outputs and acceptance updated. (d) Documented the known limitation that cleanup-on-launch invalidates previously-opened browser tabs (acceptable for spike; M9+ may revisit). (e) Rust strips a trailing `.pdf` from `suggestedName` before appending `.html`, so `Proposal.pdf` → `Proposal.html` not `Proposal.pdf.html`.
 - M8 (T-124, future): appends an M8 section describing the router refactor, the folder-picker routing, the partial-config schema decision, and the multi-doc-ready route shape. M8 builds on this M7-spike spec rather than rewriting it.
