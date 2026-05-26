@@ -11,11 +11,12 @@ import { imageMaxWidthPercent } from "../../schema/blocks/image";
 export interface ImageProps {
   block: ImageBlock;
   assetContext: AssetContext;
+  dataUri?: string | undefined;
 }
 
-export const Image: FC<ImageProps> = ({ block, assetContext }) => {
+export const Image: FC<ImageProps> = ({ block, assetContext, dataUri }) => {
   const brand = useBrandTokens();
-  const resolvedSrc = resolveAssetPath(assetContext, block.src);
+  const resolvedSrc = dataUri ?? resolveAssetPath(assetContext, block.src);
   const borderColor = resolveBrandToken(brand, "colors.semantic.border");
 
   const figureStyle: CSSProperties = {

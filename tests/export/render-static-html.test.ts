@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderStaticHtmlForExport } from "../../src/export/render-static-html";
 import { BrandTokensSchema, type BrandTokens } from "../../src/schema/brand";
 import type { DocModel } from "../../src/schema/docmodel";
@@ -62,6 +62,11 @@ const doc: Extract<DocModel, { kind: "document" }> = {
 };
 
 describe("renderStaticHtmlForExport", () => {
+  afterEach(() => {
+    Reflect.deleteProperty(window, "__TAURI_INTERNALS__");
+    vi.restoreAllMocks();
+  });
+
   it("returns a print-ready self-contained HTML shell without script tags", async () => {
     const html = await renderStaticHtmlForExport(doc, loadBrand());
 
@@ -70,5 +75,50 @@ describe("renderStaticHtmlForExport", () => {
     expect(html).toContain('data-doc-kind="document"');
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(html).not.toMatch(/<script\b/i);
+  });
+
+  it("inlines image assets as data URIs", async () => {
+    const imageDoc: Extract<DocModel, { kind: "document" }> = {
+      ...doc,
+      sections: [
+        {
+          ...doc.sections[0]!,
+          blocks: [
+            ...doc.sections[0]!.blocks,
+            {
+              id: "image-1",
+              type: "image",
+              src: "assets/photo.jpg",
+              alt: "Team workshop",
+              caption: "Workshop photo",
+              width: "medium",
+              align: "center",
+            },
+          ],
+        },
+      ],
+    };
+    const invokeMock = vi.fn((cmd: string, args: unknown) => {
+      expect(cmd).toBe("read_binary_file");
+      expect(args).toEqual({
+        path: "/Users/me/Documents/proposal/assets/photo.jpg",
+      });
+      return Promise.resolve([0xff, 0xd8, 0xff]);
+    });
+    Object.defineProperty(window, "__TAURI_INTERNALS__", {
+      configurable: true,
+      value: { invoke: invokeMock },
+    });
+
+    const html = await renderStaticHtmlForExport(
+      imageDoc,
+      loadBrand(),
+      "/Users/me/Documents/proposal",
+      "/Users/me/Shared",
+    );
+
+    expect(html).toContain('src="data:image/jpeg;base64,/9j/"');
+    expect(html).not.toContain("/Users/me/Documents/proposal/assets/photo.jpg");
+    expect(html).not.toContain("assets/photo.jpg");
   });
 });

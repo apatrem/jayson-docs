@@ -30,6 +30,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             ipc::fs::read_yaml_file,
             ipc::fs::write_yaml_file,
+            ipc::fs::read_binary_file,
             ipc::keychain::get_secret,
             ipc::keychain::set_secret,
             ipc::keychain::delete_secret,

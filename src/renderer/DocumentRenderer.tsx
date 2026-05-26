@@ -36,6 +36,8 @@ export interface DocumentRendererProps {
   diagramSvgs?: Record<string, string>;
   /** ECharts SVG strings keyed by chart block id (PDF export). */
   chartSvgs?: Record<string, string>;
+  /** Inlined image data URIs keyed by image block id (PDF export). */
+  imageDataUris?: Record<string, string>;
 }
 
 export const DocumentRenderer: FC<DocumentRendererProps> = ({
@@ -45,6 +47,7 @@ export const DocumentRenderer: FC<DocumentRendererProps> = ({
   docFolderPath = "/docs",
   diagramSvgs = {},
   chartSvgs = {},
+  imageDataUris = {},
 }) => {
   const assetContext: AssetContext = {
     sharedFolderPath,
@@ -59,6 +62,7 @@ export const DocumentRenderer: FC<DocumentRendererProps> = ({
         assetContext={assetContext}
         diagramSvgs={diagramSvgs}
         chartSvgs={chartSvgs}
+        imageDataUris={imageDataUris}
       />
     </BrandProvider>
   );
@@ -69,7 +73,8 @@ const DocumentBody: FC<{
   assetContext: AssetContext;
   diagramSvgs: Record<string, string>;
   chartSvgs: Record<string, string>;
-}> = ({ doc, assetContext, diagramSvgs, chartSvgs }) => {
+  imageDataUris: Record<string, string>;
+}> = ({ doc, assetContext, diagramSvgs, chartSvgs, imageDataUris }) => {
   const brand = useBrandTokens();
   const pageStyle: CSSProperties = {
     fontFamily: brand.typography.fonts.body.family,
@@ -90,6 +95,7 @@ const DocumentBody: FC<{
           assetContext={assetContext}
           diagramSvgs={diagramSvgs}
           chartSvgs={chartSvgs}
+          imageDataUris={imageDataUris}
         />
       ))}
     </article>
@@ -101,7 +107,8 @@ const DocumentSection: FC<{
   assetContext: AssetContext;
   diagramSvgs: Record<string, string>;
   chartSvgs: Record<string, string>;
-}> = ({ section, assetContext, diagramSvgs, chartSvgs }) => {
+  imageDataUris: Record<string, string>;
+}> = ({ section, assetContext, diagramSvgs, chartSvgs, imageDataUris }) => {
   const brand = useBrandTokens();
 
   return (
@@ -129,6 +136,7 @@ const DocumentSection: FC<{
           assetContext={assetContext}
           diagramSvgs={diagramSvgs}
           chartSvgs={chartSvgs}
+          imageDataUris={imageDataUris}
         />
       ))}
     </section>
@@ -142,12 +150,14 @@ export function BlockView({
   assetContext,
   diagramSvgs,
   chartSvgs,
+  imageDataUris = {},
   dividerContext = "document",
 }: {
   block: Block;
   assetContext: AssetContext;
   diagramSvgs: Record<string, string>;
   chartSvgs: Record<string, string>;
+  imageDataUris?: Record<string, string>;
   dividerContext?: BlockRenderContext;
 }): ReactNode {
   switch (block.type) {
@@ -164,7 +174,13 @@ export function BlockView({
     case "kpi-cards":
       return <KpiCards block={block} />;
     case "image":
-      return <Image block={block} assetContext={assetContext} />;
+      return (
+        <Image
+          block={block}
+          assetContext={assetContext}
+          dataUri={imageDataUris[block.id]}
+        />
+      );
     case "table":
       return <Table block={block} />;
     case "chart": {

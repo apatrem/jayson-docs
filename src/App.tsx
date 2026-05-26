@@ -147,7 +147,12 @@ export default function App({
     try {
       const renderHtml =
         fileActions.renderHtmlForExport ?? renderStaticHtmlForExport;
-      const html = await renderHtml(state.doc, defaultBrand);
+      const html = await renderHtml(
+        state.doc,
+        defaultBrand,
+        parentPath(state.path),
+        fileActions.sharedFolderPath ?? "/shared",
+      );
       const exportHandoff = await (
         fileActions.exportPdf ??
         ((input) => invoke<ExportHandoff>("export_pdf", input))
@@ -260,6 +265,7 @@ interface FileActionDeps {
   openPath: (path: string) => Promise<void>;
   renderHtmlForExport: typeof renderStaticHtmlForExport;
   libraryRoot: string;
+  sharedFolderPath: string;
 }
 
 async function openDocumentFromDialog(
@@ -318,6 +324,11 @@ async function writeYamlFile(path: string, yaml: string): Promise<void> {
 function basename(path: string): string {
   const index = path.lastIndexOf("/");
   return index >= 0 ? path.slice(index + 1) : path;
+}
+
+function parentPath(path: string): string {
+  const index = path.lastIndexOf("/");
+  return index <= 0 ? "/" : path.slice(0, index);
 }
 
 const styles = {

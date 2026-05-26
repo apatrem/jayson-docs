@@ -1045,7 +1045,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1.5h
 - **Note: closes the meta-finding that the M7 harness structurally masked B-2 (multi-section) and B-5 (image inlining). After this task, regressions in either area surface immediately.**
 
-### T-123e [ ] · Inline image assets as data: URIs in export HTML (with new binary-read IPC)
+### T-123e [x] · Inline image assets as data: URIs in export HTML (with new binary-read IPC)
 - **Depends-on:** T-123c
 - **Reads:** `src/export/render-static-html.ts` (esp. line 54 — DocumentRenderer call without docFolderPath), `src/renderer/DocumentRenderer.tsx` (default `docFolderPath = "/docs"`), `src/renderer/blocks/Image.tsx` (line 54: direct `<img src={resolvedSrc}>`), `src/block-primitives/index.tsx` (asset resolver), `src-tauri/src/ipc/fs.rs` (the T-117 canonical helpers — note that `canonical_read_target` currently delegates to `validate_yaml_target_path` which enforces `.yaml`/`.yml`-only, so it CANNOT be reused for binary files; this task generalizes the helper), `docs/TAURI_IPC.md`
 - **Outputs:**

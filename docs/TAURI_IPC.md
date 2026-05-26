@@ -11,7 +11,7 @@
 ## Design principles
 
 1. **Every privileged operation is a command.** Filesystem reads, keychain access, PDF export, SQLite writes — all go through `invoke(...)`. The frontend never imports `node:fs`, `node:path`, or anything that bypasses the boundary.
-2. **Commands accept and return JSON-serializable types only.** No raw `Vec<u8>` for file contents — base64-encode bytes if you need them; for text files, strings.
+2. **Commands accept and return JSON-serializable types only.** Text files return strings. Binary asset reads may return `Vec<u8>` when the caller immediately converts bytes into self-contained export HTML; no raw filesystem handles ever cross the boundary.
 3. **Errors are typed.** Each command returns `Result<T, IpcError>` where `IpcError` is a tagged-union enum (NotFound, PermissionDenied, Invalid, etc.). The frontend gets a discriminated TypeScript error and can dispatch UI per case.
 4. **Side effects are explicit.** Commands that mutate state name the resource (`write_yaml_file`, `set_secret`, `insert_cost_row`). Commands that read are pure verbs (`read_yaml_file`, `get_summary`).
 5. **The CSP and `assetProtocol.scope` in `tauri.conf.json` are part of the contract.** A command accepting a path must validate that the path is within an allowed scope; rejecting paths outside scope at the Rust layer.
@@ -93,6 +93,16 @@ export async function readYamlFile(path: string): Promise<string> {
 ### `write_yaml_file(path: string, content: string) -> void`
 
 Writes UTF-8 text atomically (write-to-temp + rename). Rejects paths outside scope.
+
+### `read_binary_file(path: string) -> number[]`
+
+Reads an image asset for PDF export inlining. Registered in M7.5 T-123e.
+
+**Behavior:**
+- Path must be absolute and within the same scoped roots as `read_yaml_file`.
+- Path must end with `.jpg`, `.jpeg`, `.png`, `.svg`, or `.webp`.
+- File size must be at most 5 MB.
+- Returns bytes as a JSON array so the frontend can encode `data:image/{mime};base64,...` in `renderStaticHtmlForExport`.
 
 ### `list_directory(path: string) -> DirEntry[]`
 

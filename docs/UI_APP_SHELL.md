@@ -253,14 +253,17 @@ The M7-spike design for PDF export is a **two-step UX, zero-packaging** choice. 
 ```ts
 export async function renderStaticHtmlForExport(
   doc: DocModel,
-  brand: BrandTokens
+  brand: BrandTokens,
+  docFolderPath: string,
+  sharedFolderPath: string
 ): Promise<string>;
 ```
 
 1. Resolve all `mermaid` blocks → call `mermaid.render(id, src)` → get SVG string → replace block content with SVG.
 2. Resolve all `echarts` blocks → `echarts.init(offscreenEl, null, { renderer: 'svg' }).renderToSVGString()` → SVG string.
-3. Render the doc tree via `renderToStaticMarkup(<DocumentRenderer doc={doc} brand={brand} />)`.
-4. Wrap the rendered HTML in:
+3. Resolve all `image` blocks via the existing brand-token asset resolver, then inline them as `data:` URIs using the scoped `read_binary_file` IPC. Per-image cap: 5 MB. Total image payload cap: 50 MB. Over-cap images fall back to an inline "Image too large to export" SVG placeholder.
+4. Render the doc tree via `renderToStaticMarkup(<DocumentRenderer doc={doc} brand={brand} imageDataUris={...} />)`.
+5. Wrap the rendered HTML in:
    ```html
    <!doctype html>
    <html>
@@ -275,7 +278,7 @@ export async function renderStaticHtmlForExport(
      <body>{rendered}</body>
    </html>
    ```
-5. Return the full HTML string. **Zero external asset refs** (all images inlined as `data:` URLs from the existing brand-token resolver), **zero `<script>` tags** (renderer is purely SSR for the export path).
+6. Return the full HTML string. **Zero external asset refs** (all images inlined as `data:` URLs from the existing brand-token resolver), **zero `<script>` tags** (renderer is purely SSR for the export path).
 
 ### Rust side (`src-tauri/src/ipc/pdf.rs`, T-118)
 

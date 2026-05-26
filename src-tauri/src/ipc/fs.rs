@@ -8,6 +8,8 @@ use super::types::{IpcError, IpcResult};
 use serde::Serialize;
 use tauri::Manager;
 
+const MAX_BINARY_FILE_BYTES: u64 = 5_242_880;
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DirEntry {
@@ -32,6 +34,12 @@ pub async fn write_yaml_file(
 ) -> IpcResult<()> {
     let roots = asset_scope_roots(&app);
     write_yaml_file_to_path(&path, &content, &roots)
+}
+
+#[tauri::command]
+pub async fn read_binary_file(app: tauri::AppHandle, path: String) -> IpcResult<Vec<u8>> {
+    let roots = asset_scope_roots(&app);
+    read_binary_file_from_path(&path, &roots)
 }
 
 #[tauri::command]
@@ -104,6 +112,18 @@ fn read_yaml_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<
     fs::read_to_string(path).map_err(|e| IpcError::Io(e.to_string()))
 }
 
+fn read_binary_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<Vec<u8>> {
+    let path =
+        canonical_scoped_read_target(path, allowed_roots, &["jpg", "jpeg", "png", "svg", "webp"])?;
+    let metadata = fs::metadata(&path).map_err(|e| IpcError::Io(e.to_string()))?;
+    if metadata.len() > MAX_BINARY_FILE_BYTES {
+        return Err(IpcError::Invalid(
+            "file exceeds 5MB export limit".to_string(),
+        ));
+    }
+    fs::read(path).map_err(|e| IpcError::Io(e.to_string()))
+}
+
 fn write_yaml_file_to_path(path: &str, content: &str, allowed_roots: &[PathBuf]) -> IpcResult<()> {
     let path = canonical_write_target(path, allowed_roots)?;
     let parent = path
@@ -143,7 +163,20 @@ fn write_yaml_file_to_path(path: &str, content: &str, allowed_roots: &[PathBuf])
 }
 
 fn canonical_read_target(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<PathBuf> {
-    let raw_path = validate_yaml_target_path(path)?;
+    canonical_scoped_read_target(path, allowed_roots, &["yaml", "yml"]).map_err(|err| match err {
+        IpcError::Invalid(message) if message == "path extension is not allowed" => {
+            IpcError::Invalid("path must end with .yaml or .yml".to_string())
+        }
+        other => other,
+    })
+}
+
+fn canonical_scoped_read_target(
+    path: &str,
+    allowed_roots: &[PathBuf],
+    allowed_extensions: &[&str],
+) -> IpcResult<PathBuf> {
+    let raw_path = validate_scoped_path(path, allowed_extensions)?;
     let canonical_path = raw_path
         .canonicalize()
         .map_err(|e| map_path_error(e, path.to_string()))?;
@@ -168,6 +201,15 @@ fn canonical_write_target(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<Pa
 }
 
 fn validate_yaml_target_path(path: &str) -> IpcResult<PathBuf> {
+    validate_scoped_path(path, &["yaml", "yml"]).map_err(|err| match err {
+        IpcError::Invalid(message) if message == "path extension is not allowed" => {
+            IpcError::Invalid("path must end with .yaml or .yml".to_string())
+        }
+        other => other,
+    })
+}
+
+fn validate_scoped_path(path: &str, allowed_extensions: &[&str]) -> IpcResult<PathBuf> {
     let path = PathBuf::from(path);
     if !path.is_absolute() {
         return Err(IpcError::Invalid("path must be absolute".to_string()));
@@ -178,18 +220,21 @@ fn validate_yaml_target_path(path: &str) -> IpcResult<PathBuf> {
     {
         return Err(IpcError::Invalid("paths must not contain '..'".to_string()));
     }
-    if !has_yaml_extension(&path) {
+    if !has_allowed_extension(&path, allowed_extensions) {
         return Err(IpcError::Invalid(
-            "path must end with .yaml or .yml".to_string(),
+            "path extension is not allowed".to_string(),
         ));
     }
     Ok(path)
 }
 
-fn has_yaml_extension(path: &Path) -> bool {
+fn has_allowed_extension(path: &Path, allowed_extensions: &[&str]) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
-        .map(|extension| matches!(extension.to_ascii_lowercase().as_str(), "yaml" | "yml"))
+        .map(|extension| {
+            let extension = extension.to_ascii_lowercase();
+            allowed_extensions.iter().any(|allowed| extension == *allowed)
+        })
         .unwrap_or(false)
 }
 
@@ -335,6 +380,73 @@ mod tests {
             .expect_err("parent directory escape should fail");
 
         assert!(matches!(err, IpcError::Invalid(_)));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn reads_binary_inside_allowed_scope() {
+        let root = unique_test_dir("binary-allowed");
+        let path = root.join("image.png");
+        std::fs::write(&path, [0x89, b'P', b'N', b'G']).expect("write fixture");
+
+        let bytes = read_binary_file_from_path(path.to_str().unwrap(), &[root.clone()])
+            .expect("read allowed binary");
+
+        assert_eq!(bytes, vec![0x89, b'P', b'N', b'G']);
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn rejects_oversized_binary_files() {
+        let root = unique_test_dir("binary-oversized");
+        let path = root.join("too-large.jpg");
+        std::fs::write(&path, vec![0_u8; (MAX_BINARY_FILE_BYTES + 1) as usize])
+            .expect("write oversized fixture");
+
+        let err = read_binary_file_from_path(path.to_str().unwrap(), &[root.clone()])
+            .expect_err("oversized binary should fail");
+
+        assert!(matches!(err, IpcError::Invalid(message) if message == "file exceeds 5MB export limit"));
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn rejects_binary_read_outside_allowed_scope() {
+        let root = unique_test_dir("binary-root");
+        let outside = unique_test_dir("binary-outside").join("image.webp");
+        std::fs::write(&outside, [1, 2, 3]).expect("write fixture");
+
+        let err = read_binary_file_from_path(outside.to_str().unwrap(), &[root.clone()])
+            .expect_err("outside binary should fail");
+
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(root);
+        let _ = std::fs::remove_dir_all(outside.parent().unwrap());
+    }
+
+    #[test]
+    fn rejects_wrong_binary_extensions() {
+        let root = unique_test_dir("binary-extension");
+        for name in ["notes.txt", "doc.yaml", "no-extension"] {
+            let path = root.join(name);
+            std::fs::write(&path, [1, 2, 3]).expect("write fixture");
+            let err = read_binary_file_from_path(path.to_str().unwrap(), &[root.clone()])
+                .expect_err("wrong extension should fail");
+            assert!(matches!(err, IpcError::Invalid(_)));
+        }
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn yaml_read_wrapper_still_rejects_non_yaml_paths() {
+        let root = unique_test_dir("yaml-wrapper-extension");
+        let path = root.join("image.png");
+        std::fs::write(&path, [1, 2, 3]).expect("write fixture");
+
+        let err = canonical_read_target(path.to_str().unwrap(), &[root.clone()])
+            .expect_err("YAML wrapper should reject image extensions");
+
+        assert!(matches!(err, IpcError::Invalid(message) if message == "path must end with .yaml or .yml"));
         let _ = std::fs::remove_dir_all(root);
     }
 }
