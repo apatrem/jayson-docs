@@ -329,6 +329,14 @@ include these explicit checks in the prompt:
   found in the fifth review round of M7.5 (drift entry `[drift-2026-05-26f]`)
   precisely because three prior agents only inspected the capability ACL.
   Concrete pattern: `find ~/.cargo/registry/src -path '*tauri-plugin-<name>*/src/*.rs' | xargs grep -A 20 'pub.*fn <command>\|OpenScope\|impl.*Scope'`.
+  **Also verify the plugin's regex/scope is the ENTIRE constraint surface** —
+  confirm the plugin does NOT also do implicit scheme allow-lists, path
+  canonicalization, MIME checks, host validation, or any other gate the
+  configured regex doesn't show. Round-3 audit's `https://user:pass@evil.com`
+  credential-bypass finding surfaced because the audit confirmed
+  `OpenScope::open` does ONLY a single `regex.is_match(path)` call — so the
+  regex IS the entire defense, and credential-bearing URLs would slip past
+  if not explicitly blocked in the pattern (drift `[drift-2026-05-26l]`).
 - **Verify against the actual JS plugin docs in `node_modules/@tauri-apps/plugin-*/dist-js/*.d.ts`.**
   The TypeScript-side signatures and runtime behavior notes (especially the
   `@param` JSDoc on each exported function) often spell out the second-layer
@@ -344,6 +352,16 @@ include these explicit checks in the prompt:
   harness uses the real fixture / real renderer. M7-spike shipped 5 BLOCKERs
   hidden by this exact pattern (see `BLOCKERS.md [drift-2026-05-26c]` and
   related entries).
+  **Extension — CI matrix gaps are also synthetic.** A `#[cfg(<os>)]` or
+  `if (process.platform === '...')` test that has no corresponding OS in the
+  CI matrix is functionally equivalent to a synthetic harness — the test
+  exists but never actually runs. Flag as `not actually run`. Round-3 audit
+  caught this for `windows_rename_failure_restores_original_target` in
+  `src-tauri/src/ipc/fs.rs` — the test was correct, but `ci.yml` was
+  Ubuntu-only, so the Windows path had 0 automated runs until T-123q added
+  a `windows-latest` matrix entry. Concrete sweep:
+  `grep -rE 'cfg\(windows\)|cfg\(macos\)|process\.platform' src-tauri/ src/ tests/ | wc -l`
+  and cross-check against `.github/workflows/*.yml` runner OS list.
 - **Regex/glob/pattern wrapping.** When testing a regex/glob/pattern that a
   plugin or framework will MODIFY before applying (e.g., Tauri's `^...$`
   wrap of `plugins.shell.open` per `tauri-plugin-shell-*/src/lib.rs:155`;
@@ -370,4 +388,18 @@ include these explicit checks in the prompt:
   `src/export/render-static-html.ts` that crashes the export with
   `ReferenceError: Buffer is not defined` whenever an SVG image or the
   oversized-image placeholder fires (drift `[drift-2026-05-26k]`).
+- **Failure-path completeness for cfg-gated atomic operations.** Any
+  swap/rename/transaction with N steps must have tests for: (a) crash
+  between each pair of consecutive steps, (b) pre-existing artifact from
+  a previous crashed run blocking the first step, (c) post-success
+  cleanup failure leaving an orphan. T-123o's initial Windows `.bak` swap
+  had 4 steps but only tested 1 of ~5 failure scenarios; the round-3
+  audit caught the gap (drift `[drift-2026-05-26l]`). When the operation
+  is platform-specific, combine with the synthetic-fixtures convention
+  above — both the failure-path tests AND the CI matrix entry that runs
+  them are required, OR the gap should be tracked as a `[!]` BLOCKERS
+  entry until the matrix is wired. Concrete pattern: list every Rust
+  `fn` returning `IpcResult<T>` that does ≥2 filesystem mutations, count
+  the corresponding test cases per failure window, flag any function
+  with <3 negative-path tests.
 

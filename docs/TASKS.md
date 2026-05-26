@@ -1379,7 +1379,62 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1.5h
 - **Note: NOT GATE-BLOCKING for M8 → T-124. These are defense-in-depth + cosmetic cleanup. The current code is safe today because (a) `remove_dir_all` doesn't follow nested symlinks by default per Rust docs, (b) SVG is embedded as `data:image/svg+xml` via `<img>` where browsers script-disable embedded scripts, (c) the cosmetic items are non-functional. M8 can fire before T-123p lands; T-123p can be picked by the loop in parallel with M8 work, or even after M8 ships.**
 
-**M7-spike acceptance gate (REVISED 2026-05-26 v4):** T-123o passing (T-123a..T-123o all `[x]`). The previous "T-123n passing" gate (v3) missed the Windows data-loss carryover (round-2 audit M-4). T-123o closes that. T-123p is queued but **NOT gate-blocking** — it's a defense-in-depth + cosmetic batch that can land in parallel with M8 or after. L-3 (keychain audit logging) is explicitly deferred to M9 prep since the keychain only goes live then. M8 T-124 fires AFTER T-123o (not T-123p).
+### T-123q [ ] · M7.5 round-3 audit follow-ups (3 MEDIUMs + 3 LOWs batched, NOT gate-blocking)
+- **Depends-on:** T-123l
+- **Reads:** `src-tauri/src/ipc/fs.rs` (Windows `rename_tmp_file` line ~239-262 + the cfg-gated test line ~354-384), `src-tauri/tauri.conf.json` (the URL branch of `plugins.shell.open`), `tests/security/shell-config.test.ts` (positive/negative cases — needs lowercase-drive + trailing-newline + credential URLs added), `src/brand-tokens/BrandProvider.tsx` (line 12 — pre-existing `process.env.NODE_ENV`), `src/export/render-static-html.ts` (`sanitizeSvgForImage` line ~179-183 — only strips `<script>` and `on*=`), `.github/workflows/ci.yml` (currently Ubuntu-only — no Windows runner), `.github/workflows/release.yml` (Windows matrix runs `tauri-action` only, no `cargo test`), `~/.cargo/registry/src/index.crates.io-*/tauri-plugin-shell-*/src/scope.rs` (re-verify per AGENTS.md §Review playbook convention #1), the M7.5 round-3 security audit findings in chat history (M-1/M-2/M-3 + L-1/L-2/L-3 + convention refinement recommendations)
+- **Outputs:**
+  - `src-tauri/src/ipc/fs.rs` (Windows `rename_tmp_file`) — close the 3 recovery edge cases the round-3 audit's M-1 flagged:
+    1. **Pre-existing `.bak` from prior crash** — before step 1 (`fs::rename(target, .bak)`), if `backup_path.exists()`, attempt `fs::remove_file(&backup_path)` and propagate any error with a clear "stale backup blocks save; manual cleanup required" message. Without this, every save after a crashed run errors permanently because Windows `fs::rename` won't overwrite.
+    2. **Post-success cleanup retry** — step 4's `let _ = fs::remove_file(&backup_path)` swallows OneDrive/antivirus transient locks. Replace with a retry loop: try, sleep 50ms, retry once; only swallow on second failure. Log the final failure as `log::warn!` so operations can detect orphan accumulation.
+    3. **Crash-mid-swap** (between step 1 and step 2) — there's no atomic protection; document this as a known limitation in the function's doc comment. Recovery is out of scope for T-123q (would need a startup-time `.bak` sweep, which is M9 prep work); the doc comment makes the gap explicit for future readers.
+  - `src-tauri/src/ipc/fs.rs` `#[cfg(test)] mod tests` — add 3 Windows-cfg-gated tests covering the 3 failure paths above (pre-existing `.bak`, crash between step 1 and step 2, post-success cleanup-of-locked-bak). Each test uses `cfg(windows)` so it skips on Linux/macOS CI runners; the actual exercise happens on the new Windows CI runner (per next bullet).
+  - `.github/workflows/ci.yml` — add a `windows-latest` matrix entry that runs `cargo test --manifest-path src-tauri/Cargo.toml` after the existing setup steps. This is the FIRST CI job that actually exercises the Windows fs code. Without this, the `#[cfg(windows)]` tests are functionally synthetic per AGENTS.md §Review playbook convention #4 (extended) — they exist but never run. M-2 closure.
+  - `src-tauri/tauri.conf.json` — tighten the URL branch of `plugins.shell.open` from `https?://[^\s<>"]+` to `https?://[^/@\s<>"]+(?:/[^\s<>"]*)?`. This rejects credentials (`https://user:pass@evil.com`), embedded `@` in the host (one common credential-smuggling pattern), and remains permissive for normal URLs. M-3 closure.
+  - `tests/security/shell-config.test.ts` — add 8 new negative cases:
+    - `https://user:pass@evil.com/` (credentials in host)
+    - `https://example.com\with\backslash` (Windows-path-via-URL injection attempt)
+    - `https://example.com/foo\0` (embedded NUL)
+    - `https://example.com/foo\n` (trailing newline injection)
+    - `c:\Temp\docsystem-export\12345678-1234-1234-1234-1234567890ab\x.html` (lowercase drive — should reject since regex requires `[A-Z]:`)
+    - `C:/Temp/docsystem-export/12345678-1234-1234-1234-1234567890ab/x.html` (Windows path with forward slashes — should reject since regex requires backslash separators on Windows)
+    - `https://` (incomplete URL)
+    - `https://example.com/path with space` (unencoded space — should reject since regex excludes `\s`)
+  - And 1 positive regression case: `https://example.com/path%20with%20encoded%20space` (URL-encoded space should still match).
+  - `src/brand-tokens/BrandProvider.tsx` — replace `process.env.NODE_ENV !== "production"` with `import.meta.env.DEV` (Vite's idiomatic dev check). L-1 closure.
+  - `tests/brand-tokens/BrandProvider.test.tsx` (extend) OR `tests/smoke/no-node-globals.test.ts` (new) — add a smoke test that deletes `process` from `globalThis` before importing renderer modules. Pattern matches the T-123n Buffer-deletion regression test. Confirms convention #6 enforcement project-wide, not just in `render-static-html.ts`.
+  - `src/export/render-static-html.ts` (`sanitizeSvgForImage`) — extend the allowlist-by-removal to also strip:
+    - `<foreignObject>` ... `</foreignObject>` blocks (case-insensitive, multi-line)
+    - `<animate>`, `<animateMotion>`, `<animateTransform>`, `<set>` elements with `attributeName="href"` or `attributeName="xlink:href"`
+    - `<use>` tags with `href="javascript:..."` or `xlink:href="javascript:..."` attributes
+    - `<style>...</style>` blocks (CSS expression() IE-legacy + `url(javascript:)` injection vector)
+    - Add a top-of-function comment: "Safe ONLY for `<img src=data:image/svg+xml,...>` consumption — re-audit before using via `<object>`, `<iframe>`, or inline `<svg>`. See `src-tauri/src/ipc/fs.rs::read_binary_file` allowlist comment for the cross-boundary constraint."
+  - `tests/export/render-static-html.test.ts` (extend) — add 5 negative test cases for the new SVG sanitizer coverage:
+    - SVG containing `<foreignObject><script>alert(1)</script></foreignObject>`
+    - SVG containing `<animate attributeName="href" to="javascript:alert(1)" />`
+    - SVG containing `<use href="javascript:alert(1)" />`
+    - SVG containing `<use xlink:href="javascript:alert(1)" />`
+    - SVG containing `<style>* { background: url(javascript:alert(1)) }</style>`
+    For each, assert the data URI in the output, when decoded, does NOT contain executable script.
+  - `AGENTS.md §Review playbook` — three refinements based on the round-3 audit's convention-efficacy report:
+    1. **Extend #4 (synthetic fixtures):** append a paragraph: "A `#[cfg(<os>)]` or `if (process.platform === '...')` test that has no corresponding OS in the CI matrix is functionally equivalent to a synthetic harness — the test exists but never runs. Flag as `not actually run`. Round-3 audit caught this for `windows_rename_failure_restores_original_target` in `src-tauri/src/ipc/fs.rs:354-376` — the test was correct, but the CI job was Ubuntu-only, so 0 runs of the Windows path until T-123q added the matrix entry."
+    2. **NEW #7 — Failure-path completeness for cfg-gated atomic operations:** "Any swap/rename/transaction with N steps must have tests for: (a) crash between each pair of consecutive steps, (b) pre-existing artifact from a previous crashed run blocking the first step, (c) post-success cleanup failure leaving an orphan. T-123o's initial Windows .bak swap had 4 steps but only tested 1 of ~5 failure scenarios; the round-3 audit caught the gap (M-1). When the operation is platform-specific, combine with convention #4 (extended) — both the failure-path tests AND the CI matrix entry that runs them are required."
+    3. **Tighten #1 (Tauri plugin source):** append "...and verify the plugin's regex/scope is the ENTIRE constraint surface — confirm the plugin does NOT also do implicit scheme allow-lists, path canonicalization, MIME checks, or other gates the regex doesn't show. Round-3 audit's M-3 (URL credential-bypass in shell-open regex) surfaced because the audit confirmed `OpenScope::open` does ONLY a single `regex.is_match` call — so the regex IS the entire defense, and credential-bearing URLs would slip past if not explicitly blocked."
+  - `BLOCKERS.md` — append a single drift entry `[drift-2026-05-26l] M7.5 round-3 audit follow-ups (M-1/M-2/M-3 + L-1/L-2/L-3) — closed in T-123q`. Note that this batch is NOT gate-blocking for M8 firing per T-123q's status; it's a defense-in-depth + Windows-CI-coverage + cosmetic batch that addresses the round-3 security agent's findings. Cite AGENTS.md §Review playbook conventions #1, #4, #6, plus the new #7.
+- **Acceptance:**
+  - 3 new `#[cfg(windows)]` tests pass on a Windows runner (verify the CI matrix entry actually fires them by inspecting the run logs).
+  - 9 new shell-config regex tests pass (8 negative + 1 positive).
+  - SVG sanitization tripwire tests pass (5 negative).
+  - `BrandProvider.tsx` no longer references `process`; the `process`-deleted smoke test passes.
+  - AGENTS.md §Review playbook now has 7 conventions (#1 tightened, #4 extended, #7 new).
+- **est.** 2h
+- **Note: NOT GATE-BLOCKING for M8 → T-124.** Same status as T-123p. The M7-spike scope is internal consultant testing on macOS/Linux dev boxes, where:
+  - M-1 (Windows recovery edges) doesn't apply to non-Windows testers
+  - M-2 (Windows CI gap) is infrastructure for future Windows installer releases (Phase 9)
+  - M-3 (URL credentials) isn't reachable today — only export tmp HTML hits `shell.open`
+  - L-1/L-2/L-3 are pre-existing defense-in-depth gaps
+  All three MEDIUMs become gate-blocking for v1.0 EXTERNAL release (Phase 9 deployment), so this task should land BEFORE T-108/T-109/T-110 fire. The loop will pick T-123q whenever it has no higher-priority queued task — likely after T-123p but possibly in parallel with early M8 work.
+
+**M7-spike acceptance gate (REVISED 2026-05-26 v4):** T-123o passing (T-123a..T-123o all `[x]`). The previous "T-123n passing" gate (v3) missed the Windows data-loss carryover (round-2 audit M-4). T-123o closes that. T-123p + T-123q are queued but **NOT gate-blocking** — both are defense-in-depth / coverage / cleanup batches that can land in parallel with M8 or after. L-3 (keychain audit logging) is explicitly deferred to M9 prep since the keychain only goes live then. The 3 MEDIUMs from T-123q become **gate-blocking for v1.0 external release (Phase 9)** — they must close before T-108/T-109/T-110 fire. M8 T-124 fires AFTER T-123o (not T-123p, not T-123q).
 
 ---
 
@@ -1556,12 +1611,12 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 | 6 | M6 (deck) | T-103 — T-107 | 38 | v1.1 |
 | 6.5 | Scaffold hardening | T-113 — T-114 | 4 | post-M6 audit fixes |
 | 7 | M7 (document editor spike) | T-115 — T-123 (incl. T-120b) | ~33 | minimum runnable app |
-| 7.5 | M7 review fixes (5 BLOCKERs + 8-round review backlog) | T-123a — T-123p | ~20 | review verdict 2026-05-26 across 8 rounds; AGENTS.md §Review playbook #1–#6; T-123o gate-blocking, T-123p optional (LOW defense-in-depth) |
-| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after T-123o (gate v4) + consultant testing; T-123p can fire in parallel |
-| 9 | Deployment | T-108 — T-112 | 21 | renumbered from Phase 7 |
-| | | | **~555.5h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
+| 7.5 | M7 review fixes (5 BLOCKERs + 9-round review backlog) | T-123a — T-123q | ~22 | review verdict 2026-05-26 across 9 rounds; AGENTS.md §Review playbook #1–#7; T-123o gate-blocking for M8, T-123p+T-123q optional for M8 but gate-blocking for v1.0 external |
+| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after T-123o (gate v4) + consultant testing; T-123p + T-123q can fire in parallel |
+| 9 | Deployment | T-108 — T-112 | 21 | renumbered from Phase 7; T-123p + T-123q's MEDIUMs must close BEFORE T-108/T-109/T-110 fire (v1.0 external gate) |
+| | | | **~557.5h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
 
-**Realistic v1 (excluding M6 deck path, including M7-spike + M7.5 fixes + M8):** ~516.5 hours ≈ 12–13 weeks full-time. The ~93.5h of M7-spike + M7.5 + M8 + scaffold hardening is the integration + review-fix work that turns the disconnected M1–M5 modules into a runnable consultancy app whose first user-visible surface actually works. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
+**Realistic v1 (excluding M6 deck path, including M7-spike + M7.5 fixes + M8):** ~518.5 hours ≈ 12–13 weeks full-time. The ~95.5h of M7-spike + M7.5 + M8 + scaffold hardening is the integration + review-fix work that turns the disconnected M1–M5 modules into a runnable consultancy app whose first user-visible surface actually works. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
 
 These numbers match the architecture memo's §11 estimate of "6–12 months commitment" — the lower bound is achievable with a strong developer focused full-time; the upper bound includes M6 and a real-world overhead (review, debug, refactor, meetings).
 
