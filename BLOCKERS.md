@@ -272,3 +272,13 @@ Two different actions (`dtolnay/rust-toolchain@1.83.0` and `ruby/setup-ruby@v1`)
    **No marker change:** no current task affected; this is a forward-reference for M9 prep.
 
 ---
+
+### [drift-2026-05-26k] Node Buffer used in renderer export code
+
+**Detected at:** 2026-05-26T18:56:00Z (M7.5 round-3 runtime-parity review)
+**Tasks affected:** T-123l (Rust-side base64 change), fixed by T-123n.
+**What happened:** `src/export/render-static-html.ts` replaced JSON byte-array encoding with base64 strings, but the SVG sanitizer and oversized-image placeholder used Node's `Buffer.from(...)` to decode / encode those strings. Vitest provides `Buffer`, so the tests passed; Tauri's WebView2 / WKWebView / WebKitGTK runtime does not, so SVG export and image-cap placeholders would crash with `ReferenceError: Buffer is not defined`.
+**Impact:** This is the second "tests pass + runtime crashes" divergence in the M7.5 tail. T-123m covered Tauri's regex wrapping behavior; T-123n covers Node globals that exist in Vitest but not in the renderer webview.
+**Fix landed:** T-123n replaces renderer-side Buffer usage with Web Platform APIs (`TextEncoder`, `TextDecoder`, `atob`, `btoa`) and adds tests that delete `globalThis.Buffer` before exercising SVG inlining and placeholder generation. AGENTS.md review-playbook conventions #5 and #6 now codify both divergence classes.
+
+---

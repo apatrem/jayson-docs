@@ -1245,7 +1245,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1.5h
 - **Note: addresses the H-1 (functional regression: regex blocks legitimate https URLs at runtime) + H-2 (bypass: regex permits file://, smb://, UNC via `.+` prefix + loose uuid) + M-1 (dead capability ACL claim) + M-2 (test doesn't model runtime wrap) + M-3 (integration test still mocks) findings from the M7.5 round-2 security audit. AGENTS.md §Review playbook convention #1 ("verify against `~/.cargo/registry/src/*tauri-plugin-*` source") directly caught H-1/H-2 by reading `scope.rs::OpenScope::open` and `lib.rs:155`. New convention #5 codifies the wrap-mirroring rule so the same trap doesn't repeat for other plugin/framework patterns.**
 
-### T-123n [ ] · Replace Node `Buffer` with Web Platform APIs in renderer code (runtime BLOCKER)
+### T-123n [x] · Replace Node `Buffer` with Web Platform APIs in renderer code (runtime BLOCKER)
 - **Depends-on:** T-123l
 - **Reads:** `src/export/render-static-html.ts` (line 154, 158, 176 — three `Buffer.from` calls), `vite.config.ts` (line 13-15 — explicit comment "we never bundle node built-ins" + no `vite-plugin-node-polyfills`), `vitest.config.ts` (the test environment where `Buffer` IS a Node global, masking the bug), `tests/export/render-static-html.test.ts` (existing tests that pass because of the environment difference)
 - **Outputs:**

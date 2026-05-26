@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderStaticHtmlForExport } from "../../src/export/render-static-html";
 import { BrandTokensSchema, type BrandTokens } from "../../src/schema/brand";
 import type { DocModel } from "../../src/schema/docmodel";
@@ -153,7 +153,7 @@ describe("renderStaticHtmlForExport", () => {
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
       value: {
-        invoke: vi.fn(() => Promise.resolve(Buffer.from(svg, "utf8").toString("base64"))),
+        invoke: vi.fn(() => Promise.resolve(utf8ToBase64ForTest(svg))),
       },
     });
 
@@ -169,6 +169,90 @@ describe("renderStaticHtmlForExport", () => {
     expect(decodedSvg).toContain("Safe");
     expect(decodedSvg).not.toMatch(/<script\b/iu);
     expect(decodedSvg).not.toMatch(/\sonload=/iu);
+  });
+});
+
+describe("renderStaticHtmlForExport without Node Buffer", () => {
+  let originalBuffer: unknown;
+
+  beforeEach(() => {
+    originalBuffer = (globalThis as { Buffer?: unknown }).Buffer;
+    Reflect.deleteProperty(globalThis, "Buffer");
+  });
+
+  afterEach(() => {
+    if (originalBuffer !== undefined) {
+      (globalThis as { Buffer?: unknown }).Buffer = originalBuffer;
+    }
+    Reflect.deleteProperty(window, "__TAURI_INTERNALS__");
+    vi.restoreAllMocks();
+  });
+
+  it("inlines SVG images without throwing ReferenceError", async () => {
+    const imageDoc = docWithImages([{ id: "image-1", src: "assets/vector.svg" }]);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><text>Safe</text></svg>`;
+    Object.defineProperty(window, "__TAURI_INTERNALS__", {
+      configurable: true,
+      value: {
+        invoke: vi.fn(() => Promise.resolve(utf8ToBase64ForTest(svg))),
+      },
+    });
+
+    const html = await renderStaticHtmlForExport(
+      imageDoc,
+      loadBrand(),
+      "/Users/me/Documents/proposal",
+      "/Users/me/Shared",
+    );
+
+    const [decodedSvg] = decodedSvgDataUris(html);
+    expect(decodedSvg).toContain("Safe");
+    expect(decodedSvg).not.toMatch(/<script\b/iu);
+  });
+
+  it("emits the oversized-image placeholder without throwing ReferenceError", async () => {
+    const imageDoc = docWithImages([{ id: "image-1", src: "assets/photo.jpg" }]);
+    Object.defineProperty(window, "__TAURI_INTERNALS__", {
+      configurable: true,
+      value: {
+        invoke: vi.fn(() => Promise.reject(new Error("file exceeds 5MB export limit"))),
+      },
+    });
+
+    const html = await renderStaticHtmlForExport(
+      imageDoc,
+      loadBrand(),
+      "/Users/me/Documents/proposal",
+      "/Users/me/Shared",
+    );
+
+    expect(decodedSvgDataUris(html).join("\n")).toContain("Image too large to export");
+  });
+
+  it("emits the total-cap-exhausted placeholder without throwing", async () => {
+    const imageDoc = docWithImages([
+      { id: "image-1", src: "assets/photo-1.jpg" },
+      { id: "image-2", src: "assets/photo-2.jpg" },
+    ]);
+    const totalCapOverflowBase64 = "A".repeat(Math.ceil((50 * 1024 * 1024) / 3) * 4);
+    Object.defineProperty(window, "__TAURI_INTERNALS__", {
+      configurable: true,
+      value: {
+        invoke: vi.fn((_cmd: string, args: { path: string }) =>
+          Promise.resolve(args.path.endsWith("photo-1.jpg") ? "/w==" : totalCapOverflowBase64),
+        ),
+      },
+    });
+
+    const html = await renderStaticHtmlForExport(
+      imageDoc,
+      loadBrand(),
+      "/Users/me/Documents/proposal",
+      "/Users/me/Shared",
+    );
+
+    expect(html).toContain('src="data:image/jpeg;base64,/w=="');
+    expect(decodedSvgDataUris(html).join("\n")).toContain("Image too large to export");
   });
 });
 
@@ -199,6 +283,21 @@ function docWithImages(
 
 function decodedSvgDataUris(html: string): string[] {
   return Array.from(html.matchAll(/data:image\/svg\+xml;base64,([^"]+)/giu), (match) =>
-    Buffer.from(match[1] ?? "", "base64").toString("utf8"),
+    base64ToUtf8ForTest(match[1] ?? ""),
   );
+}
+
+function utf8ToBase64ForTest(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+}
+
+function base64ToUtf8ForTest(encoded: string): string {
+  const binary = atob(encoded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }

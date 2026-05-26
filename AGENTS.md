@@ -369,5 +369,5 @@ include these explicit checks in the prompt:
   WebKitGTK. M7.5 round-2 shipped `Buffer.from(...)` in
   `src/export/render-static-html.ts` that crashes the export with
   `ReferenceError: Buffer is not defined` whenever an SVG image or the
-  oversized-image placeholder fires (drift `[drift-2026-05-26g]`).
+  oversized-image placeholder fires (drift `[drift-2026-05-26k]`).
 

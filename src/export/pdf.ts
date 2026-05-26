@@ -16,10 +16,7 @@ import type { Block } from "../schema/blocks";
 import { validateDocModel } from "../schema/validate";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const pageBreakCss = readFileSync(
-  join(repoRoot, "src/renderer/page-breaks.css"),
-  "utf8",
-);
+const pageBreakCss = readFileSync(join(repoRoot, "src/renderer/page-breaks.css"), "utf8");
 
 export interface PdfExportOptions {
   brandPath?: string;
@@ -74,10 +71,7 @@ export async function preRenderDiagramSvgs(
   return svgs;
 }
 
-export function preRenderChartSvgs(
-  doc: PdfModel,
-  brand: BrandTokens,
-): Record<string, string> {
+export function preRenderChartSvgs(doc: PdfModel, brand: BrandTokens): Record<string, string> {
   const svgs: Record<string, string> = {};
   for (const block of blocksInModel(doc)) {
     if (block.type !== "chart") continue;
@@ -199,11 +193,20 @@ function logoDataUri(brand: BrandTokens, sharedFolderPath: string): string {
   const absolute = join(sharedFolderPath, relative);
   if (existsSync(absolute)) {
     const svg = readFileSync(absolute, "utf8");
-    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+    return `data:image/svg+xml;base64,${utf8ToBase64(svg)}`;
   }
   const short = brand.identity.shortName ?? brand.identity.name.slice(0, 3);
   const fallback = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 24"><rect width="80" height="24" fill="${brand.colors.brand.primary}"/><text x="40" y="16" text-anchor="middle" fill="#fff" font-size="10" font-family="Arial">${escapeHtml(short)}</text></svg>`;
-  return `data:image/svg+xml;base64,${Buffer.from(fallback).toString("base64")}`;
+  return `data:image/svg+xml;base64,${utf8ToBase64(fallback)}`;
+}
+
+function utf8ToBase64(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
 }
 
 export function buildHeaderTemplate(
@@ -228,10 +231,7 @@ export function buildHeaderTemplate(
 </div>`;
 }
 
-export function buildFooterTemplate(
-  doc: PdfModel,
-  brand: BrandTokens,
-): string {
+export function buildFooterTemplate(doc: PdfModel, brand: BrandTokens): string {
   const footer = brand.page.footer;
   if (!footer?.enabled) {
     return "<span></span>";
@@ -295,12 +295,8 @@ export async function exportPdfFromDocument(
   await exportHtmlToPdf(html, outputPdfPath, brand, templates, doc.kind);
 }
 
-export async function exportPdfFromYaml(
-  input: PdfExportInput,
-): Promise<void> {
-  const brandPath = resolve(
-    input.options?.brandPath ?? join(repoRoot, "brand.example.yaml"),
-  );
+export async function exportPdfFromYaml(input: PdfExportInput): Promise<void> {
+  const brandPath = resolve(input.options?.brandPath ?? join(repoRoot, "brand.example.yaml"));
   const docYamlPath = resolve(input.docYamlPath);
   const outputPdfPath = resolve(input.outputPdfPath);
   const brand = loadBrandTokens(brandPath);
@@ -322,9 +318,7 @@ function parseCliArgs(argv: string[]): PdfExportInput {
     }
   }
   if (positional.length < 2) {
-    throw new Error(
-      "usage: export:pdf -- <input.yaml> <output.pdf> [--brand <brand.yaml>]",
-    );
+    throw new Error("usage: export:pdf -- <input.yaml> <output.pdf> [--brand <brand.yaml>]");
   }
   const input: PdfExportInput = {
     docYamlPath: positional[0] ?? "",
@@ -342,9 +336,7 @@ async function main(): Promise<void> {
   process.stdout.write(`Wrote ${resolve(input.outputPdfPath)}\n`);
 }
 
-const invokedPath = process.argv[1]
-  ? pathToFileURL(process.argv[1]).href
-  : "";
+const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : "";
 
 if (import.meta.url === invokedPath) {
   main().catch((err: unknown) => {

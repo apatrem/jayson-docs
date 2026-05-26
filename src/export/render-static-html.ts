@@ -150,12 +150,23 @@ function mimeTypeForPath(path: string): string {
 }
 
 function svgBase64ToSafeBase64(encoded: string): string {
-  const svg = base64ToUtf8(encoded);
-  return Buffer.from(sanitizeSvgForImage(svg), "utf8").toString("base64");
+  const svg = decodeBase64ToUtf8(encoded);
+  return utf8ToBase64(sanitizeSvgForImage(svg));
 }
 
-function base64ToUtf8(encoded: string): string {
-  return Buffer.from(encoded, "base64").toString("utf8");
+function utf8ToBase64(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+}
+
+function decodeBase64ToUtf8(encoded: string): string {
+  const binary = atob(encoded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 function base64DecodedByteLength(encoded: string): number {
@@ -173,7 +184,7 @@ function sanitizeSvgForImage(svg: string): string {
 
 function imagePlaceholderDataUri(message: string): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="120"><rect width="100%" height="100%" fill="#f8fafc"/><text x="24" y="68" fill="#475569" font-family="Arial, sans-serif" font-size="20">${escapeHtml(message)}</text></svg>`;
-  return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
+  return `data:image/svg+xml;base64,${utf8ToBase64(svg)}`;
 }
 
 async function preRenderDiagramSvgs(
