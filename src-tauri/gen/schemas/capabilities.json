@@ -1,1 +1,1 @@
-{"main-window":{"identifier":"main-window","description":"Permissions for the main application window.","local":true,"windows":["main"],"permissions":["core:default","dialog:default","fs:default","store:default","shell:allow-open"]}}
+{"main-window":{"identifier":"main-window","description":"Permissions for the main application window.","local":true,"windows":["main"],"permissions":["core:default","dialog:default","fs:default","store:default","shell:default",{"identifier":"shell:allow-open","allow":[{"path":"$TEMP/docsystem-export/**"}]}]}}

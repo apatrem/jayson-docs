@@ -63,6 +63,8 @@ export function isIpcError(e: unknown): e is IpcError {
 
 These commands wrap the Tauri FS plugin with path-scope validation. The frontend never receives raw filesystem handles.
 
+**M7-spike command surface:** only `read_yaml_file` and `write_yaml_file` are registered. `list_directory`, `file_exists`, `ensure_directory`, and `move_file` are documented below for M8, but are intentionally deferred in M7 and return "command not registered" from the renderer. M8 T-125 re-registers them with the same canonicalize + scope-check hardening used by the YAML commands.
+
 ### `read_yaml_file(path: string) -> string`
 
 **Rust:**
@@ -94,6 +96,8 @@ Writes UTF-8 text atomically (write-to-temp + rename). Rejects paths outside sco
 
 ### `list_directory(path: string) -> DirEntry[]`
 
+**Registration:** deferred in M7-spike; re-registered in M8 T-125 with full T-117 hardening.
+
 ```typescript
 interface DirEntry {
   name: string;
@@ -108,13 +112,19 @@ Used by the library UI to scan the cloud-sync root. Returns one level deep — c
 
 ### `file_exists(path: string) -> boolean`
 
+**Registration:** deferred in M7-spike; re-registered in M8 T-125 with full T-117 hardening.
+
 Quick existence check. Returns false for both "doesn't exist" and "exists but not readable" — they're equivalent for the UI.
 
 ### `ensure_directory(path: string) -> void`
 
+**Registration:** deferred in M7-spike; re-registered in M8 T-125 with full T-117 hardening.
+
 `mkdir -p` semantics. Used by Save As (D-19) to create the doc folder.
 
 ### `move_file(from: string, to: string) -> void`
+
+**Registration:** deferred in M7-spike; re-registered in M8 T-125 with full T-117 hardening.
 
 Used by the setup pipeline to move files from `/generated-blocks/pending/` to `/generated-blocks/active/` after human review.
 

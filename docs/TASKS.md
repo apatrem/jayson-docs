@@ -1005,7 +1005,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1h
 - **Note: confirmed by code review as BLOCKER-2 + verified the M7 harness uses a synthetic single-section doc that masks the bug. M8 T-126's router refactor + section-aware mapping is the proper fix. The fixture file is owned by T-123b (this task) rather than T-123d because the constraint test needs a single-section reference doc to pass — moving it from T-123d to T-123b breaks the original circular dependency (T-123d → T-123b → fixture from T-123d). The App.tsx output is required because DocumentView cannot transition app state on its own; the Back-to-welcome callback flows from App down through props.**
 
-### T-123c [ ] · Lock down M7-spike trust boundary (shell scope + defer 4 fs IPCs)
+### T-123c [x] · Lock down M7-spike trust boundary (shell scope + defer 4 fs IPCs)
 - **Depends-on:** T-123
 - **Reads:** `src-tauri/capabilities/main-window.json`, `src-tauri/src/lib.rs` (the `invoke_handler!` macro), `src-tauri/src/ipc/fs.rs` (the 4 still-unhardened commands: `list_directory`, `file_exists`, `ensure_directory`, `move_file`), `docs/TAURI_IPC.md`, `BLOCKERS.md` §[drift-2026-05-26e] (existing drift entry — already appended by the 2026-05-26 planning commit `4a670c5`)
 - **Outputs:**

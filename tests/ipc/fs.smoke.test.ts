@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { invoke } from "@tauri-apps/api/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -8,6 +9,13 @@ async function readYamlFile(path: string): Promise<string> {
 async function writeYamlFile(path: string, content: string): Promise<void> {
   await invoke("write_yaml_file", { path, content });
 }
+
+const DEFERRED_M7_FS_COMMANDS = [
+  "list_directory",
+  "file_exists",
+  "ensure_directory",
+  "move_file",
+] as const;
 
 describe("fs IPC smoke contract", () => {
   afterEach(() => {
@@ -65,5 +73,39 @@ describe("fs IPC smoke contract", () => {
     });
 
     await expect(readYamlFile("/tmp/outside.yaml")).rejects.toMatchObject(error);
+  });
+
+  it("keeps deferred M7 filesystem commands out of the Tauri invoke surface", () => {
+    const libRs = readFileSync("src-tauri/src/lib.rs", "utf8");
+
+    for (const command of DEFERRED_M7_FS_COMMANDS) {
+      expect(libRs).not.toContain(`ipc::fs::${command}`);
+    }
+  });
+
+  it("surfaces deferred filesystem commands as not registered", async () => {
+    const invokeMock = vi.fn((cmd: string) => {
+      if (DEFERRED_M7_FS_COMMANDS.includes(cmd as (typeof DEFERRED_M7_FS_COMMANDS)[number])) {
+        return Promise.reject(new Error(`command ${cmd} not registered`));
+      }
+      return Promise.resolve(null);
+    });
+    Object.defineProperty(window, "__TAURI_INTERNALS__", {
+      configurable: true,
+      value: { invoke: invokeMock },
+    });
+
+    await expect(invoke("move_file", { from: "/tmp/a", to: "/tmp/b" })).rejects.toThrow(
+      "not registered",
+    );
+    await expect(invoke("list_directory", { path: "/tmp" })).rejects.toThrow(
+      "not registered",
+    );
+    await expect(invoke("file_exists", { path: "/tmp/a" })).rejects.toThrow(
+      "not registered",
+    );
+    await expect(invoke("ensure_directory", { path: "/tmp/a" })).rejects.toThrow(
+      "not registered",
+    );
   });
 });
