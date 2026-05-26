@@ -162,3 +162,38 @@ that prevents recurrence is linked in each entry.
 - Re-enable `includeUpdaterJson: true` in `.github/workflows/release.yml` and add the feed URL to `tauri.conf.json` updater config.
 
 ---
+
+## CI infrastructure flake — codeload.github.com 0400 on action downloads (2026-05-26)
+**Status:** CI-FAILED (loop-level halt, not a task `[?]`)
+**Detected at:** 2026-05-26T16:30:00Z
+**Affected commits on origin/main:**
+- `be270e5` (T-114) — CI run 26447509044, failed
+- `71dfe82` (CI: enforce cargo check --locked, follow-up from Cursor) — CI runs 26447846280 (attempt 1) + rerun (attempt 2), both failed
+
+**Reason:** Both GitHub Actions runs failed in the `Set up job` phase (i.e., BEFORE any code in the workflow ran) with identical errors against `codeload.github.com`:
+
+```
+##[error]An action could not be found at the URI
+'https://codeload.github.com/dtolnay/rust-toolchain/tar.gz/bd41891a…'
+(F808:5F53F:1D8D74:256256:6A15910A)
+##[error]Failed to download archive 'https://codeload.github.com/dtolnay/rust-toolchain/tar.gz/…' after 1 attempts.
+
+##[error]An action could not be found at the URI
+'https://codeload.github.com/ruby/setup-ruby/tar.gz/afeafc3d…'
+(0400:224AA9:8E9A0:BA5B5:6A15910A)
+##[error]Failed to download archive 'https://codeload.github.com/ruby/setup-ruby/tar.gz/…' after 1 attempts.
+```
+
+Two different actions (`dtolnay/rust-toolchain@1.83.0` and `ruby/setup-ruby@v1`), both referenced by tag (not by raw SHA) in the workflow YAML, both failing to download from `codeload.github.com` with HTTP 0400 errors across two different runners in two different Azure regions (eastus, westus3) within 1 minute of each other. The local `verify-gates.sh` passes (tsc, lint, test all green), so the code is sound — this is a GitHub-side delivery issue.
+
+**Last attempt:** rerun via `gh run rerun 26447846280 --failed` at 12:24:37Z; attempt #2 failed identically at 12:24:45Z (8 seconds, both jobs died in Set up job).
+
+**Why no milestone is marked `[GATE FAILED]`:** the spec rule "treat as a milestone-gate failure → mark current milestone header [GATE FAILED]" assumes the CI failure represents code regression. Here the failure is upstream of every test gate — no test/build code in this repo ever executed. Marking Phase 6.5 (or Phase 7) `[GATE FAILED]` would be misleading because no gate's code actually ran. The halt is recorded at the loop level (`State: CI-FAILED` in STATUS.md) without polluting milestone status. The next clean CI run on `main` will let the loop resume automatically.
+
+**Suggested action for human:**
+- Check https://www.githubstatus.com for an Actions / Codeload incident covering 2026-05-26 ~12:23–12:24 UTC.
+- If GitHub Actions has recovered: re-run failed jobs on the latest workflow run for `main` (`gh run rerun 26447846280 --failed`) — once any `main` run goes green, the next `/next-task` fire's pre-flight #8 will pass and the loop will pick T-115.
+- If the incident persists: consider either (a) waiting it out (codeload glitches usually clear within minutes/hours), or (b) editing `.github/workflows/ci.yml` to use the `actions/setup-node`-equivalent caches without `ruby/setup-ruby` (the `ruby scripts/check-specs` step is the only consumer) — fallback to `bundler-cache: false` won't help here because the action archive itself can't be downloaded.
+- Quick-test path if you want to verify the issue is gone before re-firing the loop: push an empty no-op commit to a throwaway branch and watch the resulting CI run; if it gets past `Set up job` for both `quality` and `rust-lockfile-parity`, codeload is healthy again.
+
+---
