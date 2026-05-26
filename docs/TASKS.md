@@ -1077,7 +1077,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1h
 - **Note: confirmed by ChatGPT review as a security drift trap. Currently the two lists match by coincidence of authoring; this task makes the security boundary single-sourced.**
 
-### T-123g [ ] · Validate inserted-block schema round-trip in integration test
+### T-123g [x] · Validate inserted-block schema round-trip in integration test
 - **Depends-on:** T-123d
 - **Reads:** `tests/integration/m7-spike-happy-path.test.ts` (the now-real-renderer happy-path test), `src/schema/docmodel.ts` (`DocModelSchema` — the discriminated union exporting `{ kind: "document" | "deck" }`), `src/docmodel/serialize.ts` (the YAML parser)
 - **Outputs:**

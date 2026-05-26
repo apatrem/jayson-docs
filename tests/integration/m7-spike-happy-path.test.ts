@@ -1,5 +1,7 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { parseDocModelYaml } from "../../src/docmodel/serialize";
+import { DocModelSchema } from "../../src/schema/docmodel";
 import {
   renderM7SpikeHarness,
   sampleProposalPath,
@@ -55,6 +57,8 @@ describe("M7 spike happy path", () => {
     });
 
     const savedYaml = harness.getCurrentYaml();
+    expect(() => DocModelSchema.parse(parseDocModelYaml(savedYaml))).not.toThrow();
+
     cleanup();
     const reopened = renderM7SpikeHarness({ initialYaml: savedYaml });
     fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
