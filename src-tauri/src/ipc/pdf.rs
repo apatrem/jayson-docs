@@ -23,8 +23,14 @@ pub struct ExportHandoff {
 }
 
 #[tauri::command]
-pub async fn export_pdf(input: PdfExportInput) -> IpcResult<ExportHandoff> {
-    export_pdf_to_root(input, &export_temp_root())
+pub async fn export_pdf(html: String, suggested_name: String) -> IpcResult<ExportHandoff> {
+    export_pdf_to_root(
+        PdfExportInput {
+            html,
+            suggested_name,
+        },
+        &export_temp_root(),
+    )
 }
 
 pub fn cleanup_export_temp_dir() -> std::io::Result<()> {
