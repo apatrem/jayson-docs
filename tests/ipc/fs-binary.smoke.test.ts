@@ -25,4 +25,13 @@ describe("fs binary IPC source hardening", () => {
   it("does not keep the legacy validate_path helper", () => {
     expect(fsRs).not.toContain("fn validate_path(");
   });
+
+  it("uses a single Windows replacement call instead of a backup rename swap", () => {
+    expect(fsRs).toContain("MoveFileExW");
+    expect(fsRs).toContain("MOVEFILE_REPLACE_EXISTING");
+    expect(fsRs).toContain("MOVEFILE_WRITE_THROUGH");
+    expect(fsRs).not.toContain("fs::rename(target_path");
+    expect(fsRs).not.toContain("backup failed");
+    expect(fsRs).not.toContain("original restored");
+  });
 });

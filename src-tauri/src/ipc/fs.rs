@@ -238,26 +238,34 @@ fn rename_tmp_file(tmp_path: &Path, target_path: &Path) -> IpcResult<()> {
 
 #[cfg(windows)]
 fn rename_tmp_file(tmp_path: &Path, target_path: &Path) -> IpcResult<()> {
-    if target_path.exists() {
-        let backup_path = target_path.with_extension({
-            let ext = target_path
-                .extension()
-                .and_then(|extension| extension.to_str())
-                .unwrap_or("yaml");
-            format!("{ext}.bak")
-        });
-        fs::rename(target_path, &backup_path)
-            .map_err(|e| IpcError::Io(format!("backup failed: {e}")))?;
-        if let Err(rename_err) = fs::rename(tmp_path, target_path) {
-            let _ = fs::rename(&backup_path, target_path);
-            return Err(IpcError::Io(format!(
-                "rename failed (original restored): {rename_err}"
-            )));
-        }
-        let _ = fs::remove_file(&backup_path);
-        Ok(())
+    use std::{iter::once, os::windows::ffi::OsStrExt};
+
+    const MOVEFILE_REPLACE_EXISTING: u32 = 0x0000_0001;
+    const MOVEFILE_WRITE_THROUGH: u32 = 0x0000_0008;
+
+    #[link(name = "kernel32")]
+    extern "system" {
+        fn MoveFileExW(
+            existing_file_name: *const u16,
+            new_file_name: *const u16,
+            flags: u32,
+        ) -> i32;
+    }
+
+    fn encode_path(path: &Path) -> Vec<u16> {
+        path.as_os_str().encode_wide().chain(once(0)).collect()
+    }
+
+    let existing_file_name = encode_path(tmp_path);
+    let new_file_name = encode_path(target_path);
+    let flags = MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH;
+    let replaced =
+        unsafe { MoveFileExW(existing_file_name.as_ptr(), new_file_name.as_ptr(), flags) };
+
+    if replaced == 0 {
+        Err(IpcError::Io(std::io::Error::last_os_error().to_string()))
     } else {
-        fs::rename(tmp_path, target_path).map_err(|e| IpcError::Io(e.to_string()))
+        Ok(())
     }
 }
 
@@ -353,33 +361,36 @@ mod tests {
 
     #[cfg(windows)]
     #[test]
-    fn windows_rename_failure_restores_original_target() {
-        let root = unique_test_dir("windows-rename-restore");
+    fn windows_rename_replaces_existing_target_without_backup_swap() {
+        let root = unique_test_dir("windows-rename-replace");
         let target = root.join("doc.yaml");
-        let missing_tmp = root.join("doc.yaml.tmp");
+        let tmp = root.join("doc.yaml.tmp");
         let backup = root.join("doc.yaml.bak");
         std::fs::write(&target, "original\n").expect("write original target");
+        std::fs::write(&tmp, "replacement\n").expect("write replacement tmp");
 
-        let err = rename_tmp_file(&missing_tmp, &target)
-            .expect_err("missing tmp should fail after target backup");
+        rename_tmp_file(&tmp, &target).expect("replace existing target");
 
-        assert!(matches!(err, IpcError::Io(message) if message.contains("original restored")));
         assert_eq!(
-            std::fs::read_to_string(&target).expect("original target restored"),
-            "original\n"
+            std::fs::read_to_string(&target).expect("read replaced target"),
+            "replacement\n"
+        );
+        assert!(
+            !tmp.exists(),
+            "successful replacement should move the tmp file into the target path"
         );
         assert!(
             !backup.exists(),
-            "recovery should move the backup back into the target path"
+            "Windows replacement must not use a sibling backup swap"
         );
         let _ = std::fs::remove_dir_all(root);
     }
 
     #[cfg(not(windows))]
     #[test]
-    fn windows_rename_failure_restore_test_is_cfg_gated() {
-        // The data-loss path is Windows-specific because Unix rename replaces
-        // existing files atomically; the real restoration test runs on Windows.
+    fn windows_replace_existing_test_is_cfg_gated() {
+        // The replacement implementation is Windows-specific; the real test
+        // runs on the Windows CI job.
         assert!(cfg!(not(windows)));
     }
 
