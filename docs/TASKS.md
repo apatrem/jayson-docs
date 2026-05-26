@@ -887,7 +887,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** **T-117..T-123 must NOT fire until T-116 is `[x]`.** The spike's two decisions affect T-118 (temp path) and T-120 (brand reference). Recording them keeps downstream tasks unambiguous.
 - **est.** 2h
 
-### T-117 [ ] · Harden read_yaml_file + write_yaml_file IPC (spike scope)
+### T-117 [x] · Harden read_yaml_file + write_yaml_file IPC (spike scope)
 - **Depends-on:** T-116
 - **Reads:** `docs/UI_APP_SHELL.md` (matrix), `src-tauri/src/ipc/fs.rs`, `src-tauri/tauri.conf.json` (assetProtocol.scope)
 - **Outputs:**
