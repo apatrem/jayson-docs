@@ -197,3 +197,29 @@ Two different actions (`dtolnay/rust-toolchain@1.83.0` and `ruby/setup-ruby@v1`)
 - Quick-test path if you want to verify the issue is gone before re-firing the loop: push an empty no-op commit to a throwaway branch and watch the resulting CI run; if it gets past `Set up job` for both `quality` and `rust-lockfile-parity`, codeload is healthy again.
 
 ---
+
+### [drift-2026-05-26d] M7-spike multi-section block insertion — constrained, real fix in M8
+
+**Detected at:** 2026-05-26T16:30:00Z (multi-axis review of T-117..T-123 per the M7 validation pass)
+**Tasks affected:** T-120 (DocumentView), T-123 (M7 integration harness). Properly fixed by M8 T-126 (router refactor + section-aware editor mapping).
+**What happened:** `src/ui/views/DocumentView.tsx` `documentToEditorContent` flattens all section blocks into one TipTap doc; `editorContentToDocument` reconstructs by positional slicing against `previousDoc.sections[i].blocks.length`. Inserting a block in section 1 of a multi-section doc → block n+1 misassigned to section 2 on the next save (silent corruption). The M7 integration harness uses a synthetic single-section `m7SpikeDoc` (`tests/integration/m7-spike-harness.ts` line 17ff), so the bug is structurally hidden — `examples/sample-proposal.yaml`'s 4 sections are never exercised by the M7 acceptance gate.
+**Why constrained instead of fixed:** the proper fix requires section-boundary nodes in the editor stream (a 4h+ ProseMirror schema change). M8 T-126's router refactor + section-aware mapping is the natural home. M7-spike adds a runtime constraint (T-123b): if `doc.sections.length > 1`, render an error state with a "Back to welcome" button rather than allowing the corrupted edit path.
+**Implication for v1:**
+  1. M8 T-126 MUST resolve the editor↔DocModel section mapping before M8 ships any document-editing flow.
+  2. A test SHOULD prove byte-stable round-trip on a multi-section fixture (`examples/sample-proposal.yaml` round-trip via the full open→save chain).
+  3. The M8 happy-path integration test SHOULD open the real multi-section fixture and assert correct section preservation after a palette insertion.
+**No marker change:** T-120 / T-123 stay `[x]` — they correctly delivered the M7-spike scope. T-123b is the constraint, T-123d is the real-fixture integration test that proves the constraint surfaces correctly.
+
+### [drift-2026-05-26e] M7-spike defers 4 fs IPCs — re-register hardened in M8 T-125
+
+**Detected at:** 2026-05-26T16:30:00Z (security audit of T-117 + IPC surface inventory)
+**Tasks affected:** T-117 (which hardened only `read_yaml_file` + `write_yaml_file`), T-123c (M7 trust-boundary lockdown). Properly resolved by M8 T-125 re-registration.
+**What happened:** T-117 hardened 2 of 6 fs IPCs as specified. The 4 unhardened siblings — `list_directory`, `file_exists`, `ensure_directory`, `move_file` — stayed registered in the IPC surface using the weak pre-T-117 `validate_path` (substring `..` rejection only, no scope check, no canonicalize, no absolute-path requirement). A compromised renderer can combine these to bypass T-117 entirely: `invoke("move_file", { from: "/Users/me/.aws/credentials", to: "/Users/me/Documents/x.yaml" })` then `invoke("read_yaml_file", { path: "/Users/me/Documents/x.yaml" })` — the latter canonicalizes inside scope and reads happily. Trust-boundary bypass.
+**Why deferred instead of hardened in M7:** M7-spike does not call these 4 commands (the spec's "the other 4 fs commands stay as their existing implementations — they're not called by the spike"). The original plan was to harden them in M8 T-125 because library scan + folder existence + folder creation + rename are all M8 surfaces that need them. The defect is in *leaving them registered* on the IPC surface in the meantime — the spec didn't anticipate the move_file + read_yaml_file pivot attack.
+**Implication for v1:**
+  1. T-123c (M7.5) removes these 4 commands from `invoke_handler!` registration entirely for M7-spike. They become "command not registered" errors from the renderer.
+  2. M8 T-125 re-registers them with the same `canonical_read_target` / `canonical_write_target` / `ensure_path_in_scope` hardening T-117 introduced. The hardening contract is identical (scope + canonicalize + reject `..`).
+  3. M8 T-125's tests MUST include a regression test for the move_file + read_yaml_file pivot attack: confirm `move_file("/Users/me/.aws/credentials", "/Users/me/Documents/x.yaml")` rejects because the source is outside scope, AND that the target-extension policy on `move_file` only allows `.yaml`/`.yml` targets.
+**No marker change:** T-117 stays `[x]` — it correctly hardened the 2 commands its Outputs declared. The drift is in IPC surface composition, not in T-117's task content. T-123c is the surface fix.
+
+---

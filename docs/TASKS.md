@@ -980,7 +980,101 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** both tests pass in CI. No system Chrome install needed (browser-handoff path mocks shell.open).
 - **est.** 4h
 
-**M7-spike acceptance gate:** T-123 passing. The minimum runnable build a consultant can install, open a YAML, edit it, insert blocks via palette, save, and export to PDF via their default browser.
+### T-123a [ ] · Fix editor remount cycle (typing usability)
+- **Depends-on:** T-123
+- **Reads:** `src/ui/views/DocumentView.tsx` (esp. `DefaultEditorSurface` line ~45 + `onUpdate` line ~180 + `editorContent` memo line ~130), `src/editor/Editor.tsx` (TipTap `useEditor` contract)
+- **Outputs:**
+  - `src/ui/views/DocumentView.tsx` — change `<Editor key={JSON.stringify(initialContent)} ...>` to `<Editor key={path} ...>`. Remove the bidirectional echo loop: `onUpdate` should NOT call `setDoc(updated)` if doing so would re-mount the editor. Instead, hold the in-flight edited DocModel in a ref (or scope it so the editor's `initialContent` is only re-seeded when `path` changes, i.e., a different file is opened). The `DocumentRenderer` preview pane can still subscribe to the editor's onUpdate stream for re-render without feeding back into the editor's content.
+  - `tests/ui/views/DocumentView.test.tsx` — add a real-typing test: render DocumentView with the real `<Editor>` (NOT the FakeEditor), then `await userEvent.type(editorEl, "hello world")`, assert (a) the doc contains the typed text, (b) the editor was NOT unmounted+remounted during typing (use a ref or `data-instance-id` to detect remount), (c) focus remains on the editor element across keystrokes.
+- **Acceptance:** typing into a real `<Editor>` does not remount it; cursor + selection persist across keystrokes; the existing FakeEditor-based tests still pass.
+- **est.** 1h
+- **Note: confirmed by code review as BLOCKER-1 (M7 review verdict 2026-05-26).** Defeats the M7 mission "consultant can touch the editor surface" the moment a real user types.
+
+### T-123b [ ] · Constrain multi-section documents in M7-spike (with BLOCKERS drift entry)
+- **Depends-on:** T-123
+- **Reads:** `src/ui/views/DocumentView.tsx` (esp. `documentToEditorContent` + `editorContentToDocument`), `examples/sample-proposal.yaml` (the canonical multi-section fixture), `BLOCKERS.md` (drift-entry format)
+- **Outputs:**
+  - `src/ui/views/DocumentView.tsx` — on document open, detect `doc.sections.length > 1` and render a constraint error state with copy: "Multi-section documents aren't editable yet — that lands in M8. Open a single-section document, or close this and try again." Include a "Back to welcome screen" button that triggers the AppErrorBoundary's reset transition (or a direct App.tsx callback). This is a CONSTRAINT, not a fix — the proper section-aware editor mapping is M8 T-126+ work.
+  - `tests/ui/views/DocumentView.test.tsx` — assert that opening a multi-section doc renders the constraint message + Back-to-welcome button; assert that single-section docs continue to render normally.
+  - `BLOCKERS.md` — append drift entry `[drift-2026-05-26d] M7-spike multi-section block insertion — constrained, real fix in M8`. Cite `src/ui/views/DocumentView.tsx editorContentToDocument` (positional split-by-previous-count bug) and link to M8 T-126.
+- **Acceptance:** opening `examples/sample-proposal.yaml` (4 sections) in M7-spike shows the constraint message, not corrupted save behavior. Single-section docs (`tests/fixtures/m7-single-section-proposal.yaml`, created in T-123d) still work normally.
+- **est.** 1h
+- **Note: confirmed by code review as BLOCKER-2 + verified the M7 harness uses a synthetic single-section doc that masks the bug. M8 T-126's router refactor + section-aware mapping is the proper fix.**
+
+### T-123c [ ] · Lock down M7-spike trust boundary (shell scope + defer 4 fs IPCs)
+- **Depends-on:** T-123
+- **Reads:** `src-tauri/capabilities/main-window.json`, `src-tauri/src/lib.rs` (the `invoke_handler!` macro), `src-tauri/src/ipc/fs.rs` (the 4 still-unhardened commands: `list_directory`, `file_exists`, `ensure_directory`, `move_file`), `docs/TAURI_IPC.md`, `BLOCKERS.md`
+- **Outputs:**
+  - `src-tauri/capabilities/main-window.json` — replace `"shell:allow-open"` with `"shell:default"` (which restricts to `https?:` / `mailto:` / `tel:` schemes per Tauri's ACL manifest) PLUS an inline scoped permission allowing only the temp export path:
+    ```json
+    { "identifier": "shell:allow-open", "allow": [{ "path": "$TEMP/docsystem-export/**" }] }
+    ```
+    Goal: a compromised renderer cannot `shell.open("file:///etc/passwd")` or `shell.open("smb://attacker/share")`.
+  - `src-tauri/src/lib.rs` — remove `list_directory`, `file_exists`, `ensure_directory`, `move_file` from the `invoke_handler!` chain. These commands are not called by M7-spike; their unhardened presence is a trust-boundary bypass (a compromised renderer can `move_file("/Users/me/.ssh/id_rsa", "/Users/me/Documents/x.yaml")` then `read_yaml_file` to exfiltrate). M8 T-125 re-registers them with the same `canonical_*_target` + `ensure_path_in_scope` hardening T-117 introduced.
+  - `docs/TAURI_IPC.md` — update §1 (File I/O): mark the 4 commands as "DEFERRED in M7-spike; re-registered in M8 T-125 with full T-117 hardening." Keep their signature documented for forward-reference.
+  - `tests/ipc/fs.smoke.test.ts` (extension) — assert that `invoke("move_file", { from, to })` rejects with "not registered" / equivalent; same for the other 3.
+  - `tests/ipc/pdf.smoke.test.ts` OR a new `tests/ipc/shell.smoke.test.ts` — assert that `invoke("plugin:shell|open", { path: "file:///etc/passwd" })` rejects (shell scope rejects the file:// scheme).
+  - `BLOCKERS.md` — append drift entry `[drift-2026-05-26e] M7-spike defers 4 fs IPCs — re-register hardened in M8 T-125` documenting the temporary surface reduction.
+- **Acceptance:** after this task, a renderer-side `invoke("move_file", ...)` fails with "command not registered"; `shell.open` with `file://` / `smb://` schemes rejects; HTTPS + the temp-dir path still work. The M7 integration tests (T-123) continue to pass (since they don't use the 4 deferred commands).
+- **est.** 1.5h
+- **Note: confirmed by security audit as CRITICAL-1 + CRITICAL-2 (combined). Either of these alone would block M9 external distribution.**
+
+### T-123d [ ] · Real-fixture integration test (open sample-proposal + real export renderer)
+- **Depends-on:** T-123a, T-123b, T-123e
+- **Reads:** `tests/integration/m7-spike-harness.ts` (esp. line 12: real fixture read; line 82: synthetic default), `tests/integration/m7-spike-happy-path.test.ts`, `examples/sample-proposal.yaml`, `src/export/render-static-html.ts`
+- **Outputs:**
+  - `tests/fixtures/m7-single-section-proposal.yaml` (NEW) — a single-section subset of `examples/sample-proposal.yaml` containing 1 prose block, 1 callout, 1 chart, 1 diagram, 1 image (using the same `assets/team-meeting.jpg` reference). This is the M7-spike-acceptable fixture that exercises every block type the real renderer handles + the new T-123e image-inlining path. Keep `examples/sample-proposal.yaml` intact (multi-section, real fixture stays the M8+ target).
+  - `tests/integration/m7-spike-harness.ts` — change default `initialYaml` from `m7SpikeYaml` (synthetic single-section) to `singleSectionProposalYaml` (loaded from `tests/fixtures/m7-single-section-proposal.yaml`). Remove the `renderHtmlForExport` option (and the `renderHarnessHtml` stub function); let the real `renderStaticHtmlForExport` run.
+  - `tests/integration/m7-spike-happy-path.test.ts` — re-run with the real fixture and real renderer. After Export PDF: assert the captured temp HTML contains:
+    - actual inline `<svg>` content for the diagram block (Mermaid SSR, non-empty inner content),
+    - actual inline `<svg>` content for the chart block (ECharts SSR, non-empty inner content),
+    - `<img src="data:image/jpeg;base64,...">` for the image block (from T-123e), with zero references to `/docs/assets/` or any `assets/` literal,
+    - `@page A4 portrait` CSS,
+    - zero `<script>` tags,
+    - the inserted callout block from the palette flow.
+  - `tests/integration/m7-spike-error-paths.test.ts` — add a test case: opening `examples/sample-proposal.yaml` (multi-section) renders the T-123b constraint message.
+- **Acceptance:** the M7 happy path now exercises real Mermaid+ECharts SSR + real image inlining against a real-fixture single-section doc. The earlier dependency on a synthetic `m7SpikeDoc` is gone.
+- **est.** 1.5h
+- **Note: closes the meta-finding that the M7 harness structurally masked B-2 (multi-section) and B-5 (image inlining). After this task, regressions in either area surface immediately.**
+
+### T-123e [ ] · Inline image assets as data: URIs in export HTML (with new binary-read IPC)
+- **Depends-on:** T-123c
+- **Reads:** `src/export/render-static-html.ts` (esp. line 54 — DocumentRenderer call without docFolderPath), `src/renderer/DocumentRenderer.tsx` (default `docFolderPath = "/docs"`), `src/renderer/blocks/Image.tsx` (line 54: direct `<img src={resolvedSrc}>`), `src/block-primitives/index.tsx` (asset resolver), `src-tauri/src/ipc/fs.rs` (canonical helpers from T-117), `docs/TAURI_IPC.md`
+- **Outputs:**
+  - `src-tauri/src/ipc/fs.rs` — add a new `#[tauri::command] read_binary_file(app, path) -> IpcResult<Vec<u8>>` (serialized as `Vec<u8>` / `Uint8Array` over the IPC boundary). Reuses `canonical_read_target` + `ensure_path_in_scope` from T-117. Adds an extension allowlist (`.jpg`, `.jpeg`, `.png`, `.svg`, `.webp`) — non-allowlisted extensions return `Invalid`. Adds a 5 MB per-file size cap; files larger than that return `Invalid("file exceeds 5MB export limit")`. Add `#[cfg(test)] mod tests` cases: happy read, oversized rejection, out-of-scope rejection, wrong-extension rejection.
+  - `src-tauri/src/lib.rs` — register `read_binary_file` in `invoke_handler!`. Update `docs/TAURI_IPC.md` to document the new command.
+  - `src/export/render-static-html.ts` — add `preloadImageDataUris(doc, docFolderPath, sharedFolderPath): Promise<Record<blockId, dataUri>>` that walks all `image` blocks, resolves each `src` via the existing brand-token asset resolver to an absolute path, invokes the new `read_binary_file` IPC, base64-encodes (browser-side `btoa(String.fromCharCode(...bytes))` or `Buffer.from(...).toString('base64')`), and returns `Record<blockId, "data:image/{mime};base64,{b64}">`. Total payload cap: 50 MB (sum across all images) — if exceeded, fall back to a placeholder `data:image/svg+xml,...` with text "⚠ Image too large to export" and log.
+  - `src/export/render-static-html.ts` — modify `renderStaticHtmlForExport(doc, brand, docFolderPath, sharedFolderPath)` signature: now accepts the path context, calls `preloadImageDataUris`, passes the result to `DocumentRenderer` as a new `imageDataUris` prop.
+  - `src/renderer/DocumentRenderer.tsx` — add `imageDataUris?: Record<string, string>` prop, propagate to Image block context.
+  - `src/renderer/blocks/Image.tsx` — when `imageDataUris[block.id]` is set, use that as `<img src>` instead of the resolved local path.
+  - `src/App.tsx` (FileMenu Export PDF flow) — pass the document's parent path + shared folder path to `renderStaticHtmlForExport` (these are already computed for `DocumentRenderer` in DocumentView; thread them through).
+  - `tests/export/render-static-html.test.ts` — add test: doc with one image block + mocked `read_binary_file` returning known bytes → output HTML contains `<img src="data:image/jpeg;base64,...">` matching the expected base64, and zero `/docs/assets/` or `/shared/`-style refs.
+  - `docs/UI_APP_SHELL.md` §Browser PDF handoff §Pre-render pipeline — append a note: "Image assets are inlined as `data:` URIs via the new `read_binary_file` IPC. 5 MB per-image cap, 50 MB total payload cap. Out-of-cap images fall back to an inline 'too large to export' placeholder."
+- **Acceptance:** exporting a document with an image block produces HTML where the `<img src>` is a `data:image/{mime};base64,...` URI. The exported HTML opened in a real browser renders the image correctly. The spec's "Zero external asset refs" promise is now enforced + tested. `read_binary_file` rejects oversized files, wrong extensions, and out-of-scope paths.
+- **est.** 3h
+- **Note: confirmed by ChatGPT review as a third BLOCKER for M7 (image-bearing docs export with broken `<img>` tags in any user's browser).**
+
+### T-123f [ ] · Resolve scope-drift trap (read scope from tauri.conf.json)
+- **Depends-on:** T-123c, T-123e
+- **Reads:** `src-tauri/src/ipc/fs.rs` (esp. lines 211-234: `asset_scope_roots()` hardcoded list), `src-tauri/tauri.conf.json` (`security.assetProtocol.scope`), Tauri Config API docs
+- **Outputs:**
+  - `src-tauri/src/ipc/fs.rs` — replace the hardcoded `asset_scope_roots()` function body. Read the scope at runtime via Tauri's `Config` API: `app.config().tauri.security.asset_protocol.scope` (or equivalent path for the current Tauri 2.x API). Expand `$HOME` / `$APPCONFIG` / `$TEMP` / etc. tokens the same way Tauri does at request-validation time. If the scope read fails or returns an empty list, fail-closed (return an empty `Vec<PathBuf>` so no read/write succeeds — better than silently allowing everything).
+  - `src-tauri/src/ipc/fs.rs` `#[cfg(test)] mod tests` — new test `asset_scope_matches_tauri_conf`: parse `tauri.conf.json` via `serde_json` (or include the conf file via `include_str!`) and assert the runtime-resolved scope list equals the conf-declared scope list (after `$VAR` expansion). Fails loudly if either drifts.
+  - `docs/TAURI_IPC.md` §1 — note that the IPC scope is "the same scope declared in `tauri.conf.json` `assetProtocol.scope`" with no longer any Rust-side hardcoded list.
+- **Acceptance:** removing one of the Dropbox/iCloud/Google Drive/OneDrive paths from `tauri.conf.json` causes the new consistency test to fail. Adding a new path to `tauri.conf.json` automatically extends the IPC's allowed scope without any Rust-side edit.
+- **est.** 1h
+- **Note: confirmed by ChatGPT review as a security drift trap. Currently the two lists match by coincidence of authoring; this task makes the security boundary single-sourced.**
+
+### T-123g [ ] · Validate inserted-block schema round-trip in integration test
+- **Depends-on:** T-123d
+- **Reads:** `tests/integration/m7-spike-happy-path.test.ts` (the now-real-renderer happy-path test), `src/schema/doc.ts` (`DocModelSchema`), `src/docmodel/serialize.ts` (the YAML parser)
+- **Outputs:**
+  - `tests/integration/m7-spike-happy-path.test.ts` — after the Save assertion (`writeYamlFile` called with serialized YAML), parse the captured YAML via `yaml.parse` and validate via `DocModelSchema.parse`. Assert no exceptions. Verifies that `insertCallout` (and any other palette-driven insertion) produces a schema-valid block, not just a regex-counted occurrence. If `DocModelSchema.parse` throws, the test fails with the validation error attached.
+- **Acceptance:** the M7 happy path now proves that palette-inserted blocks survive a strict-schema reopen. A regression in the palette → TipTap node → DocModel → YAML pipeline that produces a partially-malformed callout (count-correct but schema-invalid) fails this test instead of being discovered when a consultant reopens a saved doc.
+- **est.** 0.5h
+- **Note: closes the "regex-count vs. parse-validate" gap surfaced by code review + test-engineer review.**
+
+**M7-spike acceptance gate (REVISED 2026-05-26):** T-123g passing (T-123a..T-123g all `[x]`). The original T-123 acceptance was structurally insufficient — multi-axis review found 5 BLOCKERs (editor remount, multi-section corruption, unscoped shell capability, unhardened fs IPC bypass, broken image export) hidden by the synthetic test harness. T-123a..T-123g close those defects + the harness now exercises the real fixture + real renderer.
 
 ---
 
@@ -989,7 +1083,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 Second integration milestone. Fires AFTER M7-spike ships and consultant testing of the editor surface has had a chance to surface any UX rework. Adds router infrastructure, first-launch folder picker, library card grid (with empty-state "Use Sample" button), 4 standard document templates with a "Create from Template" surface, generated-blocks runtime loading, and pipeline end-to-end validation.
 
 ### T-124 [ ] · Update UI_APP_SHELL.md for M8 architecture
-- **Depends-on:** T-123 (M7-spike complete + validated by consultant testing)
+- **Depends-on:** T-123g (M7-spike fully fixed per the 2026-05-26 multi-axis review + validated by consultant testing — see revised M7 acceptance gate above)
 - **Reads:** `docs/UI_APP_SHELL.md` (M7-spike state from T-115), `docs/UI_LIBRARY.md`, `docs/SETUP_INSTALL_FLOW.md`, `src/setup/install.ts` (esp. line 41: `InstallAppConfigSchema`), `docs/TYPES.md`
 - **Outputs:** `docs/UI_APP_SHELL.md` — appended M8 section describing:
   - the router (`src/ui/router/Routes.tsx`) — route types for welcome, folder-picker, library, document; route-intent contract
@@ -1157,11 +1251,12 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 | 6 | M6 (deck) | T-103 — T-107 | 38 | v1.1 |
 | 6.5 | Scaffold hardening | T-113 — T-114 | 4 | post-M6 audit fixes |
 | 7 | M7 (document editor spike) | T-115 — T-123 (incl. T-120b) | ~33 | minimum runnable app |
-| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after M7-spike + consultant testing |
+| 7.5 | M7 review fixes (5 BLOCKERs + harness rebuild) | T-123a — T-123g | ~9.5 | review verdict 2026-05-26 |
+| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after T-123g (revised M7 gate) + consultant testing |
 | 9 | Deployment | T-108 — T-112 | 21 | renumbered from Phase 7 |
-| | | | **~535h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
+| | | | **~545h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
 
-**Realistic v1 (excluding M6 deck path, including M7-spike + M8):** ~497 hours ≈ 12–13 weeks full-time. The ~73h of M7-spike + M8 + scaffold hardening is the new integration work that turns the disconnected M1–M5 modules into a runnable consultancy app. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
+**Realistic v1 (excluding M6 deck path, including M7-spike + M7.5 fixes + M8):** ~506 hours ≈ 12–13 weeks full-time. The ~83h of M7-spike + M7.5 + M8 + scaffold hardening is the integration + review-fix work that turns the disconnected M1–M5 modules into a runnable consultancy app whose first user-visible surface actually works. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
 
 These numbers match the architecture memo's §11 estimate of "6–12 months commitment" — the lower bound is achievable with a strong developer focused full-time; the upper bound includes M6 and a real-world overhead (review, debug, refactor, meetings).
 
