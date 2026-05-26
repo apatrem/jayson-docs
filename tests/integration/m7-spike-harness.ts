@@ -113,6 +113,7 @@ export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
       ...(options.initialDocument === undefined
         ? {}
         : { initialDocument: options.initialDocument }),
+      documentWatchdogBudgetMs: 10_000,
       fileActions: {
         selectOpenPath: () => Promise.resolve(sampleProposalPath),
         readYamlFile,
