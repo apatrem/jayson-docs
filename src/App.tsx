@@ -1,5 +1,13 @@
+import { invoke } from "@tauri-apps/api/core";
+import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
+import { open as openShellPath } from "@tauri-apps/plugin-shell";
 import { useState, type CSSProperties } from "react";
+import { defaultBrand } from "./brand/defaultBrand";
+import { parseDocModelYaml, serializeDocModel } from "./docmodel/serialize";
+import { renderStaticHtmlForExport } from "./export/render-static-html";
 import type { DocModel } from "./schema/docmodel";
+import { DocModelSchema } from "./schema/docmodel";
+import { MenuBar } from "./ui/menu/MenuBar";
 import { DocumentView } from "./ui/views/DocumentView";
 
 interface LoadedDocument {
@@ -20,11 +28,13 @@ type AppState =
 export interface AppProps {
   initialDocument?: LoadedDocument;
   onOpenDocument?: () => Promise<LoadedDocument | null>;
+  fileActions?: Partial<FileActionDeps>;
 }
 
 export default function App({
   initialDocument,
-  onOpenDocument = () => Promise.resolve(null),
+  onOpenDocument,
+  fileActions = {},
 }: AppProps) {
   const [state, setState] = useState<AppState>(() =>
     initialDocument === undefined
@@ -38,11 +48,16 @@ export default function App({
         },
   );
   const [openError, setOpenError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const openDocument = async (): Promise<void> => {
     setOpenError(null);
+    setStatusMessage(null);
     try {
-      const loaded = await onOpenDocument();
+      const loaded =
+        onOpenDocument !== undefined
+          ? await onOpenDocument()
+          : await openDocumentFromDialog(fileActions);
       if (loaded === null) {
         return;
       }
@@ -58,8 +73,53 @@ export default function App({
     }
   };
 
+  const saveDocument = async (): Promise<void> => {
+    if (state.kind !== "document") return;
+    await writeDocument(fileActions, state.path, state.doc);
+    setState({ ...state, dirty: false });
+    setStatusMessage("Saved.");
+  };
+
+  const saveDocumentAs = async (): Promise<void> => {
+    if (state.kind !== "document") return;
+    const selected = await selectSavePath(fileActions, state.path);
+    if (selected === null) return;
+    await writeDocument(fileActions, selected, state.doc);
+    setState({ ...state, path: selected, dirty: false });
+    setStatusMessage(
+      fileActions.libraryRoot && !selected.startsWith(fileActions.libraryRoot)
+        ? `Saved to ${selected}. This document is outside your library folder and won't appear in the library.`
+        : "Saved As.",
+    );
+  };
+
+  const exportPdf = async (): Promise<void> => {
+    if (state.kind !== "document" || state.doc.kind !== "document") return;
+    const renderHtml =
+      fileActions.renderHtmlForExport ?? renderStaticHtmlForExport;
+    const html = await renderHtml(state.doc, defaultBrand);
+    const exportHandoff = await (
+      fileActions.exportPdf ??
+      ((input) => invoke<ExportHandoff>("export_pdf", input))
+    )({
+      html,
+      suggestedName: `${basename(state.path).replace(/\.ya?ml$/iu, "")}.pdf`,
+    });
+    await (fileActions.openPath ?? openShellPath)(exportHandoff.path);
+    setStatusMessage("Opened in your browser — use Cmd-P / Ctrl-P to save as PDF.");
+  };
+
   return (
     <div style={styles.appShell}>
+      <MenuBar
+        canSave={state.kind === "document"}
+        canExport={state.kind === "document" && state.doc.kind === "document"}
+        onOpen={openDocument}
+        onSave={saveDocument}
+        onSaveAs={saveDocumentAs}
+        onExportPdf={exportPdf}
+        statusMessage={statusMessage}
+      />
       {state.kind === "welcome" ? (
         <main aria-label="Welcome" style={styles.welcome}>
           <section style={styles.welcomeCard}>
@@ -113,6 +173,78 @@ export default function App({
       )}
     </div>
   );
+}
+
+interface ExportHandoff {
+  kind: "browser_handoff";
+  path: string;
+}
+
+interface FileActionDeps {
+  selectOpenPath: () => Promise<string | null>;
+  selectSavePath: (defaultPath: string) => Promise<string | null>;
+  readYamlFile: (path: string) => Promise<string>;
+  writeYamlFile: (path: string, yaml: string) => Promise<void>;
+  exportPdf: (input: {
+    html: string;
+    suggestedName: string;
+  }) => Promise<ExportHandoff>;
+  openPath: (path: string) => Promise<void>;
+  renderHtmlForExport: typeof renderStaticHtmlForExport;
+  libraryRoot: string;
+}
+
+async function openDocumentFromDialog(
+  actions: Partial<FileActionDeps>,
+): Promise<LoadedDocument | null> {
+  const selected = await selectOpenPath(actions);
+  if (selected === null) return null;
+  const raw = await (actions.readYamlFile ?? readYamlFile)(selected);
+  const doc = DocModelSchema.parse(parseDocModelYaml(raw));
+  return { path: selected, doc };
+}
+
+async function selectOpenPath(
+  actions: Partial<FileActionDeps>,
+): Promise<string | null> {
+  if (actions.selectOpenPath !== undefined) {
+    return actions.selectOpenPath();
+  }
+  const selected = await openDialog({
+    multiple: false,
+    filters: [{ name: "YAML", extensions: ["yaml", "yml"] }],
+  });
+  return typeof selected === "string" ? selected : null;
+}
+
+async function selectSavePath(
+  actions: Partial<FileActionDeps>,
+  defaultPath: string,
+): Promise<string | null> {
+  if (actions.selectSavePath !== undefined) {
+    return actions.selectSavePath(defaultPath);
+  }
+  const selected = await saveDialog({
+    defaultPath,
+    filters: [{ name: "YAML", extensions: ["yaml"] }],
+  });
+  return typeof selected === "string" ? selected : null;
+}
+
+async function writeDocument(
+  actions: Partial<FileActionDeps>,
+  path: string,
+  doc: DocModel,
+): Promise<void> {
+  await (actions.writeYamlFile ?? writeYamlFile)(path, serializeDocModel(doc));
+}
+
+async function readYamlFile(path: string): Promise<string> {
+  return invoke<string>("read_yaml_file", { path });
+}
+
+async function writeYamlFile(path: string, yaml: string): Promise<void> {
+  await invoke("write_yaml_file", { path, content: yaml });
 }
 
 function basename(path: string): string {

@@ -945,7 +945,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** the editor surface now has a usable block insertion mechanism. A consultant testing the spike can insert any of the 15 standard blocks via the palette without leaving the editor.
 - **est.** 2h
 
-### T-121 [ ] · File menu (Open / Save / Save As / Export PDF)
+### T-121 [x] · File menu (Open / Save / Save As / Export PDF)
 - **Depends-on:** T-117, T-118, T-119, T-120
 - **Reads:** `@tauri-apps/plugin-dialog`, `@tauri-apps/plugin-shell` (added in T-118), `src/setup/install.ts` pattern
 - **Outputs:**
