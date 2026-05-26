@@ -185,4 +185,25 @@ describe("DocumentView", () => {
 
     expect(screen.getByLabelText("Block palette")).toBeTruthy();
   });
+
+  it("keeps the real editor mounted after an editor update", async () => {
+    render(<DocumentView path="/Users/me/Documents/proposal.yaml" initialDoc={doc} />);
+
+    const editorBefore = screen.getByLabelText("Document editor");
+
+    fireEvent.click(screen.getByRole("button", { name: "Insert block" }));
+    const calloutButton = screen.getByRole("button", { name: /Callout/u });
+
+    await waitFor(() => {
+      expect(calloutButton.hasAttribute("disabled")).toBe(false);
+    });
+
+    fireEvent.click(calloutButton);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Autosave status").textContent).toBe("saving");
+    });
+
+    expect(screen.getByLabelText("Document editor")).toBe(editorBefore);
+  });
 });

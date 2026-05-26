@@ -980,7 +980,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** both tests pass in CI. No system Chrome install needed (browser-handoff path mocks shell.open).
 - **est.** 4h
 
-### T-123a [ ] · Fix editor remount cycle (typing usability)
+### T-123a [x] · Fix editor remount cycle (typing usability)
 - **Depends-on:** T-123
 - **Reads:** `src/ui/views/DocumentView.tsx` (esp. `EditorSurfaceProps` interface line ~20 + `DefaultEditorSurface` line ~45 + `onUpdate` line ~180 + `editorContent` memo line ~130), `src/editor/Editor.tsx` (TipTap `useEditor` contract — note that `useEditor` does NOT reactively update `content` after mount; that's why the current code keys the editor)
 - **Outputs:**

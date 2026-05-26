@@ -44,7 +44,6 @@ const DefaultEditorSurface: FC<EditorSurfaceProps> = ({
   onEditorReady,
 }) => (
   <Editor
-    key={JSON.stringify(initialContent)}
     initialContent={initialContent}
     editable={editable}
     onUpdate={onUpdate}
@@ -72,6 +71,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [editor, setEditor] = useState<BlockPaletteProps["editor"]>(null);
+  const currentDoc = useRef<DocumentModel | null>(initialDoc ?? null);
   const autosave = useRef<AutosaveController | null>(null);
 
   useEffect(() => {
@@ -93,6 +93,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
     let cancelled = false;
     setError(null);
     if (initialDoc !== undefined) {
+      currentDoc.current = initialDoc;
       setDoc(initialDoc);
       return;
     }
@@ -100,6 +101,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
       .then((yaml) => parseDocumentYaml(yaml))
       .then((loadedDoc) => {
         if (!cancelled) {
+          currentDoc.current = loadedDoc;
           setDoc(loadedDoc);
         }
       })
@@ -173,13 +175,16 @@ export const DocumentView: FC<DocumentViewProps> = ({
           <DocumentRenderer doc={doc} brand={defaultBrand} docFolderPath={parentPath(path)} />
         </section>
         <section aria-label="Editable document" style={styles.editorPane}>
+          {/* Re-seed the editor only when a different file is opened. */}
           <EditorComponent
+            key={path}
             initialContent={editorContent}
             editable={true}
             onEditorReady={setEditor}
             onUpdate={(content) => {
               try {
-                const updated = editorContentToDocument(doc, content);
+                const updated = editorContentToDocument(currentDoc.current ?? doc, content);
+                currentDoc.current = updated;
                 setDoc(updated);
                 setSaveState("saving");
                 onDocumentChange?.(updated);
