@@ -43,6 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Toolchain pin lives in src-tauri/rust-toolchain.toml (MSRV = lockfile floor).
       - name: Install Rust 1.88.0
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.88.0 --profile minimal

@@ -53,6 +53,7 @@ jobs:
       # Pin the toolchain so a `v1.0.0` re-build six months from now produces
       # the same binary surface. Bump the version intentionally rather than
       # drifting silently with @stable.
+      # Toolchain pin lives in src-tauri/rust-toolchain.toml (MSRV = lockfile floor).
       - name: Install Rust 1.88.0
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.88.0 --profile minimal
