@@ -33,9 +33,7 @@ describe("M7 spike error paths", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("alert").textContent?.length ?? 0).toBeGreaterThan(
-        0,
-      );
+      expect(screen.getByRole("alert").textContent?.length ?? 0).toBeGreaterThan(0);
     });
   });
 
@@ -51,6 +49,7 @@ describe("M7 spike error paths", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Save" }));
 
     await waitFor(() => {
+      // Multiple alert nodes coexist when watchdog placeholder + App-level error are both visible; getByText scopes the query to the specific message.
       expect(screen.getByText("write failed")).toBeTruthy();
     });
   });
@@ -63,9 +62,7 @@ describe("M7 spike error paths", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Multi-section documents aren't editable yet/u),
-      ).toBeTruthy();
+      expect(screen.getByText(/Multi-section documents aren't editable yet/u)).toBeTruthy();
     });
   });
 });

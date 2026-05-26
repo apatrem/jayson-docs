@@ -7,9 +7,7 @@ import { BrandTokensSchema, type BrandTokens } from "../../src/schema/brand";
 import type { DocModel } from "../../src/schema/docmodel";
 
 function loadBrand(): BrandTokens {
-  const raw: unknown = parse(
-    readFileSync(join(process.cwd(), "brand.example.yaml"), "utf8"),
-  );
+  const raw: unknown = parse(readFileSync(join(process.cwd(), "brand.example.yaml"), "utf8"));
   return BrandTokensSchema.parse(raw);
 }
 
@@ -84,7 +82,7 @@ describe("renderStaticHtmlForExport", () => {
       expect(args).toEqual({
         path: "/Users/me/Documents/proposal/assets/photo.jpg",
       });
-      return Promise.resolve([0xff, 0xd8, 0xff]);
+      return Promise.resolve("/9j/");
     });
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
@@ -128,15 +126,12 @@ describe("renderStaticHtmlForExport", () => {
       { id: "image-1", src: "assets/photo-1.jpg" },
       { id: "image-2", src: "assets/photo-2.jpg" },
     ]);
-    const totalCapOverflowBytes: ArrayLike<number> = {
-      length: 50 * 1024 * 1024,
-      0: 0xff,
-    };
+    const totalCapOverflowBase64 = "A".repeat(Math.ceil((50 * 1024 * 1024) / 3) * 4);
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
       value: {
         invoke: vi.fn((_cmd: string, args: { path: string }) =>
-          Promise.resolve(args.path.endsWith("photo-1.jpg") ? [0xff] : totalCapOverflowBytes),
+          Promise.resolve(args.path.endsWith("photo-1.jpg") ? "/w==" : totalCapOverflowBase64),
         ),
       },
     });
@@ -158,7 +153,7 @@ describe("renderStaticHtmlForExport", () => {
     Object.defineProperty(window, "__TAURI_INTERNALS__", {
       configurable: true,
       value: {
-        invoke: vi.fn(() => Promise.resolve(Array.from(Buffer.from(svg, "utf8")))),
+        invoke: vi.fn(() => Promise.resolve(Buffer.from(svg, "utf8").toString("base64"))),
       },
     });
 
@@ -203,8 +198,7 @@ function docWithImages(
 }
 
 function decodedSvgDataUris(html: string): string[] {
-  return Array.from(
-    html.matchAll(/data:image\/svg\+xml;base64,([^"]+)/giu),
-    (match) => Buffer.from(match[1] ?? "", "base64").toString("utf8"),
+  return Array.from(html.matchAll(/data:image\/svg\+xml;base64,([^"]+)/giu), (match) =>
+    Buffer.from(match[1] ?? "", "base64").toString("utf8"),
   );
 }

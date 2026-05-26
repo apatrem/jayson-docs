@@ -11,7 +11,7 @@
 ## Design principles
 
 1. **Every privileged operation is a command.** Filesystem reads, keychain access, PDF export, SQLite writes — all go through `invoke(...)`. The frontend never imports `node:fs`, `node:path`, or anything that bypasses the boundary.
-2. **Commands accept and return JSON-serializable types only.** Text files return strings. Binary asset reads may return `Vec<u8>` when the caller immediately converts bytes into self-contained export HTML; no raw filesystem handles ever cross the boundary.
+2. **Commands accept and return JSON-serializable types only.** Text files return strings. Binary asset reads return base64 strings when the caller immediately embeds bytes into self-contained export HTML; no raw filesystem handles ever cross the boundary.
 3. **Errors are typed.** Each command returns `Result<T, IpcError>` where `IpcError` is a tagged-union enum (NotFound, PermissionDenied, Invalid, etc.). The frontend gets a discriminated TypeScript error and can dispatch UI per case.
 4. **Side effects are explicit.** Commands that mutate state name the resource (`write_yaml_file`, `set_secret`, `insert_cost_row`). Commands that read are pure verbs (`read_yaml_file`, `get_summary`).
 5. **The CSP and `assetProtocol.scope` in `tauri.conf.json` are part of the contract.** A command accepting a path must validate that the path is within an allowed scope; rejecting paths outside scope at the Rust layer.
@@ -68,6 +68,7 @@ These commands wrap the Tauri FS plugin with path-scope validation. The frontend
 ### `read_yaml_file(path: string) -> string`
 
 **Rust:**
+
 ```rust
 #[tauri::command]
 pub async fn read_yaml_file(path: String) -> IpcResult<String> {
@@ -77,6 +78,7 @@ pub async fn read_yaml_file(path: String) -> IpcResult<String> {
 ```
 
 **TypeScript:**
+
 ```typescript
 import { invoke } from "@tauri-apps/api/core";
 
@@ -86,6 +88,7 @@ export async function readYamlFile(path: string): Promise<string> {
 ```
 
 **Behavior:**
+
 - Reads UTF-8 text. Rejects non-UTF-8 (Invalid).
 - Path must be within an `assetProtocol.scope` glob (rejects otherwise: PermissionDenied).
 - Does NOT parse YAML — the frontend's `yaml` package does that. Rust just shuttles bytes.
@@ -94,15 +97,16 @@ export async function readYamlFile(path: string): Promise<string> {
 
 Writes UTF-8 text atomically (write-to-temp + rename). Rejects paths outside scope.
 
-### `read_binary_file(path: string) -> number[]`
+### `read_binary_file(path: string) -> base64 string`
 
 Reads an image asset for PDF export inlining. Registered in M7.5 T-123e.
 
 **Behavior:**
+
 - Path must be absolute and within the same scoped roots as `read_yaml_file`.
 - Path must end with `.jpg`, `.jpeg`, `.png`, `.svg`, or `.webp`.
 - File size must be at most 5 MB.
-- Returns bytes as a JSON array so the frontend can encode `data:image/{mime};base64,...` in `renderStaticHtmlForExport`.
+- Returns base64-encoded bytes so the frontend can build `data:image/{mime};base64,...` in `renderStaticHtmlForExport` without JSON number-array amplification.
 
 ### `list_directory(path: string) -> DirEntry[]`
 
@@ -111,10 +115,10 @@ Reads an image asset for PDF export inlining. Registered in M7.5 T-123e.
 ```typescript
 interface DirEntry {
   name: string;
-  path: string;          // absolute
+  path: string; // absolute
   kind: "file" | "directory";
-  isYaml: boolean;       // helper: name endsWith .yaml
-  isDocFolder: boolean;  // helper: directory containing a *.yaml file
+  isYaml: boolean; // helper: name endsWith .yaml
+  isDocFolder: boolean; // helper: directory containing a *.yaml file
 }
 ```
 
@@ -163,6 +167,7 @@ API keys are stored in the OS keychain by the install script (T-73) and read on 
 ### `get_secret(name: string) -> string`
 
 **Rust:**
+
 ```rust
 #[tauri::command]
 pub async fn get_secret(name: String) -> IpcResult<String> {
@@ -176,6 +181,7 @@ pub async fn get_secret(name: String) -> IpcResult<String> {
 ```
 
 **TypeScript:**
+
 ```typescript
 export async function getSecret(name: string): Promise<string> {
   return invoke<string>("get_secret", { name });
@@ -219,6 +225,7 @@ The ledger lives in SQLite at `<config_dir>/cost.db`. Operations go through Rust
 ### `insert_cost_row(row: CostLedgerRow) -> void`
 
 **Rust:**
+
 ```rust
 #[derive(Deserialize)]
 pub struct CostLedgerRowInput {

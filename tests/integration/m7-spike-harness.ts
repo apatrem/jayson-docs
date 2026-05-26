@@ -27,10 +27,7 @@ vi.mock("echarts", async () => {
 });
 
 export const sampleProposalPath = "/Users/me/Documents/sample-proposal.yaml";
-export const sampleProposalYaml = readFileSync(
-  "examples/sample-proposal.yaml",
-  "utf8",
-);
+export const sampleProposalYaml = readFileSync("examples/sample-proposal.yaml", "utf8");
 export const singleSectionProposalYaml = readFileSync(
   "tests/fixtures/m7-single-section-proposal.yaml",
   "utf8",
@@ -54,7 +51,7 @@ export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
   let exportedPath = "";
   const invokeMock = vi.fn((cmd: string) => {
     if (cmd === "read_binary_file") {
-      return Promise.resolve([0xff, 0xd8, 0xff]);
+      return Promise.resolve("/9j/");
     }
     if (cmd === "plugin:shell|open") {
       return Promise.resolve();
@@ -67,8 +64,7 @@ export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
   });
 
   const readYamlFile = vi.fn(
-    options.readYamlFile ??
-      ((_path: string) => Promise.resolve(currentYaml)),
+    options.readYamlFile ?? ((_path: string) => Promise.resolve(currentYaml)),
   );
   const writeYamlFile = vi.fn(
     options.writeYamlFile ??
@@ -77,17 +73,15 @@ export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
         return Promise.resolve();
       }),
   );
-  const exportPdf = vi.fn(
-    ({ html, suggestedName }: { html: string; suggestedName: string }) => {
-      exportedHtml = html;
-      exportedPath = join(tmpdir(), suggestedName.replace(/\.pdf$/iu, ".html"));
-      writeFileSync(exportedPath, exportedHtml);
-      return Promise.resolve({
-        kind: "browser_handoff" as const,
-        path: exportedPath,
-      });
-    },
-  );
+  const exportPdf = vi.fn(({ html, suggestedName }: { html: string; suggestedName: string }) => {
+    exportedHtml = html;
+    exportedPath = join(tmpdir(), suggestedName.replace(/\.pdf$/iu, ".html"));
+    writeFileSync(exportedPath, exportedHtml);
+    return Promise.resolve({
+      kind: "browser_handoff" as const,
+      path: exportedPath,
+    });
+  });
   const openPath = vi.fn(() => Promise.resolve());
 
   const rtl = render(
@@ -95,7 +89,8 @@ export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
       ...(options.initialDocument === undefined
         ? {}
         : { initialDocument: options.initialDocument }),
-      documentWatchdogBudgetMs: 10_000,
+      // jsdom + full DocumentRenderer + ECharts/Mermaid SSR is ~10x slower than production browser; production budget is 50ms. 1s is the lowest value that doesn't flake CI.
+      documentWatchdogBudgetMs: 1_000,
       fileActions: {
         selectOpenPath: () => Promise.resolve(sampleProposalPath),
         readYamlFile,

@@ -5,6 +5,7 @@ use std::{
 };
 
 use super::types::{IpcError, IpcResult};
+use base64::{engine::general_purpose::STANDARD, Engine as _};
 use tauri::Manager;
 
 const MAX_BINARY_FILE_BYTES: u64 = 5_242_880;
@@ -26,7 +27,7 @@ pub async fn write_yaml_file(
 }
 
 #[tauri::command]
-pub async fn read_binary_file(app: tauri::AppHandle, path: String) -> IpcResult<Vec<u8>> {
+pub async fn read_binary_file(app: tauri::AppHandle, path: String) -> IpcResult<String> {
     let roots = asset_scope_roots(&app);
     read_binary_file_from_path(&path, &roots)
 }
@@ -36,7 +37,7 @@ fn read_yaml_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<
     fs::read_to_string(path).map_err(|e| IpcError::Io(e.to_string()))
 }
 
-fn read_binary_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<Vec<u8>> {
+fn read_binary_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<String> {
     let path = canonical_scoped_read_target(
         path,
         allowed_roots,
@@ -50,7 +51,8 @@ fn read_binary_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResul
             "file exceeds 5MB export limit".to_string(),
         ));
     }
-    fs::read(path).map_err(|e| IpcError::Io(e.to_string()))
+    let bytes = fs::read(path).map_err(|e| IpcError::Io(e.to_string()))?;
+    Ok(STANDARD.encode(&bytes))
 }
 
 fn write_yaml_file_to_path(path: &str, content: &str, allowed_roots: &[PathBuf]) -> IpcResult<()> {
@@ -334,10 +336,10 @@ mod tests {
         let path = root.join("image.png");
         std::fs::write(&path, [0x89, b'P', b'N', b'G']).expect("write fixture");
 
-        let bytes = read_binary_file_from_path(path.to_str().unwrap(), &[root.clone()])
+        let encoded = read_binary_file_from_path(path.to_str().unwrap(), &[root.clone()])
             .expect("read allowed binary");
 
-        assert_eq!(bytes, vec![0x89, b'P', b'N', b'G']);
+        assert_eq!(encoded, "iVBORw==");
         let _ = std::fs::remove_dir_all(root);
     }
 

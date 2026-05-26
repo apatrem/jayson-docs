@@ -4,10 +4,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { resolveAssetPath } from "../brand-tokens/resolve-asset";
 import { getEChartsOption } from "../renderer/blocks/Chart";
-import {
-  DocumentRenderer,
-  type DocumentModel,
-} from "../renderer/DocumentRenderer";
+import { DocumentRenderer, type DocumentModel } from "../renderer/DocumentRenderer";
 import { renderMermaidSvg } from "../renderer/mermaid";
 import type { BrandTokens } from "../schema/brand";
 import type { Block } from "../schema/blocks";
@@ -57,12 +54,7 @@ export async function renderStaticHtmlForExport(
 ): Promise<string> {
   const diagramSvgs = await preRenderDiagramSvgs(doc, brand);
   const chartSvgs = preRenderChartSvgs(doc, brand);
-  const imageDataUris = await preloadImageDataUris(
-    doc,
-    brand,
-    docFolderPath,
-    sharedFolderPath,
-  );
+  const imageDataUris = await preloadImageDataUris(doc, brand, docFolderPath, sharedFolderPath);
   const body = renderToStaticMarkup(
     createElement(DocumentRenderer, {
       doc,
@@ -114,18 +106,15 @@ async function preloadImageDataUris(
     const mimeType = mimeTypeForPath(path);
 
     try {
-      const bytes = await readBinaryFile(path);
-      totalBytes += bytes.length;
+      const encoded = await readBinaryFile(path);
+      totalBytes += base64DecodedByteLength(encoded);
       if (totalBytes > TOTAL_IMAGE_PAYLOAD_LIMIT_BYTES) {
         dataUris[block.id] = imagePlaceholderDataUri("Image too large to export");
         console.warn("image export payload exceeded 50MB total cap");
         continue;
       }
-      const encoded =
-        mimeType === "image/svg+xml"
-          ? svgBytesToSafeBase64(bytes)
-          : bytesToBase64(bytes);
-      dataUris[block.id] = `data:${mimeType};base64,${encoded}`;
+      const safeEncoded = mimeType === "image/svg+xml" ? svgBase64ToSafeBase64(encoded) : encoded;
+      dataUris[block.id] = `data:${mimeType};base64,${safeEncoded}`;
     } catch (error) {
       if (String(error).includes("file exceeds 5MB export limit")) {
         dataUris[block.id] = imagePlaceholderDataUri("Image too large to export");
@@ -138,8 +127,8 @@ async function preloadImageDataUris(
   return dataUris;
 }
 
-async function readBinaryFile(path: string): Promise<ArrayLike<number>> {
-  return invoke<ArrayLike<number>>("read_binary_file", { path });
+async function readBinaryFile(path: string): Promise<string> {
+  return invoke<string>("read_binary_file", { path });
 }
 
 function mimeTypeForPath(path: string): string {
@@ -160,28 +149,20 @@ function mimeTypeForPath(path: string): string {
   }
 }
 
-function bytesToBase64(bytes: ArrayLike<number>): string {
-  let binary = "";
-  for (let index = 0; index < bytes.length; index += 1) {
-    binary += String.fromCharCode(bytes[index] ?? 0);
-  }
-  if (typeof btoa === "function") {
-    return btoa(binary);
-  }
-  return Buffer.from(binary, "binary").toString("base64");
-}
-
-function svgBytesToSafeBase64(bytes: ArrayLike<number>): string {
-  const svg = bytesToUtf8(bytes);
+function svgBase64ToSafeBase64(encoded: string): string {
+  const svg = base64ToUtf8(encoded);
   return Buffer.from(sanitizeSvgForImage(svg), "utf8").toString("base64");
 }
 
-function bytesToUtf8(bytes: ArrayLike<number>): string {
-  const array = Uint8Array.from({ length: bytes.length }, (_value, index) => bytes[index] ?? 0);
-  if (typeof TextDecoder !== "undefined") {
-    return new TextDecoder().decode(array);
-  }
-  return Buffer.from(array).toString("utf8");
+function base64ToUtf8(encoded: string): string {
+  return Buffer.from(encoded, "base64").toString("utf8");
+}
+
+function base64DecodedByteLength(encoded: string): number {
+  const normalized = encoded.replace(/\s/gu, "");
+  if (normalized.length === 0) return 0;
+  const padding = normalized.endsWith("==") ? 2 : normalized.endsWith("=") ? 1 : 0;
+  return Math.floor((normalized.length * 3) / 4) - padding;
 }
 
 function sanitizeSvgForImage(svg: string): string {
@@ -192,7 +173,7 @@ function sanitizeSvgForImage(svg: string): string {
 
 function imagePlaceholderDataUri(message: string): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="120"><rect width="100%" height="100%" fill="#f8fafc"/><text x="24" y="68" fill="#475569" font-family="Arial, sans-serif" font-size="20">${escapeHtml(message)}</text></svg>`;
-  return `data:image/svg+xml;base64,${bytesToBase64(Array.from(svg, (char) => char.charCodeAt(0)))}`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
 }
 
 async function preRenderDiagramSvgs(
@@ -208,10 +189,7 @@ async function preRenderDiagramSvgs(
   return svgs;
 }
 
-function preRenderChartSvgs(
-  doc: DocumentModel,
-  brand: BrandTokens,
-): Record<string, string> {
+function preRenderChartSvgs(doc: DocumentModel, brand: BrandTokens): Record<string, string> {
   const svgs: Record<string, string> = {};
   for (const block of blocksInDocument(doc)) {
     if (block.type !== "chart") continue;

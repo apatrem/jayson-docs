@@ -1184,7 +1184,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 2h
 - **Note: batches the test-engineer review findings into one cohesive task. Individually each is 5-20 minutes; bundling captures the rationale (closing review-identified gaps) in one commit.**
 
-### T-123l [ ] · Perf + cleanup polish (LOW findings batch)
+### T-123l [x] · Perf + cleanup polish (LOW findings batch)
 - **Depends-on:** T-123g
 - **Reads:** `src-tauri/src/ipc/fs.rs` (esp. `read_binary_file` return type), `src/export/render-static-html.ts` (esp. `bytesToBase64` function), `tests/integration/m7-spike-harness.ts` (the `documentWatchdogBudgetMs: 10_000` setting at line ~94), `tests/integration/m7-spike-error-paths.test.ts` (the `getByText("write failed")` replacement at line ~46 from `ce29a4c`)
 - **Outputs:**
