@@ -916,7 +916,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** smoke test confirms export_pdf produces a temp HTML file at the returned path containing the input HTML. The render-static-html test confirms the output is well-formed + safe.
 - **est.** 4h
 
-### T-119 [ ] · App entry — single-document shell
+### T-119 [x] · App entry — single-document shell
 - **Depends-on:** T-116, T-117
 - **Reads:** `docs/UI_APP_SHELL.md`
 - **Outputs:**
