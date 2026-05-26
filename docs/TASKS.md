@@ -1311,7 +1311,75 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1h
 - **Note: SECOND runtime BLOCKER from "tests pass + runtime crashes" pattern. First was the shell-plugin regex test (T-123m closes). Both share root cause: Vitest environment differs from Tauri webview. AGENTS.md §Review playbook conventions #5 (wrap-mirroring) and #6 (Node globals in renderer) now codify both lessons. If a third runtime divergence surfaces in M7.5 round-3 review, that signals the convention itself needs a sharper pre-commit gate (e.g., a CI job that builds the production bundle + runs renderer tests under Node without globals).**
 
-**M7-spike acceptance gate (REVISED 2026-05-26 v3):** T-123n passing (T-123a..T-123n all `[x]`). The previous "T-123l passing" gate (v2) missed (a) the shell-open regex incorrectness exposed by reading the actual Tauri plugin source per AGENTS.md §Review playbook convention #1, and (b) the Node Buffer usage in renderer code that crashes in the Tauri webview. T-123m closes (a); T-123n closes (b). Both are codified as preventive conventions (#5, #6) so the same root cause shouldn't repeat. M8 T-124 fires AFTER T-123n.
+### T-123o [ ] · Fix Windows delete-then-rename data loss (gate-blocking)
+- **Depends-on:** T-123l
+- **Reads:** `src-tauri/src/ipc/fs.rs` (esp. `rename_tmp_file` line ~228-241 — the cross-platform helper that writes the YAML save), the `windows` Rust crate docs for `MoveFileExW` (or alternatively the documented Rust `fs::rename` Windows semantics on Win10+)
+- **Outputs:**
+  - `src-tauri/src/ipc/fs.rs` — replace the Windows branch of `rename_tmp_file`. The current code at line ~234-241 does `if target_path.exists() { fs::remove_file(target_path)?; } fs::rename(tmp_path, target_path)`. Between the `remove_file` and the `rename`, if the rename fails (antivirus lock, network glitch, brief permission denial), the original target is permanently gone AND the outer error handler at line ~90 deletes the `.tmp` sibling too — total data loss. Replace with a sibling-`.bak` swap pattern that preserves the original until the new file is in place:
+    ```rust
+    #[cfg(windows)]
+    fn rename_tmp_file(tmp_path: &Path, target_path: &Path) -> IpcResult<()> {
+        if target_path.exists() {
+            let backup_path = target_path.with_extension({
+                let ext = target_path.extension()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("yaml");
+                format!("{ext}.bak")
+            });
+            // 1) move original to .bak (atomic on NTFS)
+            fs::rename(target_path, &backup_path)
+                .map_err(|e| IpcError::Io(format!("backup failed: {e}")))?;
+            // 2) move new file into target slot
+            if let Err(rename_err) = fs::rename(tmp_path, target_path) {
+                // 3) on failure, restore original
+                let _ = fs::rename(&backup_path, target_path);
+                return Err(IpcError::Io(format!("rename failed (original restored): {rename_err}")));
+            }
+            // 4) success: drop .bak
+            let _ = fs::remove_file(&backup_path);
+            Ok(())
+        } else {
+            fs::rename(tmp_path, target_path)
+                .map_err(|e| IpcError::Io(e.to_string()))
+        }
+    }
+    ```
+    Note: Rust's `fs::rename` on Windows 10+ uses `MoveFileExW` with `MOVEFILE_REPLACE_EXISTING` semantics when the target doesn't exist, so the new-file path is atomic. The risk is only the cross-volume / pre-existing-target case the original code wrapped.
+  - `src-tauri/src/ipc/fs.rs` `#[cfg(test)] mod tests` — add a Windows-specific test (cfg-gated): write a target file, simulate a rename failure (e.g., by pre-creating a directory at the target path so `fs::rename` of the tmp file fails), invoke `rename_tmp_file`, assert (a) the original target content is still readable AND (b) the `.bak` was cleaned up (or restored — either is acceptable on the recovery path). On non-Windows runners (the dev / CI default), the test is a no-op with a comment explaining the cfg gate.
+  - `BLOCKERS.md` — amend the `[drift-2026-05-26d]` family OR append a new `[drift-2026-05-26h] Windows delete-then-rename data loss closed by T-123o`. The latter is cleaner.
+  - `docs/TAURI_IPC.md` §1 (File I/O) `write_yaml_file` — note the atomicity guarantee: "On Windows with a pre-existing target, the write uses a sibling-`.bak` swap to preserve the original if the rename fails. Cross-platform: tmp file is written + fsync'd before the swap. Crash mid-swap leaves either the original or the new file intact (never neither)."
+- **Acceptance:**
+  - The new Windows-cfg-gated test passes (no-op skipped on non-Windows CI; on a Windows runner, the failure-injection path proves the original is preserved).
+  - Manual on Windows (any dev with access): create a YAML, save it, simulate a write failure by quickly locking the file mid-rename via PowerShell, observe the original content survives.
+  - cargo test on Linux/macOS: no regression.
+- **est.** 0.5h
+- **Note: real production bug carried over from the M7 security audit (M-4) AND re-flagged in M7.5 round-2 security audit. Any Windows consultant who saves while their antivirus scans the file is at risk of total data loss. Gate-blocking for M8 because real-user data loss is a quality bar v1.0 has to clear.**
+
+### T-123p [ ] · Defense-in-depth + cosmetic cleanup batch (NOT gate-blocking)
+- **Depends-on:** T-123l
+- **Reads:** `src-tauri/src/ipc/pdf.rs` (`cleanup_export_temp_dir_at` line ~61-76), `src/export/render-static-html.ts` (`sanitizeSvgForImage` line ~170-175), `src/ui/views/DocumentView.tsx` (`editorContent` useMemo + `currentDoc.current ?? doc` fallback), the round-2 security audit findings L-1 and L-2 in chat history
+- **Outputs:**
+  - `src-tauri/src/ipc/pdf.rs` — extend `cleanup_export_temp_dir_at` to handle nested symlinks: after the root-symlink check, iterate the root's top-level children via `read_dir` and for any entry whose `symlink_metadata().file_type().is_symlink()` is true, log a warning and remove just the symlink entry (not its target). Then call `fs::remove_dir_all` on the remaining tree. Add a Rust test using `std::os::unix::fs::symlink` (cfg-gated on Unix): create `/tmp/test-root/innocent-symlink → /tmp/test-target-dir`, run cleanup, assert `/tmp/test-target-dir` is intact (not recursively deleted), the symlink entry is gone, the root is gone.
+  - `src/export/render-static-html.ts` — `sanitizeSvgForImage` currently strips `<script>` and `on*=` only. Extend the allowlist-by-removal to also strip:
+    - `xlink:href="javascript:..."` and `href="javascript:..."` attributes
+    - `<foreignObject>` tags (block of arbitrary HTML inside SVG that executes if SVG ever rendered as `<object>`/inline)
+    - `<a>` tags inside SVG (or strip `href` attribute on them — same `javascript:` risk)
+    - SMIL `<animate>`, `<animateMotion>`, `<set>` elements with event-binding side effects
+    - `<style>` tags (CSS `expression()` IE-legacy + `url(javascript:)`)
+    Also add a tripwire test at `tests/export/svg-sanitization.test.ts` (NEW or extension of existing) that asserts each of the above attack vectors is stripped from the output. Document the "safe ONLY under `<img src=data:>` embedding" contract in a comment AND in `docs/UI_APP_SHELL.md`.
+  - `src/ui/views/DocumentView.tsx` — three cosmetic cleanups (carryover P1-1-style from round-1 review):
+    1. `editorContent` `useMemo([doc])` — verify the dep array is correct now that T-123a moved the in-flight doc into a ref. If `doc` only changes on path-switch + save-completion, the memo is doing nothing useful and can be inlined. If it still has reactive consumers, keep but add a one-line comment explaining why.
+    2. `currentDoc.current ?? doc` fallback — if the ref is always initialized at mount, the `?? doc` branch is dead code. Either drop the fallback (and convert to non-null `currentDoc.current!`) OR add a comment explaining the initialization race.
+    3. `render-static-html.ts` error-message string-matching (`.includes("file exceeds 5MB export limit")` in the IPC error fallback) — currently brittle because the Rust side's error wording could shift. Use the `IpcError.kind` discriminator instead (`.kind === "invalid"` + a code field), OR if no kind exists, replace the string-match with a regex that's documented as "tracking Rust error wording — keep in sync with `fs.rs:<line>`."
+  - `BLOCKERS.md` — append a single drift entry `[drift-2026-05-26i] M7.5 LOW carryovers (cleanup nested symlinks, SVG sanitizer depth, three DocumentView cosmetic items) — closed in T-123p`. Note this task is NOT gate-blocking for M8 firing.
+- **Acceptance:**
+  - Nested-symlink test passes on Unix CI; no regression on Windows.
+  - SVG tripwire tests pass (8 new attack vectors blocked).
+  - 3 cosmetic cleanups apply without breaking the existing DocumentView tests.
+- **est.** 1.5h
+- **Note: NOT GATE-BLOCKING for M8 → T-124. These are defense-in-depth + cosmetic cleanup. The current code is safe today because (a) `remove_dir_all` doesn't follow nested symlinks by default per Rust docs, (b) SVG is embedded as `data:image/svg+xml` via `<img>` where browsers script-disable embedded scripts, (c) the cosmetic items are non-functional. M8 can fire before T-123p lands; T-123p can be picked by the loop in parallel with M8 work, or even after M8 ships.**
+
+**M7-spike acceptance gate (REVISED 2026-05-26 v4):** T-123o passing (T-123a..T-123o all `[x]`). The previous "T-123n passing" gate (v3) missed the Windows data-loss carryover (round-2 audit M-4). T-123o closes that. T-123p is queued but **NOT gate-blocking** — it's a defense-in-depth + cosmetic batch that can land in parallel with M8 or after. L-3 (keychain audit logging) is explicitly deferred to M9 prep since the keychain only goes live then. M8 T-124 fires AFTER T-123o (not T-123p).
 
 ---
 
@@ -1320,7 +1388,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 Second integration milestone. Fires AFTER M7-spike ships and consultant testing of the editor surface has had a chance to surface any UX rework. Adds router infrastructure, first-launch folder picker, library card grid (with empty-state "Use Sample" button), 4 standard document templates with a "Create from Template" surface, generated-blocks runtime loading, and pipeline end-to-end validation.
 
 ### T-124 [ ] · Update UI_APP_SHELL.md for M8 architecture
-- **Depends-on:** T-123n (M7-spike fully fixed per the 2026-05-26 multi-axis review + 5th-round shell-plugin BLOCKER + 6th-round shell-regex correctness + Node-Buffer-in-renderer runtime BLOCKER — see "M7-spike acceptance gate (REVISED 2026-05-26 v3)" above)
+- **Depends-on:** T-123o (M7-spike fully fixed per the 2026-05-26 multi-axis review across 8 rounds — see "M7-spike acceptance gate (REVISED 2026-05-26 v4)" above. T-123p is queued but NOT a Depends-on; it's the LOW-defense-in-depth batch that can land in parallel.)
 - **Reads:** `docs/UI_APP_SHELL.md` (M7-spike state from T-115), `docs/UI_LIBRARY.md`, `docs/SETUP_INSTALL_FLOW.md`, `src/setup/install.ts` (esp. line 41: `InstallAppConfigSchema`), `docs/TYPES.md`
 - **Outputs:** `docs/UI_APP_SHELL.md` — appended M8 section describing:
   - the router (`src/ui/router/Routes.tsx`) — route types for welcome, folder-picker, library, document; route-intent contract
@@ -1488,12 +1556,12 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 | 6 | M6 (deck) | T-103 — T-107 | 38 | v1.1 |
 | 6.5 | Scaffold hardening | T-113 — T-114 | 4 | post-M6 audit fixes |
 | 7 | M7 (document editor spike) | T-115 — T-123 (incl. T-120b) | ~33 | minimum runnable app |
-| 7.5 | M7 review fixes (5 BLOCKERs + 7-round review backlog) | T-123a — T-123n | ~18 | review verdict 2026-05-26 across 7 rounds; AGENTS.md §Review playbook conventions #1–#6 codified |
-| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after T-123n (revised M7 gate v3) + consultant testing |
+| 7.5 | M7 review fixes (5 BLOCKERs + 8-round review backlog) | T-123a — T-123p | ~20 | review verdict 2026-05-26 across 8 rounds; AGENTS.md §Review playbook #1–#6; T-123o gate-blocking, T-123p optional (LOW defense-in-depth) |
+| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after T-123o (gate v4) + consultant testing; T-123p can fire in parallel |
 | 9 | Deployment | T-108 — T-112 | 21 | renumbered from Phase 7 |
-| | | | **~553.5h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
+| | | | **~555.5h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
 
-**Realistic v1 (excluding M6 deck path, including M7-spike + M7.5 fixes + M8):** ~514.5 hours ≈ 12–13 weeks full-time. The ~91.5h of M7-spike + M7.5 + M8 + scaffold hardening is the integration + review-fix work that turns the disconnected M1–M5 modules into a runnable consultancy app whose first user-visible surface actually works. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
+**Realistic v1 (excluding M6 deck path, including M7-spike + M7.5 fixes + M8):** ~516.5 hours ≈ 12–13 weeks full-time. The ~93.5h of M7-spike + M7.5 + M8 + scaffold hardening is the integration + review-fix work that turns the disconnected M1–M5 modules into a runnable consultancy app whose first user-visible surface actually works. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
 
 These numbers match the architecture memo's §11 estimate of "6–12 months commitment" — the lower bound is achievable with a strong developer focused full-time; the upper bound includes M6 and a real-world overhead (review, debug, refactor, meetings).
 

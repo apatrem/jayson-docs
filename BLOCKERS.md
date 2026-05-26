@@ -238,3 +238,18 @@ Two different actions (`dtolnay/rust-toolchain@1.83.0` and `ruby/setup-ruby@v1`)
 **No marker change:** T-117 stays `[x]` — it correctly hardened the 2 commands its Outputs declared. The drift is in IPC surface composition, not in T-117's task content. T-123c is the surface fix.
 
 ---
+
+### [drift-2026-05-26j] M9 prep — keychain audit logging deferred
+
+**Detected at:** 2026-05-26T18:37:41Z (M7.5 round-2 security audit, finding L-3)
+**Tasks affected:** M9 (whenever the keychain IPC commands `get_secret` / `set_secret` / `delete_secret` actually go live alongside the AI / cost-ledger surface). Currently all 3 commands are registered but functionally stubs — they hold the API contract for M9.
+**What happened (round-2 audit L-3):** `src-tauri/src/ipc/keychain.rs:3-30` registers the keychain commands but has no audit logging. When M9 wires the keychain to the LLM-call flow, any renderer code (or a stored-XSS exploit, though T-123i closed the ProseRenderer path) can call `get_secret({ name: "anthropic_api_key" })` and receive the plaintext. Rate limiting is absent; abuse-pattern detection is absent.
+**Why deferred to M9 prep (not M7.5):** the commands are stubs today, so audit logging would log "nothing happened" calls. Adding the discipline when M9 actually wires the keychain to the LLM-call flow is the right time — the log entries become meaningful at that point. Closing it in M7.5 would add dead code with no protection value.
+**Implication for M9:**
+  1. Before M9's first LLM-call flow lands, add `log::info!("get_secret name={name}");` (without logging the value) to each of the 3 keychain commands.
+  2. Consider an in-process per-name backoff if the keyring crate returns success too rapidly (defends against compromised-renderer enumeration attempts).
+  3. The audit log should integrate with whatever logging sink M9 picks for the AI / cost-ledger flow — don't introduce a parallel sink.
+  4. Add a test that confirms `get_secret` access is logged (without leaking the secret value).
+**No marker change:** no current task affected; this is a forward-reference for M9 prep.
+
+---
