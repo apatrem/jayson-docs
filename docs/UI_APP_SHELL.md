@@ -274,13 +274,13 @@ export async function renderStaticHtmlForExport(
 
 Replaces the current no-op stub. Accepts `{ html: String, suggestedName: String }`. Writes the HTML to `<tmpdir>/docsystem-export/<uuid>/<sanitizedName>.html`. Returns `{ kind: 'browser_handoff', path: String }`.
 
-Temp file location + cleanup policy: **system temp dir (`std::env::temp_dir()`) + UUID subfolder; cleanup on next launch.** This is one of the two architectural decisions T-116 must record (see §T-116 decisions below). On every Tauri app start, sweep any `<tmpdir>/docsystem-export/*` directory and delete it before creating new ones. Idempotent + OS-friendly + no orphan files left after a crash.
+Temp file location + cleanup policy: **system temp dir (`std::env::temp_dir()`) + UUID subfolder; cleanup on next launch** (resolved by T-116 Decision #2 — see §Architectural decisions). On Tauri's `setup` hook, the app sweeps `<tmpdir>/docsystem-export/` via `fs::remove_dir_all` before any window opens. Idempotent + OS-friendly + no orphan files left after a crash.
 
-Suggested-name sanitization: the `suggestedName` parameter is sanitized (strip path traversal, restrict to `[A-Za-z0-9._-]` + spaces) before being concatenated into the temp path. The full path is then validated to be inside the temp directory before being returned. Tests in T-118 cover the path-traversal rejection case.
+Suggested-name sanitization: the `suggestedName` parameter is sanitized to `[A-Za-z0-9._ -]+` (other characters replaced with `_`), leading dots stripped, max length 200 chars (Windows path-length safety), and the final concatenated path is `Path::canonicalize`-validated to live under `<tmpdir>/docsystem-export/` before being returned. Tests in T-118 cover the path-traversal rejection case. (See T-116 Decision #2 for the full contract.)
 
 ### Brand source
 
-**Hardcoded `brand.example.yaml`** for M7-spike (per T-116 decision #1 below). Loaded via Vite raw import (`import brandYaml from '../brand.example.yaml?raw'`) at build time. M8+ may add a brand-picker / brand-folder surface (see `docs/SETUP_INSTALL_FLOW.md` Step 3 for the future contract).
+**Hardcoded `brand.example.yaml`** for M7-spike (resolved by T-116 Decision #1 — see §Architectural decisions). Loaded via Vite raw import (`import brandYaml from '../brand.example.yaml?raw'`) at build time, parsed once on app boot. M8+ may add a brand-picker / brand-folder surface (see `docs/SETUP_INSTALL_FLOW.md` Step 3 for the future contract).
 
 ---
 
@@ -295,24 +295,53 @@ The combination of per-block placeholder + per-DocumentView error boundary means
 
 ---
 
-## Architectural decisions to record in T-116
+## Architectural decisions (T-116 — CLOSED)
 
-T-116 (the gate task between this spec and the implementation tasks T-117..T-123) MUST resolve and record in this document:
+> **Status:** RESOLVED 2026-05-26 by T-116. The two questions T-115 queued have explicit calls below. T-117..T-123 may now fire.
 
 ### Decision #1 — Brand source for the spike
 
-- **Options:** (a) hardcoded `brand.example.yaml` (the recommendation); (b) File → Open Brand surface with a separate dialog.
-- **Recommendation: (a).** Keeps spike scope minimal. Brand-picker is M8 territory.
-- **Consumer:** T-120 (DocumentView passes the loaded brand to DocumentRenderer + to `renderStaticHtmlForExport`).
+**Decision: (a) — hardcoded `brand.example.yaml`, loaded via Vite raw import at build time.**
+
+- **Options considered:**
+  - **(a) Hardcoded `brand.example.yaml`** — load at build time via `import brandYaml from '../brand.example.yaml?raw'`; parse once on app boot.
+  - **(b) File → Open Brand surface** — separate File menu item that prompts for a brand YAML path, validates against `BrandTokensSchema`, persists to config.
+- **Why (a):** the spike's purpose is to validate the editor surface end-to-end. Adding a brand-picker doubles the install surface (a second file dialog, brand-validation error states, brand-config persistence) for zero learning about the editor. `brand.example.yaml` is already maintained as the canonical reference brand for tests and demos; reusing it costs nothing.
+- **Why not (b):** brand-folder selection is a real consultancy concern (each firm has their own brand book), but the right place to surface it is the M8 install wizard or M9 settings panel — where multi-field config (folder + identity + LLM keys) already needs UI. Folding brand-picker into M7-spike would force half of M8's settings UI in early.
+- **Implementation contract for T-120:**
+  - DocumentView loads brand from `brand.example.yaml` (synchronous, via Vite raw import) once at module top-level — not per-render.
+  - The loaded `BrandTokens` value is passed to `<DocumentRenderer brand={brand}>` and to `renderStaticHtmlForExport(doc, brand)` (T-118).
+  - No brand-related UI in M7-spike: no menu items, no settings, no toasts.
+- **M8 forward-reference:** T-127's folder-picker stays minimal (single dialog, just `paths.cloudSyncRoot`); brand-folder selection lands later — M9 or M9+ when AI cost attribution and identity entry also need surfacing.
+- **Consumer tasks:** T-120 (DocumentView mount), T-118 (`renderStaticHtmlForExport` signature).
 
 ### Decision #2 — Temp HTML file location + cleanup policy
 
-- **Options:** (a) system temp dir (`std::env::temp_dir()` + UUID subfolder); (b) app config dir.
-- **Cleanup options:** (i) on app quit; (ii) on next launch; (iii) never (rely on OS temp-dir cleanup).
-- **Recommendation: (a) + (ii) — system temp dir + cleanup on next launch.** Idempotent (handles crash recovery); OS-friendly (temp dir is the right home); avoids the quit-hook complexity of (i).
-- **Consumer:** T-118 (export_pdf implementation reads this).
+**Decision: (a) + (ii) — system temp dir (`std::env::temp_dir()`) + UUID subfolder + cleanup on next app launch.**
 
-T-117..T-123 MUST NOT fire until T-116 is `[x]`. The two decisions are small but they affect the implementation tasks directly; recording them keeps downstream tasks unambiguous.
+- **Options considered:**
+  - **Location: (a) `std::env::temp_dir()`** vs **(b) app config dir.**
+  - **Cleanup: (i) on app quit** vs **(ii) on next launch** vs **(iii) never (rely on OS temp-dir cleanup).**
+- **Why (a) — temp dir:** that's literally what the OS temp dir is for. Putting transient export artefacts in the app config dir would pollute a user-facing location, surprise consultants on backup tools, and create a "what is this file?" recovery question every time we crash with files left behind.
+- **Why (ii) — cleanup on next launch:** on-quit cleanup (i) requires an `app.on_window_event(WindowEvent::CloseRequested ...)` hook that runs reliably across macOS (Cmd-Q), Windows (X button), Linux (kill signals), AND crashes. On-launch cleanup (ii) is a single function called from `main()` before any export happens — works in 100% of scenarios including crash recovery. (iii) "never" is technically defensible (OS reaps temp eventually) but a consultant exporting 5 docs/day for a month would leave 150 abandoned ~2 MB HTML files in their temp dir — visible to `du` audits and "what's filling my disk?" investigations.
+- **Concrete contract for T-118:**
+  - **Root path:** `<tmpdir>/docsystem-export/` where `<tmpdir> = std::env::temp_dir()`.
+  - **Per-export path:** `<tmpdir>/docsystem-export/<uuid-v4>/<sanitized-suggested-name>.html`. The UUID subfolder isolates concurrent exports and lets the next-launch sweep be a simple `remove_dir_all`.
+  - **Sanitization:** `suggestedName` is sanitized to `[A-Za-z0-9._ -]+` (other chars replaced with `_`); leading dots stripped; max length 200 chars (path-length safety on Windows); the final concatenated path is `Path::canonicalize`-checked to confirm it lives under `<tmpdir>/docsystem-export/` (defence-in-depth against path traversal even after sanitization).
+  - **Cleanup function:** `cleanup_export_temp_dir()` called once from `lib.rs` `setup` hook (Tauri's startup phase, before any window opens). Implementation: `let root = env::temp_dir().join("docsystem-export"); if root.exists() { let _ = fs::remove_dir_all(&root); }`. Errors are logged (via `log::warn!`) but never propagate — the export still works on a fresh `<uuid>` subfolder created on demand.
+  - **Per-export setup:** `export_pdf` creates `<tmpdir>/docsystem-export/<new-uuid>/` lazily via `fs::create_dir_all` before writing.
+- **Return contract:** `export_pdf(html, suggestedName) -> Result<ExportHandoff, IpcError>` where `ExportHandoff = { kind: 'browser_handoff', path: String }`. The `path` is what the renderer passes to `shell.open`.
+- **Why not write the user-facing PDF directly to the export dir:** the spike doesn't produce a PDF — the user does (via browser Cmd-P). The temp HTML is intermediate; once the browser opens it, the consultant saves the PDF wherever they want. We never own the final artefact.
+- **Consumer tasks:** T-118 (`export_pdf` Rust impl + the new `setup`-phase cleanup hook), T-121 (FileMenu invokes the IPC + `shell.open`).
+
+### Closed-decision recap
+
+| # | Decision | Consumer | Status |
+|---|---|---|---|
+| 1 | Brand source = hardcoded `brand.example.yaml` (Vite raw import, build-time) | T-120 + T-118 | **CLOSED** |
+| 2 | Temp HTML = `std::env::temp_dir() + /docsystem-export/<uuid>/` + cleanup on next launch (sweep `docsystem-export/`) | T-118 + T-121 | **CLOSED** |
+
+T-117..T-123 are unblocked. Future amendments to this spec (M8+) append new dated sections; this T-116 closure block stays as-is for audit trail.
 
 ---
 
@@ -437,6 +466,6 @@ The M7-spike acceptance gate (per BUILD_BRIEF.md §3 M7) is equivalent to T-123 
 
 ## M7-spike change log
 
-- T-115 (this commit): initial spec.
-- T-116: appends architectural-decisions section with calls on the two open questions.
-- M8 (T-124): appends an M8 section describing the router refactor, the folder-picker routing, the partial-config schema decision, and the multi-doc-ready route shape. M8 builds on this M7-spike spec rather than rewriting it.
+- 2026-05-26 — T-115: initial spec.
+- 2026-05-26 — T-116: rewrote the "Architectural decisions" section as CLOSED. Decision #1: brand = hardcoded `brand.example.yaml` (Vite raw import). Decision #2: temp HTML in `std::env::temp_dir()/docsystem-export/<uuid>/` + cleanup-on-next-launch via Tauri `setup` hook. T-117..T-123 unblocked.
+- M8 (T-124, future): appends an M8 section describing the router refactor, the folder-picker routing, the partial-config schema decision, and the multi-doc-ready route shape. M8 builds on this M7-spike spec rather than rewriting it.

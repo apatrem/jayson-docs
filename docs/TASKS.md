@@ -878,7 +878,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** spec covers every aspect the spike actually implements + explicitly lists what's deferred to M8+ and why.
 - **est.** 2h
 
-### T-116 [ ] · Resolve M7-spike architectural decisions (2 questions)
+### T-116 [x] · Resolve M7-spike architectural decisions (2 questions)
 - **Depends-on:** T-115
 - **Reads:** `docs/UI_APP_SHELL.md` (from T-115), `brand.example.yaml`
 - **Outputs:** `docs/UI_APP_SHELL.md` — appended decisions section with explicit calls on TWO questions (down from six since most of the M7 surface is deferred):
