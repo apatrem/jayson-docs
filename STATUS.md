@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-26T15:10:00Z
+**Last fire:** 2026-05-26T15:30:00Z
 **State:** RUNNING
 **Running on:** Claude Opus 4.7 at high
 **Halt reason:** N/A
@@ -15,10 +15,10 @@
 
 ## Progress since the previous fire
 
-- 📋 Second-pass plan corrections to T-123a + T-123b (non-task amendment commit) addressing reviewer-LLM findings against commit `95ff8d0`:
-  - **T-123a "key={path}" was underspecified** — `EditorSurfaceProps` has no `path` field; the literal change would not compile. Task now specifies: (1) wrap-key the EditorComponent in DocumentView (parent-owned) rather than adding `path` to `EditorSurfaceProps`; (2) move the in-flight edited DocModel to a `useRef` so `setDoc(updated)` for preview re-render doesn't re-seed `initialContent`. Includes a real-typing test that captures the editor's DOM node ref before typing and asserts node identity is preserved.
-  - **T-123b's "Back to welcome" button required App.tsx wiring** — DocumentView cannot transition app state on its own. Added `src/App.tsx` to Outputs (passes `onBackToWelcome` callback into DocumentView; reuses the same App-state setter that T-122's AppErrorBoundary "Back to welcome screen" button already uses — no parallel reset path). New `DocumentViewProps.onBackToWelcome?: () => void` documented. Added a `tests/ui/App.test.tsx` assertion: render with a mocked multi-section doc, click the constraint button, app state returns to `{ kind: "welcome" }`.
-- 📝 STATUS.md timestamp corrected (the prior "Last fire" was 5h in the future — synthetic increment instead of wall-clock UTC).
+- 📋 Third-pass plan corrections (non-task amendment commit) addressing 2 more reviewer findings against `0d3968e`:
+  - **T-123e impossible reuse of `canonical_read_target`** — the T-117 helper delegates to `validate_yaml_target_path` which enforces `.yaml`/`.yml`-only via `has_yaml_extension`. T-123e cannot use it for `.jpg`/`.png`/`.svg`/`.webp` files; the literal direction wouldn't compile. Task now requires a **new generalized helper** `canonical_scoped_read_target(path, allowed_roots, allowed_extensions)` that takes the extension allowlist as a parameter; `canonical_read_target` becomes a thin YAML-only wrapper preserving the T-117 contract. New regression test in fs.rs `#[cfg(test)] mod tests` verifies the YAML wrapper still rejects non-YAML paths after the refactor.
+  - **T-123b fixture description was internally contradictory** — "extract section 1 (Executive summary)" was incompatible with "include 1 chart" because section 1 has no chart (sample-proposal.yaml's chart lives in section 3 "Approach"). Reworded as: a single-section **composite** fixture (not verbatim extract) sourcing 1 chart from §s3 and 1 prose + 1 callout + 1 KPI-cards from §s1, flattened into a single "Executive summary" section. Image + diagram still added later by T-123d alongside the harness rebuild.
+- 📝 Added a comment in STATUS.md "At a glance" documenting the compound-split task-count convention so quick-script grep checks aren't confused by the difference between line count (146) and ID count (147).
 - ⚠ 0 tasks blocked this fire: none
 - ⏸ 0 tasks marked waiting this fire: none
 - ↩ 0 commits reverted this fire: none
@@ -26,6 +26,12 @@
 ## At a glance
 
 Total tasks: 147   Done: 126 (85%)   Blocked: 0   Waiting: 2   Open: 18   Skipped: 1
+<!-- Counts use the repo's compound-split convention: a header like
+     "### T-76 + T-77 [x] · ..." counts as 2 IDs across 1 line.
+     Raw `grep -c '^### T-'` over docs/TASKS.md returns 1 fewer
+     (line-count). The summary table at the bottom of TASKS.md uses
+     the same compound-split convention. -->
+
 
 ## Recent commits
 
