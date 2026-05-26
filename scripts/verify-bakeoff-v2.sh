@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # verify-bakeoff-v2.sh — binary checklist validating a bakeoff/*-v2 branch
-# against the 10 spec fixes captured during the v1 → v2 bake-off methodology.
+# against the 12 spec fixes captured during the v1 → v2 bake-off methodology
+# (10 original + 2 scaffold-hardening assertions added by T-114 for the
+# `protocol-asset` Tauri feature pin + Cargo.lock parity in main + starter).
 #
 # Usage:
 #   bash scripts/verify-bakeoff-v2.sh [branch]
@@ -238,6 +240,59 @@ check_10_no_forbidden_paths() {
   fi
 }
 
+check_11_protocol_asset_feature_pinned() {
+  # Each src-tauri/Cargo.toml (main + starter) MUST declare the `protocol-asset`
+  # feature in its tauri dep line. T-113 (post-e893e64) closed this drift:
+  # the assetProtocol block in tauri.conf.json requires the protocol-asset
+  # feature at compile time, and cargo would otherwise auto-mutate the
+  # committed Cargo.toml on first build. The regex tolerates any
+  # combination of features as long as `protocol-asset` is one of them.
+  local missing=""
+  for f in src-tauri/Cargo.toml starter/src-tauri/Cargo.toml; do
+    local content
+    content=$(git show "$BRANCH:$f" 2>/dev/null || true)
+    if [[ -z "$content" ]]; then
+      missing+="$f (file missing) "
+      continue
+    fi
+    # Match `tauri = { ..., features = [..., "protocol-asset", ...] }` —
+    # case-sensitive, tolerant of feature ordering + whitespace.
+    if ! echo "$content" \
+        | grep -E '^tauri[[:space:]]*=[[:space:]]*\{[^}]*features[[:space:]]*=[[:space:]]*\[[^]]*"protocol-asset"' \
+        >/dev/null; then
+      missing+="$f (no 'protocol-asset' feature in tauri dep) "
+    fi
+  done
+  if [[ -z "$missing" ]]; then
+    assert "11. protocol-asset Tauri feature pinned (main + starter Cargo.toml)" pass
+  else
+    assert "11. protocol-asset feature pinned" fail "missing in: ${missing% }"
+  fi
+}
+
+check_12_cargo_lockfile_parity() {
+  # Each src-tauri/ directory (main + starter, per the post-T-113 policy in
+  # T-02 Outputs) MUST have a committed Cargo.lock AND `cargo check --locked`
+  # MUST succeed from it. This catches the failure mode where Cargo.toml
+  # drift would force a lockfile rewrite — symptom: a fresh clone runs
+  # `cargo check --locked` and gets "the lockfile needs to be updated."
+  #
+  # We check existence here (via git show); the actual `cargo check --locked`
+  # invocation lives in CI (.github/workflows/ci.yml) since running cargo
+  # against checked-out trees is too slow for this fast-feedback verifier.
+  local missing=""
+  for f in src-tauri/Cargo.lock starter/src-tauri/Cargo.lock; do
+    if ! git show "$BRANCH:$f" >/dev/null 2>&1; then
+      missing+="$f "
+    fi
+  done
+  if [[ -z "$missing" ]]; then
+    assert "12. Cargo.lock parity (main + starter committed)" pass
+  else
+    assert "12. Cargo.lock parity" fail "missing committed lockfile: ${missing% }"
+  fi
+}
+
 # ── Driver ────────────────────────────────────────────────────────────────
 
 main() {
@@ -284,6 +339,8 @@ main() {
     check_8_no_inputs_field
     check_9_loop_managed_bundling
     check_10_no_forbidden_paths
+    check_11_protocol_asset_feature_pinned
+    check_12_cargo_lockfile_parity
 
     if [[ "$fail_count" -eq "$before_fails" ]]; then
       clean_branches=$((clean_branches + 1))

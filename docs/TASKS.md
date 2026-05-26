@@ -854,7 +854,7 @@ Post-M6 audit surfaced two scaffold drift entries. Commit `e893e64` shipped icon
 - **Acceptance:** `cargo check --locked` from `src-tauri/` AND from `starter/src-tauri/` both succeed AND leave Cargo.toml + Cargo.lock byte-identical (no auto-mutation in either tree). Verified by `git diff --quiet` after both checks.
 - **est.** 2h
 
-### T-114 [ ] · Extend verify-bakeoff-v2.sh with Cargo.toml feature + lockfile-parity assertions
+### T-114 [x] · Extend verify-bakeoff-v2.sh with Cargo.toml feature + lockfile-parity assertions
 - **Depends-on:** T-113
 - **Reads:** `scripts/verify-bakeoff-v2.sh` (post-e893e64 state: assertion #7 already covers icons for both `src-tauri/` and `starter/src-tauri/`), this file §T-02 Outputs (as updated by T-113)
 - **Outputs:** `scripts/verify-bakeoff-v2.sh` — two new assertions added beneath the existing icons check:
