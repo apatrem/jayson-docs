@@ -28,6 +28,8 @@ type AppState =
       paletteOpen: boolean;
     };
 
+export const DEFAULT_DOCUMENT_VIEW_RENDER_BUDGET_MS = 500;
+
 export interface AppProps {
   initialDocument?: LoadedDocument;
   onOpenDocument?: () => Promise<LoadedDocument | null>;
@@ -60,9 +62,8 @@ export default function App({
   const WatchdoggedDocumentView = useMemo(
     () =>
       withRenderWatchdog(DocumentViewComponent, {
-        ...(documentWatchdogBudgetMs === undefined
-          ? {}
-          : { budgetMs: documentWatchdogBudgetMs }),
+        budgetMs:
+          documentWatchdogBudgetMs ?? DEFAULT_DOCUMENT_VIEW_RENDER_BUDGET_MS,
       }),
     [DocumentViewComponent, documentWatchdogBudgetMs],
   );

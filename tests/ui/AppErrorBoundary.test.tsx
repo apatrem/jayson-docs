@@ -48,8 +48,8 @@ const ThrowingDocumentView: FC<DocumentViewProps> = () => {
 
 const SlowDocumentView: FC<DocumentViewProps> = () => {
   const startedAt = performance.now();
-  while (performance.now() - startedAt < 10) {
-    // Burn enough time for the watchdog's measured render to exceed the test budget.
+  while (performance.now() - startedAt < 75) {
+    // Burn enough time to exceed the per-block budget, but stay inside the document mount budget.
   }
   return <div>Slow document view</div>;
 };
@@ -115,6 +115,20 @@ describe("AppErrorBoundary", () => {
     await waitFor(() => {
       expect(screen.getByLabelText("Welcome")).toBeTruthy();
     });
+  });
+
+  it("does not apply the per-block budget to the whole document view", () => {
+    render(
+      <App
+        initialDocument={{ path: "/Users/me/Documents/slow.yaml", doc }}
+        DocumentViewComponent={SlowDocumentView}
+      />,
+    );
+
+    expect(screen.getByText("Slow document view")).toBeTruthy();
+    expect(
+      screen.queryByText("This block exceeded the render time budget."),
+    ).toBeNull();
   });
 
   it("shows the watchdog placeholder when document rendering exceeds budget", async () => {
