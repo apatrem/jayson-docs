@@ -1198,7 +1198,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1h
 - **Note: batches the LOW perf + cleanup findings. Not security-critical but quality-of-life improvements that prevent future "why is this so slow / so generous" puzzles.**
 
-### T-123m [ ] · Fix shell-open regex correctness + test mirrors runtime wrap + remove dead capability ACL
+### T-123m [x] · Fix shell-open regex correctness + test mirrors runtime wrap + remove dead capability ACL
 - **Depends-on:** T-123l
 - **Reads:** `src-tauri/tauri.conf.json` (line ~47-49 — the current `plugins.shell.open` regex that BLOCKS legitimate https URLs and PERMITS file://docsystem-export/... bypass under Tauri's runtime `^...$` wrap), `src-tauri/capabilities/main-window.json` (line ~13-15 — the dead `shell:allow-open` `allow:[{path:...}]` block that has no runtime effect), `tests/security/shell-config.test.ts` (line ~20 — `new RegExp(pattern)` without wrap, causing false-positive passes), `tests/integration/m7-spike-happy-path.test.ts` (line ~98-117 — "non-mocked" test that still mocks `__TAURI_INTERNALS__.invoke`), `~/.cargo/registry/src/index.crates.io-*/tauri-plugin-shell-*/src/lib.rs` (line ~155 — `format!("^{validator}$")` wrap, the smoking gun), `~/.cargo/registry/src/index.crates.io-*/tauri-plugin-shell-*/src/commands.rs` (line ~313-320 — confirms the `open` command does NOT read `command_scope`/`global_scope`, only `shell.open_scope`), `BLOCKERS.md` §[drift-2026-05-26f] (the entry that incorrectly claimed dual-layer defense-in-depth)
 - **Outputs:**

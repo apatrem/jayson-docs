@@ -9,15 +9,15 @@ interface TauriConfig {
   };
 }
 
-const tauriConfig = JSON.parse(
-  readFileSync("src-tauri/tauri.conf.json", "utf8"),
-) as TauriConfig;
+const tauriConfig = JSON.parse(readFileSync("src-tauri/tauri.conf.json", "utf8")) as TauriConfig;
 
+// Tauri wraps plugins.shell.open with ^...$ at runtime; keep this mirror in sync
+// with tauri-plugin-shell-*/src/lib.rs:155.
 function configuredOpenRegex(): RegExp {
   const pattern = tauriConfig.plugins?.shell?.open;
   expect(typeof pattern).toBe("string");
   expect(pattern).not.toBe("");
-  return new RegExp(pattern as string);
+  return new RegExp(`^${pattern as string}$`, "u");
 }
 
 describe("Tauri shell plugin open scope", () => {
@@ -39,9 +39,7 @@ describe("Tauri shell plugin open scope", () => {
       ),
     ).toBe(true);
     expect(
-      regex.test(
-        "/tmp/docsystem-export/123e4567-e89b-12d3-a456-426614174000/Proposal.html",
-      ),
+      regex.test("/tmp/docsystem-export/123e4567-e89b-12d3-a456-426614174000/Proposal.html"),
     ).toBe(true);
     expect(
       regex.test(
@@ -49,6 +47,8 @@ describe("Tauri shell plugin open scope", () => {
       ),
     ).toBe(true);
     expect(regex.test("https://example.com/foo")).toBe(true);
+    expect(regex.test("https://example.com/path/with/segments?q=v#frag")).toBe(true);
+    expect(regex.test("http://localhost:1420/dev")).toBe(true);
   });
 
   it("rejects local paths and active-content URL schemes", () => {
@@ -56,7 +56,15 @@ describe("Tauri shell plugin open scope", () => {
 
     expect(regex.test("/etc/passwd")).toBe(false);
     expect(regex.test("file:///etc/shadow")).toBe(false);
+    expect(regex.test("file:///tmp/docsystem-export/abc-def-1234/x.html")).toBe(false);
     expect(regex.test("smb://attacker/share")).toBe(false);
+    expect(regex.test("smb://attacker/share/docsystem-export/aaaa/y.html")).toBe(false);
+    expect(regex.test(String.raw`\\attacker\share\docsystem-export\aaaa\evil.html`)).toBe(false);
+    expect(regex.test("/tmp/docsystem-export/-/x.html")).toBe(false);
+    expect(
+      regex.test("/tmp/docsystem-export/12345678-1234-1234-1234-1234abcdef12/../etc/passwd.html"),
+    ).toBe(false);
+    expect(regex.test("file:///etc/passwd/docsystem-export/abc-def/passwd.html")).toBe(false);
     expect(regex.test("javascript:alert(1)")).toBe(false);
     expect(regex.test("data:text/html,<script>alert(1)</script>")).toBe(false);
   });

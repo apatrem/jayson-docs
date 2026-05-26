@@ -34,21 +34,21 @@ The deliberate narrowness is the design. The prior plan iteration had M7 cover l
 
 The disconnect between "built modules" and "wired surface" is intentional in M7-spike. These surfaces exist as tested code; M8+ wires them.
 
-| Surface | Built? | Wired in M7-spike? | Where wired |
-|---|---|---|---|
-| Install wizard (`src/setup/install.ts`) | ✓ (CLI) | ✗ | M8 T-127 (GUI folder picker) |
-| Library view (`src/library/`) | ✓ (pure logic) | ✗ | M8 T-128 + T-129 (card grid + filters) |
-| Document templates | ✗ (M8 T-130) | ✗ | M8 T-131 (Create from Template) |
-| Generated-block runtime loading | ✓ (`src/setup/load-generated-blocks.ts`) | ✗ | M8 T-132 (palette extension) |
-| Deck renderer (`src/renderer/DeckRenderer.tsx`) | ✓ | ✗ | M10 (deck view) |
-| Comments + AI proposals (`src/comments/`) | ✓ | ✗ | M9 (review panel + AI flow) |
-| Cost-ledger surface (`src/cost-ledger/`) | ✓ (TS) | ✗ | M9 (AI calls + Rust migration) |
-| Reviewer mode | ✓ (logic) | ✗ | M11 |
-| Settings panel | partial (autosave knob in config only) | ✗ | M9 (deferred-UI feature list) |
-| Keychain wiring (`get_secret` / `set_secret`) | stub | ✗ | M9 (LLM keys) |
-| The other 14 IPC commands | mixed (real-ish or stubs) | ✗ | M8/M9 as needed |
-| Router / multi-doc / multi-window | n/a | ✗ | M8 (router); M9+ (tabs); future (multi-window) |
-| Signed installers / auto-updater | scaffold (T-110) | n/a | Phase 9 (T-108, T-109) |
+| Surface                                         | Built?                                   | Wired in M7-spike? | Where wired                                    |
+| ----------------------------------------------- | ---------------------------------------- | ------------------ | ---------------------------------------------- |
+| Install wizard (`src/setup/install.ts`)         | ✓ (CLI)                                  | ✗                  | M8 T-127 (GUI folder picker)                   |
+| Library view (`src/library/`)                   | ✓ (pure logic)                           | ✗                  | M8 T-128 + T-129 (card grid + filters)         |
+| Document templates                              | ✗ (M8 T-130)                             | ✗                  | M8 T-131 (Create from Template)                |
+| Generated-block runtime loading                 | ✓ (`src/setup/load-generated-blocks.ts`) | ✗                  | M8 T-132 (palette extension)                   |
+| Deck renderer (`src/renderer/DeckRenderer.tsx`) | ✓                                        | ✗                  | M10 (deck view)                                |
+| Comments + AI proposals (`src/comments/`)       | ✓                                        | ✗                  | M9 (review panel + AI flow)                    |
+| Cost-ledger surface (`src/cost-ledger/`)        | ✓ (TS)                                   | ✗                  | M9 (AI calls + Rust migration)                 |
+| Reviewer mode                                   | ✓ (logic)                                | ✗                  | M11                                            |
+| Settings panel                                  | partial (autosave knob in config only)   | ✗                  | M9 (deferred-UI feature list)                  |
+| Keychain wiring (`get_secret` / `set_secret`)   | stub                                     | ✗                  | M9 (LLM keys)                                  |
+| The other 14 IPC commands                       | mixed (real-ish or stubs)                | ✗                  | M8/M9 as needed                                |
+| Router / multi-doc / multi-window               | n/a                                      | ✗                  | M8 (router); M9+ (tabs); future (multi-window) |
+| Signed installers / auto-updater                | scaffold (T-110)                         | n/a                | Phase 9 (T-108, T-109)                         |
 
 M7-spike touches **only 3 of the 17 IPC commands**: `read_yaml_file` and `write_yaml_file` get hardened (T-117); `export_pdf` gets reimplemented as browser-handoff (T-118, semantics change documented in TAURI_IPC.md). The other 14 stay as their current registered stubs.
 
@@ -107,6 +107,7 @@ Minimum chrome: just the File menu and an "Open Document" button centered in the
 ```
 
 The DocumentView is essentially the existing `DocumentRenderer` + `Editor` composition, full-window, plus:
+
 - a `+` button in the top-left toolbar (or wherever the existing Editor toolbar lives) that opens the BlockPalette
 - title-bar showing the current file's basename + a dot indicator for autosave-in-flight
 - the File menu (Open / Save / Save As / Export PDF)
@@ -155,10 +156,10 @@ type AppState =
   | { kind: "welcome" }
   | {
       kind: "document";
-      path: string;             // absolute path to the YAML on disk
-      doc: DocModel;            // parsed in-memory representation
-      dirty: boolean;           // is there an unsaved edit?
-      paletteOpen: boolean;     // is BlockPalette visible?
+      path: string; // absolute path to the YAML on disk
+      doc: DocModel; // parsed in-memory representation
+      dirty: boolean; // is there an unsaved edit?
+      paletteOpen: boolean; // is BlockPalette visible?
     };
 ```
 
@@ -184,19 +185,19 @@ There is **no user-initiated `welcome ← document` transition** in M7-spike —
 
 ## Component breakdown
 
-| Component | File | Built? | M7-spike change |
-|---|---|---|---|
-| `App` | `src/App.tsx` | stub (returns null) | rewritten as single-state shell (T-119) |
-| `MenuBar` | `src/ui/menu/MenuBar.tsx` | new (T-121) | top-level menu container, hosts FileMenu |
-| `FileMenu` | `src/ui/menu/FileMenu.tsx` | new (T-121) | Open / Save / Save As / Export PDF wiring |
-| `WelcomeScreen` | `src/ui/views/WelcomeScreen.tsx` (or inline) | new (T-119) | minimal "Open Document" button |
-| `DocumentView` | `src/ui/views/DocumentView.tsx` | new (T-120) | wires DocumentRenderer + Editor + autosave + BlockPalette |
-| `AppErrorBoundary` | `src/ui/AppErrorBoundary.tsx` | new (T-122) | top-level boundary wrapping DocumentView |
-| `BlockPalette` | `src/editor/BlockPalette.tsx` | ✓ | mounted in DocumentView (T-120b); no change to component itself |
-| `Editor` | `src/editor/Editor.tsx` | ✓ | unchanged; consumed by DocumentView |
-| `DocumentRenderer` | `src/renderer/DocumentRenderer.tsx` | ✓ | unchanged; consumed by DocumentView and by `renderStaticHtmlForExport` |
-| `render-static-html` | `src/export/render-static-html.ts` | new (T-118) | renderer-safe pure function for browser PDF handoff |
-| `withRenderWatchdog` | `src/block-primitives/RenderWatchdog.tsx` | ✓ | wraps DocumentView per D-39 (T-122) |
+| Component            | File                                         | Built?              | M7-spike change                                                        |
+| -------------------- | -------------------------------------------- | ------------------- | ---------------------------------------------------------------------- |
+| `App`                | `src/App.tsx`                                | stub (returns null) | rewritten as single-state shell (T-119)                                |
+| `MenuBar`            | `src/ui/menu/MenuBar.tsx`                    | new (T-121)         | top-level menu container, hosts FileMenu                               |
+| `FileMenu`           | `src/ui/menu/FileMenu.tsx`                   | new (T-121)         | Open / Save / Save As / Export PDF wiring                              |
+| `WelcomeScreen`      | `src/ui/views/WelcomeScreen.tsx` (or inline) | new (T-119)         | minimal "Open Document" button                                         |
+| `DocumentView`       | `src/ui/views/DocumentView.tsx`              | new (T-120)         | wires DocumentRenderer + Editor + autosave + BlockPalette              |
+| `AppErrorBoundary`   | `src/ui/AppErrorBoundary.tsx`                | new (T-122)         | top-level boundary wrapping DocumentView                               |
+| `BlockPalette`       | `src/editor/BlockPalette.tsx`                | ✓                   | mounted in DocumentView (T-120b); no change to component itself        |
+| `Editor`             | `src/editor/Editor.tsx`                      | ✓                   | unchanged; consumed by DocumentView                                    |
+| `DocumentRenderer`   | `src/renderer/DocumentRenderer.tsx`          | ✓                   | unchanged; consumed by DocumentView and by `renderStaticHtmlForExport` |
+| `render-static-html` | `src/export/render-static-html.ts`           | new (T-118)         | renderer-safe pure function for browser PDF handoff                    |
+| `withRenderWatchdog` | `src/block-primitives/RenderWatchdog.tsx`    | ✓                   | wraps DocumentView per D-39 (T-122)                                    |
 
 ---
 
@@ -228,7 +229,7 @@ Standard convention for Save / Save As (per grilling Q10):
 - Pre-renders the current doc to self-contained HTML via `renderStaticHtmlForExport(state.doc, brand)` (T-118).
 - `invoke('export_pdf', { html, suggestedName: '<docBasename>.pdf' })` → returns `{ kind: 'browser_handoff', path: '/tmp/.../docsystem-export/.../foo.pdf.html' }`.
 - `invoke('plugin:shell|open', { path: returnedTempPath })` (via `@tauri-apps/plugin-shell`) → opens the temp HTML in the user's default browser.
-- Tauri 2.x's shell plugin requires BOTH the capability ACL (`shell:allow-open` with the temp-dir path scope in `main-window.json`) and a `plugins.shell.open` regex in `tauri.conf.json`. The capability decides which windows may call `open`; the plugin regex decides which paths and URLs are accepted. Configuring only the ACL produces the plugin's "purposefully impossible regex" runtime denial.
+- Tauri 2.x's shell plugin requires the `shell:allow-open` capability plus a `plugins.shell.open` regex in `tauri.conf.json`. The capability decides which windows may call `open`; the plugin regex is the only path / URL constraint used by `tauri-plugin-shell-*/src/commands.rs::open`. An inline `allow: [{ path: ... }]` scope on the capability has no runtime effect for `open`, and configuring only the capability produces the plugin's "purposefully impossible regex" runtime denial.
 - Toast: "Opened in your browser — use Cmd-P / Ctrl-P to save as PDF."
 
 ### Autosave (inherited from T-82, not re-implemented)
@@ -256,7 +257,7 @@ export async function renderStaticHtmlForExport(
   doc: DocModel,
   brand: BrandTokens,
   docFolderPath: string,
-  sharedFolderPath: string
+  sharedFolderPath: string,
 ): Promise<string>;
 ```
 
@@ -269,14 +270,19 @@ export async function renderStaticHtmlForExport(
    <!doctype html>
    <html>
      <head>
-       <meta charset="utf-8">
+       <meta charset="utf-8" />
        <title>{doc.meta.title}</title>
        <style>
-         @page { size: A4 portrait; margin: 1.5cm; }
+         @page {
+           size: A4 portrait;
+           margin: 1.5cm;
+         }
          /* inlined brand-derived CSS */
        </style>
      </head>
-     <body>{rendered}</body>
+     <body>
+       {rendered}
+     </body>
    </html>
    ```
 6. Return the full HTML string. **Zero external asset refs** (all images inlined as `data:` URLs from the existing brand-token resolver), **zero `<script>` tags** (renderer is purely SSR for the export path).
@@ -295,9 +301,9 @@ Suggested-name sanitization: the `suggestedName` parameter is sanitized to `[A-Z
 
 ```ts
 // src/brand/defaultBrand.ts
-import brandYaml from '../../brand.example.yaml?raw';  // src/brand → src → repo root
-import { parse } from 'yaml';
-import { BrandTokensSchema, type BrandTokens } from '../schema/brand';
+import brandYaml from "../../brand.example.yaml?raw"; // src/brand → src → repo root
+import { parse } from "yaml";
+import { BrandTokensSchema, type BrandTokens } from "../schema/brand";
 
 export const defaultBrand: BrandTokens = BrandTokensSchema.parse(parse(brandYaml));
 ```
@@ -363,10 +369,10 @@ The combination of per-block placeholder + per-DocumentView error boundary means
 
 ### Closed-decision recap
 
-| # | Decision | Consumer | Status |
-|---|---|---|---|
-| 1 | Brand source = hardcoded `brand.example.yaml` (Vite raw import, build-time) | T-120 + T-118 | **CLOSED** |
-| 2 | Temp HTML = `std::env::temp_dir() + /docsystem-export/<uuid>/` + cleanup on next launch (sweep `docsystem-export/`) | T-118 + T-121 | **CLOSED** |
+| #   | Decision                                                                                                            | Consumer      | Status     |
+| --- | ------------------------------------------------------------------------------------------------------------------- | ------------- | ---------- |
+| 1   | Brand source = hardcoded `brand.example.yaml` (Vite raw import, build-time)                                         | T-120 + T-118 | **CLOSED** |
+| 2   | Temp HTML = `std::env::temp_dir() + /docsystem-export/<uuid>/` + cleanup on next launch (sweep `docsystem-export/`) | T-118 + T-121 | **CLOSED** |
 
 T-117..T-123 are unblocked. Future amendments to this spec (M8+) append new dated sections; this T-116 closure block stays as-is for audit trail.
 
@@ -387,14 +393,14 @@ No new benchmark targets are introduced. T-89c's perf-benchmark harness continue
 
 ## Keyboard shortcuts (M7-spike inventory)
 
-| Shortcut | Action |
-|---|---|
-| `Cmd/Ctrl + O` | File → Open |
-| `Cmd/Ctrl + S` | File → Save |
-| `Cmd/Ctrl + Shift + S` | File → Save As |
-| `Cmd/Ctrl + P` | File → Export PDF (note: native browser print is `Cmd-P` AFTER the temp HTML opens) |
-| `/` | Open BlockPalette (when editor has focus and cursor is at a "fresh paragraph" position — same heuristic Notion uses) |
-| `Esc` | Close BlockPalette without inserting |
+| Shortcut               | Action                                                                                                               |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `Cmd/Ctrl + O`         | File → Open                                                                                                          |
+| `Cmd/Ctrl + S`         | File → Save                                                                                                          |
+| `Cmd/Ctrl + Shift + S` | File → Save As                                                                                                       |
+| `Cmd/Ctrl + P`         | File → Export PDF (note: native browser print is `Cmd-P` AFTER the temp HTML opens)                                  |
+| `/`                    | Open BlockPalette (when editor has focus and cursor is at a "fresh paragraph" position — same heuristic Notion uses) |
+| `Esc`                  | Close BlockPalette without inserting                                                                                 |
 
 Standard editor shortcuts (undo, redo, formatting) come from the existing Editor.
 
@@ -441,7 +447,8 @@ src-tauri/
                                           #   call cleanup_export_temp_dir() from
                                           #   setup hook (T-118)
   capabilities/
-    main-window.json                      # add shell:allow-open (T-118)
+    main-window.json                      # grants shell:allow-open; path/URL scope
+                                          # is enforced by plugins.shell.open
   Cargo.toml                              # add uuid dep (T-118)
 docs/
   UI_APP_SHELL.md                         # this file (T-115) + decisions appended by T-116

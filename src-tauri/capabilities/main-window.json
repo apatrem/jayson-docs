@@ -9,9 +9,6 @@
     "fs:default",
     "store:default",
     "shell:default",
-    {
-      "identifier": "shell:allow-open",
-      "allow": [{ "path": "$TEMP/docsystem-export/**" }]
-    }
+    "shell:allow-open"
   ]
 }

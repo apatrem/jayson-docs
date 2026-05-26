@@ -2,10 +2,7 @@ import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { parseDocModelYaml } from "../../src/docmodel/serialize";
 import { DocModelSchema, type DocModel } from "../../src/schema/docmodel";
-import {
-  renderM7SpikeHarness,
-  sampleProposalPath,
-} from "./m7-spike-harness";
+import { renderM7SpikeHarness, sampleProposalPath } from "./m7-spike-harness";
 
 function countCallouts(yaml: string): number {
   return yaml.match(/type:\s*"?callout"?/gu)?.length ?? 0;
@@ -43,9 +40,7 @@ describe("M7 spike happy path", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Save" }));
     await waitFor(
       () => {
-        expect(countCallouts(harness.getCurrentYaml())).toBeGreaterThan(
-          baselineCallouts,
-        );
+        expect(countCallouts(harness.getCurrentYaml())).toBeGreaterThan(baselineCallouts);
       },
       { timeout: 4000 },
     );
@@ -59,9 +54,10 @@ describe("M7 spike happy path", () => {
     const savedYaml = harness.getCurrentYaml();
     const parsedSavedDoc = parseDocModelYaml(savedYaml);
     expect(() => DocModelSchema.parse(parsedSavedDoc)).not.toThrow();
-    const invalidSavedDoc = structuredClone(
-      DocModelSchema.parse(parsedSavedDoc),
-    ) as Extract<DocModel, { kind: "document" }>;
+    const invalidSavedDoc = structuredClone(DocModelSchema.parse(parsedSavedDoc)) as Extract<
+      DocModel,
+      { kind: "document" }
+    >;
     const firstCallout = invalidSavedDoc.sections
       .flatMap((section) => section.blocks)
       .find((block) => block.type === "callout");
@@ -75,9 +71,7 @@ describe("M7 spike happy path", () => {
     await waitFor(() => {
       expect(screen.getAllByText("Executive summary").length).toBeGreaterThan(0);
     });
-    expect(countCallouts(reopened.getCurrentYaml())).toBeGreaterThan(
-      baselineCallouts,
-    );
+    expect(countCallouts(reopened.getCurrentYaml())).toBeGreaterThan(baselineCallouts);
 
     fireEvent.click(screen.getByRole("menuitem", { name: "Export PDF" }));
     await waitFor(() => {
@@ -87,7 +81,9 @@ describe("M7 spike happy path", () => {
     const exportedHtml = reopened.getExportedHtml();
     const svgPayloads = decodedSvgPayloads(exportedHtml);
     expect(exportedHtml).toContain("@page { size: A4 portrait; margin: 1.5cm; }");
-    expect(svgPayloads.filter((payload) => payload.includes("<svg")).length).toBeGreaterThanOrEqual(2);
+    expect(svgPayloads.filter((payload) => payload.includes("<svg")).length).toBeGreaterThanOrEqual(
+      2,
+    );
     expect(exportedHtml).toContain('src="data:image/jpeg;base64,/9j/"');
     expect(exportedHtml).not.toContain("/docs/assets/");
     expect(exportedHtml).not.toContain("assets/team-meeting.jpg");
@@ -95,7 +91,7 @@ describe("M7 spike happy path", () => {
     expect(exportedHtml).toContain('data-block-type="callout"');
   });
 
-  it("falls through to the Tauri shell plugin when no openPath test double is provided", async () => {
+  it("routes Export PDF to plugin:shell|open channel", async () => {
     const harness = renderM7SpikeHarness({ useRealOpenPath: true });
 
     fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
@@ -109,6 +105,8 @@ describe("M7 spike happy path", () => {
       expect(harness.exportPdf).toHaveBeenCalled();
     });
     expect(harness.openPath).not.toHaveBeenCalled();
+    // Does NOT verify the Tauri regex; that's covered by tests/security/shell-config.test.ts.
+    // Real-runtime verification requires a Rust integration test (deferred to M9 prep).
     expect(harness.invokeMock).toHaveBeenCalledWith(
       "plugin:shell|open",
       { path: harness.getExportedPath(), with: undefined },
@@ -118,8 +116,7 @@ describe("M7 spike happy path", () => {
 });
 
 function decodedSvgPayloads(html: string): string[] {
-  return Array.from(
-    html.matchAll(/data:image\/svg\+xml(?:;charset=utf-8)?,([^"]+)/giu),
-    (match) => decodeURIComponent(match[1] ?? ""),
+  return Array.from(html.matchAll(/data:image\/svg\+xml(?:;charset=utf-8)?,([^"]+)/giu), (match) =>
+    decodeURIComponent(match[1] ?? ""),
   );
 }

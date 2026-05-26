@@ -13,16 +13,15 @@ interface CapabilityFile {
 }
 
 describe("shell capability scope", () => {
-  it("allows browser handoff only through the export temp directory", () => {
+  it("grants shell open while plugin regex owns path scoping", () => {
     const capability = JSON.parse(
       readFileSync("src-tauri/capabilities/main-window.json", "utf8"),
     ) as CapabilityFile;
 
     expect(capability.permissions).toContain("shell:default");
-    expect(capability.permissions).not.toContain("shell:allow-open");
-    expect(capability.permissions).toContainEqual({
-      identifier: "shell:allow-open",
-      allow: [{ path: "$TEMP/docsystem-export/**" }],
-    });
+    expect(capability.permissions).toContain("shell:allow-open");
+    expect(capability.permissions).not.toContainEqual(
+      expect.objectContaining({ identifier: "shell:allow-open" }),
+    );
   });
 });
