@@ -96,6 +96,10 @@ export async function readYamlFile(path: string): Promise<string> {
 ### `write_yaml_file(path: string, content: string) -> void`
 
 Writes UTF-8 text atomically (write-to-temp + rename). Rejects paths outside scope.
+On Windows with a pre-existing target, the write uses a sibling-`.bak` swap to
+preserve the original if the rename fails. Cross-platform: the tmp file is
+written and fsync'd before the swap. Crash mid-swap leaves either the original
+or the new file intact, never neither.
 
 ### `read_binary_file(path: string) -> base64 string`
 

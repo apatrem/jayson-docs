@@ -282,3 +282,13 @@ Two different actions (`dtolnay/rust-toolchain@1.83.0` and `ruby/setup-ruby@v1`)
 **Fix landed:** T-123n replaces renderer-side Buffer usage with Web Platform APIs (`TextEncoder`, `TextDecoder`, `atob`, `btoa`) and adds tests that delete `globalThis.Buffer` before exercising SVG inlining and placeholder generation. AGENTS.md review-playbook conventions #5 and #6 now codify both divergence classes.
 
 ---
+
+### [drift-2026-05-26h] Windows delete-then-rename data loss
+
+**Detected at:** 2026-05-26T19:06:00Z (M7.5 round-2 security audit carryover, finding M-4)
+**Tasks affected:** T-117 / T-123o, fixed by T-123o.
+**What happened:** The Windows branch of `src-tauri/src/ipc/fs.rs::rename_tmp_file` deleted an existing YAML target before renaming the newly written `.tmp` file into place. If the second rename failed (antivirus lock, network share hiccup, permission race), the original document was already gone and the outer write-error cleanup removed the `.tmp`, causing total data loss.
+**Impact:** A Windows consultant saving over an existing document could lose both the original and the replacement content during a transient filesystem failure.
+**Fix landed:** T-123o replaces the delete-then-rename path with a sibling-`.bak` swap: move original to backup, move tmp into place, restore the original if the second rename fails, and drop the backup only after success. A Windows-cfg test covers the restore path; non-Windows CI keeps a cfg-gate smoke test because Unix rename semantics are already atomic for replacement.
+
+---

@@ -1311,7 +1311,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1h
 - **Note: SECOND runtime BLOCKER from "tests pass + runtime crashes" pattern. First was the shell-plugin regex test (T-123m closes). Both share root cause: Vitest environment differs from Tauri webview. AGENTS.md §Review playbook conventions #5 (wrap-mirroring) and #6 (Node globals in renderer) now codify both lessons. If a third runtime divergence surfaces in M7.5 round-3 review, that signals the convention itself needs a sharper pre-commit gate (e.g., a CI job that builds the production bundle + runs renderer tests under Node without globals).**
 
-### T-123o [ ] · Fix Windows delete-then-rename data loss (gate-blocking)
+### T-123o [x] · Fix Windows delete-then-rename data loss (gate-blocking)
 - **Depends-on:** T-123l
 - **Reads:** `src-tauri/src/ipc/fs.rs` (esp. `rename_tmp_file` line ~228-241 — the cross-platform helper that writes the YAML save), the `windows` Rust crate docs for `MoveFileExW` (or alternatively the documented Rust `fs::rename` Windows semantics on Win10+)
 - **Outputs:**

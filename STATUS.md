@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-26T19:05:20Z
+**Last fire:** 2026-05-26T19:08:12Z
 **State:** RUNNING
 **Running on:** GPT-5.5 (effort unknown)
 **Halt reason:** N/A
@@ -10,22 +10,22 @@
 
 ## Next eligible task
 
-**T-123o** — Fix Windows delete-then-rename data loss (gate-blocking).
-- Phase 7.5 (M7 review fixes, round 4); Depends-on: T-123l (`[x]`); ~0.5h.
-- This is the revised M7 gate task before T-124 (M8) unlocks.
+**T-123p** — Defense-in-depth + cosmetic cleanup batch (NOT gate-blocking).
+- Phase 7.5 (M7 review fixes, optional carryover); Depends-on: T-123l (`[x]`); ~1.5h.
+- T-124 (M8) is also unlocked by T-123o, but T-123p remains the lowest-numbered optional open task.
 - T-123p (defense-in-depth + cosmetic, ~1.5h) is optional — can fire in parallel with M8.
 
 ## Progress since the previous fire
 
-- ✅ 1 task completed this fire: T-123n
-- Replaced renderer-side `Buffer` usage with Web Platform base64 helpers, added Buffer-deleted export regressions, and recorded the Vitest-vs-webview runtime divergence in `BLOCKERS.md` / `AGENTS.md`.
+- ✅ 1 task completed this fire: T-123o
+- Replaced the Windows delete-then-rename save path with a sibling-`.bak` swap so a failed rename restores the original document, and documented the atomicity guarantee.
 - ⚠ 0 tasks blocked this fire: none
 - ⏸ 0 tasks marked waiting this fire: none
 - ↩ 0 commits reverted this fire: none
 
 ## At a glance
 
-Total tasks: 156   Done: 140 (90%)   Blocked: 0   Waiting: 2   Open: 13   Skipped: 1
+Total tasks: 156   Done: 141 (90%)   Blocked: 0   Waiting: 2   Open: 12   Skipped: 1
 <!-- Counts use the repo's compound-split convention: a header like
      "### T-76 + T-77 [x] · ..." counts as 2 IDs across 1 line.
      Raw `grep -c '^### T-'` over docs/TASKS.md returns 1 fewer
@@ -34,6 +34,7 @@ Total tasks: 156   Done: 140 (90%)   Blocked: 0   Waiting: 2   Open: 13   Skippe
 
 ## Recent commits
 
+d7ff5a9 T-123n: remove renderer Buffer usage
 5a79585 T-123m: fix shell open regex scope
 319df2b Plan v6: queue T-123o (Windows data loss, gate-blocking) + T-123p (carryover batch, optional)
 4959ced Plan v5: queue T-123m + T-123n + AGENTS.md Review playbook #5 + #6
@@ -45,8 +46,8 @@ e33c1b0 T-123i: sanitize prose link hrefs
 
 ## CI status (origin/main)
 
-success (latest completed run on `main`)
+in_progress (latest run on `main` for d7ff5a9)
 
-Loop is running cleanly — no action needed. T-123o fires next. After
-T-123o lands, M7-spike is genuinely closed (gate v4) and T-124 unlocks.
-T-123p can fire in parallel with M8 or after.
+Loop is running cleanly — no action needed. T-123o closes the revised
+M7-spike gate (v4). T-123p is optional and not gate-blocking; T-124 (M8)
+is unlocked.

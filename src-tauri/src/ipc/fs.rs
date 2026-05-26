@@ -231,13 +231,34 @@ fn root_from_scope_pattern(pattern: PathBuf) -> Option<PathBuf> {
     }
 }
 
+#[cfg(not(windows))]
 fn rename_tmp_file(tmp_path: &Path, target_path: &Path) -> IpcResult<()> {
-    #[cfg(windows)]
-    if target_path.exists() {
-        fs::remove_file(target_path).map_err(|e| IpcError::Io(e.to_string()))?;
-    }
-
     fs::rename(tmp_path, target_path).map_err(|e| IpcError::Io(e.to_string()))
+}
+
+#[cfg(windows)]
+fn rename_tmp_file(tmp_path: &Path, target_path: &Path) -> IpcResult<()> {
+    if target_path.exists() {
+        let backup_path = target_path.with_extension({
+            let ext = target_path
+                .extension()
+                .and_then(|extension| extension.to_str())
+                .unwrap_or("yaml");
+            format!("{ext}.bak")
+        });
+        fs::rename(target_path, &backup_path)
+            .map_err(|e| IpcError::Io(format!("backup failed: {e}")))?;
+        if let Err(rename_err) = fs::rename(tmp_path, target_path) {
+            let _ = fs::rename(&backup_path, target_path);
+            return Err(IpcError::Io(format!(
+                "rename failed (original restored): {rename_err}"
+            )));
+        }
+        let _ = fs::remove_file(&backup_path);
+        Ok(())
+    } else {
+        fs::rename(tmp_path, target_path).map_err(|e| IpcError::Io(e.to_string()))
+    }
 }
 
 #[cfg(unix)]
@@ -328,6 +349,38 @@ mod tests {
 
         assert!(matches!(err, IpcError::Invalid(_)));
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_rename_failure_restores_original_target() {
+        let root = unique_test_dir("windows-rename-restore");
+        let target = root.join("doc.yaml");
+        let missing_tmp = root.join("doc.yaml.tmp");
+        let backup = root.join("doc.yaml.bak");
+        std::fs::write(&target, "original\n").expect("write original target");
+
+        let err = rename_tmp_file(&missing_tmp, &target)
+            .expect_err("missing tmp should fail after target backup");
+
+        assert!(matches!(err, IpcError::Io(message) if message.contains("original restored")));
+        assert_eq!(
+            std::fs::read_to_string(&target).expect("original target restored"),
+            "original\n"
+        );
+        assert!(
+            !backup.exists(),
+            "recovery should move the backup back into the target path"
+        );
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn windows_rename_failure_restore_test_is_cfg_gated() {
+        // The data-loss path is Windows-specific because Unix rename replaces
+        // existing files atomically; the real restoration test runs on Windows.
+        assert!(cfg!(not(windows)));
     }
 
     #[test]
