@@ -960,7 +960,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** native Open dialog → file path → loads via read_yaml_file → DocumentView mounts. Save round-trips through write_yaml_file. Save As prompts, writes, switches active path. Export PDF invokes IPC + shell.open in sequence (shell.open mocked in test).
 - **est.** 4h
 
-### T-122 [ ] · Top-level error boundary + watchdog wrap
+### T-122 [x] · Top-level error boundary + watchdog wrap
 - **Depends-on:** T-119, T-120
 - **Reads:** `src/block-primitives/RenderWatchdog.tsx` (existing HOC), ADR-0001 (perf budgets), `docs/UI_APP_SHELL.md` §State model + §Watchdog
 - **Outputs:**

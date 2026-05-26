@@ -1,14 +1,17 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { open as openShellPath } from "@tauri-apps/plugin-shell";
-import { useState, type CSSProperties } from "react";
+import { useMemo, useState, type ComponentType, type CSSProperties } from "react";
 import { defaultBrand } from "./brand/defaultBrand";
+import { BrandProvider } from "./brand-tokens/BrandProvider";
+import { withRenderWatchdog } from "./block-primitives/RenderWatchdog";
 import { parseDocModelYaml, serializeDocModel } from "./docmodel/serialize";
 import { renderStaticHtmlForExport } from "./export/render-static-html";
 import type { DocModel } from "./schema/docmodel";
 import { DocModelSchema } from "./schema/docmodel";
+import { AppErrorBoundary } from "./ui/AppErrorBoundary";
 import { MenuBar } from "./ui/menu/MenuBar";
-import { DocumentView } from "./ui/views/DocumentView";
+import { DocumentView, type DocumentViewProps } from "./ui/views/DocumentView";
 
 interface LoadedDocument {
   path: string;
@@ -29,12 +32,16 @@ export interface AppProps {
   initialDocument?: LoadedDocument;
   onOpenDocument?: () => Promise<LoadedDocument | null>;
   fileActions?: Partial<FileActionDeps>;
+  DocumentViewComponent?: ComponentType<DocumentViewProps>;
+  documentWatchdogBudgetMs?: number;
 }
 
 export default function App({
   initialDocument,
   onOpenDocument,
   fileActions = {},
+  DocumentViewComponent = DocumentView,
+  documentWatchdogBudgetMs,
 }: AppProps) {
   const [state, setState] = useState<AppState>(() =>
     initialDocument === undefined
@@ -49,6 +56,16 @@ export default function App({
   );
   const [openError, setOpenError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [boundaryResetVersion, setBoundaryResetVersion] = useState(0);
+  const WatchdoggedDocumentView = useMemo(
+    () =>
+      withRenderWatchdog(DocumentViewComponent, {
+        ...(documentWatchdogBudgetMs === undefined
+          ? {}
+          : { budgetMs: documentWatchdogBudgetMs }),
+      }),
+    [DocumentViewComponent, documentWatchdogBudgetMs],
+  );
 
   const openDocument = async (): Promise<void> => {
     setOpenError(null);
@@ -78,6 +95,27 @@ export default function App({
     await writeDocument(fileActions, state.path, state.doc);
     setState({ ...state, dirty: false });
     setStatusMessage("Saved.");
+  };
+
+  const reopenCurrentDocument = async (): Promise<void> => {
+    if (state.kind !== "document") return;
+    const raw = await (fileActions.readYamlFile ?? readYamlFile)(state.path);
+    const doc = DocModelSchema.parse(parseDocModelYaml(raw));
+    setState({
+      kind: "document",
+      path: state.path,
+      doc,
+      dirty: false,
+      paletteOpen: false,
+    });
+    setBoundaryResetVersion((version) => version + 1);
+  };
+
+  const returnToWelcome = (): void => {
+    setOpenError(null);
+    setStatusMessage(null);
+    setState({ kind: "welcome" });
+    setBoundaryResetVersion((version) => version + 1);
   };
 
   const saveDocumentAs = async (): Promise<void> => {
@@ -154,17 +192,25 @@ export default function App({
             style={styles.documentPlaceholder}
           >
             {state.doc.kind === "document" ? (
-              <DocumentView
-                path={state.path}
-                initialDoc={state.doc}
-                onDocumentChange={(doc) => {
-                  setState((current) =>
-                    current.kind === "document"
-                      ? { ...current, doc, dirty: true }
-                      : current,
-                  );
-                }}
-              />
+              <BrandProvider tokens={defaultBrand}>
+                <AppErrorBoundary
+                  onTryReopen={reopenCurrentDocument}
+                  onBackToWelcome={returnToWelcome}
+                  resetKey={`${state.path}:${boundaryResetVersion}`}
+                >
+                  <WatchdoggedDocumentView
+                    path={state.path}
+                    initialDoc={state.doc}
+                    onDocumentChange={(doc) => {
+                      setState((current) =>
+                        current.kind === "document"
+                          ? { ...current, doc, dirty: true }
+                          : current,
+                      );
+                    }}
+                  />
+                </AppErrorBoundary>
+              </BrandProvider>
             ) : (
               "DocumentView"
             )}
