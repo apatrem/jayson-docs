@@ -344,4 +344,30 @@ include these explicit checks in the prompt:
   harness uses the real fixture / real renderer. M7-spike shipped 5 BLOCKERs
   hidden by this exact pattern (see `BLOCKERS.md [drift-2026-05-26c]` and
   related entries).
+- **Regex/glob/pattern wrapping.** When testing a regex/glob/pattern that a
+  plugin or framework will MODIFY before applying (e.g., Tauri's `^...$`
+  wrap of `plugins.shell.open` per `tauri-plugin-shell-*/src/lib.rs:155`;
+  sshd's `Match` block prepending; CSP source-list whitespace splitting),
+  the test MUST mirror the modification. Plain `new RegExp(pattern)` or
+  `glob.match(pattern, input)` without the wrap is a false-positive trap.
+  Cite the wrap source code (file + line) in a test comment so future
+  readers can verify the test still mirrors current plugin behavior.
+  M7.5 round-2 shipped a regex that blocks legitimate `https://` URLs at
+  runtime because the test omitted the wrap (drift `[drift-2026-05-26f]`).
+- **Node globals in renderer code.** Vitest provides Node globals
+  (`Buffer`, `process`, `setImmediate`, `__dirname`, `require`); the Tauri
+  webview does NOT. Any `Buffer.from`/`Buffer(...)`, `process.*`,
+  `require(...)`, `__dirname`, `setImmediate(...)` in files under `src/`
+  (excluding `src/setup/install.ts` which runs in Node at install-time) is
+  a runtime BLOCKER. Sweep with
+  `grep -rE 'Buffer\.|Buffer\(|process\.|require\(|__dirname|setImmediate' src/`
+  during reviews of code that emits or transforms binary data, base64, or
+  process state. Where a Web Platform API doesn't exist for the use case,
+  the work MUST move to a Rust IPC command. **Pattern for binary/base64 in
+  renderer:** prefer `TextEncoder` + `TextDecoder` + `atob`/`btoa` +
+  `Uint8Array`; these are universally available in WebView2 / WKWebView /
+  WebKitGTK. M7.5 round-2 shipped `Buffer.from(...)` in
+  `src/export/render-static-html.ts` that crashes the export with
+  `ReferenceError: Buffer is not defined` whenever an SVG image or the
+  oversized-image placeholder fires (drift `[drift-2026-05-26g]`).
 

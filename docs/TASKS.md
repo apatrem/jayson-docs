@@ -1198,7 +1198,120 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1h
 - **Note: batches the LOW perf + cleanup findings. Not security-critical but quality-of-life improvements that prevent future "why is this so slow / so generous" puzzles.**
 
-**M7-spike acceptance gate (REVISED 2026-05-26 v2):** T-123h passing (T-123a..T-123h all `[x]`). The previous "T-123g passing" gate (revised v1) missed a runtime BLOCKER in the Tauri shell plugin config that only surfaced in a fifth-round review (drift entry `[drift-2026-05-26f]`). T-123h closes that. T-123i (HIGH security carry-over) + T-123j / T-123k / T-123l (MEDIUM/LOW + test gaps + perf polish) are required BEFORE M8 T-124 fires so M8 doesn't inherit unfixed M7 debt.
+### T-123m [ ] · Fix shell-open regex correctness + test mirrors runtime wrap + remove dead capability ACL
+- **Depends-on:** T-123l
+- **Reads:** `src-tauri/tauri.conf.json` (line ~47-49 — the current `plugins.shell.open` regex that BLOCKS legitimate https URLs and PERMITS file://docsystem-export/... bypass under Tauri's runtime `^...$` wrap), `src-tauri/capabilities/main-window.json` (line ~13-15 — the dead `shell:allow-open` `allow:[{path:...}]` block that has no runtime effect), `tests/security/shell-config.test.ts` (line ~20 — `new RegExp(pattern)` without wrap, causing false-positive passes), `tests/integration/m7-spike-happy-path.test.ts` (line ~98-117 — "non-mocked" test that still mocks `__TAURI_INTERNALS__.invoke`), `~/.cargo/registry/src/index.crates.io-*/tauri-plugin-shell-*/src/lib.rs` (line ~155 — `format!("^{validator}$")` wrap, the smoking gun), `~/.cargo/registry/src/index.crates.io-*/tauri-plugin-shell-*/src/commands.rs` (line ~313-320 — confirms the `open` command does NOT read `command_scope`/`global_scope`, only `shell.open_scope`), `BLOCKERS.md` §[drift-2026-05-26f] (the entry that incorrectly claimed dual-layer defense-in-depth)
+- **Outputs:**
+  - `src-tauri/tauri.conf.json` — replace the current regex with one that survives Tauri's `^...$` wrap AND tightens the H-2 bypass:
+    ```jsonc
+    "plugins": {
+      "shell": {
+        // Tauri wraps this with ^...$ at runtime per tauri-plugin-shell-*/src/lib.rs:155.
+        // Do NOT add inner ^ or $ — let the wrap supply them.
+        "open": "(?:https?://[^\\s<>\"]+|(?:/|[A-Z]:\\\\)[^\\n]*[/\\\\]docsystem-export[/\\\\][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[/\\\\][^/\\\\]+\\.html)"
+      }
+    }
+    ```
+    - `https?://[^\s<>"]+` matches real URLs (not `\w+` which excludes `.`/`:`/`/`)
+    - Path alternative requires absolute start (`/` or `<drive>:\`) — rejects `file://`, `smb://`, UNC, `\\attacker\share`
+    - UUID segment requires exact 36-char hex shape (8-4-4-4-12) — rejects single `-` bypass + shorter forgeries
+    - Final path component forbids `/` and `\` — rejects post-uuid `../` traversal
+  - `tests/security/shell-config.test.ts` — fix line 20 to mirror runtime semantics:
+    ```ts
+    return new RegExp(`^${pattern}$`, "u");
+    ```
+    Add a top-of-file comment citing `tauri-plugin-shell-*/src/lib.rs:155` as the wrap source. Add the H-2 negative cases the security audit listed:
+    - `file:///tmp/docsystem-export/abc-def-1234/x.html` — must REJECT
+    - `smb://attacker/share/docsystem-export/aaaa/y.html` — must REJECT
+    - `\\\\attacker\\share\\docsystem-export\\aaaa\\evil.html` — must REJECT
+    - `/tmp/docsystem-export/-/x.html` (single-char "uuid") — must REJECT
+    - `/tmp/docsystem-export/12345678-1234-1234-1234-1234abcdef12/../etc/passwd.html` — must REJECT
+    - `file:///etc/passwd/docsystem-export/abc-def/passwd.html` — must REJECT
+  - Add positive assertions for real URLs (currently broken under the wrapped regex):
+    - `https://example.com/foo` — must MATCH
+    - `https://example.com/path/with/segments?q=v#frag` — must MATCH
+    - `http://localhost:1420/dev` — must MATCH
+    - The existing temp-dir paths still MATCH after the regex tightening (regression check)
+  - `src-tauri/capabilities/main-window.json` — remove the dead inline `{ identifier: "shell:allow-open", allow: [{ path: "$TEMP/docsystem-export/**" }] }` object; keep the plain `"shell:allow-open"` permission string. The plugin-level regex is the only gate per `tauri-plugin-shell-*/src/commands.rs:313-320` (the open command does NOT read `command_scope` / `global_scope`).
+  - `BLOCKERS.md` — amend `[drift-2026-05-26f]` to remove the false defense-in-depth claim. Replace the relevant sentences with: "The Tauri shell plugin's `open` command validates ONLY against `plugins.shell.open` (per `tauri-plugin-shell-*/src/commands.rs::open`). The capability-level `shell:allow-open` permission gates WHO can invoke; the `allow:[{path:...}]` scope on that permission has NO runtime effect for `open` (the command never reads it). The previous documentation that claimed capability + plugin layers as separate defenses was incorrect; only the plugin regex constrains paths. The capability still serves as access control (which renderer windows may invoke), so removing it would over-permit; tightening its `allow` scope adds no security." This is the only justified mutation to an existing drift entry — accuracy fix, not a new entry.
+  - `docs/UI_APP_SHELL.md` §Browser PDF handoff — same correction (matches BLOCKERS update).
+  - `tests/integration/m7-spike-happy-path.test.ts` — at the line of the "falls through to the Tauri shell plugin" sub-test (~line 98-117), rename to `"routes Export PDF to plugin:shell|open channel"` and add a clarifying comment: `// Does NOT verify the Tauri regex; that's covered by tests/security/shell-config.test.ts. Real-runtime verification requires a Rust integration test (deferred to M9 prep).`
+  - `AGENTS.md §Review playbook` — append a 5th convention:
+    > **5. Regex/glob/pattern wrapping.** When testing a regex/glob/pattern that a plugin or framework will MODIFY before applying (e.g., Tauri's `^...$` wrap of `plugins.shell.open`, sshd's `Match` block prepending `^/`, etc.), the test MUST mirror the modification. Plain `new RegExp(pattern)` or `glob.match(pattern, input)` without the wrap is a false-positive trap. Cite the wrap source code (file + line) in a test comment so future readers can verify the test still mirrors current plugin behavior.
+- **Acceptance:**
+  - Empirical Node check: with the new regex wrapped in `^...$`, `https://example.com/foo` matches AND `file:///etc/passwd/docsystem-export/abc-def-1234/x.html` rejects. (Run the same Node command pattern the security audit used.)
+  - 11+ test cases pass (4 positive URLs + 7 negative attack inputs).
+  - Manual: `npm run tauri:dev` + File → Export PDF still opens the browser (the temp HTML path under the tightened regex still matches — this is the regression check).
+- **est.** 1.5h
+- **Note: addresses the H-1 (functional regression: regex blocks legitimate https URLs at runtime) + H-2 (bypass: regex permits file://, smb://, UNC via `.+` prefix + loose uuid) + M-1 (dead capability ACL claim) + M-2 (test doesn't model runtime wrap) + M-3 (integration test still mocks) findings from the M7.5 round-2 security audit. AGENTS.md §Review playbook convention #1 ("verify against `~/.cargo/registry/src/*tauri-plugin-*` source") directly caught H-1/H-2 by reading `scope.rs::OpenScope::open` and `lib.rs:155`. New convention #5 codifies the wrap-mirroring rule so the same trap doesn't repeat for other plugin/framework patterns.**
+
+### T-123n [ ] · Replace Node `Buffer` with Web Platform APIs in renderer code (runtime BLOCKER)
+- **Depends-on:** T-123l
+- **Reads:** `src/export/render-static-html.ts` (line 154, 158, 176 — three `Buffer.from` calls), `vite.config.ts` (line 13-15 — explicit comment "we never bundle node built-ins" + no `vite-plugin-node-polyfills`), `vitest.config.ts` (the test environment where `Buffer` IS a Node global, masking the bug), `tests/export/render-static-html.test.ts` (existing tests that pass because of the environment difference)
+- **Outputs:**
+  - `src/export/render-static-html.ts` — replace the 3 `Buffer.from` calls with Web Platform equivalents that work in Tauri's webview (WebView2 / WKWebView / WebKitGTK — all support `atob`/`btoa`/`TextEncoder`/`TextDecoder`):
+    ```ts
+    function utf8ToBase64(s: string): string {
+      const bytes = new TextEncoder().encode(s);
+      let binary = "";
+      for (const b of bytes) binary += String.fromCharCode(b);
+      return btoa(binary);
+    }
+    
+    function base64ToUtf8(s: string): string {
+      const binary = atob(s);
+      const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    }
+    ```
+    - Line 154 (`svgBase64ToSafeBase64`): `Buffer.from(sanitized, "utf8").toString("base64")` → `utf8ToBase64(sanitized)`
+    - Line 158 (`base64ToUtf8`): `Buffer.from(encoded, "base64").toString("utf8")` → `base64ToUtf8(encoded)` (rename the helper to `decodeBase64ToUtf8` if name collision after the refactor)
+    - Line 176 (`imagePlaceholderDataUri`): `Buffer.from(svg, "utf8").toString("base64")` → `utf8ToBase64(svg)`
+  - `src/export/render-static-html.ts` (defensive sweep): grep the entire file for any other Node-only globals (`Buffer`, `process`, `require`, `__dirname`, `setImmediate`, `process.nextTick`). Replace or comment why each is safe.
+  - **Project-wide renderer-code sweep** — verify in the commit message body, not Outputs: run `grep -rE 'Buffer\.|Buffer\(|process\.env|require\(|__dirname|setImmediate' src/` excluding `src/setup/install.ts` (Node install-time script — Buffer is legitimate there). Report any hits in the commit message; either fix them in this task (if small) or document them as carryover to a follow-up.
+  - `tests/export/render-static-html.test.ts` — add a regression test that simulates the Tauri webview environment by deleting `Buffer` before each test:
+    ```ts
+    describe("renders without Node Buffer (real Tauri webview parity)", () => {
+      let originalBuffer: unknown;
+      beforeEach(() => {
+        originalBuffer = (globalThis as { Buffer?: unknown }).Buffer;
+        delete (globalThis as { Buffer?: unknown }).Buffer;
+      });
+      afterEach(() => {
+        if (originalBuffer !== undefined) {
+          (globalThis as { Buffer?: unknown }).Buffer = originalBuffer;
+        }
+      });
+      
+      it("inlines SVG images without throwing ReferenceError", async () => {
+        // Doc with one SVG image; mock read_binary_file to return SVG bytes containing <script>
+        // assert: no ReferenceError; output contains data:image/svg+xml; sanitized SVG has no <script>
+      });
+      
+      it("emits the oversized-image placeholder without throwing ReferenceError", async () => {
+        // mock read_binary_file to reject with "exceeds 5MB"
+        // assert: no ReferenceError; output contains placeholder data:image/svg+xml with "too large" text
+      });
+      
+      it("emits the total-cap-exhausted placeholder without throwing", async () => {
+        // mock multiple images that individually pass but cumulatively exceed 50MB
+        // assert: no ReferenceError; later images get placeholders
+      });
+    });
+    ```
+    These tests would have caught the bug at commit time. They run with the SAME `Buffer`-deleted environment that a real Tauri webview has.
+  - `AGENTS.md §Review playbook` — append a 6th convention (in addition to the 5th from T-123m):
+    > **6. Node globals in renderer code.** Vitest provides Node globals (`Buffer`, `process`, `setImmediate`, `__dirname`, etc.); the Tauri webview does NOT. Any `Buffer.from`/`Buffer(...)`, `process.*`, `require(...)`, `__dirname`, `setImmediate(...)` in files under `src/` (excluding `src/setup/install.ts` which runs in Node at install-time) is a runtime BLOCKER. Sweep with `grep -rE 'Buffer\.|Buffer\(|process\.|require\(|__dirname|setImmediate' src/` during reviews of code that emits or transforms binary data, base64, or process state. Where a Web Platform API doesn't exist for the use case, the work MUST move to a Rust IPC command. **Pattern for binary/base64 work in renderer:** prefer `TextEncoder` + `TextDecoder` + `atob`/`btoa` + `Uint8Array`; these are universally available in WebView2/WKWebView/WebKitGTK.
+  - `BLOCKERS.md` — append `[drift-2026-05-26g] Node Buffer used in renderer code — runtime BLOCKER for SVG export + oversized-image fallback; sanitized in T-123n`. Document the test-env divergence pattern; note this is the second time the same root cause has shipped a "tests pass + runtime crashes" gap (first was the shell-plugin regex test that didn't model Tauri's `^...$` wrap). Cite AGENTS.md §Review playbook conventions #5 and #6 that now codify both lessons.
+- **Acceptance:**
+  - `grep -rE 'Buffer\.|Buffer\(' src/export/ src/renderer/ src/ui/ src/App.tsx src/brand-tokens src/block-primitives src/comments src/cost-ledger src/docmodel src/editor src/library src/llm src/schema src/setup/load-generated-blocks.ts` returns nothing (excluding `src/setup/install.ts` which is the Node install-time script).
+  - The 3 new "without Node Buffer" tests pass with `globalThis.Buffer` deleted at test-setup time.
+  - The existing render-static-html tests still pass (regression check — the Web Platform APIs produce identical base64 output for ASCII / UTF-8 inputs).
+  - Manual verification: `npm run tauri:dev` against a fixture with an SVG image + File → Export PDF opens the browser without error and the SVG renders.
+- **est.** 1h
+- **Note: SECOND runtime BLOCKER from "tests pass + runtime crashes" pattern. First was the shell-plugin regex test (T-123m closes). Both share root cause: Vitest environment differs from Tauri webview. AGENTS.md §Review playbook conventions #5 (wrap-mirroring) and #6 (Node globals in renderer) now codify both lessons. If a third runtime divergence surfaces in M7.5 round-3 review, that signals the convention itself needs a sharper pre-commit gate (e.g., a CI job that builds the production bundle + runs renderer tests under Node without globals).**
+
+**M7-spike acceptance gate (REVISED 2026-05-26 v3):** T-123n passing (T-123a..T-123n all `[x]`). The previous "T-123l passing" gate (v2) missed (a) the shell-open regex incorrectness exposed by reading the actual Tauri plugin source per AGENTS.md §Review playbook convention #1, and (b) the Node Buffer usage in renderer code that crashes in the Tauri webview. T-123m closes (a); T-123n closes (b). Both are codified as preventive conventions (#5, #6) so the same root cause shouldn't repeat. M8 T-124 fires AFTER T-123n.
 
 ---
 
@@ -1207,7 +1320,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 Second integration milestone. Fires AFTER M7-spike ships and consultant testing of the editor surface has had a chance to surface any UX rework. Adds router infrastructure, first-launch folder picker, library card grid (with empty-state "Use Sample" button), 4 standard document templates with a "Create from Template" surface, generated-blocks runtime loading, and pipeline end-to-end validation.
 
 ### T-124 [ ] · Update UI_APP_SHELL.md for M8 architecture
-- **Depends-on:** T-123l (M7-spike fully fixed per the 2026-05-26 multi-axis review + the 5th-round runtime BLOCKER + all P1/MEDIUM/LOW follow-ups — see "M7-spike acceptance gate (REVISED 2026-05-26 v2)" above)
+- **Depends-on:** T-123n (M7-spike fully fixed per the 2026-05-26 multi-axis review + 5th-round shell-plugin BLOCKER + 6th-round shell-regex correctness + Node-Buffer-in-renderer runtime BLOCKER — see "M7-spike acceptance gate (REVISED 2026-05-26 v3)" above)
 - **Reads:** `docs/UI_APP_SHELL.md` (M7-spike state from T-115), `docs/UI_LIBRARY.md`, `docs/SETUP_INSTALL_FLOW.md`, `src/setup/install.ts` (esp. line 41: `InstallAppConfigSchema`), `docs/TYPES.md`
 - **Outputs:** `docs/UI_APP_SHELL.md` — appended M8 section describing:
   - the router (`src/ui/router/Routes.tsx`) — route types for welcome, folder-picker, library, document; route-intent contract
@@ -1375,12 +1488,12 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 | 6 | M6 (deck) | T-103 — T-107 | 38 | v1.1 |
 | 6.5 | Scaffold hardening | T-113 — T-114 | 4 | post-M6 audit fixes |
 | 7 | M7 (document editor spike) | T-115 — T-123 (incl. T-120b) | ~33 | minimum runnable app |
-| 7.5 | M7 review fixes (5 BLOCKERs + 5-round review backlog) | T-123a — T-123l | ~15.5 | review verdict 2026-05-26 + 5th-round shell-config BLOCKER |
-| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after T-123l (revised M7 gate v2) + consultant testing |
+| 7.5 | M7 review fixes (5 BLOCKERs + 7-round review backlog) | T-123a — T-123n | ~18 | review verdict 2026-05-26 across 7 rounds; AGENTS.md §Review playbook conventions #1–#6 codified |
+| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after T-123n (revised M7 gate v3) + consultant testing |
 | 9 | Deployment | T-108 — T-112 | 21 | renumbered from Phase 7 |
-| | | | **~551h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
+| | | | **~553.5h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
 
-**Realistic v1 (excluding M6 deck path, including M7-spike + M7.5 fixes + M8):** ~512 hours ≈ 12–13 weeks full-time. The ~89h of M7-spike + M7.5 + M8 + scaffold hardening is the integration + review-fix work that turns the disconnected M1–M5 modules into a runnable consultancy app whose first user-visible surface actually works. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
+**Realistic v1 (excluding M6 deck path, including M7-spike + M7.5 fixes + M8):** ~514.5 hours ≈ 12–13 weeks full-time. The ~91.5h of M7-spike + M7.5 + M8 + scaffold hardening is the integration + review-fix work that turns the disconnected M1–M5 modules into a runnable consultancy app whose first user-visible surface actually works. Further deferred milestones (M9 comments/AI ~32h, M10 deck render ~7h, M11 reviewer ~4h, M-final ~8h) add another ~51h when spec'd later.
 
 These numbers match the architecture memo's §11 estimate of "6–12 months commitment" — the lower bound is achievable with a strong developer focused full-time; the upper bound includes M6 and a real-world overhead (review, debug, refactor, meetings).
 
