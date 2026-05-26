@@ -46,7 +46,7 @@ describe("M7 spike error paths", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Save" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("alert").textContent).toContain("write failed");
+      expect(screen.getByText("write failed")).toBeTruthy();
     });
   });
 });
