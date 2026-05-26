@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-26T20:30:00Z
+**Last fire:** 2026-05-26T15:10:00Z
 **State:** RUNNING
 **Running on:** Claude Opus 4.7 at high
 **Halt reason:** N/A
@@ -15,11 +15,10 @@
 
 ## Progress since the previous fire
 
-- 📋 M7-review plan corrections (non-task amendment commit) addressing 4 reviewer-LLM findings against the prior planning commit `4a670c5`:
-  - **P1 fixture circular dep:** T-123b previously referenced `tests/fixtures/m7-single-section-proposal.yaml` in its acceptance, but the fixture was scoped to be created by T-123d (which depends on T-123b). Now T-123b owns fixture creation (4 base blocks: prose/callout/chart/KPI-cards); T-123d extends the same fixture with image + diagram when T-123e's inlining IPC lands.
-  - **P1 duplicate BLOCKERS appendments:** T-123b and T-123c each previously said "append drift entry" — but both entries were already appended in commit `4a670c5`. When the loop fired those tasks, it would have created duplicates. Outputs now say "verify the existing drift entry at BLOCKERS.md is accurate; do NOT re-append."
-  - **P2 unverifiable shell ACL test:** the existing `tests/ipc/*.smoke.test.ts` mock `window.__TAURI_INTERNALS__.invoke` — so a runtime test for `shell.open("file:///etc/passwd")` rejection only proves the mock rejects, not Tauri's actual ACL. T-123c now requires `tests/security/capability-shape.test.ts`: a static-assertion test that loads the capability JSON via `readFileSync` + `JSON.parse` and asserts (a) no unscoped `"shell:allow-open"` string entry, (b) `"shell:default"` present, (c) scoped `shell:allow-open` permission with `$TEMP/docsystem-export/**` path. Strongest portable check without a full Tauri test rig.
-  - **P2 wrong schema file path:** T-123g previously read `src/schema/doc.ts`; the actual file is `src/schema/docmodel.ts` (verified via `ls src/schema/` — exports `DocModelSchema` from line 6). Corrected.
+- 📋 Second-pass plan corrections to T-123a + T-123b (non-task amendment commit) addressing reviewer-LLM findings against commit `95ff8d0`:
+  - **T-123a "key={path}" was underspecified** — `EditorSurfaceProps` has no `path` field; the literal change would not compile. Task now specifies: (1) wrap-key the EditorComponent in DocumentView (parent-owned) rather than adding `path` to `EditorSurfaceProps`; (2) move the in-flight edited DocModel to a `useRef` so `setDoc(updated)` for preview re-render doesn't re-seed `initialContent`. Includes a real-typing test that captures the editor's DOM node ref before typing and asserts node identity is preserved.
+  - **T-123b's "Back to welcome" button required App.tsx wiring** — DocumentView cannot transition app state on its own. Added `src/App.tsx` to Outputs (passes `onBackToWelcome` callback into DocumentView; reuses the same App-state setter that T-122's AppErrorBoundary "Back to welcome screen" button already uses — no parallel reset path). New `DocumentViewProps.onBackToWelcome?: () => void` documented. Added a `tests/ui/App.test.tsx` assertion: render with a mocked multi-section doc, click the constraint button, app state returns to `{ kind: "welcome" }`.
+- 📝 STATUS.md timestamp corrected (the prior "Last fire" was 5h in the future — synthetic increment instead of wall-clock UTC).
 - ⚠ 0 tasks blocked this fire: none
 - ⏸ 0 tasks marked waiting this fire: none
 - ↩ 0 commits reverted this fire: none
