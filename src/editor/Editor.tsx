@@ -379,7 +379,7 @@ function allowedAttrsForNode(nodeType: string): Set<string> {
     case "docTeam":
       return new Set(["blockId", "members", "note"]);
     case "docDiagram":
-      return new Set(["blockId", "syntax", "source", "caption", "note"]);
+      return new Set(["blockId", "source", "title", "caption", "width", "note"]);
     case "docDivider":
       return new Set(["blockId", "label", "note"]);
     default:
