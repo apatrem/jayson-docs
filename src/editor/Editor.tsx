@@ -39,6 +39,7 @@ export interface EditorProps {
   docModel?: DocModel;
   editable?: boolean;
   onUpdate?: (content: JSONContent) => void;
+  onEditorReady?: (editor: TipTapEditor | null) => void;
 }
 
 const DEFAULT_CONTENT: JSONContent = {
@@ -171,6 +172,7 @@ export const Editor: FC<EditorProps> = ({
   docModel,
   editable = true,
   onUpdate,
+  onEditorReady,
 }) => {
   const deck = docModel?.kind === "deck" ? docModel : null;
   // M6 known limitation (see BLOCKERS.md drift-2026-05-25b): the deck surface
@@ -212,6 +214,10 @@ export const Editor: FC<EditorProps> = ({
   useEffect(() => {
     setCurrentSlideIndex(0);
   }, [deck]);
+
+  useEffect(() => {
+    onEditorReady?.(editor);
+  }, [editor, onEditorReady]);
 
   useEffect(() => {
     if (editor === null || deck === null) {

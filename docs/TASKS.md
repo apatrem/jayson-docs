@@ -936,7 +936,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **Acceptance:** opening sample-proposal.yaml renders correctly with `defaultBrand`; editing prose triggers a debounced save via IPC; closing + reopening the doc shows the edits.
 - **est.** 6h
 
-### T-120b [ ] · Wire BlockPalette into DocumentView (block-insertion UI)
+### T-120b [x] · Wire BlockPalette into DocumentView (block-insertion UI)
 - **Depends-on:** T-120
 - **Reads:** `src/editor/BlockPalette.tsx` (existing component, already implements all 15 default blocks + `generatedBlocks` prop + `onInsert` callback + renders inside BrandProvider so theming works), `src/editor/Editor.tsx`
 - **Outputs:**

@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { FC } from "react";
+import { useEffect, type FC } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { serializeDocModel } from "../../../src/docmodel/serialize";
 import {
@@ -75,6 +75,23 @@ const FakeEditor: FC<EditorSurfaceProps> = ({ initialContent, onUpdate }) => (
   </button>
 );
 
+function fakeEditorWith(commandName: string, command: () => boolean): FC<EditorSurfaceProps> {
+  const FakePaletteEditor: FC<EditorSurfaceProps> = ({ onEditorReady }) => {
+    useEffect(() => {
+      onEditorReady?.({
+        commands: {
+          [commandName]: command,
+        },
+      });
+      return () => {
+        onEditorReady?.(null);
+      };
+    }, [onEditorReady]);
+    return <div>Fake editable surface</div>;
+  };
+  return FakePaletteEditor;
+}
+
 describe("DocumentView", () => {
   afterEach(() => {
     cleanup();
@@ -134,5 +151,38 @@ describe("DocumentView", () => {
     await waitFor(() => {
       expect(screen.getByText("Edited heading")).toBeTruthy();
     });
+  });
+
+  it("opens the block palette from the plus button and inserts a selected block", () => {
+    const insertHeading = vi.fn(() => true);
+    render(
+      <DocumentView
+        path="/Users/me/Documents/proposal.yaml"
+        initialDoc={doc}
+        EditorComponent={fakeEditorWith("insertHeading", insertHeading)}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Insert block" }));
+
+    expect(screen.getByLabelText("Block palette")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Heading/u }));
+
+    expect(insertHeading).toHaveBeenCalledOnce();
+    expect(screen.queryByLabelText("Block palette")).toBeNull();
+  });
+
+  it("opens the block palette from the slash keyboard shortcut", () => {
+    render(
+      <DocumentView
+        path="/Users/me/Documents/proposal.yaml"
+        initialDoc={doc}
+        EditorComponent={fakeEditorWith("insertProse", () => true)}
+      />,
+    );
+
+    fireEvent.keyDown(window, { key: "/" });
+
+    expect(screen.getByLabelText("Block palette")).toBeTruthy();
   });
 });

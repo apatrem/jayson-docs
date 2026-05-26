@@ -8,6 +8,7 @@ import {
   type AutosaveController,
 } from "../../editor/autosave";
 import { Editor } from "../../editor/Editor";
+import { BlockPalette, type BlockPaletteProps } from "../../editor/BlockPalette";
 import {
   docModelToProseMirror,
   proseMirrorToDocModel,
@@ -21,6 +22,7 @@ export interface EditorSurfaceProps {
   initialContent: JSONContent;
   editable: boolean;
   onUpdate: (content: JSONContent) => void;
+  onEditorReady?: (editor: BlockPaletteProps["editor"]) => void;
 }
 
 export interface DocumentViewProps {
@@ -39,12 +41,20 @@ const DefaultEditorSurface: FC<EditorSurfaceProps> = ({
   initialContent,
   editable,
   onUpdate,
+  onEditorReady,
 }) => (
   <Editor
     key={JSON.stringify(initialContent)}
     initialContent={initialContent}
     editable={editable}
     onUpdate={onUpdate}
+    {...(onEditorReady === undefined
+      ? {}
+      : {
+          onEditorReady: (readyEditor) => {
+            onEditorReady(readyEditor as BlockPaletteProps["editor"]);
+          },
+        })}
   />
 );
 
@@ -60,6 +70,8 @@ export const DocumentView: FC<DocumentViewProps> = ({
   const [doc, setDoc] = useState<DocumentModel | null>(initialDoc ?? null);
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [editor, setEditor] = useState<BlockPaletteProps["editor"]>(null);
   const autosave = useRef<AutosaveController | null>(null);
 
   useEffect(() => {
@@ -101,6 +113,20 @@ export const DocumentView: FC<DocumentViewProps> = ({
     };
   }, [initialDoc, path, readYamlFile]);
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== "/" || paletteOpen) {
+        return;
+      }
+      event.preventDefault();
+      setPaletteOpen(true);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [paletteOpen]);
+
   const editorContent = useMemo(
     () => (doc === null ? null : documentToEditorContent(doc)),
     [doc],
@@ -128,7 +154,19 @@ export const DocumentView: FC<DocumentViewProps> = ({
     <main aria-label="Document view" style={styles.shell}>
       <header style={styles.header}>
         <span>{basename(path)}</span>
-        <span aria-label="Autosave status">{saveState}</span>
+        <div style={styles.headerActions}>
+          <button
+            type="button"
+            aria-label="Insert block"
+            onClick={() => {
+              setPaletteOpen((open) => !open);
+            }}
+            style={styles.insertButton}
+          >
+            +
+          </button>
+          <span aria-label="Autosave status">{saveState}</span>
+        </div>
       </header>
       <div style={styles.contentGrid}>
         <section aria-label="Rendered document preview" style={styles.previewPane}>
@@ -138,6 +176,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
           <EditorComponent
             initialContent={editorContent}
             editable={true}
+            onEditorReady={setEditor}
             onUpdate={(content) => {
               try {
                 const updated = editorContentToDocument(doc, content);
@@ -156,6 +195,17 @@ export const DocumentView: FC<DocumentViewProps> = ({
             }}
           />
         </section>
+        {paletteOpen ? (
+          <section aria-label="Insert block palette" style={styles.palettePane}>
+            <BlockPalette
+              editor={editor}
+              generatedBlocks={[]}
+              onInsert={() => {
+                setPaletteOpen(false);
+              }}
+            />
+          </section>
+        ) : null}
       </div>
     </main>
   );
@@ -253,10 +303,20 @@ const styles = {
     gap: "1rem",
     justifyContent: "space-between",
   },
+  headerActions: {
+    alignItems: "center",
+    display: "flex",
+    gap: "0.75rem",
+  },
+  insertButton: {
+    cursor: "pointer",
+    fontWeight: 700,
+    padding: "0.375rem 0.625rem",
+  },
   contentGrid: {
     display: "grid",
     gap: "1rem",
-    gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+    gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) auto",
   },
   previewPane: {
     border: "1px solid ButtonBorder",
@@ -265,6 +325,9 @@ const styles = {
   },
   editorPane: {
     minWidth: 0,
+  },
+  palettePane: {
+    minWidth: "18rem",
   },
   errorText: {
     color: "CanvasText",
