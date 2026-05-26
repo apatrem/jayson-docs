@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { parseDocModelYaml } from "../../src/docmodel/serialize";
-import { DocModelSchema } from "../../src/schema/docmodel";
+import { DocModelSchema, type DocModel } from "../../src/schema/docmodel";
 import {
   renderM7SpikeHarness,
   sampleProposalPath,
@@ -57,7 +57,17 @@ describe("M7 spike happy path", () => {
     });
 
     const savedYaml = harness.getCurrentYaml();
-    expect(() => DocModelSchema.parse(parseDocModelYaml(savedYaml))).not.toThrow();
+    const parsedSavedDoc = parseDocModelYaml(savedYaml);
+    expect(() => DocModelSchema.parse(parsedSavedDoc)).not.toThrow();
+    const invalidSavedDoc = structuredClone(
+      DocModelSchema.parse(parsedSavedDoc),
+    ) as Extract<DocModel, { kind: "document" }>;
+    const firstCallout = invalidSavedDoc.sections
+      .flatMap((section) => section.blocks)
+      .find((block) => block.type === "callout");
+    expect(firstCallout).toBeDefined();
+    delete (firstCallout as { id?: string }).id;
+    expect(() => DocModelSchema.parse(invalidSavedDoc)).toThrow();
 
     cleanup();
     const reopened = renderM7SpikeHarness({ initialYaml: savedYaml });

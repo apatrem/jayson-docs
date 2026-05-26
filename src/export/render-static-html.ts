@@ -121,7 +121,11 @@ async function preloadImageDataUris(
         console.warn("image export payload exceeded 50MB total cap");
         continue;
       }
-      dataUris[block.id] = `data:${mimeType};base64,${bytesToBase64(bytes)}`;
+      const encoded =
+        mimeType === "image/svg+xml"
+          ? svgBytesToSafeBase64(bytes)
+          : bytesToBase64(bytes);
+      dataUris[block.id] = `data:${mimeType};base64,${encoded}`;
     } catch (error) {
       if (String(error).includes("file exceeds 5MB export limit")) {
         dataUris[block.id] = imagePlaceholderDataUri("Image too large to export");
@@ -165,6 +169,25 @@ function bytesToBase64(bytes: ArrayLike<number>): string {
     return btoa(binary);
   }
   return Buffer.from(binary, "binary").toString("base64");
+}
+
+function svgBytesToSafeBase64(bytes: ArrayLike<number>): string {
+  const svg = bytesToUtf8(bytes);
+  return Buffer.from(sanitizeSvgForImage(svg), "utf8").toString("base64");
+}
+
+function bytesToUtf8(bytes: ArrayLike<number>): string {
+  const array = Uint8Array.from({ length: bytes.length }, (_value, index) => bytes[index] ?? 0);
+  if (typeof TextDecoder !== "undefined") {
+    return new TextDecoder().decode(array);
+  }
+  return Buffer.from(array).toString("utf8");
+}
+
+function sanitizeSvgForImage(svg: string): string {
+  return svg
+    .replace(/<script\b[\s\S]*?<\/script>/giu, "")
+    .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/giu, "");
 }
 
 function imagePlaceholderDataUri(message: string): string {

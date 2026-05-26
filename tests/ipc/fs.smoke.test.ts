@@ -78,34 +78,9 @@ describe("fs IPC smoke contract", () => {
   it("keeps deferred M7 filesystem commands out of the Tauri invoke surface", () => {
     const libRs = readFileSync("src-tauri/src/lib.rs", "utf8");
 
+    // The removed runtime mock check was tautological; this static grep is the real drift detector.
     for (const command of DEFERRED_M7_FS_COMMANDS) {
       expect(libRs).not.toContain(`ipc::fs::${command}`);
     }
-  });
-
-  it("surfaces deferred filesystem commands as not registered", async () => {
-    const invokeMock = vi.fn((cmd: string) => {
-      if (DEFERRED_M7_FS_COMMANDS.includes(cmd as (typeof DEFERRED_M7_FS_COMMANDS)[number])) {
-        return Promise.reject(new Error(`command ${cmd} not registered`));
-      }
-      return Promise.resolve(null);
-    });
-    Object.defineProperty(window, "__TAURI_INTERNALS__", {
-      configurable: true,
-      value: { invoke: invokeMock },
-    });
-
-    await expect(invoke("move_file", { from: "/tmp/a", to: "/tmp/b" })).rejects.toThrow(
-      "not registered",
-    );
-    await expect(invoke("list_directory", { path: "/tmp" })).rejects.toThrow(
-      "not registered",
-    );
-    await expect(invoke("file_exists", { path: "/tmp/a" })).rejects.toThrow(
-      "not registered",
-    );
-    await expect(invoke("ensure_directory", { path: "/tmp/a" })).rejects.toThrow(
-      "not registered",
-    );
   });
 });

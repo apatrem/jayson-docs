@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useEffect, type FC } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultBrand } from "../../../src/brand/defaultBrand";
@@ -88,6 +89,31 @@ const multiSectionDoc: Extract<DocModel, { kind: "document" }> = {
           level: 2,
           text: "Second section",
           numbered: false,
+        },
+      ],
+    },
+  ],
+};
+
+const typingDoc: Extract<DocModel, { kind: "document" }> = {
+  ...doc,
+  sections: [
+    {
+      ...doc.sections[0]!,
+      blocks: [
+        {
+          id: "prose-1",
+          type: "prose",
+          align: "left",
+          content: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "hello world" }],
+              },
+            ],
+          },
         },
       ],
     },
@@ -246,6 +272,22 @@ describe("DocumentView", () => {
     expect(screen.getByLabelText("Document editor")).toBe(editorBefore);
   });
 
+  it("keeps the real editor mounted and focused while typing", async () => {
+    const user = userEvent.setup();
+    render(<DocumentView path="/Users/me/Documents/proposal.yaml" initialDoc={typingDoc} />);
+
+    const editorBefore = screen.getByLabelText("Document editor");
+    await user.click(editorBefore);
+    placeCaretAtEnd(editorBefore);
+    await user.type(editorBefore, "!", { skipClick: true });
+
+    await waitFor(() => {
+      expect(editorBefore.textContent).toContain("hello world");
+    });
+    expect(screen.getByLabelText("Document editor")).toBe(editorBefore);
+    expect(document.activeElement).toBe(editorBefore);
+  });
+
   it("constrains multi-section documents and can return to welcome", () => {
     const onBackToWelcome = vi.fn();
     render(
@@ -294,3 +336,13 @@ describe("DocumentView", () => {
     ).toBeGreaterThan(0);
   });
 });
+
+function placeCaretAtEnd(element: HTMLElement): void {
+  const target = element.querySelector("p") ?? element;
+  const range = document.createRange();
+  range.selectNodeContents(target);
+  range.collapse(false);
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}

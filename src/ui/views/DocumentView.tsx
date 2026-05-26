@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type FC } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FC } from "react";
 import type { JSONContent } from "@tiptap/react";
 import { defaultBrand } from "../../brand/defaultBrand";
 import { parseDocModelYaml } from "../../docmodel/serialize";
@@ -69,6 +69,9 @@ export const DocumentView: FC<DocumentViewProps> = ({
   EditorComponent = DefaultEditorSurface,
 }) => {
   const [doc, setDoc] = useState<DocumentModel | null>(initialDoc ?? null);
+  const [editorSeed, setEditorSeed] = useState<JSONContent | null>(() =>
+    initialDoc === undefined ? null : documentToEditorContent(initialDoc),
+  );
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -97,6 +100,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
     if (initialDoc !== undefined) {
       currentDoc.current = initialDoc;
       setDoc(initialDoc);
+      setEditorSeed(documentToEditorContent(initialDoc));
       return;
     }
     void readYamlFile(path)
@@ -105,6 +109,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
         if (!cancelled) {
           currentDoc.current = loadedDoc;
           setDoc(loadedDoc);
+          setEditorSeed(documentToEditorContent(loadedDoc));
         }
       })
       .catch((loadError: unknown) => {
@@ -131,11 +136,6 @@ export const DocumentView: FC<DocumentViewProps> = ({
     };
   }, [paletteOpen]);
 
-  const editorContent = useMemo(
-    () => (doc === null ? null : documentToEditorContent(doc)),
-    [doc],
-  );
-
   if (error !== null) {
     return (
       <main aria-label="Document view" style={styles.shell}>
@@ -146,7 +146,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
     );
   }
 
-  if (doc === null || editorContent === null) {
+  if (doc === null || editorSeed === null) {
     return (
       <main aria-label="Document view" style={styles.shell}>
         <p>Loading document…</p>
@@ -204,14 +204,13 @@ export const DocumentView: FC<DocumentViewProps> = ({
           {/* Re-seed the editor only when a different file is opened. */}
           <EditorComponent
             key={path}
-            initialContent={editorContent}
+            initialContent={editorSeed}
             editable={true}
             onEditorReady={setEditor}
             onUpdate={(content) => {
               try {
                 const updated = editorContentToDocument(currentDoc.current ?? doc, content);
                 currentDoc.current = updated;
-                setDoc(updated);
                 setSaveState("saving");
                 onDocumentChange?.(updated);
                 autosave.current?.schedule(updated);

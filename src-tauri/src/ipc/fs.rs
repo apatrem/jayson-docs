@@ -433,9 +433,7 @@ mod tests {
         let roots = scope_roots_from_patterns(&scope, |pattern| {
             expand_scope_pattern_for_test(pattern, &home, &app_config)
         });
-
-        assert_eq!(roots.len(), scope.len());
-        for required in [
+        let expected_roots = [
             home.join("Dropbox"),
             home.join("Library/Mobile Documents"),
             home.join("Google Drive"),
@@ -443,11 +441,21 @@ mod tests {
             home.join("Documents"),
             home.join("Consultancy-Shared"),
             app_config,
-        ] {
+        ];
+
+        assert_eq!(roots.len(), expected_roots.len());
+        for required in &expected_roots {
             assert!(
-                roots.contains(&required),
+                roots.contains(required),
                 "asset scope roots should include {}",
                 required.display()
+            );
+        }
+        for root in roots {
+            assert!(
+                expected_roots.contains(&root),
+                "asset scope roots should not include undeclared addition {}",
+                root.display()
             );
         }
     }

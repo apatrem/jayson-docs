@@ -1168,7 +1168,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1.5h
 - **Note: batches the MEDIUM (symlink extension recheck), LOW (SVG constraint comment, dead-code cleanup), and pre-existing INFO (cleanup symlink race) findings into one cohesive security-hardening task. Each is small individually; bundling reduces ceremony.**
 
-### T-123k [ ] · Close the test gaps surfaced by M7.5 review
+### T-123k [x] · Close the test gaps surfaced by M7.5 review
 - **Depends-on:** T-123g
 - **Reads:** `tests/ui/views/DocumentView.test.tsx` (esp. the existing palette-click "real editor stays mounted" test at line ~228), `tests/export/render-static-html.test.ts`, `tests/security/shell-config.test.ts` (from T-123h, if landed first), `src-tauri/src/ipc/fs.rs` (the drift-detector test ~line 468-501), `tests/integration/m7-spike-happy-path.test.ts` (the schema parse assertion from T-123g), `tests/ipc/fs.smoke.test.ts` (the tautological "command not registered" mock test at line ~86-110)
 - **Outputs:**
