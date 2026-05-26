@@ -233,7 +233,9 @@ fn has_allowed_extension(path: &Path, allowed_extensions: &[&str]) -> bool {
         .and_then(|extension| extension.to_str())
         .map(|extension| {
             let extension = extension.to_ascii_lowercase();
-            allowed_extensions.iter().any(|allowed| extension == *allowed)
+            allowed_extensions
+                .iter()
+                .any(|allowed| extension == *allowed)
         })
         .unwrap_or(false)
 }
@@ -254,34 +256,43 @@ fn ensure_path_in_scope(path: &Path, allowed_roots: &[PathBuf]) -> IpcResult<()>
 }
 
 fn asset_scope_roots(app: &tauri::AppHandle) -> Vec<PathBuf> {
-    let mut roots = Vec::new();
-
-    if let Some(home) = home_dir() {
-        roots.extend(
-            [
-                "Dropbox",
-                "Library/Mobile Documents",
-                "Google Drive",
-                "OneDrive",
-                "Documents",
-                "Consultancy-Shared",
-            ]
-            .into_iter()
-            .map(|relative| home.join(relative)),
-        );
-    }
-
-    if let Ok(app_config_dir) = app.path().app_config_dir() {
-        roots.push(app_config_dir);
-    }
-
-    roots
+    scope_roots_from_patterns(
+        app.config()
+            .app
+            .security
+            .asset_protocol
+            .scope
+            .allowed_paths(),
+        |path| app.path().parse(path),
+    )
 }
 
-fn home_dir() -> Option<PathBuf> {
-    std::env::var_os("HOME")
-        .or_else(|| std::env::var_os("USERPROFILE"))
-        .map(PathBuf::from)
+fn scope_roots_from_patterns<F, E>(patterns: &[PathBuf], mut parse_pattern: F) -> Vec<PathBuf>
+where
+    F: FnMut(&Path) -> Result<PathBuf, E>,
+{
+    patterns
+        .iter()
+        .filter_map(|pattern| parse_pattern(pattern).ok())
+        .filter_map(root_from_scope_pattern)
+        .collect()
+}
+
+fn root_from_scope_pattern(pattern: PathBuf) -> Option<PathBuf> {
+    let mut root = PathBuf::new();
+    for component in pattern.components() {
+        if let Component::Normal(part) = component {
+            if part.to_string_lossy().contains('*') {
+                break;
+            }
+        }
+        root.push(component.as_os_str());
+    }
+    if root.as_os_str().is_empty() {
+        None
+    } else {
+        Some(root)
+    }
 }
 
 fn rename_tmp_file(tmp_path: &Path, target_path: &Path) -> IpcResult<()> {
@@ -406,7 +417,9 @@ mod tests {
         let err = read_binary_file_from_path(path.to_str().unwrap(), &[root.clone()])
             .expect_err("oversized binary should fail");
 
-        assert!(matches!(err, IpcError::Invalid(message) if message == "file exceeds 5MB export limit"));
+        assert!(
+            matches!(err, IpcError::Invalid(message) if message == "file exceeds 5MB export limit")
+        );
         let _ = std::fs::remove_dir_all(root);
     }
 
@@ -446,7 +459,63 @@ mod tests {
         let err = canonical_read_target(path.to_str().unwrap(), &[root.clone()])
             .expect_err("YAML wrapper should reject image extensions");
 
-        assert!(matches!(err, IpcError::Invalid(message) if message == "path must end with .yaml or .yml"));
+        assert!(
+            matches!(err, IpcError::Invalid(message) if message == "path must end with .yaml or .yml")
+        );
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn asset_scope_roots_match_tauri_conf() {
+        let conf: serde_json::Value =
+            serde_json::from_str(include_str!("../../tauri.conf.json")).expect("parse tauri conf");
+        let scope = conf["app"]["security"]["assetProtocol"]["scope"]
+            .as_array()
+            .expect("assetProtocol.scope array")
+            .iter()
+            .map(|value| PathBuf::from(value.as_str().expect("scope entry string")))
+            .collect::<Vec<_>>();
+        let home = PathBuf::from("/home/docsystem-test");
+        let app_config = PathBuf::from("/config/docsystem-test");
+
+        let roots = scope_roots_from_patterns(&scope, |pattern| {
+            expand_scope_pattern_for_test(pattern, &home, &app_config)
+        });
+
+        assert_eq!(roots.len(), scope.len());
+        for required in [
+            home.join("Dropbox"),
+            home.join("Library/Mobile Documents"),
+            home.join("Google Drive"),
+            home.join("OneDrive"),
+            home.join("Documents"),
+            home.join("Consultancy-Shared"),
+            app_config,
+        ] {
+            assert!(
+                roots.contains(&required),
+                "asset scope roots should include {}",
+                required.display()
+            );
+        }
+    }
+
+    fn expand_scope_pattern_for_test(
+        pattern: &Path,
+        home: &Path,
+        app_config: &Path,
+    ) -> Result<PathBuf, ()> {
+        let pattern = pattern.to_string_lossy();
+        if let Some(rest) = pattern.strip_prefix("$HOME/") {
+            Ok(home.join(rest))
+        } else if pattern == "$HOME" {
+            Ok(home.to_path_buf())
+        } else if let Some(rest) = pattern.strip_prefix("$APPCONFIG/") {
+            Ok(app_config.join(rest))
+        } else if pattern == "$APPCONFIG" {
+            Ok(app_config.to_path_buf())
+        } else {
+            Ok(PathBuf::from(pattern.as_ref()))
+        }
     }
 }

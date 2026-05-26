@@ -1066,7 +1066,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 3h
 - **Note: confirmed by ChatGPT review as a third BLOCKER for M7 (image-bearing docs export with broken `<img>` tags in any user's browser).**
 
-### T-123f [ ] · Resolve scope-drift trap (read scope from tauri.conf.json)
+### T-123f [x] · Resolve scope-drift trap (read scope from tauri.conf.json)
 - **Depends-on:** T-123c, T-123e
 - **Reads:** `src-tauri/src/ipc/fs.rs` (esp. lines 211-234: `asset_scope_roots()` hardcoded list), `src-tauri/tauri.conf.json` (`security.assetProtocol.scope`), Tauri Config API docs
 - **Outputs:**

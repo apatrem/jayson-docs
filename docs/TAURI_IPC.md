@@ -61,7 +61,7 @@ export function isIpcError(e: unknown): e is IpcError {
 
 ## §1 — File I/O
 
-These commands wrap the Tauri FS plugin with path-scope validation. The frontend never receives raw filesystem handles.
+These commands wrap the Tauri FS plugin with path-scope validation. The frontend never receives raw filesystem handles. The allowed roots are derived from `src-tauri/tauri.conf.json` `app.security.assetProtocol.scope`; there is no separate Rust-side hardcoded allowlist.
 
 **M7-spike command surface:** only `read_yaml_file` and `write_yaml_file` are registered. `list_directory`, `file_exists`, `ensure_directory`, and `move_file` are documented below for M8, but are intentionally deferred in M7 and return "command not registered" from the renderer. M8 T-125 re-registers them with the same canonicalize + scope-check hardening used by the YAML commands.
 
