@@ -17,10 +17,8 @@ jobs:
           node-version: "20"
           cache: npm
 
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.3"
-          bundler: none
+      - name: Verify Ruby (runner image)
+        run: ruby --version
 
       - name: Install dependencies
         run: npm ci
@@ -45,13 +43,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: dtolnay/rust-toolchain@1.83.0
+      - name: Install Rust 1.83.0
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.83.0 --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          rustc --version
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/cache@v4
         with:
-          workspaces: |
-            src-tauri -> target
-            starter/src-tauri -> target
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+            starter/src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock', 'starter/src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Install Linux Tauri dependencies
         run: |

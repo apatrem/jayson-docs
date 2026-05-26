@@ -53,14 +53,21 @@ jobs:
       # Pin the toolchain so a `v1.0.0` re-build six months from now produces
       # the same binary surface. Bump the version intentionally rather than
       # drifting silently with @stable.
-      - uses: dtolnay/rust-toolchain@1.83.0
+      - name: Install Rust 1.83.0
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.83.0 --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          rustc --version
 
-      # Cache the crate index + target/ so cold builds drop from ~5–10 min to
-      # ~1–2 min on incremental tag pushes. Per-platform cache key falls out
-      # of the matrix automatically.
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/cache@v4
         with:
-          workspaces: "src-tauri -> target"
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Install Linux Tauri dependencies
         if: matrix.platform == 'ubuntu-latest'
