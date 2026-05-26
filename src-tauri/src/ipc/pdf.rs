@@ -59,8 +59,18 @@ fn export_pdf_to_root(input: PdfExportInput, root: &Path) -> IpcResult<ExportHan
 }
 
 fn cleanup_export_temp_dir_at(root: &Path) -> std::io::Result<()> {
-    if root.exists() {
-        fs::remove_dir_all(root)?;
+    match fs::symlink_metadata(root) {
+        Ok(metadata) if metadata.file_type().is_symlink() => {
+            log::warn!(
+                "skipping export temp cleanup because {} is a symlink",
+                root.display()
+            );
+        }
+        Ok(_) => {
+            fs::remove_dir_all(root)?;
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(error),
     }
     Ok(())
 }
@@ -164,5 +174,23 @@ mod tests {
         cleanup_export_temp_dir_at(&root).expect("cleanup root");
 
         assert!(!root.exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn cleanup_export_temp_dir_skips_symlink_root() {
+        let target = unique_test_dir("cleanup-symlink-target");
+        fs::create_dir_all(&target).expect("create symlink target");
+        fs::write(target.join("keep.txt"), "keep").expect("write target file");
+        let root = unique_test_dir("cleanup-symlink-root");
+        let _ = fs::remove_file(&root);
+        std::os::unix::fs::symlink(&target, &root).expect("create root symlink");
+
+        cleanup_export_temp_dir_at(&root).expect("cleanup symlink root");
+
+        assert!(target.join("keep.txt").exists());
+        assert!(root.exists());
+        let _ = fs::remove_file(root);
+        let _ = fs::remove_dir_all(target);
     }
 }

@@ -5,20 +5,9 @@ use std::{
 };
 
 use super::types::{IpcError, IpcResult};
-use serde::Serialize;
 use tauri::Manager;
 
 const MAX_BINARY_FILE_BYTES: u64 = 5_242_880;
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DirEntry {
-    name: String,
-    path: String,
-    kind: String,
-    is_yaml: bool,
-    is_doc_folder: bool,
-}
 
 #[tauri::command]
 pub async fn read_yaml_file(app: tauri::AppHandle, path: String) -> IpcResult<String> {
@@ -42,79 +31,19 @@ pub async fn read_binary_file(app: tauri::AppHandle, path: String) -> IpcResult<
     read_binary_file_from_path(&path, &roots)
 }
 
-#[tauri::command]
-pub async fn list_directory(path: String) -> IpcResult<Vec<DirEntry>> {
-    let path = validate_path(&path)?;
-    let entries = std::fs::read_dir(path).map_err(|e| IpcError::Io(e.to_string()))?;
-    let mut out = Vec::new();
-
-    for entry in entries {
-        let entry = entry.map_err(|e| IpcError::Io(e.to_string()))?;
-        let file_type = entry.file_type().map_err(|e| IpcError::Io(e.to_string()))?;
-        let name = entry.file_name().to_string_lossy().to_string();
-        let path = entry.path();
-        let is_yaml = name.ends_with(".yaml") || name.ends_with(".yml");
-        let is_doc_folder = file_type.is_dir() && contains_yaml_file(&path);
-        out.push(DirEntry {
-            name,
-            path: path.to_string_lossy().to_string(),
-            kind: if file_type.is_dir() {
-                "directory"
-            } else {
-                "file"
-            }
-            .to_string(),
-            is_yaml,
-            is_doc_folder,
-        });
-    }
-
-    Ok(out)
-}
-
-#[tauri::command]
-pub async fn file_exists(path: String) -> IpcResult<bool> {
-    Ok(validate_path(&path).map(|p| p.exists()).unwrap_or(false))
-}
-
-#[tauri::command]
-pub async fn ensure_directory(path: String) -> IpcResult<()> {
-    std::fs::create_dir_all(validate_path(&path)?).map_err(|e| IpcError::Io(e.to_string()))
-}
-
-#[tauri::command]
-pub async fn move_file(from: String, to: String) -> IpcResult<()> {
-    std::fs::rename(validate_path(&from)?, validate_path(&to)?)
-        .map_err(|e| IpcError::Io(e.to_string()))
-}
-
-fn validate_path(path: &str) -> IpcResult<PathBuf> {
-    if path.contains("..") {
-        return Err(IpcError::Invalid("paths must not contain '..'".to_string()));
-    }
-    Ok(PathBuf::from(path))
-}
-
-fn contains_yaml_file(path: &Path) -> bool {
-    fs::read_dir(path)
-        .ok()
-        .into_iter()
-        .flatten()
-        .filter_map(Result::ok)
-        .any(|entry| {
-            let name = entry.file_name().to_string_lossy().to_string();
-            name.ends_with(".yaml") || name.ends_with(".yml")
-        })
-}
-
 fn read_yaml_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<String> {
     let path = canonical_read_target(path, allowed_roots)?;
     fs::read_to_string(path).map_err(|e| IpcError::Io(e.to_string()))
 }
 
 fn read_binary_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<Vec<u8>> {
-    let path =
-        canonical_scoped_read_target(path, allowed_roots, &["jpg", "jpeg", "png", "svg", "webp"])?;
+    let path = canonical_scoped_read_target(
+        path,
+        allowed_roots,
+        // SAFETY: SVG is only returned for export as an <img src="data:..."> payload.
+        // Revisit this allowlist before using SVG via <object>, <iframe>, or raw HTML.
+        &["jpg", "jpeg", "png", "svg", "webp"],
+    )?;
     let metadata = fs::metadata(&path).map_err(|e| IpcError::Io(e.to_string()))?;
     if metadata.len() > MAX_BINARY_FILE_BYTES {
         return Err(IpcError::Invalid(
@@ -180,6 +109,11 @@ fn canonical_scoped_read_target(
     let canonical_path = raw_path
         .canonicalize()
         .map_err(|e| map_path_error(e, path.to_string()))?;
+    if !has_allowed_extension(&canonical_path, allowed_extensions) {
+        return Err(IpcError::Invalid(
+            "canonical path extension is not allowed".to_string(),
+        ));
+    }
     ensure_path_in_scope(&canonical_path, allowed_roots)?;
     Ok(canonical_path)
 }
@@ -447,6 +381,24 @@ mod tests {
                 .expect_err("wrong extension should fail");
             assert!(matches!(err, IpcError::Invalid(_)));
         }
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn rejects_binary_symlink_to_disallowed_canonical_extension() {
+        let root = unique_test_dir("binary-symlink-extension");
+        let target = root.join("secret.yaml");
+        let link = root.join("safe.png");
+        std::fs::write(&target, "secret: value\n").expect("write yaml target");
+        std::os::unix::fs::symlink(&target, &link).expect("create symlink");
+
+        let err = read_binary_file_from_path(link.to_str().unwrap(), &[root.clone()])
+            .expect_err("canonical symlink target extension should fail");
+
+        assert!(
+            matches!(err, IpcError::Invalid(message) if message == "canonical path extension is not allowed")
+        );
         let _ = std::fs::remove_dir_all(root);
     }
 

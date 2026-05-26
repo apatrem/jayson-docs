@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { invoke } from "@tauri-apps/api/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -41,5 +42,13 @@ describe("pdf IPC smoke contract", () => {
       },
       undefined,
     );
+  });
+
+  it("keeps export temp cleanup symlink-safe in Rust", () => {
+    const pdfRs = readFileSync("src-tauri/src/ipc/pdf.rs", "utf8");
+
+    expect(pdfRs).toContain("fs::symlink_metadata(root)");
+    expect(pdfRs).toContain("metadata.file_type().is_symlink()");
+    expect(pdfRs).toContain("cleanup_export_temp_dir_skips_symlink_root");
   });
 });

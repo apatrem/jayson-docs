@@ -147,6 +147,7 @@ function mimeTypeForPath(path: string): string {
     case "png":
       return "image/png";
     case "svg":
+      // SVG is safe here only because export consumes it via <img src=data:>.
       return "image/svg+xml";
     case "webp":
       return "image/webp";

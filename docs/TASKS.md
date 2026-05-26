@@ -1149,7 +1149,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 0.5h
 - **Note: HIGH security finding carried over from the M7 review. Defers escalated to BLOCKER-class for M7.5 closure because the now-hardened keychain IPC (`get_secret` / `set_secret`) is reachable from a renderer-origin XSS, and consultant-authored YAML is the threat-model input. 5-line fix.**
 
-### T-123j [ ] · Defense-in-depth security hardening (MEDIUM/LOW findings batch)
+### T-123j [x] · Defense-in-depth security hardening (MEDIUM/LOW findings batch)
 - **Depends-on:** T-123g
 - **Reads:** `src-tauri/src/ipc/fs.rs` (esp. `read_binary_file_from_path` line ~115-125, `canonical_scoped_read_target` line ~174-185, the 4 deferred command bodies line ~46-89, the legacy `validate_path` line ~91-95), `src-tauri/src/ipc/pdf.rs` (esp. `cleanup_export_temp_dir_at` line ~61-66), `src/export/render-static-html.ts` (esp. the `mimeTypeForPath` SVG arm + the placeholder branch)
 - **Outputs:**
