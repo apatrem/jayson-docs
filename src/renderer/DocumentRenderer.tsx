@@ -12,7 +12,7 @@ import type { Section } from "../schema/containers";
 import { BulletList } from "../blocks/bullet-list";
 import { Callout } from "../blocks/callout";
 import { Chart } from "./blocks/Chart";
-import { Diagram } from "./blocks/Diagram";
+import { Diagram } from "../blocks/diagram";
 import { Divider } from "../blocks/divider";
 import { Heading } from "../blocks/heading";
 import { Image } from "../blocks/image";

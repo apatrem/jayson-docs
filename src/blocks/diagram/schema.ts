@@ -1,17 +1,41 @@
 /**
- * src/blocks/diagram/schema.ts — pure schema entry for the Diagram block.
+ * src/blocks/diagram/schema.ts — self-contained schema for the Diagram block.
  *
- * Re-exports everything from src/schema/blocks/diagram.ts so callers
- * can import block types and helpers from either location. Also exports the
- * schemaEntry consumed by src/blocks/schema-registry.ts.
+ * Source of truth for DiagramWidthSchema, DiagramWidth, DiagramBlockSchema,
+ * DiagramBlock, and diagramMaxWidthPercent (T-149). Supersedes
+ * src/schema/blocks/diagram.ts which has been deleted.
  *
  * Pure module: no React, @tiptap/*, or src/renderer/ imports allowed.
  * Enforced by tests/blocks/schema-purity.test.ts.
  */
 
-import type { z } from "zod";
-import { DiagramBlockSchema } from "../../schema/blocks/diagram";
-export * from "../../schema/blocks/diagram";
+import { z } from "zod";
+import type { z as zType } from "zod";
+import { BlockBaseSchema } from "../../schema/blocks/block-base";
+
+export const DiagramWidthSchema = z.enum(["medium", "large", "full"]);
+export type DiagramWidth = z.infer<typeof DiagramWidthSchema>;
+
+export const DiagramBlockSchema = BlockBaseSchema.extend({
+  type: z.literal("diagram"),
+  source: z.string().min(1).max(4000),
+  title: z.string().max(120).optional(),
+  caption: z.string().max(500).optional(),
+  width: DiagramWidthSchema.default("large"),
+}).strict();
+
+export type DiagramBlock = z.infer<typeof DiagramBlockSchema>;
+
+export function diagramMaxWidthPercent(width: DiagramWidth): string {
+  switch (width) {
+    case "medium":
+      return "60%";
+    case "large":
+      return "85%";
+    case "full":
+      return "100%";
+  }
+}
 
 /** Schema-registry entry — consumed by src/blocks/schema-registry.ts. */
 export const schemaEntry = {
@@ -21,7 +45,7 @@ export const schemaEntry = {
   paletteLabel: "Diagram",
 } satisfies {
   schemaName: string;
-  schema: z.ZodType<unknown>;
+  schema: zType.ZodType<unknown>;
   allowedAttrs: readonly string[];
   paletteLabel: string;
 };

@@ -9,10 +9,6 @@ import {
   proseMirrorToChartBlock,
 } from "./nodes/ChartNode";
 import {
-  diagramBlockToProseMirror,
-  proseMirrorToDiagramBlock,
-} from "./nodes/DiagramNode";
-import {
   kpiCardsBlockToProseMirror,
   proseMirrorToKpiCardsBlock,
 } from "./nodes/KpiCardsNode";
@@ -231,8 +227,6 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
       return riskMatrixBlockToProseMirror(block);
     case "team":
       return teamBlockToProseMirror(block);
-    case "diagram":
-      return diagramBlockToProseMirror(block);
     default:
       // Block types migrated to the registry are intercepted above and never
       // reach this arm at runtime. Cast satisfies the exhaustiveness check
@@ -277,10 +271,6 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
     case "docTeam":
       return proseMirrorToTeamBlock(
         node as unknown as Parameters<typeof proseMirrorToTeamBlock>[0],
-      );
-    case "docDiagram":
-      return proseMirrorToDiagramBlock(
-        node as unknown as Parameters<typeof proseMirrorToDiagramBlock>[0],
       );
     default:
       throw new MappingError(`Unknown block node type: ${node.type}`, ["blocks"]);

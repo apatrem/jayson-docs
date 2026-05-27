@@ -6,9 +6,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, it, expect } from "vitest";
 import { parse } from "yaml";
 import { BrandProvider } from "../../src/brand-tokens/BrandProvider";
-import { Diagram } from "../../src/renderer/blocks/Diagram";
+import { Diagram } from "../../src/blocks/diagram";
 import { BrandTokensSchema } from "../../src/schema/brand";
-import type { DiagramBlock } from "../../src/schema/blocks/diagram";
+import type { DiagramBlock } from "../../src/blocks/diagram/schema";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const brand = BrandTokensSchema.parse(

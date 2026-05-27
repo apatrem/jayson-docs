@@ -21,7 +21,7 @@ import { docModelToProseMirror } from "./mapping";
 import { BulletListTipTapNode } from "../blocks/bullet-list";
 import { CalloutTipTapNode } from "../blocks/callout";
 import { ChartTipTapNode } from "./nodes/ChartNode";
-import { DiagramTipTapNode } from "./nodes/DiagramNode";
+import { DiagramTipTapNode } from "../blocks/diagram";
 import { DividerTipTapNode } from "../blocks/divider";
 import { HeadingTipTapNode } from "../blocks/heading";
 import { ImageTipTapNode } from "../blocks/image";

@@ -1710,7 +1710,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Reads/Outputs/Acceptance:** as T-142 for Image
 - **est.** 1h
 
-### T-149 [ ] · Migrate Diagram block to registry
+### T-149 [x] · Migrate Diagram block to registry
 - **Depends-on:** T-148
 - **Reads/Outputs/Acceptance:** as T-142 for Diagram (Mermaid-backed)
 - **est.** 1.5h

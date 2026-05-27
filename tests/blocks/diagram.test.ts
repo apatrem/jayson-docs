@@ -10,14 +10,14 @@ import {
   DiagramTipTapNode,
   diagramBlockToProseMirror,
   proseMirrorToDiagramBlock,
-} from "../../src/editor/nodes/DiagramNode";
+  Diagram,
+} from "../../src/blocks/diagram";
 import { renderMermaidSvg } from "../../src/renderer/mermaid";
-import { Diagram } from "../../src/renderer/blocks/Diagram";
 import {
   DiagramBlockSchema,
   diagramMaxWidthPercent,
   type DiagramBlock,
-} from "../../src/schema/blocks/diagram";
+} from "../../src/blocks/diagram/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const validDiagram: DiagramBlock = {
