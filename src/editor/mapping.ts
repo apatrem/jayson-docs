@@ -21,10 +21,6 @@ import {
   proseMirrorToDiagramBlock,
 } from "./nodes/DiagramNode";
 import {
-  dividerBlockToProseMirror,
-  proseMirrorToDividerBlock,
-} from "./nodes/DividerNode";
-import {
   headingBlockToProseMirror,
   proseMirrorToHeadingBlock,
 } from "./nodes/HeadingNode";
@@ -273,10 +269,11 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
       return teamBlockToProseMirror(block);
     case "diagram":
       return diagramBlockToProseMirror(block);
-    case "divider":
-      return dividerBlockToProseMirror(block);
     default:
-      return assertNever(block);
+      // Block types migrated to the registry are intercepted above and never
+      // reach this arm at runtime. Cast satisfies the exhaustiveness check
+      // until T-157a removes this fallback entirely.
+      return assertNever(block as never);
   }
 }
 
@@ -344,10 +341,6 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
     case "docDiagram":
       return proseMirrorToDiagramBlock(
         node as unknown as Parameters<typeof proseMirrorToDiagramBlock>[0],
-      );
-    case "docDivider":
-      return proseMirrorToDividerBlock(
-        node as unknown as Parameters<typeof proseMirrorToDividerBlock>[0],
       );
     default:
       throw new MappingError(`Unknown block node type: ${node.type}`, ["blocks"]);

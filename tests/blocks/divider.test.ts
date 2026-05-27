@@ -10,12 +10,12 @@ import {
   DividerTipTapNode,
   dividerBlockToProseMirror,
   proseMirrorToDividerBlock,
-} from "../../src/editor/nodes/DividerNode";
-import { Divider } from "../../src/renderer/blocks/Divider";
+  Divider,
+} from "../../src/blocks/divider";
 import {
   DividerBlockSchema,
   type DividerBlock,
-} from "../../src/schema/blocks/divider";
+} from "../../src/blocks/divider/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const validDocDivider: DividerBlock = {

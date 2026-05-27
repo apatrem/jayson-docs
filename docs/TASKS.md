@@ -1666,7 +1666,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Note:** M9a gate before M9b — NOT a blocker for T-142–T-156. Per-block Standard migration can proceed in parallel since Standard blocks load statically.
 - **est.** 3h
 
-### T-142 [ ] · Migrate Divider block to registry
+### T-142 [x] · Migrate Divider block to registry
 - **Depends-on:** T-141, T-141b, T-141a
 - **Reads:** `src/schema/blocks/divider.ts`, `src/editor/nodes/DividerNode.tsx`, `src/renderer/blocks/Divider.tsx`, `docs/adr/0008-block-registry-manifest-shape.md`, `tests/renderer/divider.snapshot.test.ts` (from T-141a)
 - **Outputs:**

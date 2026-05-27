@@ -14,7 +14,7 @@ import { RoadmapBlockDataSchema } from "./roadmap";
 import { TeamBlockSchema } from "./team";
 import { RiskMatrixBlockDataSchema } from "./risk-matrix";
 import { DiagramBlockSchema } from "./diagram";
-import { DividerBlockSchema } from "./divider";
+import { DividerBlockSchema } from "../../blocks/divider/schema";
 
 /** Discriminated union of all 15 pre-built block types. */
 export const BlockSchema = z.discriminatedUnion("type", [

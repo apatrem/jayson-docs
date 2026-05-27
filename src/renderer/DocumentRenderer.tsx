@@ -13,7 +13,7 @@ import { BulletList } from "./blocks/BulletList";
 import { Callout } from "./blocks/Callout";
 import { Chart } from "./blocks/Chart";
 import { Diagram } from "./blocks/Diagram";
-import { Divider } from "./blocks/Divider";
+import { Divider } from "../blocks/divider";
 import { Heading } from "./blocks/Heading";
 import { Image } from "./blocks/Image";
 import { KpiCards } from "./blocks/KpiCards";

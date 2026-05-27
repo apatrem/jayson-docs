@@ -27,7 +27,7 @@ import type { DocModel } from "../../src/schema/docmodel";
 import type { CalloutBlock } from "../../src/schema/blocks/callout";
 import type { ProseBlock } from "../../src/schema/blocks/prose";
 import type { HeadingBlock } from "../../src/schema/blocks/heading";
-import type { DividerBlock } from "../../src/schema/blocks/divider";
+import type { DividerBlock } from "../../src/blocks/divider/schema";
 
 // ── Fixtures ────────────────────────────────────────────────────────────────
 
