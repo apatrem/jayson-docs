@@ -92,6 +92,130 @@ fn delete_file_at_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<()> {
     fs::remove_file(&canonical).map_err(|e| IpcError::Io(e.to_string()))
 }
 
+// ─── Authored-block lifecycle commands (T-167, ADR-0010) ─────────────────────
+//
+// Three semantic file-system operations for the soft-archive lifecycle:
+//   active/  ──archive──▶  archived/   (hide from palette; documents still render)
+//   archived/ ──restore──▶ active/     (re-appear in palette)
+//   archived/ ──permanently-delete──▶  (gone; documents render RemovedBlockPlaceholder)
+//
+// Each command moves/deletes the primary `.tsx` file and, on a best-effort
+// basis, any sidecar files (`.manifest.json`) without failing if the sidecar
+// is absent.
+
+/// Moves an Authored block `.tsx` file (and its `.manifest.json` sidecar)
+/// from a source directory into `dst_dir`, creating `dst_dir` if necessary.
+///
+/// Returns the absolute path of the installed destination file.
+///
+/// `src_path` must be absolute, have extension `.tsx`, and be within the asset
+/// scope.  `dst_dir` must be absolute and within the same scope.
+#[tauri::command]
+pub async fn archive_authored_block(
+    app: tauri::AppHandle,
+    src_path: String,
+    dst_dir: String,
+) -> IpcResult<String> {
+    let roots = asset_scope_roots(&app);
+    move_authored_block_to_dir(&src_path, &dst_dir, &roots)
+}
+
+/// Moves an Authored block `.tsx` file from `archived/` back into `dst_dir`
+/// (typically `active/`), creating `dst_dir` if necessary.
+///
+/// Semantically the reverse of `archive_authored_block`; shares the same
+/// underlying implementation.
+#[tauri::command]
+pub async fn restore_authored_block(
+    app: tauri::AppHandle,
+    src_path: String,
+    dst_dir: String,
+) -> IpcResult<String> {
+    let roots = asset_scope_roots(&app);
+    move_authored_block_to_dir(&src_path, &dst_dir, &roots)
+}
+
+/// Permanently deletes an Authored block `.tsx` file and its `.manifest.json`
+/// sidecar from `archived/` (or any in-scope location).
+///
+/// This is destructive.  The frontend should confirm with the user before
+/// calling.  Documents that reference this block will render
+/// `<RemovedBlockPlaceholder>` after deletion.
+#[tauri::command]
+pub async fn permanently_delete_authored_block(
+    app: tauri::AppHandle,
+    path: String,
+) -> IpcResult<()> {
+    let roots = asset_scope_roots(&app);
+    permanently_delete_authored_block_at_path(&path, &roots)
+}
+
+/// Shared implementation for archive / restore: move src to a new directory.
+fn move_authored_block_to_dir(
+    src_path: &str,
+    dst_dir: &str,
+    allowed_roots: &[PathBuf],
+) -> IpcResult<String> {
+    // Validate source (must be .tsx, no .., within scope).
+    let src_raw = validate_scoped_path(src_path, &["tsx"])?;
+    let canonical_src = src_raw
+        .canonicalize()
+        .map_err(|e| map_path_error(e, src_path.to_string()))?;
+    ensure_path_in_scope(&canonical_src, allowed_roots)?;
+
+    // Validate dst_dir (no extension restriction — it's a directory).
+    let dst_dir_raw = validate_absolute_path(dst_dir)?;
+
+    // Create the destination directory if it does not exist.
+    fs::create_dir_all(&dst_dir_raw).map_err(|e| IpcError::Io(e.to_string()))?;
+    let canonical_dst_dir = dst_dir_raw
+        .canonicalize()
+        .map_err(|e| map_path_error(e, dst_dir.to_string()))?;
+    ensure_path_in_scope(&canonical_dst_dir, allowed_roots)?;
+
+    let file_name = canonical_src
+        .file_name()
+        .ok_or_else(|| IpcError::Invalid("source path must have a file name".to_string()))?;
+    let canonical_dst = canonical_dst_dir.join(file_name);
+
+    // Move the primary .tsx file.
+    rename_tmp_file(&canonical_src, &canonical_dst)?;
+
+    // Best-effort: move the .manifest.json sidecar if it exists.
+    let src_sidecar = PathBuf::from(format!("{}.manifest.json", canonical_src.display()));
+    if src_sidecar.exists() {
+        let dst_sidecar = PathBuf::from(format!("{}.manifest.json", canonical_dst.display()));
+        let _ = fs::rename(&src_sidecar, &dst_sidecar);
+    }
+
+    Ok(canonical_dst.to_string_lossy().into_owned())
+}
+
+fn permanently_delete_authored_block_at_path(
+    path: &str,
+    allowed_roots: &[PathBuf],
+) -> IpcResult<()> {
+    let raw = validate_scoped_path(path, &["tsx"])?;
+    let canonical = raw
+        .canonicalize()
+        .map_err(|e| map_path_error(e, path.to_string()))?;
+    ensure_path_in_scope(&canonical, allowed_roots)?;
+    if canonical.is_dir() {
+        return Err(IpcError::Invalid("path must be a file, not a directory".to_string()));
+    }
+
+    // Delete the primary file.
+    fs::remove_file(&canonical).map_err(|e| IpcError::Io(e.to_string()))?;
+
+    // Best-effort: delete the .manifest.json sidecar.
+    let sidecar = PathBuf::from(format!("{}.manifest.json", canonical.display()));
+    if sidecar.exists() {
+        let _ = fs::remove_file(&sidecar);
+    }
+
+    Ok(())
+}
+
 fn read_yaml_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<String> {
     let path = canonical_read_target(path, allowed_roots)?;
     fs::read_to_string(path).map_err(|e| IpcError::Io(e.to_string()))
@@ -886,5 +1010,206 @@ mod tests {
         assert!(matches!(err, IpcError::PermissionDenied(_)));
         let _ = std::fs::remove_dir_all(&root);
         let _ = std::fs::remove_dir_all(&outside);
+    }
+
+    // ─── T-167: authored-block lifecycle commands ─────────────────────────────
+
+    #[test]
+    fn archive_authored_block_moves_tsx_and_sidecar() {
+        let root = unique_test_dir("archive-ok");
+        let active = root.join("active");
+        let archived = root.join("archived");
+        std::fs::create_dir_all(&active).unwrap();
+
+        let src = active.join("my-block.tsx");
+        let sidecar = active.join("my-block.tsx.manifest.json");
+        std::fs::write(&src, "// block source\n").unwrap();
+        std::fs::write(&sidecar, r#"{"slug":"my-block"}"#).unwrap();
+
+        let dst_path = move_authored_block_to_dir(
+            src.to_str().unwrap(),
+            archived.to_str().unwrap(),
+            &[root.clone()],
+        )
+        .expect("archive should succeed");
+
+        assert!(!src.exists(), "source .tsx must be gone after archive");
+        assert!(!sidecar.exists(), "source sidecar must be gone after archive");
+        assert!(
+            archived.join("my-block.tsx").exists(),
+            "destination .tsx must exist"
+        );
+        assert!(
+            archived.join("my-block.tsx.manifest.json").exists(),
+            "destination sidecar must exist"
+        );
+        assert_eq!(
+            dst_path,
+            archived
+                .join("my-block.tsx")
+                .canonicalize()
+                .unwrap()
+                .to_string_lossy()
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn archive_authored_block_creates_dst_dir_if_absent() {
+        let root = unique_test_dir("archive-create-dir");
+        let active = root.join("active");
+        std::fs::create_dir_all(&active).unwrap();
+        let src = active.join("block.tsx");
+        std::fs::write(&src, "// block\n").unwrap();
+
+        let archived = root.join("archived"); // does not yet exist
+        let result = move_authored_block_to_dir(
+            src.to_str().unwrap(),
+            archived.to_str().unwrap(),
+            &[root.clone()],
+        );
+
+        assert!(result.is_ok(), "archive must create missing dst dir");
+        assert!(archived.join("block.tsx").exists());
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn archive_authored_block_rejects_src_outside_scope() {
+        let root = unique_test_dir("archive-src-scope-root");
+        let outside = unique_test_dir("archive-src-scope-outside");
+        let src = outside.join("block.tsx");
+        std::fs::write(&src, "// block\n").unwrap();
+        let dst_dir = root.join("archived");
+
+        let err = move_authored_block_to_dir(
+            src.to_str().unwrap(),
+            dst_dir.to_str().unwrap(),
+            &[root.clone()],
+        )
+        .expect_err("src outside scope must fail");
+
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(&root);
+        let _ = std::fs::remove_dir_all(&outside);
+    }
+
+    #[test]
+    fn archive_authored_block_rejects_dst_outside_scope() {
+        let root = unique_test_dir("archive-dst-scope-root");
+        let outside = unique_test_dir("archive-dst-scope-outside");
+        let active = root.join("active");
+        std::fs::create_dir_all(&active).unwrap();
+        let src = active.join("block.tsx");
+        std::fs::write(&src, "// block\n").unwrap();
+        std::fs::create_dir_all(&outside).unwrap();
+
+        let err = move_authored_block_to_dir(
+            src.to_str().unwrap(),
+            outside.to_str().unwrap(),
+            &[root.clone()],
+        )
+        .expect_err("dst outside scope must fail");
+
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(&root);
+        let _ = std::fs::remove_dir_all(&outside);
+    }
+
+    #[test]
+    fn archive_authored_block_rejects_non_tsx_extension() {
+        let root = unique_test_dir("archive-ext");
+        let src = root.join("block.yaml");
+        std::fs::write(&src, "kind: block\n").unwrap();
+        let dst_dir = root.join("archived");
+
+        let err = move_authored_block_to_dir(
+            src.to_str().unwrap(),
+            dst_dir.to_str().unwrap(),
+            &[root.clone()],
+        )
+        .expect_err("non-tsx extension must fail");
+
+        assert!(matches!(err, IpcError::Invalid(_)));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn archive_authored_block_rejects_path_traversal() {
+        let root = unique_test_dir("archive-traversal");
+        let active = root.join("active");
+        std::fs::create_dir_all(&active).unwrap();
+        let evil = format!("{}/../../../etc/block.tsx", active.display());
+        let dst_dir = root.join("archived");
+
+        let err = move_authored_block_to_dir(&evil, dst_dir.to_str().unwrap(), &[root.clone()])
+            .expect_err("path traversal must fail");
+
+        assert!(matches!(err, IpcError::Invalid(_)));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn permanently_delete_removes_tsx_and_sidecar() {
+        let root = unique_test_dir("perm-delete-ok");
+        let archived = root.join("archived");
+        std::fs::create_dir_all(&archived).unwrap();
+        let path = archived.join("old-block.tsx");
+        let sidecar = archived.join("old-block.tsx.manifest.json");
+        std::fs::write(&path, "// old block\n").unwrap();
+        std::fs::write(&sidecar, r#"{"slug":"old-block"}"#).unwrap();
+
+        permanently_delete_authored_block_at_path(path.to_str().unwrap(), &[root.clone()])
+            .expect("permanent delete should succeed");
+
+        assert!(!path.exists(), ".tsx must be deleted");
+        assert!(!sidecar.exists(), "sidecar must be deleted");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn permanently_delete_tolerates_absent_sidecar() {
+        let root = unique_test_dir("perm-delete-no-sidecar");
+        let archived = root.join("archived");
+        std::fs::create_dir_all(&archived).unwrap();
+        let path = archived.join("solo-block.tsx");
+        std::fs::write(&path, "// solo block\n").unwrap();
+
+        let result =
+            permanently_delete_authored_block_at_path(path.to_str().unwrap(), &[root.clone()]);
+
+        assert!(result.is_ok(), "missing sidecar must not fail the delete");
+        assert!(!path.exists());
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn permanently_delete_rejects_path_outside_scope() {
+        let root = unique_test_dir("perm-delete-scope-root");
+        let outside = unique_test_dir("perm-delete-scope-outside");
+        let path = outside.join("block.tsx");
+        std::fs::write(&path, "// outside\n").unwrap();
+
+        let err =
+            permanently_delete_authored_block_at_path(path.to_str().unwrap(), &[root.clone()])
+                .expect_err("outside scope must fail");
+
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(&root);
+        let _ = std::fs::remove_dir_all(&outside);
+    }
+
+    #[test]
+    fn permanently_delete_rejects_path_traversal() {
+        let root = unique_test_dir("perm-delete-traversal");
+        let archived = root.join("archived");
+        std::fs::create_dir_all(&archived).unwrap();
+        let evil = format!("{}/../../../etc/block.tsx", archived.display());
+
+        let err = permanently_delete_authored_block_at_path(&evil, &[root.clone()])
+            .expect_err("path traversal must fail");
+
+        assert!(matches!(err, IpcError::Invalid(_)));
+        let _ = std::fs::remove_dir_all(&root);
     }
 }

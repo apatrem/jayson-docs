@@ -1881,7 +1881,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** a block authored against a prior scaffold quarantines on receive; clicking Regenerate produces a new block that lint-passes against the current scaffold and activates.
 - **est.** 4h
 
-### T-167 [ ] · Soft archive IPC commands + capability ACL update (verify against plugin source per AGENTS.md review playbook)
+### T-167 [x] · Soft archive IPC commands + capability ACL update (verify against plugin source per AGENTS.md review playbook)
 - **Depends-on:** T-164
 - **Reads:** `docs/adr/0010-authored-block-soft-archive-on-removal.md`, AGENTS.md "Review playbook" section, `src-tauri/tauri.conf.json`, existing capability JSON
 - **Outputs:**

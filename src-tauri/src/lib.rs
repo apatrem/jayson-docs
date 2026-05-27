@@ -49,6 +49,9 @@ pub fn run() {
             ipc::cost::prune_old_rows,
             ipc::pdf::export_pdf,
             ipc::authored_block::lint_authored_block,
+            ipc::fs::archive_authored_block,
+            ipc::fs::restore_authored_block,
+            ipc::fs::permanently_delete_authored_block,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

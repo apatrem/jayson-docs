@@ -313,6 +313,98 @@ creating safe, self-contained HTML.
 
 ---
 
+## §7 — Authored-block lifecycle commands (T-167, ADR-0010)
+
+Three commands implement the soft-archive lifecycle for Tier 3 Authored blocks
+(see `docs/adr/0010-authored-block-soft-archive-on-removal.md`):
+
+```
+active/  ──archive──▶  archived/   (hidden from palette; existing docs still render)
+archived/ ──restore──▶ active/     (re-appears in palette)
+archived/ ──permanently-delete──▶  (gone; docs render RemovedBlockPlaceholder)
+```
+
+All three handlers live in `src-tauri/src/ipc/fs.rs` and share the same
+`asset_scope_roots` security model as all other file I/O commands.
+
+### Path scope note
+
+The `generated-blocks/archived/` directory is a subdirectory of the user's
+`cloudSyncRoot`, which is itself under one of the broad `assetProtocol.scope`
+patterns (e.g., `$HOME/Dropbox/**`).  No additional `tauri.conf.json` scope
+entries are required — the existing patterns already cover
+`generated-blocks/archived/`.
+
+### Capability note
+
+All three commands are custom `#[tauri::command]` handlers registered via
+`invoke_handler!` in `src-tauri/src/lib.rs`. In Tauri 2.x, custom commands
+registered this way are available to any window that holds `core:default`
+(already granted in `capabilities/main-window.json`). No additional capability
+entries are needed.
+
+### `archive_authored_block(srcPath: string, dstDir: string) -> string`
+
+**Rust:**
+
+```rust
+#[tauri::command]
+pub async fn archive_authored_block(
+    app: tauri::AppHandle,
+    src_path: String,
+    dst_dir: String,
+) -> IpcResult<String>
+```
+
+**TypeScript:**
+
+```typescript
+export async function archiveAuthoredBlock(
+  srcPath: string,
+  dstDir: string,
+): Promise<string>
+```
+
+**Behavior:**
+- `srcPath` must be absolute, end with `.tsx`, and be within the asset scope.
+- `dstDir` must be absolute and within the asset scope; it is created if absent.
+- The primary `.tsx` file is moved atomically.  The `.manifest.json` sidecar is
+  moved on a best-effort basis (ignored if absent).
+- Returns the absolute path of the file at its new location.
+
+### `restore_authored_block(srcPath: string, dstDir: string) -> string`
+
+Same signature and behaviour as `archive_authored_block`; semantically the
+reverse operation (moves from `archived/` back to `active/`).
+
+### `permanently_delete_authored_block(path: string) -> void`
+
+**Rust:**
+
+```rust
+#[tauri::command]
+pub async fn permanently_delete_authored_block(
+    app: tauri::AppHandle,
+    path: String,
+) -> IpcResult<()>
+```
+
+**TypeScript:**
+
+```typescript
+export async function permanentlyDeleteAuthoredBlock(path: string): Promise<void>
+```
+
+**Behavior:**
+- `path` must be absolute, end with `.tsx`, and be within the asset scope.
+- Directories and out-of-scope paths are rejected with `PermissionDenied`.
+- The `.tsx` file is deleted; the `.manifest.json` sidecar is deleted on a
+  best-effort basis (ignored if absent).
+- **Destructive and irreversible.** The UI must confirm with the user before
+  calling.
+
+---
+
 ## §6 — Commands that are NOT Tauri commands
 
 Things to keep in JS (don't add Tauri commands for them):

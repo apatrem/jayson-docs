@@ -143,3 +143,50 @@ export async function receiveAuthoredBlock(
     return { ok: false, installedPath: quarantinePath, violations: lintResult.violations };
   }
 }
+
+// ─── Soft-archive lifecycle commands (T-167, ADR-0010) ────────────────────────
+
+/**
+ * Moves an Authored block `.tsx` file (and its `.manifest.json` sidecar) from
+ * its current location into `dstDir`, creating `dstDir` if necessary.
+ *
+ * Typically called with `srcPath` pointing to `active/<slug>.tsx` and `dstDir`
+ * pointing to `generated-blocks/archived/` to hide the block from the palette
+ * while keeping it renderable in existing documents.
+ *
+ * @returns The absolute path of the file at its new location.
+ */
+export async function archiveAuthoredBlock(
+  srcPath: string,
+  dstDir: string,
+): Promise<string> {
+  return invoke<string>("archive_authored_block", { srcPath, dstDir });
+}
+
+/**
+ * Moves an Authored block `.tsx` file (and its `.manifest.json` sidecar) from
+ * `archived/` back into `dstDir` (typically `active/`), creating `dstDir` if
+ * necessary.
+ *
+ * Semantically the reverse of {@link archiveAuthoredBlock}.
+ *
+ * @returns The absolute path of the file at its new (restored) location.
+ */
+export async function restoreAuthoredBlock(
+  srcPath: string,
+  dstDir: string,
+): Promise<string> {
+  return invoke<string>("restore_authored_block", { srcPath, dstDir });
+}
+
+/**
+ * Permanently deletes an Authored block `.tsx` file and its `.manifest.json`
+ * sidecar from the file system.
+ *
+ * **Destructive** — there is no undo.  The UI should confirm with the user
+ * before calling this function.  Documents that reference the deleted block
+ * will render `<RemovedBlockPlaceholder>` after deletion.
+ */
+export async function permanentlyDeleteAuthoredBlock(path: string): Promise<void> {
+  await invoke("permanently_delete_authored_block", { path });
+}
