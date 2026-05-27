@@ -1966,7 +1966,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** install flow provisions and validates the frontier key; missing/invalid key produces a clear actionable error.
 - **est.** 3h
 
-### T-176 [ ] · Cost ledger — new `authored-block-generation` category
+### T-176 [x] · Cost ledger — new `authored-block-generation` category
 - **Depends-on:** T-175
 - **Reads:** `docs/DECISIONS.md` D-34 amendment
 - **Outputs:**

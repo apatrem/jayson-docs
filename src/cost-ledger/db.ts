@@ -16,7 +16,13 @@ export const CostLedgerRowSchema = z
     cachedTokens: z.number().int().nonnegative(),
     computedCostUsd: z.number().nonnegative(),
     docId: z.string().uuid().optional(),
-    callKind: z.enum(["generation", "comment-batch", "comment-single", "setup"]),
+    callKind: z.enum([
+      "generation",
+      "comment-batch",
+      "comment-single",
+      "setup",
+      "authored-block-generation", // ADR-0012 / D-34
+    ]),
     pricingSource: z.enum(["lookup", "adapter-default", "config-fallback"]),
   })
   .strict();
@@ -66,31 +72,76 @@ export function openCostLedger(configDir: string): CostLedgerDb {
   return new CostLedgerDb(db);
 }
 
-export function migrateCostLedger(db: SqliteDatabase): void {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS cost_ledger (
-      id TEXT PRIMARY KEY,
-      timestamp TEXT NOT NULL,
-      model TEXT NOT NULL,
-      provider TEXT NOT NULL,
-      input_tokens INTEGER NOT NULL CHECK (input_tokens >= 0),
-      output_tokens INTEGER NOT NULL CHECK (output_tokens >= 0),
-      cached_tokens INTEGER NOT NULL CHECK (cached_tokens >= 0),
-      computed_cost_usd REAL NOT NULL CHECK (computed_cost_usd >= 0),
-      doc_id TEXT,
-      call_kind TEXT NOT NULL CHECK (
-        call_kind IN ('generation', 'comment-batch', 'comment-single', 'setup')
-      ),
-      pricing_source TEXT NOT NULL CHECK (
-        pricing_source IN ('lookup', 'adapter-default', 'config-fallback')
+/**
+ * The CREATE TABLE statement for cost_ledger — canonical schema version 2.
+ * This is extracted so migration_v2 and tests can reference the same DDL.
+ */
+const COST_LEDGER_DDL = `
+  CREATE TABLE cost_ledger (
+    id TEXT PRIMARY KEY,
+    timestamp TEXT NOT NULL,
+    model TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    input_tokens INTEGER NOT NULL CHECK (input_tokens >= 0),
+    output_tokens INTEGER NOT NULL CHECK (output_tokens >= 0),
+    cached_tokens INTEGER NOT NULL CHECK (cached_tokens >= 0),
+    computed_cost_usd REAL NOT NULL CHECK (computed_cost_usd >= 0),
+    doc_id TEXT,
+    call_kind TEXT NOT NULL CHECK (
+      call_kind IN (
+        'generation', 'comment-batch', 'comment-single', 'setup',
+        'authored-block-generation'
       )
-    );
+    ),
+    pricing_source TEXT NOT NULL CHECK (
+      pricing_source IN ('lookup', 'adapter-default', 'config-fallback')
+    )
+  )
+`;
 
-    CREATE INDEX IF NOT EXISTS idx_cost_ledger_timestamp
-      ON cost_ledger (timestamp);
-    CREATE INDEX IF NOT EXISTS idx_cost_ledger_doc_id
-      ON cost_ledger (doc_id);
-  `);
+const COST_LEDGER_INDEXES = `
+  CREATE INDEX IF NOT EXISTS idx_cost_ledger_timestamp
+    ON cost_ledger (timestamp);
+  CREATE INDEX IF NOT EXISTS idx_cost_ledger_doc_id
+    ON cost_ledger (doc_id);
+`;
+
+export function migrateCostLedger(db: SqliteDatabase): void {
+  // user_version tracks the schema revision so we can migrate existing DBs.
+  // Version 0 (or absent) = table never created, or created without authored-block-generation.
+  // Version 2 = current schema, includes authored-block-generation call_kind.
+  const version = (db.pragma("user_version", { simple: true }) as number) ?? 0;
+
+  if (version < 2) {
+    // If the table exists with the old schema (version 1 / version 0), recreate it
+    // to update the CHECK constraint. SQLite doesn't support ALTER TABLE MODIFY COLUMN,
+    // so we use the standard rename-copy-drop-rename dance.
+    const tableExists =
+      (db
+        .prepare(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='cost_ledger'",
+        )
+        .get() as { name: string } | undefined) !== undefined;
+
+    if (tableExists) {
+      // Preserve existing rows during migration.
+      // SQLite doesn't support ALTER TABLE MODIFY COLUMN, so we use the
+      // standard rename-copy-drop-rename dance inside a transaction.
+      db.transaction(() => {
+        db.exec("ALTER TABLE cost_ledger RENAME TO cost_ledger_v1_backup");
+        db.exec(COST_LEDGER_DDL);
+        db.exec(
+          "INSERT INTO cost_ledger SELECT * FROM cost_ledger_v1_backup",
+        );
+        db.exec("DROP TABLE cost_ledger_v1_backup");
+      })();
+    } else {
+      db.exec(COST_LEDGER_DDL);
+    }
+
+    db.exec(COST_LEDGER_INDEXES);
+    db.pragma("user_version = 2");
+  }
 }
 
 export class CostLedgerDb {
