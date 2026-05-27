@@ -1822,7 +1822,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** a sample Authored-block manifest passes through the runtime and renders a working block in the editor.
 - **est.** 8h
 
-### T-161 [ ] · Manifest header parser + serializer
+### T-161 [x] · Manifest header parser + serializer
 - **Depends-on:** T-159
 - **Reads:** `docs/adr/0005-authored-block-transport-format.md`
 - **Outputs:**
