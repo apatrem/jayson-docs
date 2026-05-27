@@ -12,7 +12,16 @@ describe("closed editor schema (T-78)", () => {
   it("registers only the closed set of editor node names", () => {
     const editor = new CoreEditor({
       extensions: createEditorExtensions(),
-      content: { type: "doc", content: [{ type: "paragraph" }] },
+      content: {
+        type: "doc",
+        content: [
+          {
+            type: "section",
+            attrs: { sectionId: "section-1", title: "Section" },
+            content: [{ type: "paragraph" }],
+          },
+        ],
+      },
     });
 
     try {
@@ -27,7 +36,16 @@ describe("closed editor schema (T-78)", () => {
   it("registers only the closed set of editor mark names", () => {
     const editor = new CoreEditor({
       extensions: createEditorExtensions(),
-      content: { type: "doc", content: [{ type: "paragraph" }] },
+      content: {
+        type: "doc",
+        content: [
+          {
+            type: "section",
+            attrs: { sectionId: "section-1", title: "Section" },
+            content: [{ type: "paragraph" }],
+          },
+        ],
+      },
     });
 
     try {

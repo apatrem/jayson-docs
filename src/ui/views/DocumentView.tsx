@@ -8,6 +8,10 @@ import {
   type AutosaveController,
 } from "../../editor/autosave";
 import { Editor } from "../../editor/Editor";
+import {
+  denormalizeProseMarksForDocModel,
+  normalizeProseMarksForEditor,
+} from "../../editor/normalize-prose-marks";
 import { BlockPalette, type BlockPaletteProps } from "../../editor/BlockPalette";
 import {
   docModelToProseMirror,
@@ -44,7 +48,6 @@ export interface DocumentViewProps {
   writeYamlFile?: (path: string, yaml: string) => Promise<void>;
   autosaveDebounceMs?: number;
   onDocumentChange?: (doc: DocumentModel) => void;
-  onBackToWelcome?: () => void;
   EditorComponent?: FC<EditorSurfaceProps>;
   /**
    * Called when the consultant clicks "Create new Authored block" in the palette.
@@ -96,7 +99,6 @@ export const DocumentView: FC<DocumentViewProps> = ({
   writeYamlFile = defaultWriteYamlFile,
   autosaveDebounceMs = DEFAULT_AUTOSAVE_DEBOUNCE_MS,
   onDocumentChange,
-  onBackToWelcome,
   EditorComponent = DefaultEditorSurface,
   onCreateAuthoredBlock,
   callLlm,
@@ -268,30 +270,6 @@ export const DocumentView: FC<DocumentViewProps> = ({
     );
   }
 
-  if (doc.sections.length > 1) {
-    return (
-      <main aria-label="Document view" style={styles.shell}>
-        <section role="alert" style={styles.constraintPanel}>
-          <p style={styles.errorText}>
-            {
-              "Multi-section documents aren't editable yet — that lands in M8. Open a single-section document, or close this and try again."
-            }
-          </p>
-          {onBackToWelcome ? (
-            <button
-              type="button"
-              onClick={() => {
-                onBackToWelcome();
-              }}
-            >
-              Back to welcome screen
-            </button>
-          ) : null}
-        </section>
-      </main>
-    );
-  }
-
   return (
     <main aria-label="Document view" style={styles.shell}>
       <header style={styles.header}>
@@ -387,13 +365,10 @@ export const DocumentView: FC<DocumentViewProps> = ({
 
 export function documentToEditorContent(doc: DocumentModel): JSONContent {
   const mapped = docModelToProseMirror(doc);
-  const content = mapped.content.flatMap((section) =>
-    (section.content ?? []).filter(isProseMirrorNode),
-  ) as JSONContent[];
-  return {
+  return normalizeProseMarksForEditor({
     type: "doc",
-    content,
-  };
+    content: (mapped.content ?? []).filter(isProseMirrorNode) as JSONContent[],
+  });
 }
 
 export function editorContentToDocument(
@@ -401,33 +376,47 @@ export function editorContentToDocument(
   editorContent: JSONContent,
 ): DocumentModel {
   const previousPm = docModelToProseMirror(previousDoc);
-  const flatBlocks = (editorContent.content ?? []).filter(isProseMirrorNode);
-  let offset = 0;
-  const sectionNodes = previousDoc.sections.map((section, index) => {
-    const previousSection = previousPm.content[index];
-    const count = section.blocks.length;
-    const end =
-      index === previousDoc.sections.length - 1 ? flatBlocks.length : offset + count;
-    const content = flatBlocks.slice(offset, end);
-    offset = end;
-    return {
-      type: "section",
-      attrs: previousSection?.attrs ?? {
-        sectionId: section.id,
-        title: section.title ?? "",
-      },
-      content,
-    };
-  });
+  const normalized = denormalizeProseMarksForDocModel(editorContent);
   const nextDoc = proseMirrorToDocModel({
     type: "doc",
     attrs: previousPm.attrs,
-    content: sectionNodes,
+    content: editorSectionsFromContent(normalized, previousDoc, previousPm),
   } satisfies ProseMirrorDocument);
   if (nextDoc.kind !== "document") {
     throw new Error("DocumentView only supports kind=document");
   }
   return nextDoc;
+}
+
+function editorSectionsFromContent(
+  editorContent: JSONContent,
+  previousDoc: DocumentModel,
+  previousPm: ProseMirrorDocument,
+): ProseMirrorNode[] {
+  const nodes = (editorContent.content ?? []).filter(isProseMirrorNode);
+  if (nodes.length === 0) {
+    return [];
+  }
+  if (nodes[0]?.type === "section") {
+    return nodes as ProseMirrorNode[];
+  }
+  if (previousDoc.sections.length !== 1) {
+    throw new Error(
+      "Editor content must use section nodes for multi-section documents",
+    );
+  }
+  const section = previousDoc.sections[0]!;
+  const previousSection = previousPm.content[0];
+  return [
+    {
+      type: "section",
+      attrs: previousSection?.attrs ?? {
+        sectionId: section.id,
+        title: section.title ?? "",
+      },
+      content: nodes,
+    },
+  ];
 }
 
 async function defaultReadYamlFile(path: string): Promise<string> {
@@ -506,14 +495,6 @@ const styles = {
   },
   palettePane: {
     minWidth: "18rem",
-  },
-  constraintPanel: {
-    border: "1px solid ButtonBorder",
-    borderRadius: "0.75rem",
-    display: "grid",
-    gap: "1rem",
-    justifyItems: "start",
-    padding: "1rem",
   },
   errorText: {
     color: "CanvasText",

@@ -4,6 +4,7 @@ import { Bold } from "@tiptap/extension-bold";
 import { Code } from "@tiptap/extension-code";
 import { CodeBlock } from "@tiptap/extension-code-block";
 import { Document } from "@tiptap/extension-document";
+import { SectionNode } from "./SectionNode";
 import { HardBreak } from "@tiptap/extension-hard-break";
 import { History } from "@tiptap/extension-history";
 import { Italic } from "@tiptap/extension-italic";
@@ -32,8 +33,14 @@ const DEFAULT_CONTENT: JSONContent = {
   type: "doc",
   content: [
     {
-      type: "paragraph",
-      content: [{ type: "text", text: "Start writing..." }],
+      type: "section",
+      attrs: { sectionId: "default-section", title: "" },
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Start writing..." }],
+        },
+      ],
     },
   ],
 };
@@ -50,6 +57,7 @@ const blockExtensions = _allBlocks.map((r) => r.tiptapNode);
 // Non-block infra node names registered by TipTap built-ins.
 const STATIC_INFRA_NODE_NAMES = [
   "doc",
+  "section",
   "text",
   "paragraph",
   "hardBreak",
@@ -98,9 +106,14 @@ const ALLOWED_HTML_TAGS = new Set([
 const ALLOWED_NODE_NAMES = new Set<string>(ALLOWED_EDITOR_NODE_NAMES);
 const ALLOWED_MARK_NAMES = new Set<string>(ALLOWED_EDITOR_MARK_NAMES);
 
+const DocumentWithSections = Document.extend({
+  content: "section+",
+});
+
 export function createEditorExtensions(): Extensions {
   return [
-    Document,
+    DocumentWithSections,
+    SectionNode,
     Paragraph,
     Text,
     Bold,
@@ -341,6 +354,9 @@ function allowedAttrsForNode(nodeType: string): Set<string> {
   // Block nodes — attrs derived from TipTap node definition via registry.
   const blockAttrs = _blockNodeAttrsMap.get(nodeType);
   if (blockAttrs) return blockAttrs;
+  if (nodeType === "section") {
+    return new Set(["sectionId", "title"]);
+  }
   // Infrastructure nodes (paragraph, doc, etc.) carry no custom attrs.
   return new Set();
 }

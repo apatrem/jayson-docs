@@ -288,24 +288,7 @@ describe("DocumentView", () => {
     expect(document.activeElement).toBe(editorBefore);
   });
 
-  it("constrains multi-section documents and can return to welcome", () => {
-    const onBackToWelcome = vi.fn();
-    render(
-      <DocumentView
-        path="/Users/me/Documents/multi-section.yaml"
-        initialDoc={multiSectionDoc}
-        onBackToWelcome={onBackToWelcome}
-      />,
-    );
-
-    expect(screen.getByText(/Multi-section documents aren't editable yet/u)).toBeTruthy();
-
-    fireEvent.click(screen.getByRole("button", { name: "Back to welcome screen" }));
-
-    expect(onBackToWelcome).toHaveBeenCalledOnce();
-  });
-
-  it("omits the back-to-welcome action when the app has not provided one", () => {
+  it("opens multi-section documents in the editor", () => {
     render(
       <DocumentView
         path="/Users/me/Documents/multi-section.yaml"
@@ -313,10 +296,9 @@ describe("DocumentView", () => {
       />,
     );
 
-    expect(screen.getByText(/Multi-section documents aren't editable yet/u)).toBeTruthy();
-    expect(
-      screen.queryByRole("button", { name: "Back to welcome screen" }),
-    ).toBeNull();
+    expect(screen.queryByText(/Multi-section documents aren't editable yet/u)).toBeNull();
+    expect(screen.getByLabelText("Document view")).toBeTruthy();
+    expect(screen.getByLabelText("Editable document")).toBeTruthy();
   });
 
   it("threads the current DocModel to onCreateAuthoredBlock when the Create button is clicked", () => {

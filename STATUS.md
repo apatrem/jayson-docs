@@ -1,8 +1,8 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-27T14:30:00Z
+**Last fire:** 2026-05-27T20:35:00Z
 **State:** BLOCKED-NO-ELIGIBLE
-**Running on:** Claude Sonnet 4.6 at high
+**Running on:** Composer at default
 **Halt reason:** No eligible `[ ]` tasks remain. Phase 10 (M9b) is fully complete. Phase 11 has 2 `[!]` tasks blocked on external dependencies. The M9b acceptance gate is ready for human review.
 **Halted since:** 2026-05-27T14:30:00Z
 
@@ -33,18 +33,15 @@ When certificates/keys are available, change those markers to `[ ]` and re-run `
 
 ## Progress since the previous fire
 
-- ✅ **T-179 closed this fire** — `docs/BLOCK_IMPLEMENTATION_GUIDE.md` updated with §8 (`defineAuthoredBlock` pattern).
-  - New §8 covers: what Authored blocks are, the declarative-data model (ADR-0013), the capability ceiling (ADR-0007 table), how to write a block (annotated snippet), available render nodes, the generate→share→receive lifecycle, test layers (4 layers, not 5), common mistakes, and a three-tier comparison table.
-  - Cross-references `reference/authored-block/` scaffold (T-159) and ADR-0013.
+- ✅ **T-180 closed this fire** — multi-section document editing (section TipTap node + DocumentView mapping; closes drift `[drift-2026-05-26d]`).
+  - `SectionNode` + `Document.extend({ content: 'section+' })`; lossless `proseMirrorToDocModel` save path.
+  - Prose mark bridge (`strong`/`em` ↔ `bold`/`italic`); M7 multi-section edit gate removed.
 
-- ✅ T-177 closed last fire — My LLM Spend per-category breakdown (authored-block-generation bucket).
-- ✅ T-166 — Scaffold-mismatch detection + "Regenerate against current scaffold" UX.
-- ✅ T-174 — Share flow (sender stamp + OS share-sheet attachment) (ADR-0005).
-- ✅ T-173 — Authored-block generation pipeline (ADR-0011 / ADR-0012).
+- ✅ T-179 closed prior fire — `docs/BLOCK_IMPLEMENTATION_GUIDE.md` §8 (`defineAuthoredBlock` pattern).
 
 ## At a glance
 
-Total tasks: 205   Done: 202 (99%)   Blocked [!]: 2   Skipped: 1
+Total tasks: 206   Done: 203 (99%)   Blocked [!]: 2   Skipped: 1
 
 ## Phase status
 
@@ -65,11 +62,11 @@ Total tasks: 205   Done: 202 (99%)   Blocked [!]: 2   Skipped: 1
 
 ## Recent commits
 
+T-180: multi-section document editing (section node + mapping)
 T-179: BLOCK_IMPLEMENTATION_GUIDE §8 — defineAuthoredBlock pattern (ADR-0013)
 T-177: My LLM Spend per-category breakdown — authored-block-generation bucket
 T-166: scaffold-mismatch detection + Regenerate against current scaffold UX
 T-174: share flow — sender stamp + OS share-sheet IPC (ADR-0005)
-T-173: authored-block generation pipeline (ADR-0011 / ADR-0012)
 
 ## CI status (origin/main)
 

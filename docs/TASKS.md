@@ -1992,6 +1992,21 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 
 **T-178 removed** — folded into T-167 (TAURI_IPC.md update done as T-167 step 6).
 
+### T-180 [x] · Multi-section document editing (section TipTap node + DocumentView mapping)
+- **Depends-on:** T-134 (M8 complete — closes drift `[drift-2026-05-26d]` deferred from T-123b)
+- **Reads:** `src/ui/views/DocumentView.tsx`, `src/editor/mapping.ts`, `BLOCKERS.md` §[drift-2026-05-26d], `examples/sample-proposal.yaml`
+- **Outputs:**
+  - `src/editor/SectionNode.ts` (NEW) — TipTap `section` container (`sectionId`, `title` attrs; `content: block+`; isolating).
+  - `src/editor/Editor.tsx` — `Document.extend({ content: 'section+' })`, register `SectionNode`, update `ALLOWED_EDITOR_NODE_NAMES` + closed-schema attr allow-list.
+  - `src/editor/normalize-prose-marks.ts` (NEW) — map DocModel prose marks (`strong`/`em`) ↔ TipTap (`bold`/`italic`) at the DocumentView boundary.
+  - `src/ui/views/DocumentView.tsx` — `documentToEditorContent` preserves section nodes; `editorContentToDocument` uses `proseMirrorToDocModel` (no positional slicing); remove M7 multi-section constraint UI.
+  - `src/ui/router/Routes.tsx` — drop unused `onBackToWelcome` prop on `DocumentView`.
+  - `tests/ui/views/DocumentView-section-mapping.test.ts` (NEW) — round-trip `sample-proposal.yaml`; block insertion stays in the correct section.
+  - Update constraint-era tests (`DocumentView.test.tsx`, `m7-spike-error-paths.test.ts`, `App.test.tsx`, `closed-schema.test.ts`).
+  - `BLOCKERS.md` — mark `[drift-2026-05-26d]` resolved by T-180.
+- **Acceptance:** opening `examples/sample-proposal.yaml` shows the editor (not the M7 constraint). Inserting a block in section 1 does not move blocks in section 2 on autosave. `npm test` green.
+- **est.** 4h
+
 ---
 
 ## Phase 11 — Deployment & Release

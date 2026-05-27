@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "../../src/App";
@@ -82,14 +81,34 @@ describe("App shell", () => {
     );
   });
 
-  it("returns to the welcome state from the multi-section constraint", async () => {
+  it("opens a multi-section document in the document editor", async () => {
+    const multiSectionYaml = serializeDocModel({
+      ...doc,
+      sections: [
+        doc.sections[0]!,
+        {
+          id: "section-2",
+          title: "Second section",
+          blocks: [
+            {
+              id: "heading-2",
+              type: "heading",
+              level: 2,
+              text: "Second section",
+              numbered: false,
+            },
+          ],
+        },
+      ],
+    });
+
     render(
       <App
         bootStrategy={welcomeBootStrategy}
         fileActions={{
-          selectOpenPath: () => Promise.resolve("/Users/me/Documents/sample-proposal.yaml"),
-          readYamlFile: () =>
-            Promise.resolve(readFileSync("examples/sample-proposal.yaml", "utf8")),
+          selectOpenPath: () =>
+            Promise.resolve("/Users/me/Documents/multi-section.yaml"),
+          readYamlFile: () => Promise.resolve(multiSectionYaml),
         }}
       />,
     );
@@ -97,16 +116,8 @@ describe("App shell", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Multi-section documents aren't editable yet/u),
-      ).toBeTruthy();
+      expect(screen.getByLabelText("Document view")).toBeTruthy();
+      expect(screen.queryByText(/Multi-section documents aren't editable yet/u)).toBeNull();
     });
-
-    fireEvent.click(screen.getByRole("button", { name: "Back to welcome screen" }));
-
-    await waitFor(() => {
-      expect(screen.getByLabelText("Welcome")).toBeTruthy();
-    });
-    expect(screen.getByRole("button", { name: "Open Document" })).toBeTruthy();
   });
 });

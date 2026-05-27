@@ -232,14 +232,15 @@ Two different actions (`dtolnay/rust-toolchain@1.83.0` and `ruby/setup-ruby@v1`)
 ### [drift-2026-05-26d] M7-spike multi-section block insertion — constrained, real fix in M8
 
 **Detected at:** 2026-05-26T16:30:00Z (multi-axis review of T-117..T-123 per the M7 validation pass)
-**Tasks affected:** T-120 (DocumentView), T-123 (M7 integration harness). Properly fixed by M8 T-126 (router refactor + section-aware editor mapping).
+**Tasks affected:** T-120 (DocumentView), T-123 (M7 integration harness). Properly fixed by **T-180** (2026-05-27) — not M8 T-126, which shipped routing only.
 **What happened:** `src/ui/views/DocumentView.tsx` `documentToEditorContent` flattens all section blocks into one TipTap doc; `editorContentToDocument` reconstructs by positional slicing against `previousDoc.sections[i].blocks.length`. Inserting a block in section 1 of a multi-section doc → block n+1 misassigned to section 2 on the next save (silent corruption). The M7 integration harness uses a synthetic single-section `m7SpikeDoc` (`tests/integration/m7-spike-harness.ts` line 17ff), so the bug is structurally hidden — `examples/sample-proposal.yaml`'s 4 sections are never exercised by the M7 acceptance gate.
 **Why constrained instead of fixed:** the proper fix requires section-boundary nodes in the editor stream (a 4h+ ProseMirror schema change). M8 T-126's router refactor + section-aware mapping is the natural home. M7-spike adds a runtime constraint (T-123b): if `doc.sections.length > 1`, render an error state with a "Back to welcome" button rather than allowing the corrupted edit path.
+**Resolved:** T-180 added `SectionNode` to the TipTap schema, preserved section nodes in `documentToEditorContent`, and routes saves through `proseMirrorToDocModel`. Coverage: `tests/ui/views/DocumentView-section-mapping.test.ts`.
 **Implication for v1:**
 
-1. M8 T-126 MUST resolve the editor↔DocModel section mapping before M8 ships any document-editing flow.
-2. A test SHOULD prove byte-stable round-trip on a multi-section fixture (`examples/sample-proposal.yaml` round-trip via the full open→save chain).
-3. The M8 happy-path integration test SHOULD open the real multi-section fixture and assert correct section preservation after a palette insertion.
+1. ~~M8 T-126 MUST resolve the editor↔DocModel section mapping~~ — done in T-180.
+2. ~~A test SHOULD prove byte-stable round-trip on a multi-section fixture~~ — `DocumentView-section-mapping.test.ts`.
+3. M8 happy-path still uses a single-section fixture for palette edit (g); multi-section edit is covered by T-180 unit tests.
    **No marker change:** T-120 / T-123 stay `[x]` — they correctly delivered the M7-spike scope. T-123b is the constraint, T-123d is the real-fixture integration test that proves the constraint surfaces correctly.
 
 ### [drift-2026-05-26e] M7-spike defers 4 fs IPCs — re-register hardened in M8 T-125

@@ -54,7 +54,7 @@ describe("M7 spike error paths", () => {
     });
   });
 
-  it("constrains the real multi-section sample proposal", async () => {
+  it("opens the real multi-section sample proposal in the editor", async () => {
     renderM7SpikeHarness({
       initialYaml: sampleProposalYaml,
     });
@@ -62,7 +62,8 @@ describe("M7 spike error paths", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Multi-section documents aren't editable yet/u)).toBeTruthy();
+      expect(screen.getByLabelText("Document view")).toBeTruthy();
+      expect(screen.queryByText(/Multi-section documents aren't editable yet/u)).toBeNull();
     });
   });
 });

@@ -402,7 +402,6 @@ export function Routes({
                   <WatchdoggedDocumentView
                     path={docContent.path}
                     initialDoc={docContent.doc}
-                    onBackToWelcome={returnToWelcome}
                     {...(fileActions.readYamlFile === undefined
                       ? {}
                       : { readYamlFile: fileActions.readYamlFile })}
