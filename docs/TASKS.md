@@ -1695,7 +1695,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Reads/Outputs/Acceptance:** as T-142 for Callout (rich-text-container variant)
 - **est.** 1.5h
 
-### T-146 [ ] · Migrate BulletList block to registry
+### T-146 [x] · Migrate BulletList block to registry
 - **Depends-on:** T-145
 - **Reads/Outputs/Acceptance:** as T-142 for BulletList
 - **est.** 1h

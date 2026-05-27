@@ -5,10 +5,6 @@ import type { DocModel } from "../schema/docmodel";
 import { loadAllBlocks } from "../blocks/runtime-registry";
 import type { BlockRegistryRecord } from "../blocks/defineBlock";
 import {
-  bulletListBlockToProseMirror,
-  proseMirrorToBulletListBlock,
-} from "./nodes/BulletListNode";
-import {
   chartBlockToProseMirror,
   proseMirrorToChartBlock,
 } from "./nodes/ChartNode";
@@ -229,8 +225,6 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
   }
   // Fallback switch (T-157a removes this entire section):
   switch (block.type) {
-    case "bullet-list":
-      return bulletListBlockToProseMirror(block);
     case "numbered-list":
       return numberedListBlockToProseMirror(block);
     case "kpi-cards":
@@ -268,10 +262,6 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
   }
   // Fallback switch (T-157a removes this entire section):
   switch (node.type) {
-    case "bulletList":
-      return proseMirrorToBulletListBlock(
-        node as unknown as Parameters<typeof proseMirrorToBulletListBlock>[0],
-      );
     case "numberedList":
       return proseMirrorToNumberedListBlock(
         node as unknown as Parameters<typeof proseMirrorToNumberedListBlock>[0],

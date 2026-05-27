@@ -2,7 +2,7 @@ export { BlockBaseSchema, type BlockBase } from "./block-base";
 import { z } from "zod";
 import { ProseBlockSchema } from "../../blocks/prose/schema";
 import { HeadingBlockSchema } from "../../blocks/heading/schema";
-import { BulletListBlockSchema } from "./bullet-list";
+import { BulletListBlockSchema } from "../../blocks/bullet-list/schema";
 import { NumberedListBlockSchema } from "./numbered-list";
 import { CalloutBlockSchema } from "../../blocks/callout/schema";
 import { KpiCardsBlockSchema } from "./kpi-cards";

@@ -18,7 +18,7 @@ import { useEffect, useMemo, useState, type CSSProperties, type FC } from "react
 import { CommentMark } from "../comments/CommentMark";
 import type { DocModel } from "../schema/docmodel";
 import { docModelToProseMirror } from "./mapping";
-import { BulletListTipTapNode } from "./nodes/BulletListNode";
+import { BulletListTipTapNode } from "../blocks/bullet-list";
 import { CalloutTipTapNode } from "../blocks/callout";
 import { ChartTipTapNode } from "./nodes/ChartNode";
 import { DiagramTipTapNode } from "./nodes/DiagramNode";

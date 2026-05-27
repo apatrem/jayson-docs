@@ -9,7 +9,7 @@ import type { BrandTokens } from "../schema/brand";
 import type { Block } from "../schema/blocks";
 import type { DocModel } from "../schema/docmodel";
 import type { Section } from "../schema/containers";
-import { BulletList } from "./blocks/BulletList";
+import { BulletList } from "../blocks/bullet-list";
 import { Callout } from "../blocks/callout";
 import { Chart } from "./blocks/Chart";
 import { Diagram } from "./blocks/Diagram";

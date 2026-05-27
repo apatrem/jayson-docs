@@ -10,12 +10,12 @@ import {
   BulletListTipTapNode,
   bulletListBlockToProseMirror,
   proseMirrorToBulletListBlock,
-} from "../../src/editor/nodes/BulletListNode";
-import { BulletList } from "../../src/renderer/blocks/BulletList";
+  BulletList,
+} from "../../src/blocks/bullet-list";
 import {
   BulletListBlockSchema,
   type BulletListBlock,
-} from "../../src/schema/blocks/bullet-list";
+} from "../../src/blocks/bullet-list/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const fragment = (text: string) => ({
