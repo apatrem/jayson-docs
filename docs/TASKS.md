@@ -1720,7 +1720,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Reads/Outputs/Acceptance:** as T-142 for Timeline
 - **est.** 1.5h
 
-### T-151 [ ] · Migrate Roadmap block to registry
+### T-151 [x] · Migrate Roadmap block to registry
 - **Depends-on:** T-150
 - **Reads/Outputs/Acceptance:** as T-142 for Roadmap
 - **est.** 1.5h
