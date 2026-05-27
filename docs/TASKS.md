@@ -1742,7 +1742,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Acceptance:** as T-142; KpiCards atom-node round-trip + side-panel edit-flow test still passes
 - **est.** 2h
 
-### T-155 [ ] · Migrate Table block to registry (atom-node-with-column-schema pattern)
+### T-155 [x] · Migrate Table block to registry (atom-node-with-column-schema pattern)
 - **Depends-on:** T-154
 - **Reads/Outputs/Acceptance:** as T-154 for Table
 - **est.** 2h

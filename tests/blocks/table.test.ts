@@ -12,12 +12,10 @@ import {
   tableBlockToProseMirror,
   tableBlockToTipTapTableContent,
   proseMirrorToTableBlock,
-} from "../../src/editor/nodes/TableNode";
-import { Table } from "../../src/renderer/blocks/Table";
-import {
+  Table,
   TableBlockSchema,
   type TableBlock,
-} from "../../src/schema/blocks/table";
+} from "../../src/blocks/table";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const cell = (text: string) => ({

@@ -8,10 +8,6 @@ import {
   chartBlockToProseMirror,
   proseMirrorToChartBlock,
 } from "./nodes/ChartNode";
-import {
-  proseMirrorToTableBlock,
-  tableBlockToProseMirror,
-} from "./nodes/TableNode";
 
 // ── Registry-first dispatch (T-141b) ──────────────────────────────────────
 // Lazy lookup maps built once from loadAllBlocks(). The switch arms below are
@@ -193,8 +189,6 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
   }
   // Fallback switch (T-157a removes this entire section):
   switch (block.type) {
-    case "table":
-      return tableBlockToProseMirror(block);
     case "chart":
       return chartBlockToProseMirror(block) as ProseMirrorNode;
     default:
@@ -214,10 +208,6 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
   }
   // Fallback switch (T-157a removes this entire section):
   switch (node.type) {
-    case "docTable":
-      return proseMirrorToTableBlock(
-        node as unknown as Parameters<typeof proseMirrorToTableBlock>[0],
-      );
     case "chart":
       return proseMirrorToChartBlock(
         node as unknown as Parameters<typeof proseMirrorToChartBlock>[0],

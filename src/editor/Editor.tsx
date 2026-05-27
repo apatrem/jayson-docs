@@ -30,7 +30,7 @@ import { NumberedListTipTapNode } from "../blocks/numbered-list";
 import { ProseTipTapNode } from "../blocks/prose";
 import { RiskMatrixTipTapNode } from "../blocks/risk-matrix";
 import { RoadmapTipTapNode } from "../blocks/roadmap";
-import { DocTableTipTapNode } from "./nodes/TableNode";
+import { DocTableTipTapNode } from "../blocks/table";
 import { TeamTipTapNode } from "../blocks/team";
 import { TimelineTipTapNode } from "../blocks/timeline";
 

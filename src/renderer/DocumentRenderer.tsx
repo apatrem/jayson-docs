@@ -21,7 +21,7 @@ import { NumberedList } from "../blocks/numbered-list";
 import { Prose } from "../blocks/prose";
 import { RiskMatrix } from "../blocks/risk-matrix";
 import { Roadmap } from "../blocks/roadmap";
-import { Table } from "./blocks/Table";
+import { Table } from "../blocks/table";
 import { Team } from "../blocks/team";
 import { Timeline } from "../blocks/timeline";
 
