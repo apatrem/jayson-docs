@@ -79,8 +79,9 @@ export async function runInstallCli(options: InstallOptions = {}): Promise<numbe
     validatePaths(config.paths.cloudSyncRoot, config.paths.sharedFolder, configDir);
     InstallAppConfigSchema.parse(config);
 
+    write(summary(config));
+
     if (!nonInteractive) {
-      write(summary(config));
       const confirmed = await read("Write this configuration? [Y/n]: ");
       if (confirmed.trim().toLowerCase() === "n") {
         write("Setup cancelled: configuration was not written.\n");
@@ -93,6 +94,7 @@ export async function runInstallCli(options: InstallOptions = {}): Promise<numbe
     const writeSecret = options.writeSecret ?? writeOsSecret;
     await writeSecret("llm.fast.api-key", secrets.fast);
     await writeSecret("llm.thinking.api-key", secrets.thinking);
+    await writeSecret("llm.codegen.api-key", secrets.codegen);
 
     mkdirSync(configDir, { recursive: true });
     writeFileSync(join(configDir, "config.yaml"), stringify(config));
@@ -199,6 +201,13 @@ function buildFromFlags(args: ParsedArgs, env: NodeJS.ProcessEnv): InstallAppCon
   if (env.THINKING_API_KEY === undefined) {
     throw new Error("Missing THINKING_API_KEY environment variable");
   }
+  // CODEGEN_API_KEY defaults to THINKING_API_KEY — same frontier key (ADR-0012).
+  if (env.CODEGEN_API_KEY === undefined && env.THINKING_API_KEY === undefined) {
+    throw new Error(
+      "Missing THINKING_API_KEY (used for authored-block-generation). " +
+        "Set CODEGEN_API_KEY to override.",
+    );
+  }
 
   return makeConfig({
     name: value(args, "name"),
@@ -240,6 +249,10 @@ function makeConfig(inputConfig: {
     llm: {
       fastModel: withKeychain(inputConfig.fast, "llm.fast.api-key"),
       thinkingModel: withKeychain(inputConfig.thinking, "llm.thinking.api-key"),
+      // ADR-0012: authored-block-generation always uses the same frontier model
+      // as the thinking category.  A separate config entry lets costs be
+      // attributed to the correct ledger category and lets them diverge in v1.1.
+      codegenModel: withKeychain(inputConfig.thinking, "llm.codegen.api-key"),
     },
     costLimits: {
       enabled: inputConfig.costTrackingEnabled && costLimit > 0,
@@ -312,23 +325,30 @@ function resolveSecrets(
   args: ParsedArgs,
   env: NodeJS.ProcessEnv,
   config: InstallAppConfig,
-): { fast: string; thinking: string } {
+): { fast: string; thinking: string; codegen: string } {
   const fast = env.FAST_API_KEY ?? args.values.get("fast-api-key") ?? "";
   const thinking =
     env.THINKING_API_KEY ??
     args.values.get("thinking-api-key") ??
     (config.llm.fastModel.provider === config.llm.thinkingModel.provider ? fast : "");
+  // codegen defaults to the same key as thinking (ADR-0012).
+  const codegen =
+    env.CODEGEN_API_KEY ??
+    args.values.get("codegen-api-key") ??
+    thinking;
   validateKey(config.llm.fastModel.provider, fast);
   validateKey(config.llm.thinkingModel.provider, thinking);
-  return { fast, thinking };
+  validateCodegenKey(config.llm.codegenModel.provider, codegen);
+  return { fast, thinking, codegen };
 }
 
 async function verifyKeys(
   config: InstallAppConfig,
-  secrets: { fast: string; thinking: string },
+  secrets: { fast: string; thinking: string; codegen: string },
 ): Promise<void> {
   await verifyEndpoint(config.llm.fastModel, secrets.fast);
   await verifyEndpoint(config.llm.thinkingModel, secrets.thinking);
+  await verifyCodegenEndpoint(config.llm.codegenModel, secrets.codegen);
 }
 
 async function verifyEndpoint(
@@ -362,6 +382,61 @@ function validateKey(provider: Provider, apiKey: string): void {
   }
   if (provider === "anthropic" && !apiKey.startsWith("sk-ant-")) {
     throw new Error("Anthropic API key must start with sk-ant-");
+  }
+}
+
+/**
+ * Validates that the frontier API key is suitable for authored-block code
+ * generation (ADR-0012).  Code-gen requires the frontier model; some API plans
+ * gate access to specific model families.  This produces an actionable error
+ * so the consultant can resolve their plan before the app is installed.
+ */
+function validateCodegenKey(provider: Provider, apiKey: string): void {
+  if (provider === "local") {
+    return; // Local/self-hosted models are assumed to support any use.
+  }
+  if (apiKey.length === 0) {
+    throw new Error(
+      `Frontier API key for authored-block-generation is required. ` +
+        `Set CODEGEN_API_KEY (or THINKING_API_KEY) to a ${provider} ` +
+        `key that has access to frontier / code-generation models.`,
+    );
+  }
+  // Re-use the same format checks as the thinking key.
+  if (provider === "openai" && !apiKey.startsWith("sk-")) {
+    throw new Error(
+      "Frontier API key for authored-block-generation must start with sk- (OpenAI format).",
+    );
+  }
+  if (provider === "anthropic" && !apiKey.startsWith("sk-ant-")) {
+    throw new Error(
+      "Frontier API key for authored-block-generation must start with sk-ant- (Anthropic format). " +
+        "Check that your API plan includes access to frontier models (e.g. claude-opus-4-7).",
+    );
+  }
+}
+
+async function verifyCodegenEndpoint(
+  endpointConfig: InstallAppConfig["llm"]["codegenModel"],
+  apiKey: string,
+): Promise<void> {
+  // For openai-compatible / local providers, ping the /models endpoint to
+  // confirm connectivity — same check as verifyEndpoint.
+  if (
+    endpointConfig.provider !== "openai-compatible" &&
+    endpointConfig.provider !== "local"
+  ) {
+    return;
+  }
+  const url = new URL("models", `${endpointConfig.baseUrl?.replace(/\/$/, "")}/`);
+  const response = await fetch(url, {
+    headers: apiKey.length === 0 ? {} : { Authorization: `Bearer ${apiKey}` },
+  });
+  if (!response.ok) {
+    throw new Error(
+      `Code-generation model endpoint check failed for ${endpointConfig.provider}. ` +
+        `Authored blocks cannot be generated without a reachable frontier model endpoint.`,
+    );
   }
 }
 
@@ -500,6 +575,7 @@ User: ${config.user.name} <${config.user.email}> (${config.user.role})
 Paths: ${config.paths.cloudSyncRoot} / ${config.paths.sharedFolder}
 Fast model: ${config.llm.fastModel.provider} / ${config.llm.fastModel.model}
 Thinking model: ${config.llm.thinkingModel.provider} / ${config.llm.thinkingModel.model}
+Codegen model: ${config.llm.codegenModel.provider} / ${config.llm.codegenModel.model} (authored-block-generation)
 Cost tracking: ${config.costLimits.enabled ? "ENABLED" : "DISABLED"}
 Monthly cap: ${config.costLimits.monthlyUsdHard} USD
 Telemetry: NONE

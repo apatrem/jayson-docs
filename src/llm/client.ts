@@ -45,7 +45,13 @@ export interface BaseLlmEndpoint {
   baseUrl?: string | undefined;
 }
 
-export type ModelKind = "fast" | "thinking";
+/**
+ * `"fast"` — cheap/default model (comment-to-AI prose edits).
+ * `"thinking"` — frontier model, per-comment thinking toggle.
+ * `"codegen"` — frontier model, Authored-block generation + scaffold-mismatch
+ *               regen (ADR-0012). Always frontier, no per-call toggle.
+ */
+export type ModelKind = "fast" | "thinking" | "codegen";
 export type CacheCapability = "explicit" | "automatic" | "none";
 
 export interface LLMMessage {
@@ -107,6 +113,8 @@ export interface AppConfigLlm<Endpoint extends BaseLlmEndpoint = LlmEndpoint> {
   llm: {
     fastModel: Endpoint;
     thinkingModel: Endpoint;
+    /** Frontier model for Authored-block generation (ADR-0012). */
+    codegenModel: Endpoint;
   };
   costLimits?: {
     fallbackPricingPer1k?: {
@@ -174,7 +182,9 @@ export class LLMClient<Endpoint extends BaseLlmEndpoint = LlmEndpoint> {
     const endpoint =
       modelKind === "fast"
         ? this.config.llm.fastModel
-        : this.config.llm.thinkingModel;
+        : modelKind === "thinking"
+          ? this.config.llm.thinkingModel
+          : this.config.llm.codegenModel;
     const provider = this.providers[endpoint.provider];
     if (provider === undefined) {
       throw new LLMProviderError(

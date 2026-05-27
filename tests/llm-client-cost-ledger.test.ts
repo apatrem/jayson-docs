@@ -111,6 +111,7 @@ function configFor(provider: string, model: string) {
     llm: {
       fastModel: endpoint,
       thinkingModel: endpoint,
+      codegenModel: endpoint,
     },
   };
 }

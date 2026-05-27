@@ -62,6 +62,11 @@ describe("LLMClient (T-60)", () => {
             model: "claude-opus-4-7",
             keychainEntry: "thinking-key",
           },
+          codegenModel: {
+            provider: "anthropic",
+            model: "claude-opus-4-7",
+            keychainEntry: "codegen-key",
+          },
         },
       },
       keychain,
@@ -110,6 +115,7 @@ describe("LLMClient (T-60)", () => {
         llm: {
           fastModel: acmeEndpoint,
           thinkingModel: acmeEndpoint,
+          codegenModel: acmeEndpoint,
         },
       },
       keychain: () => Promise.resolve("acme-secret"),
@@ -199,6 +205,11 @@ describe("LLMClient (T-60)", () => {
             keychainEntry: "azure-key",
           },
           thinkingModel: {
+            provider: "azure",
+            model: "deployment-name",
+            keychainEntry: "azure-key",
+          },
+          codegenModel: {
             provider: "azure",
             model: "deployment-name",
             keychainEntry: "azure-key",

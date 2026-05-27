@@ -1958,7 +1958,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** shared blocks can be attached to email via the OS share sheet; receiving the attachment + dragging onto another instance activates it.
 - **est.** 3h
 
-### T-175 [ ] · LLM provisioning — `authored-block-generation` frontier-key category
+### T-175 [x] · LLM provisioning — `authored-block-generation` frontier-key category
 - **Depends-on:** T-135 (ADR-0012 committed) — independent of registry refactor work
 - **Reads:** `docs/adr/0012-authored-block-codegen-uses-frontier-model.md`, D-11, D-22 (install pipeline)
 - **Outputs:**

@@ -35,6 +35,14 @@ export const InstallAppConfigSchema = z
     llm: z.object({
       fastModel: EndpointSchema,
       thinkingModel: EndpointSchema,
+      /**
+       * Frontier model used exclusively for Authored-block code generation and
+       * scaffold-mismatch regen (ADR-0012).  In v1 this always points at the
+       * same provider/model as `thinkingModel`; a separate config field lets the
+       * cost ledger attribute spend to the correct category and allows the two to
+       * diverge in a future release.
+       */
+      codegenModel: EndpointSchema,
     }),
     costLimits: z.object({
       enabled: z.boolean(),
