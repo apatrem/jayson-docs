@@ -1678,7 +1678,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Acceptance:** `tsc --noEmit && npm test` green; the structural HTML snapshot for Divider matches the post-T-141a baseline; DocModel ⇄ ProseMirror losslessness test passes on a Divider-containing fixture.
 - **est.** 1h
 
-### T-143 [ ] · Migrate Heading block to registry
+### T-143 [x] · Migrate Heading block to registry
 - **Depends-on:** T-142 (validate the pattern on Divider first)
 - **Reads:** as T-142, substituting Heading paths
 - **Outputs:** as T-142, substituting Heading paths

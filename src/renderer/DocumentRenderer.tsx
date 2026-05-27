@@ -14,7 +14,7 @@ import { Callout } from "./blocks/Callout";
 import { Chart } from "./blocks/Chart";
 import { Diagram } from "./blocks/Diagram";
 import { Divider } from "../blocks/divider";
-import { Heading } from "./blocks/Heading";
+import { Heading } from "../blocks/heading";
 import { Image } from "./blocks/Image";
 import { KpiCards } from "./blocks/KpiCards";
 import { NumberedList } from "./blocks/NumberedList";

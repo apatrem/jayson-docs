@@ -21,10 +21,6 @@ import {
   proseMirrorToDiagramBlock,
 } from "./nodes/DiagramNode";
 import {
-  headingBlockToProseMirror,
-  proseMirrorToHeadingBlock,
-} from "./nodes/HeadingNode";
-import {
   imageBlockToProseMirror,
   proseMirrorToImageBlock,
 } from "./nodes/ImageNode";
@@ -243,8 +239,6 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
   switch (block.type) {
     case "prose":
       return proseBlockToProseMirror(block);
-    case "heading":
-      return headingBlockToProseMirror(block);
     case "bullet-list":
       return bulletListBlockToProseMirror(block);
     case "numbered-list":
@@ -289,10 +283,6 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
     case "prose":
       return proseMirrorToProseBlock(
         node as unknown as Parameters<typeof proseMirrorToProseBlock>[0],
-      );
-    case "heading":
-      return proseMirrorToHeadingBlock(
-        node as unknown as Parameters<typeof proseMirrorToHeadingBlock>[0],
       );
     case "bulletList":
       return proseMirrorToBulletListBlock(

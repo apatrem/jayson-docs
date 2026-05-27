@@ -1,7 +1,7 @@
 export { BlockBaseSchema, type BlockBase } from "./block-base";
 import { z } from "zod";
 import { ProseBlockSchema } from "./prose";
-import { HeadingBlockSchema } from "./heading";
+import { HeadingBlockSchema } from "../../blocks/heading/schema";
 import { BulletListBlockSchema } from "./bullet-list";
 import { NumberedListBlockSchema } from "./numbered-list";
 import { CalloutBlockSchema } from "./callout";

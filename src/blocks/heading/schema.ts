@@ -1,17 +1,48 @@
 /**
- * src/blocks/heading/schema.ts — pure schema entry for the Heading block.
+ * src/blocks/heading/schema.ts — self-contained schema for the Heading block.
  *
- * Re-exports everything from src/schema/blocks/heading.ts so callers
- * can import block types and helpers from either location. Also exports the
- * schemaEntry consumed by src/blocks/schema-registry.ts.
+ * Source of truth for HeadingBlockSchema, HeadingBlock, HeadingLevel, and
+ * headingScaleKey (T-143). Supersedes src/schema/blocks/heading.ts which has
+ * been deleted; update any remaining imports to use this module instead.
  *
  * Pure module: no React, @tiptap/*, or src/renderer/ imports allowed.
  * Enforced by tests/blocks/schema-purity.test.ts.
  */
 
-import type { z } from "zod";
-import { HeadingBlockSchema } from "../../schema/blocks/heading";
-export * from "../../schema/blocks/heading";
+import { z } from "zod";
+import type { z as zType } from "zod";
+import { BlockBaseSchema } from "../../schema/blocks/block-base";
+
+export const HeadingLevelSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+]);
+
+export type HeadingLevel = z.infer<typeof HeadingLevelSchema>;
+
+export const HeadingBlockSchema = BlockBaseSchema.extend({
+  type: z.literal("heading"),
+  level: HeadingLevelSchema,
+  text: z.string().min(1).max(200),
+  numbered: z.boolean().default(true),
+}).strict();
+
+export type HeadingBlock = z.infer<typeof HeadingBlockSchema>;
+
+export function headingScaleKey(level: HeadingLevel): "h1" | "h2" | "h3" | "h4" {
+  switch (level) {
+    case 1:
+      return "h1";
+    case 2:
+      return "h2";
+    case 3:
+      return "h3";
+    case 4:
+      return "h4";
+  }
+}
 
 /** Schema-registry entry — consumed by src/blocks/schema-registry.ts. */
 export const schemaEntry = {
@@ -21,7 +52,7 @@ export const schemaEntry = {
   paletteLabel: "Heading",
 } satisfies {
   schemaName: string;
-  schema: z.ZodType<unknown>;
+  schema: zType.ZodType<unknown>;
   allowedAttrs: readonly string[];
   paletteLabel: string;
 };

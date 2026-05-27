@@ -26,7 +26,7 @@ import { loadAllBlocks } from "../../src/blocks/runtime-registry";
 import type { DocModel } from "../../src/schema/docmodel";
 import type { CalloutBlock } from "../../src/schema/blocks/callout";
 import type { ProseBlock } from "../../src/schema/blocks/prose";
-import type { HeadingBlock } from "../../src/schema/blocks/heading";
+import type { HeadingBlock } from "../../src/blocks/heading/schema";
 import type { DividerBlock } from "../../src/blocks/divider/schema";
 
 // ── Fixtures ────────────────────────────────────────────────────────────────

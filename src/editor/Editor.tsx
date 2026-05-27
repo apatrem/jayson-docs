@@ -23,7 +23,7 @@ import { CalloutTipTapNode } from "./nodes/CalloutNode";
 import { ChartTipTapNode } from "./nodes/ChartNode";
 import { DiagramTipTapNode } from "./nodes/DiagramNode";
 import { DividerTipTapNode } from "../blocks/divider";
-import { HeadingTipTapNode } from "./nodes/HeadingNode";
+import { HeadingTipTapNode } from "../blocks/heading";
 import { ImageTipTapNode } from "./nodes/ImageNode";
 import { KpiCardsTipTapNode } from "./nodes/KpiCardsNode";
 import { NumberedListTipTapNode } from "./nodes/NumberedListNode";

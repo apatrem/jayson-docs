@@ -10,12 +10,12 @@ import {
   HeadingTipTapNode,
   headingBlockToProseMirror,
   proseMirrorToHeadingBlock,
-} from "../../src/editor/nodes/HeadingNode";
-import { Heading } from "../../src/renderer/blocks/Heading";
+  Heading,
+} from "../../src/blocks/heading";
 import {
   HeadingBlockSchema,
   type HeadingBlock,
-} from "../../src/schema/blocks/heading";
+} from "../../src/blocks/heading/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const testBrandTokens = {
