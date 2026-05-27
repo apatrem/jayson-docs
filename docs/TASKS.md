@@ -1549,7 +1549,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Acceptance:** the e2e test passes in CI; deliberately-malicious block is rejected; the pipeline is provably end-to-end functional.
 - **est.** 3h
 
-### T-134 [ ] · M8 integration test (install → library → create from template → open doc)
+### T-134 [x] · M8 integration test (install → library → create from template → open doc)
 - **Depends-on:** T-124, T-125, T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133
 - **Reads:** all M8 task outputs, `examples/sample-proposal.yaml`, `brand.example.yaml`, `tests/integration/m7-spike-harness.ts` (extends it)
 - **Outputs:**

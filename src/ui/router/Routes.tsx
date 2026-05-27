@@ -51,6 +51,11 @@ export interface FileActionDeps {
   renderHtmlForExport: typeof renderStaticHtmlForExport;
   libraryRoot: string;
   sharedFolderPath: string;
+  // M8 additions — injectable for testing
+  selectFolder: () => Promise<string | null>;
+  writeAppConfig: (config: { paths: { cloudSyncRoot: string } }) => Promise<void>;
+  readAppConfig: () => Promise<{ paths: { cloudSyncRoot: string } }>;
+  listDirectory: (path: string) => Promise<{ name: string; path: string; is_dir: boolean }[]>;
 }
 
 export interface RoutesProps {
@@ -266,11 +271,28 @@ export function Routes({
           </section>
         </main>
       ) : route.kind === "folder-picker" ? (
-        <FolderPickerScreen reason={route.reason} dispatch={dispatch} />
+        <FolderPickerScreen
+          reason={route.reason}
+          dispatch={dispatch}
+          deps={{
+            ...(fileActions.selectFolder !== undefined
+              ? { selectFolder: fileActions.selectFolder }
+              : {}),
+            ...(fileActions.writeAppConfig !== undefined
+              ? { writeAppConfig: fileActions.writeAppConfig }
+              : {}),
+          }}
+        />
       ) : route.kind === "library" ? (
         <LibraryView
           onOpenDoc={openDocumentFromPath}
           deps={{
+            ...(fileActions.readAppConfig !== undefined
+              ? { readAppConfig: fileActions.readAppConfig }
+              : {}),
+            ...(fileActions.listDirectory !== undefined
+              ? { listDirectory: fileActions.listDirectory }
+              : {}),
             ...(fileActions.readYamlFile !== undefined
               ? { readYamlFile: fileActions.readYamlFile }
               : {}),
