@@ -1,9 +1,11 @@
 import {
+  Component,
   useLayoutEffect,
   useRef,
   useState,
   type ComponentType,
   type FC,
+  type ReactNode,
 } from "react";
 import {
   RenderFailedPlaceholder,
@@ -15,6 +17,42 @@ export const WATCHDOG_UNMOUNT_GRACE_MS = 100;
 
 export interface RenderWatchdogOptions {
   budgetMs?: number;
+  // When true, synchronous render errors are caught and shown as RenderFailedPlaceholder
+  // instead of bubbling to the nearest React error boundary. Enable for individual blocks;
+  // leave false (default) for component-level wrappers where AppErrorBoundary should handle.
+  catchErrors?: boolean;
+}
+
+interface ErrorBoundaryState {
+  failedReason: "render-threw" | null;
+  detail: string | undefined;
+}
+
+class RenderErrorBoundary extends Component<
+  { children: ReactNode },
+  ErrorBoundaryState
+> {
+  override state: ErrorBoundaryState = { failedReason: null, detail: undefined };
+
+  static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
+    return {
+      failedReason: "render-threw",
+      detail: error instanceof Error ? error.message : String(error),
+    };
+  }
+
+  override render(): ReactNode {
+    const { failedReason, detail } = this.state;
+    if (failedReason !== null) {
+      return (
+        <RenderFailedPlaceholder
+          reason={failedReason}
+          {...(detail !== undefined ? { detail } : {})}
+        />
+      );
+    }
+    return this.props.children;
+  }
 }
 
 export function withRenderWatchdog<P extends object>(
@@ -22,6 +60,7 @@ export function withRenderWatchdog<P extends object>(
   options: RenderWatchdogOptions = {},
 ): FC<P> {
   const budgetMs = options.budgetMs ?? DEFAULT_RENDER_BUDGET_MS;
+  const catchErrors = options.catchErrors ?? false;
 
   const Watchdogged: FC<P> = (props) => {
     const [failedReason, setFailedReason] = useState<RenderFailedReason | null>(
@@ -44,7 +83,8 @@ export function withRenderWatchdog<P extends object>(
     }
 
     renderStartedAt.current = performance.now();
-    return <Component {...props} />;
+    const inner = <Component {...props} />;
+    return catchErrors ? <RenderErrorBoundary>{inner}</RenderErrorBoundary> : inner;
   };
 
   Watchdogged.displayName = `Watchdog(${Component.displayName ?? Component.name ?? "Component"})`;

@@ -1,4 +1,4 @@
-import { afterEach, describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import type { FC, ReactElement } from "react";
 import { BrandProvider } from "../../src/brand-tokens/BrandProvider";
@@ -25,6 +25,15 @@ const HeavyBlock: FC = () => {
     sink.push(sink.length);
   }
   return <span data-heavy="1">{sink.length}</span>;
+};
+
+const ThrowingBlock: FC = () => {
+  throw new Error("block exploded");
+};
+
+const ThrowOnFlagBlock: FC<{ shouldThrow: boolean }> = ({ shouldThrow }) => {
+  if (shouldThrow) throw new Error("triggered throw");
+  return <span>before throw</span>;
 };
 
 function renderWithBrand(ui: ReactElement) {
@@ -55,5 +64,42 @@ describe("withRenderWatchdog", () => {
       "render-budget-exceeded",
     );
     expect(screen.queryByText("ok")).toBeNull();
+  });
+
+  it("catches a block that throws synchronously on render", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    const Wrapped = withRenderWatchdog(ThrowingBlock, { budgetMs: 50, catchErrors: true });
+    renderWithBrand(<Wrapped />);
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.getAttribute("data-render-failed")).toBe("render-threw");
+    expect(alert.textContent).toContain("block exploded");
+
+    consoleError.mockRestore();
+  });
+
+  it("catches a block that throws on a subsequent render after passing initially", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    const Wrapped = withRenderWatchdog(ThrowOnFlagBlock, { budgetMs: 50, catchErrors: true });
+    const { rerender } = renderWithBrand(<Wrapped shouldThrow={false} />);
+    expect(screen.getByText("before throw")).toBeTruthy();
+
+    rerender(
+      <BrandProvider tokens={brandTokens}>
+        <Wrapped shouldThrow={true} />
+      </BrandProvider>,
+    );
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.getAttribute("data-render-failed")).toBe("render-threw");
+    expect(alert.textContent).toContain("triggered throw");
+
+    consoleError.mockRestore();
   });
 });

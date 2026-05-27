@@ -1570,7 +1570,7 @@ Decisions: ADR-0004 (three-tier model), ADR-0006 (threat-model prereqs), ADR-000
 
 Note: T-135 (commit grilling outputs) and T-158a (write ADR-0013) were completed manually before M9a began — see commit `ebe84b9`. Not re-listed as tasks here; first eligible M9a task is T-136.
 
-### T-136 [ ] · Watchdog error boundary (ADR-0006 prereq)
+### T-136 [x] · Watchdog error boundary (ADR-0006 prereq)
 - **Depends-on:** T-134 (M8 complete)
 - **Reads:** `docs/adr/0006-authored-block-threat-model.md`, `src/block-primitives/RenderWatchdog.tsx`, `src/block-primitives/RenderFailedPlaceholder.tsx`
 - **Outputs:**

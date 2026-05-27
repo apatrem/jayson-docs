@@ -3,6 +3,7 @@ import { useBrandTokens } from "../brand-tokens/useBrandTokens";
 
 export type RenderFailedReason =
   | "render-budget-exceeded"
+  | "render-threw"
   | "render-error";
 
 export interface RenderFailedPlaceholderProps {
@@ -18,7 +19,9 @@ export const RenderFailedPlaceholder: FC<RenderFailedPlaceholderProps> = ({
   const label =
     reason === "render-budget-exceeded"
       ? "This block exceeded the render time budget."
-      : "This block failed to render.";
+      : reason === "render-threw"
+        ? "This block threw an error during render."
+        : "This block failed to render.";
 
   return (
     <div
