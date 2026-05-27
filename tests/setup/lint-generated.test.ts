@@ -56,6 +56,54 @@ describe("lintGeneratedSource", () => {
     }
   });
 
+  it("rejects literal http/https URLs in JSX URL attributes", () => {
+    const urlAttributeCases: Array<{ code: string; attr: string }> = [
+      { code: `const C = () => <img src="https://evil.com/x.png" />;`, attr: "src" },
+      { code: `const C = () => <a href="http://evil.com">link</a>;`, attr: "href" },
+      { code: `const C = () => <form action="https://evil.com/post" />;`, attr: "action" },
+      { code: `const C = () => <img srcset="https://evil.com/2x.png 2x" />;`, attr: "srcset" },
+      { code: `const C = () => <form formaction="https://evil.com" />;`, attr: "formaction" },
+      { code: `const C = () => <video poster="https://evil.com/thumb.jpg" />;`, attr: "poster" },
+      { code: `const C = () => <object data="https://evil.com/file.swf" />;`, attr: "data" },
+      { code: `const C = () => <blockquote cite="https://evil.com" />;`, attr: "cite" },
+      { code: `const C = () => <img src={"https://evil.com/x.png"} />;`, attr: "src (expression)" },
+    ];
+
+    for (const { code, attr } of urlAttributeCases) {
+      const result = lintGeneratedSource("bad.tsx", code);
+      expect(result.ok, `expected fail for ${attr}`).toBe(false);
+      expect(
+        result.violations.some((v) => v.rule === "url-attribute-literal"),
+        `expected url-attribute-literal violation for ${attr}`,
+      ).toBe(true);
+    }
+  });
+
+  it("rejects literal http/https URLs inside CSS url() in style prop", () => {
+    const cases = [
+      `const C = () => <div style={{ background: "url(https://evil.com/bg.png)" }} />;`,
+      `const C = () => <div style={{ backgroundImage: \`url(https://evil.com/bg.png)\` }} />;`,
+    ];
+    for (const code of cases) {
+      const result = lintGeneratedSource("bad.tsx", code);
+      expect(result.ok).toBe(false);
+      expect(result.violations.some((v) => v.rule === "url-attribute-literal")).toBe(true);
+    }
+  });
+
+  it("passes brand-token and relative-assets references in URL positions", () => {
+    const safe = [
+      `const C = () => <img src={brand.images.logo} />;`,
+      `const C = () => <img src="assets/logo.png" />;`,
+      `const C = () => <a href={props.url}>link</a>;`,
+      `const C = () => <div style={{ background: brand.colors.primary }} />;`,
+    ];
+    for (const code of safe) {
+      const result = lintGeneratedSource("safe.tsx", code);
+      expect(result.violations.filter((v) => v.rule === "url-attribute-literal")).toHaveLength(0);
+    }
+  });
+
   it("allows hex colors in generated test fixtures only", () => {
     const files = buildStatBadgeGeneratedFiles(proposal, "test");
     const testFile = files.find((f) => f.path.endsWith(".test.ts"));

@@ -23,6 +23,12 @@ export interface LintResult {
 
 const HEX_COLOR_RE = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
 
+const URL_ATTRIBUTES = new Set([
+  "src", "href", "action", "srcset", "formaction", "poster", "data", "cite",
+]);
+const URL_LITERAL_RE = /https?:\/\//i;
+const CSS_URL_LITERAL_RE = /url\s*\(\s*https?:\/\//i;
+
 const WHITELISTED_IMPORT_SOURCES = new Set([
   "react",
   "@tiptap/core",
@@ -63,6 +69,60 @@ const FORBIDDEN_MEMBER_ROOTS = new Set([
   "localStorage",
   "cookie",
 ]);
+
+function getJsxAttrStringValue(
+  value: TSESTree.JSXAttribute["value"],
+): string | null {
+  if (value === null) return null;
+  if (value.type === "Literal" && typeof value.value === "string") return value.value;
+  if (
+    value.type === "JSXExpressionContainer" &&
+    value.expression.type === "Literal" &&
+    typeof (value.expression as TSESTree.Literal).value === "string"
+  ) {
+    return (value.expression as TSESTree.Literal).value as string;
+  }
+  return null;
+}
+
+function walkForCssUrlLiterals(
+  node: TSESTree.Node,
+  file: string,
+  violations: LintViolation[],
+): void {
+  if (node.type === "Literal" && typeof node.value === "string") {
+    if (CSS_URL_LITERAL_RE.test(node.value)) {
+      violations.push({
+        ...loc(node, file),
+        rule: "url-attribute-literal",
+        message: "literal URL inside CSS url() in style prop is forbidden",
+      });
+    }
+  }
+  if (node.type === "TemplateLiteral") {
+    const raw = node.quasis.map((q) => q.value.cooked ?? q.value.raw).join("");
+    if (CSS_URL_LITERAL_RE.test(raw)) {
+      violations.push({
+        ...loc(node, file),
+        rule: "url-attribute-literal",
+        message: "literal URL inside CSS url() in style prop is forbidden",
+      });
+    }
+  }
+  for (const key of Object.keys(node)) {
+    const child = (node as unknown as Record<string, unknown>)[key];
+    if (!child) continue;
+    if (Array.isArray(child)) {
+      for (const item of child) {
+        if (item && typeof item === "object" && "type" in item) {
+          walkForCssUrlLiterals(item as TSESTree.Node, file, violations);
+        }
+      }
+    } else if (typeof child === "object" && child !== null && "type" in child) {
+      walkForCssUrlLiterals(child as TSESTree.Node, file, violations);
+    }
+  }
+}
 
 function loc(node: TSESTree.Node, file: string): LintViolation {
   const start = node.loc?.start ?? { line: 1, column: 0 };
@@ -174,6 +234,26 @@ function visitNode(node: TSESTree.Node, file: string, violations: LintViolation[
           rule: "dangerouslySetInnerHTML",
           message: "dangerouslySetInnerHTML is forbidden",
         });
+      }
+      if (
+        node.name.type === "JSXIdentifier" &&
+        URL_ATTRIBUTES.has(node.name.name)
+      ) {
+        const strVal = getJsxAttrStringValue(node.value);
+        if (strVal !== null && URL_LITERAL_RE.test(strVal)) {
+          violations.push({
+            ...loc(node, file),
+            rule: "url-attribute-literal",
+            message: `literal URL in ${node.name.name} attribute is forbidden`,
+          });
+        }
+      }
+      if (
+        node.name.type === "JSXIdentifier" &&
+        node.name.name === "style" &&
+        node.value !== null
+      ) {
+        walkForCssUrlLiterals(node.value, file, violations);
       }
       break;
     }

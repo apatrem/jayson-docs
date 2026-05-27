@@ -1580,7 +1580,7 @@ Note: T-135 (commit grilling outputs) and T-158a (write ADR-0013) were completed
 - **Acceptance:** a block that throws renders `RenderFailedPlaceholder` with the throw's message; the editor stays mounted; existing 50ms-budget test still passes.
 - **est.** 1h
 
-### T-137 [ ] · URL-attribute lint rule (ADR-0006 prereq)
+### T-137 [x] · URL-attribute lint rule (ADR-0006 prereq)
 - **Depends-on:** T-134
 - **Reads:** `docs/adr/0006-authored-block-threat-model.md`, `src/setup/lint-generated.ts`
 - **Outputs:**
