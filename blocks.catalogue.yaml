@@ -1,19 +1,25 @@
-# Block Catalogue — Pre-built v1 Library (15 generic blocks)
+# Block Catalogue — Standard Block Library (15 Standard blocks / Tier 1)
 #
-# Purpose: the closed, validated library of block types every consultancy gets
-#          out of the box. Brand tokens make these blocks feel native to each
-#          consultancy without code changes.
+# PURPOSE & SCOPE: setup-time artifact only.
+#   This file is the human-readable spec for the 15 Standard blocks (Tier 1
+#   per ADR-0004). It is NOT the runtime source of truth — the runtime schema
+#   and TipTap/renderer wiring live in src/blocks/<name>/ (registered via
+#   src/blocks/runtime-registry.ts and src/blocks/schema-registry.ts).
+#   If this file and the code diverge, the code wins.
 #
 # How this file is used:
-#   - The DEVELOPER implements each block in code (Zod schema + React renderer
-#     + TipTap node view) following the spec below. This file is the spec, not
-#     the implementation.
 #   - The SETUP AI reads this file when scanning a consultancy's demo DOCX/PPTX
-#     to decide whether an observed pattern fits one of these 15 blocks (with
-#     brand-token mapping only) or requires a new generated block.
-#   - The EDITOR exposes only the blocks listed here (plus any approved
-#     consultancy-specific generated blocks) in the consultant's "add block"
-#     palette.
+#     to decide whether an observed pattern fits one of these 15 Standard blocks
+#     (with brand-token mapping only) or requires a new Brand block (Tier 2).
+#   - The DEVELOPER references this file when understanding the original intent
+#     for a block's fields and brand-token usage.
+#   - The EDITOR palette description text (`llmUsage.when`) comes from here at
+#     setup time; at runtime, paletteLabel from the registry is used.
+#
+# NOT used at runtime for validation, type-checking, or rendering decisions.
+#
+# Brand tokens make these blocks feel native to each consultancy without code
+# changes.
 #
 # Block ID convention: lowercase, kebab-case, stable forever.
 # Stability promise: once shipped, a block's ID and schema are not renamed

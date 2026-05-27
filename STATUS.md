@@ -1,38 +1,44 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-27T20:45:00Z
-**State:** RUNNING
+**Last fire:** 2026-05-27T21:00:00Z
+**State:** MILESTONE-READY
 **Running on:** Claude Sonnet 4.6 at high
-**Halt reason:** N/A
+**Halt reason:** M9a complete — all acceptance-gate conditions met; awaiting human milestone approval before M9b begins.
 **Halted since:** N/A
 
 ---
 
-## Next eligible task
+## ✅ M9a acceptance gate — PASSED
 
-**T-158** — Memo §3 + cross-reference cleanup (depends on T-135 ✓).
+All conditions in the gate at `docs/TASKS.md` line 1797 are met:
 
-## Progress since the previous fire
+- All 15 Standard blocks live under `src/blocks/<name>/` (T-142 – T-156).
+- Nothing remains in `src/editor/nodes/` or `src/renderer/blocks/` as the canonical source.
+- `mapping.ts`, `Editor.tsx`, `DocumentRenderer.tsx`, and `src/schema/blocks/index.ts` all derive block-type information from the registry (T-157a, T-157b, T-157c).
+- Structural HTML snapshots green; full test suite green (tsc + lint + tests all pass).
+- Brand-example theme + memo cross-references updated: Architecture memo §3, Block Implementation Guide, Setup Pipeline, setup runbook, blocks.catalogue.yaml, and TASKS.md vocabulary all normalized to Standard / Brand / Authored per ADR-0004 (T-158).
 
-- ✅ **T-157c closed this fire** — Schema-side registry wire-through.
-  `src/blocks/schema-entry-type.ts` (new): pure `SchemaEntry` interface,
-  extracted from `defineBlock.ts` so `schema-registry.ts` can import it
-  without pulling in `@tiptap/core`.
-  `src/blocks/defineBlock.ts`: re-exports `SchemaEntry` from new pure file.
-  `src/blocks/schema-registry.ts`: imports `SchemaEntry` from pure file;
-  now exports `BlockSchema` (z.discriminatedUnion of all 15 blocks) and
-  `type Block` — derived from the registry, not a hand-maintained list.
-  `src/schema/blocks/index.ts`: becomes a 2-line thin re-export from
-  `schema-registry.ts`; schema-purity test still passes.
+**Next phase:** M9b (Authored-Block Tier, T-159+). First eligible task is **T-159** (`defineAuthoredBlock` declarative API design).
 
-- ✅ **T-157b** — Renderer-side registry wire-through.
-- ✅ **T-157a** — Editor-side registry wire-through.
-- ✅ **T-156** — Migrate Chart block to registry (all 15 blocks migrated).
-- ⚠ 0 tasks blocked this fire
+---
+
+## Progress this fire
+
+- ✅ **T-158 closed this fire** — Memo §3 + cross-reference cleanup.
+  Normalized "two-tier" → "three-tier", "Tier 1 block" → "Standard block",
+  "Tier 2 block" / "generated block" → "Brand block", removed the 10-per-setup-pass
+  hard-cap language, softened "closed library" language across 6 doc files +
+  TASKS.md throughout. All changes reference ADR-0004.
+
+- ✅ T-157c — Schema-side registry wire-through (prior fire).
+- ✅ T-157b — Renderer-side registry wire-through (prior fire).
+- ✅ T-157a — Editor-side registry wire-through (prior fire).
+
+---
 
 ## At a glance
 
-Total tasks: 205   Done: 181 (88%)   Blocked: 0   Waiting: 2   Open: 21   Skipped: 1
+Total tasks: 205   Done: 182 (89%)   Blocked: 0   Waiting: 2   Open: 20   Skipped: 1
 
 ## Recent commits
 
@@ -42,8 +48,8 @@ T-157a: editor-side registry wire-through
 T-156: migrate Chart block to self-contained registry manifest
 T-155: migrate Table block to self-contained registry manifest
 
-## CI status (origin/main)
+## What needs your attention
 
-Latest run: success (post-T-157b push)
+**M9a milestone approval.** Review the gate conditions above, then signal approval (e.g. `/skip` the gate task if you use one, or just reply "M9a approved" or "proceed to M9b"). The loop will pick T-159 on the next fire.
 
-M9a is nearly complete: T-158 (docs cross-references) is the last open task before the milestone gate.
+No tasks are blocked or `[?]`. No `[~]` markers in TASKS.md.

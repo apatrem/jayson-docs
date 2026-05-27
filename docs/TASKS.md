@@ -345,8 +345,8 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 ### T-46b [x] · Implement the runtime render-budget watchdog (D-36, ADR-0001)
 - **Depends-on:** none
 - **Reads:** `docs/adr/ADR-0001.md`
-- **Outputs:** `src/block-primitives/RenderWatchdog.tsx` — a higher-order component that wraps every generated-block React component and measures per-render duration via `performance.now()`. If a render exceeds 50ms, the watchdog unmounts the block and replaces it with an error placeholder (`<RenderFailedPlaceholder reason="render-budget-exceeded" />`).
-- **Acceptance:** A benign generated block renders normally with no observable overhead (< 1ms wrapper cost). A deliberately-bad block that allocates in a hot loop is unmounted within 100ms of exceeding the budget; the error placeholder appears in its place; no other blocks in the editor are affected.
+- **Outputs:** `src/block-primitives/RenderWatchdog.tsx` — a higher-order component that wraps every Brand-block React component and measures per-render duration via `performance.now()`. If a render exceeds 50ms, the watchdog unmounts the block and replaces it with an error placeholder (`<RenderFailedPlaceholder reason="render-budget-exceeded" />`).
+- **Acceptance:** A benign Brand block renders normally with no observable overhead (< 1ms wrapper cost). A deliberately-bad block that allocates in a hot loop is unmounted within 100ms of exceeding the budget; the error placeholder appears in its place; no other blocks in the editor are affected.
 - **est.** 3h
 
 ### T-47 [x] · Implement pending/active loading discipline
@@ -374,9 +374,9 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 
 **M1b acceptance gate:** all pre-built blocks T-23 through T-39 pass schema, renderer, mapping, and editor-node tests, and T-40 round-trip passes.
 
-**M1c acceptance gate:** T-41 through T-48 produce complete setup output for fixture demos, and T-46 rejects a malicious generated block.
+**M1c acceptance gate:** T-41 through T-48 produce complete setup output for fixture demos, and T-46 rejects a malicious Brand block.
 
-**M1d acceptance gate:** T-49 regenerates reviewed generated blocks and routes drift to `/pending/` for human re-review.
+**M1d acceptance gate:** T-49 regenerates reviewed Brand blocks and routes drift to `/pending/` for human re-review.
 
 ---
 
@@ -597,7 +597,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Depends-on:** none
 - **Reads:** `blocks.catalogue.yaml`
 - **Outputs:** `src/editor/BlockPalette.tsx`
-- **Acceptance:** Floating palette shows all 15 blocks + any active generated blocks; clicking inserts the block; description text comes from `llmUsage.when`.
+- **Acceptance:** Floating palette shows all 15 blocks + any active Brand blocks; clicking inserts the block; description text comes from `llmUsage.when`.
 - **est.** 4h
 
 ### T-80 [x] · Implement block drag-reorder
@@ -695,7 +695,7 @@ For each block: follow `BLOCK_IMPLEMENTATION_GUIDE.md`. Each block produces 4 fi
 - **Depends-on:** T-46b, T-89b
 - **Reads:** none
 - **Outputs:** `tests/perf/watchdog-validation.test.ts`
-- **Acceptance:** A test fixture loads a generated block that allocates in a hot loop (a `while(true) { x.push(...) }` synchronous loop, or an unbounded `useEffect` that creates state on every render). The watchdog unmounts the block within 100ms of exceeding the 50ms render budget. The `<RenderFailedPlaceholder>` appears in the block's slot. Other blocks in the editor remain functional. The test asserts the editor's overall responsiveness (typing in a separate prose block remains < 16ms during and after the kill).
+- **Acceptance:** A test fixture loads a Brand block that allocates in a hot loop (a `while(true) { x.push(...) }` synchronous loop, or an unbounded `useEffect` that creates state on every render). The watchdog unmounts the block within 100ms of exceeding the 50ms render budget. The `<RenderFailedPlaceholder>` appears in the block's slot. Other blocks in the editor remain functional. The test asserts the editor's overall responsiveness (typing in a separate prose block remains < 16ms during and after the kill).
 - **est.** 2h
 
 **M4 acceptance gate:** load + edit + save -> lossless round-trip; consultant can add/remove/reorder blocks; off-schema content impossible; consultants never see YAML/JSON. **Perf gate (D-39):** T-89c emits a report with all 6 metrics passing; T-89d confirms the watchdog kills runaway blocks.
@@ -1533,17 +1533,17 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Reads:** `src/setup/load-generated-blocks.ts` (existing — loads from `generated-blocks/active/`), `src/editor/BlockPalette.tsx` (existing — has the `generatedBlocks` prop slot)
 - **Outputs:**
   - `src/App.tsx` — on startup, after config is loaded, call `loadGeneratedBlocks(generatedBlocksPath)` and stash the result in a context (`GeneratedBlocksContext`) accessible to the editor.
-  - `src/contexts/GeneratedBlocksContext.tsx` (NEW) — React context exposing the loaded generated-block list.
-  - `src/ui/views/DocumentView.tsx` — reads `GeneratedBlocksContext` and passes the list to BlockPalette's `generatedBlocks` prop. Palette now shows the 15 default blocks AND any approved generated blocks.
-  - `tests/ui/lifecycle/generated-blocks-load.test.tsx` — covers (a) empty `active/` → palette shows only defaults, (b) populated `active/` → palette shows defaults + generated, (c) load failure → palette degrades gracefully to defaults only + logs error.
-- **Acceptance:** any blocks in `generated-blocks/active/` appear in the editor's block palette alongside the 15 standard blocks. Removing blocks + restarting hides them.
+  - `src/contexts/GeneratedBlocksContext.tsx` (NEW) — React context exposing the loaded Brand-block list.
+  - `src/ui/views/DocumentView.tsx` — reads `GeneratedBlocksContext` and passes the list to BlockPalette's `generatedBlocks` prop. Palette now shows the 15 default blocks AND any approved Brand blocks.
+  - `tests/ui/lifecycle/generated-blocks-load.test.tsx` — covers (a) empty `active/` → palette shows only defaults, (b) populated `active/` → palette shows defaults + Brand blocks, (c) load failure → palette degrades gracefully to defaults only + logs error.
+- **Acceptance:** any blocks in `generated-blocks/active/` appear in the editor's block palette alongside the 15 Standard blocks. Removing blocks + restarting hides them.
 - **est.** 2h
 
-### T-133 [x] · Validate generated-block pipeline end-to-end
+### T-133 [x] · Validate Brand-block pipeline end-to-end
 - **Depends-on:** T-132
 - **Reads:** `src/setup/scan-demos.ts`, `src/setup/generate-block.ts`, `src/setup/lint-generated.ts`, `src/setup/regenerate.ts`, `docs/SETUP_PIPELINE.md`, `generated-blocks/{pending,active}/`
 - **Outputs:**
-  - `tests/integration/setup-pipeline-e2e.test.ts` (NEW) — runs the full pipeline against a fixture demo set: feeds 2-3 small DOCX/PPTX fixtures (committed under `tests/fixtures/demos/`), runs `setup:scan-demos` programmatically, asserts (a) brand draft was written, (b) catalogue diff is structurally valid, (c) 0-10 generated-block proposals appear in `pending/`, (d) the lint pass catches a deliberately-malicious fixture (containing `dangerouslySetInnerHTML`) and rejects it.
+  - `tests/integration/setup-pipeline-e2e.test.ts` (NEW) — runs the full pipeline against a fixture demo set: feeds 2-3 small DOCX/PPTX fixtures (committed under `tests/fixtures/demos/`), runs `setup:scan-demos` programmatically, asserts (a) brand draft was written, (b) catalogue diff is structurally valid, (c) Brand-block proposals appear in `pending/`, (d) the lint pass catches a deliberately-malicious fixture (containing `dangerouslySetInnerHTML`) and rejects it.
   - `tests/fixtures/demos/` (NEW directory) — 2-3 small DOCX/PPTX/PDF files crafted to exercise the scan-demos pipeline. Includes a deliberately-malicious one to validate the lint pass.
   - `docs/SETUP_PIPELINE.md` — updated with a "Validation" section describing the test fixture + how to run the e2e test locally.
 - **Acceptance:** the e2e test passes in CI; deliberately-malicious block is rejected; the pipeline is provably end-to-end functional.
@@ -1553,12 +1553,12 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Depends-on:** T-124, T-125, T-126, T-127, T-128, T-129, T-130, T-131, T-132, T-133
 - **Reads:** all M8 task outputs, `examples/sample-proposal.yaml`, `brand.example.yaml`, `tests/integration/m7-spike-harness.ts` (extends it)
 - **Outputs:**
-  - `tests/integration/m8-happy-path.test.ts` — happy path: (a) launch with no config → folder picker, (b) pick folder → config persisted, (c) routes to library → folder scan finds 0 docs → empty-state with "Use Sample", (d) click Use Sample → sample-proposal.yaml copied → card appears, (e) click "Create from Template" → pick commercial-proposal → name it "Acme Q3 Proposal" → confirm, (f) library now shows 2 cards; clicking the new proposal opens DocumentView with template content, (g) edit prose → save → reopen → edits preserved, (h) BlockPalette shows 15 defaults + injected fake generated block (mocked), (i) File → Export PDF still works per M7-spike.
-  - `tests/integration/m8-error-paths.test.ts` — folder picker cancellation, config write failure, library scan against missing/moved folder (graceful "folder not found, pick again" state), Create-from-Template against invalid template, generated-blocks load failure (palette degrades).
-- **Acceptance:** both tests pass in CI. The full first-launch-to-export flow works end-to-end including templates + generated-blocks.
+  - `tests/integration/m8-happy-path.test.ts` — happy path: (a) launch with no config → folder picker, (b) pick folder → config persisted, (c) routes to library → folder scan finds 0 docs → empty-state with "Use Sample", (d) click Use Sample → sample-proposal.yaml copied → card appears, (e) click "Create from Template" → pick commercial-proposal → name it "Acme Q3 Proposal" → confirm, (f) library now shows 2 cards; clicking the new proposal opens DocumentView with template content, (g) edit prose → save → reopen → edits preserved, (h) BlockPalette shows 15 defaults + injected fake Brand block (mocked), (i) File → Export PDF still works per M7-spike.
+  - `tests/integration/m8-error-paths.test.ts` — folder picker cancellation, config write failure, library scan against missing/moved folder (graceful "folder not found, pick again" state), Create-from-Template against invalid template, Brand-blocks load failure (palette degrades).
+- **Acceptance:** both tests pass in CI. The full first-launch-to-export flow works end-to-end including templates + Brand blocks.
 - **est.** 4h
 
-**M8 acceptance gate:** T-134 passing. Full first-launch-to-export consultant flow works end-to-end including templates and generated blocks.
+**M8 acceptance gate:** T-134 passing. Full first-launch-to-export consultant flow works end-to-end including templates and Brand blocks.
 
 ---
 
@@ -1780,7 +1780,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Acceptance:** all schema-validation tests pass; the schema-purity test from T-139 still passes (`src/schema/**` + `src/blocks/*/schema.ts` do not transitively import React/TipTap/`src/renderer/`).
 - **est.** 2h
 
-### T-158 [ ] · Memo §3 + cross-reference cleanup
+### T-158 [x] · Memo §3 + cross-reference cleanup
 - **Depends-on:** T-135 (ADRs committed) — can run in parallel with the migration
 - **Reads:** `docs/DOCUMENT_SYSTEM_ARCHITECTURE.md`, `docs/BUILD_BRIEF.md`, `docs/BLOCK_IMPLEMENTATION_GUIDE.md`, `docs/SETUP_PIPELINE.md`, `docs/setup-runbook.md`, `blocks.catalogue.yaml`
 - **Outputs:**
@@ -2044,7 +2044,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 | 6.5 | Scaffold hardening | T-113 — T-114 | 4 | post-M6 audit fixes |
 | 7 | M7 (document editor spike) | T-115 — T-123 (incl. T-120b) | ~33 | minimum runnable app |
 | 7.5 | M7 review fixes (5 BLOCKERs + 9-round review backlog) | T-123a — T-123q | ~22 | review verdict 2026-05-26 across 9 rounds; AGENTS.md §Review playbook #1–#7; T-123o gate-blocking for M8, T-123p+T-123q optional for M8 but gate-blocking for v1.0 external |
-| 8 | M8 (library + templates + generated blocks) | T-124 — T-134 | ~36 | fires after T-123o (gate v4) + consultant testing; T-123p + T-123q can fire in parallel |
+| 8 | M8 (library + templates + Brand blocks) | T-124 — T-134 | ~36 | fires after T-123o (gate v4) + consultant testing; T-123p + T-123q can fire in parallel |
 | 9 | Deployment | T-108 — T-112 | 21 | renumbered from Phase 7; T-123p + T-123q's MEDIUMs must close BEFORE T-108/T-109/T-110 fire (v1.0 external gate) |
 | | | | **~557.5h** | ≈ 13–14 weeks full-time for a strong dev, or ~7 months at half-time |
 

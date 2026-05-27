@@ -1,38 +1,60 @@
 # Block Implementation Guide
 
-**Purpose:** copy-pattern instructions for implementing the 15 pre-built blocks, using the reference callout block (`reference/callout/`) as the canonical example.
+**Purpose:** copy-pattern instructions for implementing Standard blocks using
+the `defineBlock()` registry pattern. All 15 Standard blocks are implemented
+and live under `src/blocks/<name>/`. This guide applies to adding new Standard
+blocks or understanding the existing ones.
 
-**Audience:** the developer (or LLM) implementing M1 blocks.
+**Audience:** the developer (or LLM) implementing or modifying Standard blocks.
 
-**Companion to:** `blocks.catalogue.yaml` (the spec for each block), `TYPES.md` (shared types), `reference/callout/` (the worked example).
+**Companion to:** `blocks.catalogue.yaml` (the setup-time spec for each block;
+see §8 for its role), `reference/callout/` (canonical scaffold), `reference/chart/`
+(worked example for complex blocks with a data panel).
+
+> **Architecture note (ADR-0008):** as of M9a, every Standard block is a
+> single-file manifest under `src/blocks/<name>/` using the `defineBlock()`
+> factory. The old four-file split across `src/schema/blocks/`, `src/renderer/blocks/`,
+> `src/editor/nodes/`, and `src/editor/mapping.ts` has been removed. The registry
+> wires everything automatically — Editor.tsx, DocumentRenderer.tsx,
+> mapping.ts, and src/schema/blocks/index.ts all derive from `loadAllBlocks()`/
+> `loadAllSchemas()`.
 
 ---
 
-## 1. The 4-file pattern (mandatory for every block)
+## 1. The single-manifest pattern (mandatory for every Standard block)
 
-Every block ships as exactly four files:
+Every Standard block ships as exactly three artifacts:
 
-| File | Path in repo | Purpose |
+| Artifact | Path in repo | Purpose |
 |---|---|---|
-| `<name>.ts` | `src/schema/blocks/` | Zod schema + TypeScript type + variant helpers |
-| `<Name>.tsx` | `src/renderer/blocks/` | React renderer for HTML/PDF |
-| `<Name>Node.tsx` | `src/editor/nodes/` | TipTap node + React node view + mapping helpers |
+| `schema.ts` | `src/blocks/<name>/` | Pure Zod schema + TypeScript type + `schemaEntry`. No React/TipTap imports. |
+| `index.tsx` | `src/blocks/<name>/` | Everything else: TipTap node, renderer, mapping helpers, `defineBlock()` default export. |
 | `<name>.test.ts` | `tests/blocks/` | Five test layers (see §5) |
 
-**No exceptions.** A block with three files is incomplete; a block with five files has misplaced responsibilities.
+`defineBlock()` (from `src/blocks/defineBlock.ts`) returns a `BlockRegistryRecord`
+consumed by two registries:
+
+- **`src/blocks/schema-registry.ts`** — pure registry used by schema validation
+  (`BlockSchema`, `Block` type). Imports from `schema.ts` only.
+- **`src/blocks/runtime-registry.ts`** — full registry used by Editor.tsx,
+  DocumentRenderer.tsx, and mapping.ts. Imports `defineBlock()` default exports.
+
+Adding a block to `loadAllBlocks()` in `src/blocks/runtime-registry.ts` is the
+**only manual registration step** — no changes to Editor.tsx, DocumentRenderer.tsx,
+mapping.ts, or `src/schema/blocks/index.ts` are needed.
 
 ---
 
-## 2. The implementation checklist (per block)
-
-For each of the 14 remaining blocks, work in this order:
+## 2. The implementation checklist (per Standard block)
 
 ### Step 1 — Read the spec
 - Open `blocks.catalogue.yaml`, find the entry for your block.
-- Note the `schema` (data shape), `appliesTo` (document/deck), `brandTokensUsed`, `llmUsage.when`/`avoid`.
+- Note the `schema` (data shape), `appliesTo` (document/deck), `brandTokensUsed`,
+  `llmUsage.when`/`avoid`.
 
-### Step 2 — Write `<name>.ts` (schema)
-- Extend `BlockBaseSchema` (gives you `id`, `type`, `note`).
+### Step 2 — Write `src/blocks/<name>/schema.ts` (pure schema)
+- Extend `BlockBaseSchema` (from `src/schema/blocks/block-base`) — gives you
+  `id`, `type`, `note`.
 - Add `type: z.literal("<block-id>")` as the discriminator.
 - For each field in `blocks.catalogue.yaml`:
   - String → `z.string()` with appropriate min/max.
@@ -43,58 +65,76 @@ For each of the 14 remaining blocks, work in this order:
   - Asset path → `AssetPathSchema`.
 - Add `.strict()` to the top-level object.
 - Export the inferred type with `z.infer<typeof XxxBlockSchema>`.
-- If the block has variant-specific behavior (like callout's color tints), add a helper function in the same file.
+- Export a `schemaEntry` constant (`satisfies { schemaName, schema, allowedAttrs, paletteLabel }`).
+- **No React, TipTap, or renderer imports** — this file must stay pure (enforced by
+  `tests/blocks/schema-purity.test.ts`).
 
-### Step 3 — Add to the union
-- Open `src/schema/blocks/index.ts`.
-- Import your new schema.
-- Add it to the `BlockSchema` discriminated union.
+### Step 3 — Write `src/blocks/<name>/index.tsx` (TipTap node + renderer + mapping)
 
-### Step 4 — Write `<Name>.tsx` (renderer)
-- Component signature: `React.FC<{ block: XxxBlock }>`.
-- Get brand tokens via `useBrandTokens()`.
-- Resolve any tokens via `resolveBrandToken(brand, "colors.semantic.X")`.
-- Build inline `style` objects from brand-derived values — never hard-code colors, fonts, or spacing.
-- For rich-text fields, render via `<ProseRenderer fragment={block.body} />`.
-- For asset paths starting with `$brand:`, resolve via `resolveAssetPath(brand, path)`.
-- Set `data-block-id`, `data-block-type`, and any variant attributes on the root element.
-- Use semantic HTML where applicable (`<aside>` for callouts, `<figure>` for images with captions, `<table>` for tables, etc.).
+Create the `defineBlock()` manifest. Follow `reference/callout/index.tsx` (simple)
+or `reference/chart/index.tsx` (complex with data panel):
 
-### Step 5 — Write `<Name>Node.tsx` (TipTap node + mapping)
-- Define the Node via `Node.create({ name: "<block-id>", group: "block", ... })`.
-- Add `attrs` for every scalar field in the schema (variant, title, src, etc.).
-- For rich-text fields managed by the editor, use `content: "block+"` and a `<NodeViewContent />` slot.
-- For purely structured fields (no rich text), set `content: ""` and render the editing UI entirely in the node view.
-- Add `parseHTML` and `renderHTML` so copy/paste works.
-- Add commands: at minimum `insert<Name>` and any block-specific actions (like callout's `setCalloutVariant`).
-- Implement the React node view (use `ReactNodeViewRenderer`) — keep it minimal, focused on editing.
-- Export `<name>BlockToProseMirror(block)` and `proseMirrorTo<Name>Block(node)` mapping helpers.
+```typescript
+import { defineBlock } from "../defineBlock";
+// ... other imports
 
-### Step 6 — Register in the editor
-- Open `src/editor/Editor.tsx`.
-- Import your new TipTap node.
-- Add it to the editor's extensions array.
+// TipTap node
+export const XxxTipTapNode = Node.create({ name: "<block-id>", ... });
 
-### Step 7 — Register the renderer
-- Open `src/renderer/DocumentRenderer.tsx`.
-- Add your component to the block-type-to-component dispatch (typically a `switch` on `block.type`).
+// Renderer
+export const Xxx: FC<{ block: XxxBlock }> = ({ block }) => { ... };
 
-### Step 8 — Add to the mapping
-- Open `src/editor/mapping.ts`.
-- Add a case in `blockToProseMirror(block)` that dispatches to your `<name>BlockToProseMirror`.
-- Add a case in `proseMirrorToBlock(node)` that dispatches to your `proseMirrorTo<Name>Block`.
+// Mapping helpers
+export function xxxBlockToProseMirror(block: XxxBlock): ProseMirrorNode { ... }
+export function proseMirrorToXxxBlock(node: ProseMirrorNode): XxxBlock { ... }
 
-### Step 9 — Write the tests (`<name>.test.ts`)
+// Registry manifest (default export)
+export default defineBlock<XxxBlock>({
+  schemaName: "<block-id>",
+  schema: XxxBlockSchema,
+  allowedAttrs: [...],
+  paletteLabel: "...",
+  tiptapNode: XxxTipTapNode,
+  renderer: Xxx,
+  toPm: xxxBlockToProseMirror,
+  fromPm: proseMirrorToXxxBlock,
+});
+```
+
+### Step 4 — Register in the runtime-registry
+
+Open `src/blocks/runtime-registry.ts`. Add a single import and one entry:
+
+```typescript
+import xxxBlock from "./<name>";
+// ...
+export function loadAllBlocks(): readonly BlockRegistryRecord[] {
+  return [
+    // ... existing entries
+    xxxBlock,
+  ];
+}
+```
+
+That's it. Editor.tsx, DocumentRenderer.tsx, mapping.ts, and
+`src/schema/blocks/index.ts` all update automatically via the registry.
+
+Also add the `schemaEntry` import to `src/blocks/schema-registry.ts`
+(`loadAllSchemas()`) so schema-only validation covers the new block.
+
+### Step 5 — Write the tests (`<name>.test.ts`)
 - Five test layers per §5 below.
 
-### Step 10 — Add a fixture entry to `examples/sample-proposal.yaml`
-- If your block isn't yet exercised by the sample proposal, add a representative use of it.
+### Step 6 — Add a fixture entry to `examples/sample-proposal.yaml`
+- If your block isn't yet exercised by the sample proposal, add a representative use.
 
-### Step 11 — Add to the block palette
-- Open `src/editor/BlockPalette.tsx` (or equivalent).
-- Add an entry with the block's name, icon, and a one-line description (use `llmUsage.when` from the catalogue for the description).
+### Step 7 — Add to the block palette
+- The palette reads from the registry (`paletteLabel` + `llmUsage.when` from the catalogue).
+  No manual step if the palette is already registry-driven; otherwise follow the
+  `BlockPalette.tsx` pattern.
 
-**Estimated effort per block: 4–6 hours** for simple blocks (prose, heading, image), **8–12 hours** for complex blocks (chart, table, risk-matrix, roadmap).
+**Estimated effort per block: 4–6 hours** for simple blocks (prose, heading, image),
+**8–12 hours** for complex blocks (chart, table, risk-matrix, roadmap).
 
 ---
 
@@ -107,7 +147,7 @@ Most blocks follow the callout pattern cleanly. These deserve specific attention
 - The renderer wraps ECharts directly. For the editor view, mount/dispose an
   ECharts instance inside the block node view; for the PDF export, pre-render
   to static SVG via ECharts's headless mode (no JS at PDF time).
-- The data grid (D-24 side panel) is a separate React component (`src/editor/panels/ChartDataPanel.tsx`) that mounts when a chart is selected.
+- The data grid (D-24 side panel) is a separate React component (`src/blocks/chart/ChartDataPanel.tsx`) that mounts when a chart is selected.
 - Excel-paste detection: in the data grid's paste handler, detect `\t`-separated (TSV) vs `,`-separated (CSV). For locale-dependent numbers (`1.234,56` vs `1,234.56`), defer to **O-05 open item** — ship with English-locale parsing only in v1.
 - Brand integration: the chart's color palette comes from `brand.colors.chartPalette.qualitative` (or `.sequential` if `block.palette === "sequential"`).
 
@@ -231,7 +271,8 @@ describe("Xxx TipTap node", () => {
 
 Before checking off a block as "complete":
 
-- [ ] All four files exist at the production paths.
+- [ ] `src/blocks/<name>/schema.ts` and `src/blocks/<name>/index.tsx` exist.
+- [ ] Block is registered in `loadAllBlocks()` (runtime-registry.ts) and `loadAllSchemas()` (schema-registry.ts).
 - [ ] All five test layers pass.
 - [ ] No hard-coded colors, fonts, or spacing in the renderer.
 - [ ] No imports outside the project's allowed dependency list.

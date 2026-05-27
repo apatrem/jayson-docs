@@ -33,9 +33,10 @@ materials. Their role is deliberately narrow and one-time:
 - They are processed by a **setup-time AI pipeline** that produces two
   artifacts for human review:
   1. A draft brand-token file populated from the observed visual identity.
-  2. A catalogue diff: which of the 15 pre-built blocks the consultancy
-     uses + proposals for any consultancy-specific blocks that need to be
-     generated (subject to the Layer 1 mitigations).
+  2. A catalogue diff: which of the 15 pre-built Standard blocks the
+     consultancy uses + proposals for any Brand blocks that need to be
+     generated (subject to the Layer 1 mitigations; see ADR-0004 for the
+     Standard / Brand / Authored three-tier taxonomy).
 - Both artifacts land in a **pending review state** and require human
   approval before the app will load them.
 - The demo files **do not influence the architecture.** The architecture in
@@ -149,21 +150,25 @@ LLM output before it is accepted, constraining what the editor can build, and
 gating rendering. **This schema is the implementation of "anchored on the
 company template" (R6).**
 
-**The block library is closed *per consultancy instance*, with a two-tier
-composition:**
+**The block library is closed *at any given moment*, with a three-tier
+composition (see ADR-0004):**
 
-- **Tier 1 — Pre-built generic catalogue (15 blocks).** Ships with the app.
+- **Standard blocks (Tier 1 — 15 blocks).** Ship with the app.
   Built once by the developer; spec lives in `blocks.catalogue.yaml`
   (prose, heading, bullet-list, numbered-list, chart, table, callout,
   kpi-cards, timeline, roadmap, risk-matrix, team, image, diagram, divider).
   Brand-token mapping makes these feel native to each consultancy without
   code changes.
-- **Tier 2 — Consultancy-specific generated blocks.** Added at setup time
-  by an AI that scans the consultancy's demo files and generates new blocks
-  *only when an observed pattern cannot be expressed by Tier 1 with brand-
-  token mapping alone*. Capped at 10 per setup pass.
+- **Brand blocks (Tier 2).** Added at setup time by an AI that scans the
+  consultancy's demo files and generates new blocks *only when an observed
+  pattern cannot be expressed by Standard blocks with brand-token mapping
+  alone*. Sized at approximately 15 per consultancy by observation.
+- **Authored blocks (Tier 3).** Generated on demand by individual
+  consultants and shareable peer-to-peer. Auto-install after passing the
+  lint + runtime watchdog gate; no human review required. See ADR-0004 for
+  the full lifecycle model.
 
-**Mitigations on generated blocks (mandatory):**
+**Mitigations on Brand blocks (mandatory; Authored blocks follow ADR-0004):**
 1. **Constrained template** — AI fills a pre-defined node-view scaffold;
    no free-form React.
 2. **Whitelisted imports only** — `react`, `@tiptap/*`, `echarts/*`,
@@ -181,9 +186,10 @@ composition:**
    `regenerate` script re-runs generation and routes any drift to
    `/pending/` for re-review.
 
-**Once approved, the library is closed for that consultancy until the next
-setup pass.** A consultant cannot produce an off-template document because
-off-template blocks do not exist.
+**The library is closed at any given moment**; it evolves as consultants
+generate and share Authored blocks. A consultant cannot produce an
+off-template document because off-template blocks do not exist in the
+active library.
 
 There must be exactly one machine-readable brand source (colours, fonts,
 spacing), derived from the demo DOCX/PPTX at setup (§1) and consumed by every

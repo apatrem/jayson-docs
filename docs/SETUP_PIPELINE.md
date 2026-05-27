@@ -49,9 +49,8 @@
 │  LLM outputs a catalogue diff:                                          │
 │    - usedBlocks: [<block-ids used by the consultancy>]                  │
 │    - unusedBlocks: [<block-ids never observed>]                         │
-│    - newBlockProposals: [<patterns that don't fit Tier 1>]              │
-│  Validate: newBlockProposals.length ≤ 10 (hard cap per D-09).           │
-│  If > 10 → escalate to developer review (do not proceed).               │
+│    - newBlockProposals: [<patterns that don't fit Standard blocks>]     │
+│  (Brand-block proposals have no hard cap; escalate if ≥ 20 — ADR-0004) │
 └─────────────────────────────┬──────────────────────────────────────────┘
                               │
                               ▼
@@ -60,9 +59,9 @@
 │  For each proposal, LLM call with:                                      │
 │    - the proposal's source patterns (text + layout hints)               │
 │    - the scaffold template (literal file — see §3)                      │
-│    - blocks.catalogue.yaml entry for a similar Tier 1 block (few-shot)  │
-│  LLM outputs a populated scaffold producing 4 files per block:          │
-│    schema.ts, <Name>.tsx, <Name>Node.tsx, <name>.test.ts                │
+│    - blocks.catalogue.yaml entry for a similar Standard block (few-shot) │
+│  LLM outputs a populated scaffold (single-file manifest per ADR-0008):  │
+│    <name>/schema.ts + <name>/index.tsx + <name>.test.ts                 │
 │  Apply STATIC lint checks (see §4) — fail fast on violations.           │
 └─────────────────────────────┬──────────────────────────────────────────┘
                               │
@@ -421,7 +420,7 @@ You may propose at most 10 new blocks. If you think more are needed, output
 
 A new block should be proposed ONLY if:
 - The pattern appears ≥ 2 times across the demo files, AND
-- It cannot be expressed by any Tier 1 block with brand-token tweaks alone
+- It cannot be expressed by any Standard block with brand-token tweaks alone
 
 USER:
 <<demo-analysis.json>>
@@ -440,7 +439,7 @@ Produce a catalogue diff in this shape:
       "description": "One-line description",
       "observedIn": ["file.docx:p.12", "deck.pptx:slide-7"],
       "proposedSchema": { /* shape similar to blocks.catalogue.yaml entries */ },
-      "rationale": "Why a new block is needed; why no Tier 1 block fits."
+      "rationale": "Why a new block is needed; why no Standard block fits."
     }
   ]
 }
@@ -536,7 +535,7 @@ app-install/generated-blocks/
 |---|---|---|
 | LLM produces invalid YAML for brand | Medium | Schema validation + max 2 retries with corrective re-prompt |
 | LLM produces code that lints but is buggy at runtime | High | Auto-generated tests (Layer 1-2 schema tests at minimum) + human review gate |
-| LLM proposes redundant new blocks (when a Tier 1 fits) | Medium | Few-shot the prompt with the full Tier 1 catalogue; explicit "is there a Tier 1 fit?" check in the prompt |
+| LLM proposes redundant Brand blocks (when a Standard block fits) | Medium | Few-shot the prompt with the full Standard block catalogue; explicit "is there a Standard block fit?" check in the prompt |
 | Demo files contain client-confidential content sent to LLM | Low | Setup runs once with curated demos; document this in the setup runbook; redact client names before LLM call |
 | Generated code passes lint but uses an API that doesn't exist (hallucination) | Medium | Run `tsc --noEmit` after generation; reject if compilation fails |
 | The scaffold drifts from the production block pattern over time | Medium | The reference callout block IS the scaffold's tested form. Any change to the scaffold updates `reference/callout/` first; CI compares the two for parity |

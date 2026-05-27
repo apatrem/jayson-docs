@@ -2,12 +2,12 @@
 
 ## Purpose
 
-This runbook lets a devops admin set up Document System for a new consultancy install in roughly one hour of hands-on devops admin clock time, **excluding** LLM-call latency, human review time for proposed brand tokens, and human review time for proposed generated blocks. A real-world install with 5–10 generated-block proposals plus a careful brand review can easily run 2–3 wall-clock hours; the one-hour figure is the floor, not the ceiling.
+This runbook lets a devops admin set up Document System for a new consultancy install in roughly one hour of hands-on devops admin clock time, **excluding** LLM-call latency, human review time for proposed brand tokens, and human review time for proposed Brand blocks. A real-world install with 5–15 Brand-block proposals plus a careful brand review can easily run 2–3 wall-clock hours; the one-hour figure is the floor, not the ceiling.
 
 The setup flow turns curated demo files into:
 
 - A reviewed shared `brand.yaml`.
-- Optional reviewed generated blocks in `generated-blocks/active/`.
+- Optional reviewed Brand blocks in `generated-blocks/active/` (Tier 2 per ADR-0004).
 - A per-consultant local config and OS-keychain LLM credentials.
 
 ## Prerequisites
@@ -80,13 +80,13 @@ mkdir -p ~/Consultancy-Shared
 cp /tmp/docsystem-setup-output/brand.draft.yaml ~/Consultancy-Shared/brand.yaml
 ```
 
-### 4. Review Generated Blocks
+### 4. Review Brand Blocks
 
 If `/tmp/docsystem-setup-output/generated-blocks/pending/` is empty, skip this step.
 
-For each proposed generated block:
+For each proposed Brand block:
 
-- Confirm no Tier 1 block can express the observed pattern.
+- Confirm no Standard block can express the observed pattern.
 - Review schema, renderer, TipTap node, and test files.
 - Confirm generated code uses only the scaffolded surface and approved imports.
 - Confirm there is no `dangerouslySetInnerHTML`, `eval`, `Function`, `fetch`, `XMLHttpRequest`, direct CSS injection, browser-global access, or hard-coded brand values.
@@ -107,7 +107,7 @@ mkdir -p generated-blocks/active
 mv /tmp/docsystem-setup-output/generated-blocks/pending/<block-folder> generated-blocks/active/
 ```
 
-Leave rejected blocks in `pending/` or delete them from the setup-output folder. Never move an unreviewed generated block into `active/`.
+Leave rejected blocks in `pending/` or delete them from the setup-output folder. Never move an unreviewed Brand block into `active/`.
 
 ### 5. Validate Shared Install State
 
@@ -119,7 +119,7 @@ npm run setup:validate -- \
   --generated-blocks generated-blocks/active
 ```
 
-That command checks the runtime install state — the approved `brand.yaml`, every approved generated block, and the cross-references between them.
+That command checks the runtime install state — the approved `brand.yaml`, every approved Brand block, and the cross-references between them.
 
 Then, **inside the repository checkout** (not the shared folder), run:
 
@@ -186,7 +186,7 @@ rm ~/Consultancy-Shared/brand.yaml
 rm -rf /tmp/docsystem-setup-output
 ```
 
-### Rollback after step 4 (some generated blocks moved into active/)
+### Rollback after step 4 (some Brand blocks moved into active/)
 
 ```bash
 # Identify blocks moved this run and move them back to pending/ for review.
@@ -245,8 +245,8 @@ On each consultant machine:
 
 - **Demo scan fails:** inspect the named input file and rerun with a smaller set of demos.
 - **Brand schema fails:** edit `brand.draft.yaml` to match `brand.example.yaml`, then rerun validation.
-- **More than 10 new blocks proposed:** stop and escalate to developer review. Do not bypass the cap.
-- **Generated block lint fails:** reject the block or regenerate after fixing the scaffold. Do not hand-edit unsafe generated code into `active/`.
+- **Large number of Brand blocks proposed (≥ 20):** stop and escalate to developer review (ADR-0004 removes the hard cap but flags unusually large proposals).
+- **Brand block lint fails:** reject the block or regenerate after fixing the scaffold. Do not hand-edit unsafe generated code into `active/`.
 - **Path validation fails during install:** create the selected folder or choose a writable cloud-sync folder outside the app config directory.
 - **LLM endpoint check fails:** verify provider, base URL, model name, and API key.
 - **Cost ledger cannot initialize:** check app config directory permissions.
@@ -257,9 +257,9 @@ Record for the consultancy:
 
 - Shared folder path.
 - Approved brand file location.
-- Generated blocks approved and reviewer/date.
+- Brand blocks approved and reviewer/date.
 - LLM providers and model names, not API keys.
 - Monthly cap policy.
-- Any `TBD` brand values or rejected generated block proposals.
+- Any `TBD` brand values or rejected Brand block proposals.
 
 Do not record API keys, prompt contents, response contents, or cost-ledger rows in the handoff notes.
