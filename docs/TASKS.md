@@ -1615,7 +1615,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Outputs:** `docs/adr/0013-authored-blocks-are-declarative-data.md`
 - **Acceptance:** ADR-0013 exists, references ADR-0005/0006/0008 correctly, formalises the "parsed as object literal, never executed" contract.
 
-### T-140 [ ] · Registry loaders (schema + runtime, both static for M9a)
+### T-140 [x] · Registry loaders (schema + runtime, both static for M9a)
 - **Depends-on:** T-139
 - **Reads:** `docs/adr/0008-block-registry-manifest-shape.md`
 - **Outputs:**
