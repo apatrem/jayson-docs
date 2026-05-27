@@ -34,10 +34,10 @@ base64 = "0.22.1"
 serde_yaml = "0.9"
 # Authored-block AST lint (T-163, ADR-0014).  Scoped to src-tauri/src/lint/ only.
 regex = "1"
-swc_ecma_parser = "0.149"
-swc_ecma_ast    = "0.118"
-swc_ecma_visit  = "0.104"
-swc_common      = { version = "0.36", features = ["sourcemap"] }
+swc_ecma_parser = "40"
+swc_ecma_ast    = "24"
+swc_ecma_visit  = "24"
+swc_common      = { version = "22", features = ["sourcemap"] }
 
 [features]
 # This feature is used for production builds where `devtools` is disabled.

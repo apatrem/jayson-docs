@@ -5,7 +5,7 @@
 
 use regex::Regex;
 use std::sync::OnceLock;
-use swc_common::{sync::Lrc, FileName, SourceMap};
+use swc_common::{sync::Lrc, FileName, SourceMap, Spanned};
 use swc_ecma_ast::*;
 use swc_ecma_parser::{lexer::Lexer, Parser, StringInput, Syntax, TsSyntax};
 use swc_ecma_visit::{Visit, VisitWith};
@@ -175,7 +175,7 @@ fn check_top_level(module: &Module, violations: &mut Vec<LintViolation>, cm: &Lr
         match item {
             ModuleItem::ModuleDecl(ModuleDecl::Import(import)) => {
                 // A002: only allowed import specifiers
-                let src = import.src.value.as_str();
+                let src = import.src.value.as_str().unwrap_or("<non-utf8>");
                 // Authored blocks may only import from defineAuthoredBlock's path
                 // (or type-only imports of allowed symbols).
                 let is_type_only = import.type_only;
@@ -312,7 +312,7 @@ pub fn run(source: &str) -> LintResult {
     let cm: Lrc<SourceMap> = Default::default();
     let fm = cm.new_source_file(
         FileName::Custom("authored-block.ts".into()).into(),
-        source.into(),
+        source.to_string(),
     );
     let lexer = Lexer::new(
         Syntax::Typescript(TsSyntax {
