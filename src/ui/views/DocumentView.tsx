@@ -209,7 +209,14 @@ export const DocumentView: FC<DocumentViewProps> = ({
             onEditorReady={setEditor}
             onUpdate={(content) => {
               try {
-                const updated = editorContentToDocument(currentDoc.current ?? doc, content);
+                // `currentDoc.current` is initialized at mount (initialDoc or
+                // null) and reassigned synchronously to `loadedDoc` in the
+                // load effect before `setDoc(loadedDoc)` fires the re-render
+                // that mounts the editor. By the time the editor calls back
+                // here, the ref is always non-null — no `?? doc` fallback
+                // needed.
+                const previous = currentDoc.current!;
+                const updated = editorContentToDocument(previous, content);
                 currentDoc.current = updated;
                 setSaveState("saving");
                 onDocumentChange?.(updated);

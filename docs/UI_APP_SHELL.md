@@ -287,6 +287,21 @@ export async function renderStaticHtmlForExport(
    ```
 6. Return the full HTML string. **Zero external asset refs** (all images inlined as `data:` URLs from the existing brand-token resolver), **zero `<script>` tags** (renderer is purely SSR for the export path).
 
+### SVG sanitization contract (`sanitizeSvgForImage`, T-123p)
+
+The pre-render pipeline embeds every SVG image (and the pre-rendered Mermaid/ECharts SVGs) as `data:image/svg+xml;base64,…` consumed by `<img src=…>`. Browsers script-disable SVG content loaded through `<img>` — `<script>`, `on*=` handlers, SMIL animations, CSS `expression()`, and `<foreignObject>` HTML are all inert in that embedding context.
+
+`sanitizeSvgForImage` (in `src/export/render-static-html.ts`) is a defense-in-depth allowlist-by-removal pass that strips:
+
+- `<script>` blocks (DOM execution vector)
+- `<style>` blocks (CSS `expression()` + `url(javascript:)`)
+- `<foreignObject>` blocks (HTML smuggling)
+- `<animate>`, `<animateMotion>`, `<animateTransform>`, `<set>` elements (SMIL can re-target a static-safe `href` to `javascript:` after sanitization)
+- `href="javascript:…"` and `xlink:href="javascript:…"` attributes on any element
+- `on*=` event-handler attributes
+
+**Safe ONLY for `<img src="data:image/svg+xml,…">` consumption.** If the sanitized SVG is ever rendered via `<object>`, `<iframe>`, or inline `<svg>`, the sanitizer is insufficient — those contexts execute scripts, animations, and styles, and the contract must be re-audited (likely with a real SVG parser, not regex). The cross-boundary constraint also applies to anything reading the data URI back through `src-tauri/src/ipc/fs.rs::read_binary_file` — that IPC's MIME allowlist is the upstream half of the same contract.
+
 ### Rust side (`src-tauri/src/ipc/pdf.rs`, T-118)
 
 Replaces the current no-op stub. Accepts `{ html: String, suggestedName: String }`. Writes the HTML to `<tmpdir>/docsystem-export/<uuid>/<sanitizedName>.html`. Returns `{ kind: 'browser_handoff', path: String }`.

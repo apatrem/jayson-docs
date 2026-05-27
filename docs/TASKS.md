@@ -1355,7 +1355,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 0.5h
 - **Note: real production bug carried over from the M7 security audit (M-4) AND re-flagged in M7.5 round-2 security audit. Any Windows consultant who saves while their antivirus scans the file is at risk of total data loss. Gate-blocking for M8 because real-user data loss is a quality bar v1.0 has to clear.**
 
-### T-123p [ ] · Defense-in-depth + cosmetic cleanup batch (NOT gate-blocking)
+### T-123p [x] · Defense-in-depth + cosmetic cleanup batch (NOT gate-blocking)
 - **Depends-on:** T-123l
 - **Reads:** `src-tauri/src/ipc/pdf.rs` (`cleanup_export_temp_dir_at` line ~61-76), `src/export/render-static-html.ts` (`sanitizeSvgForImage` line ~170-175), `src/ui/views/DocumentView.tsx` (`editorContent` useMemo + `currentDoc.current ?? doc` fallback), the round-2 security audit findings L-1 and L-2 in chat history
 - **Outputs:**

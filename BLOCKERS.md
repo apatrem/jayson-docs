@@ -292,3 +292,22 @@ Two different actions (`dtolnay/rust-toolchain@1.83.0` and `ruby/setup-ruby@v1`)
 **Fix landed:** T-123o replaces the delete-then-rename path with a sibling-`.bak` swap: move original to backup, move tmp into place, restore the original if the second rename fails, and drop the backup only after success. A Windows-cfg test covers the restore path; non-Windows CI keeps a cfg-gate smoke test because Unix rename semantics are already atomic for replacement.
 
 ---
+
+### [drift-2026-05-26i] M7.5 LOW carryovers (cleanup nested symlinks, SVG sanitizer depth, three DocumentView cosmetic items) — closed in T-123p
+
+**Detected at:** 2026-05-26T19:30:00Z (M7.5 round-2 review carryover into round-3 batching)
+**Tasks affected:** T-123 family (closed by T-123p).
+**What happened:** Three LOW findings batched after the M7-spike gate passed at v4:
+1. `cleanup_export_temp_dir_at` in `src-tauri/src/ipc/pdf.rs` relied on Rust's implementation-defined behavior for `remove_dir_all` against nested symlinks. Safe today (Rust docs document that `remove_dir_all` does not follow symlinks), but the contract is per-OS and per-version — a future toolchain bump could regress.
+2. `sanitizeSvgForImage` in `src/export/render-static-html.ts` stripped only `<script>` and `on*=`. Defense-in-depth missing for `<foreignObject>`, SMIL animations, `<style>` (CSS `expression()` / `url(javascript:)`), and `href="javascript:"` attribute vectors. Safe today because export consumes SVG only via `<img src=data:>` (browsers script-disable that context), but the safety contract is single-consumer and isn't documented.
+3. `DocumentView.tsx` carried a dead `currentDoc.current ?? doc` fallback (the ref is always initialized at mount), and `render-static-html.ts` matched the 5MB-cap error by string-`includes` against the Rust error message wording (brittle to wording changes).
+
+**Impact:** None today — all three are quality / future-proofing. M7-spike gate v4 stays passed; T-123p was explicitly NOT gate-blocking for M8.
+
+**Fix landed:** T-123p
+- `pdf.rs`: prunes top-level symlink children by name (`remove_file` on each `is_symlink` entry from `read_dir`) before `remove_dir_all`. Adds `cleanup_export_temp_dir_unlinks_nested_symlink_without_touching_target` test (cfg(unix)).
+- `render-static-html.ts`: extended `sanitizeSvgForImage` to strip `<style>`, `<foreignObject>`, `<animate>`/`<animateMotion>`/`<animateTransform>`/`<set>`, plus `href`/`xlink:href` attributes whose value is `javascript:`. 7 new tripwire tests cover each vector + a benign-http(s) preserve case. Documented the "safe ONLY for `<img src=data:>` consumption" contract in a comment AND in `docs/UI_APP_SHELL.md` §"SVG sanitization contract".
+- `DocumentView.tsx`: dropped the `?? doc` fallback, added a comment explaining why `currentDoc.current` is always non-null in `onUpdate`.
+- `render-static-html.ts`: replaced `error.message.includes("file exceeds 5MB export limit")` with `error.kind === "invalid" && SIZE_CAP_MESSAGE_PATTERN.test(error.message)`. Pattern is a top-of-file constant with a comment pointing to `src-tauri/src/ipc/fs.rs:51` as the contract anchor.
+- The first cosmetic item (`editorContent useMemo([doc])`) is no longer present in `DocumentView.tsx` — the editor seed is held in `useState` initialized from `initialDoc`, then reassigned in the load effect. No memo to inspect; no-op for that bullet.
+

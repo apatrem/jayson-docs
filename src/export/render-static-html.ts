@@ -12,6 +12,14 @@ import type { Block } from "../schema/blocks";
 
 const TOTAL_IMAGE_PAYLOAD_LIMIT_BYTES = 50 * 1024 * 1024;
 
+// Matches the per-file size-cap rejection emitted by `read_binary_file` in
+// `src-tauri/src/ipc/fs.rs:51` ("file exceeds 5MB export limit"). The Rust
+// side emits this message as `IpcError::Invalid`; we gate on `kind ===
+// "invalid"` first so unrelated `Invalid` errors with similar wording can't
+// silently coerce into placeholders. Keep this regex in sync with the Rust
+// wording — both halves of the contract live in one place per change.
+const SIZE_CAP_MESSAGE_PATTERN = /exceeds\s+5MB\s+export\s+limit/iu;
+
 const PAGE_BREAK_CSS = `
 @media print {
   [data-block-type="heading"] {
@@ -123,7 +131,8 @@ async function preloadImageDataUris(
       // AGENTS.md §Review playbook convention #8.
       if (
         isIpcError(error) &&
-        error.message.includes("file exceeds 5MB export limit")
+        error.kind === "invalid" &&
+        SIZE_CAP_MESSAGE_PATTERN.test(error.message)
       ) {
         dataUris[block.id] = imagePlaceholderDataUri("Image too large to export");
         continue;
@@ -184,10 +193,44 @@ function base64DecodedByteLength(encoded: string): number {
   return Math.floor((normalized.length * 3) / 4) - padding;
 }
 
+// Allowlist-by-removal SVG sanitizer. Strips active content vectors so the
+// resulting SVG is safe to embed via `<img src="data:image/svg+xml,...">`.
+//
+// SAFE ONLY for `<img src=data:>` embedding. Browsers script-disable scripts
+// inside `<img>`-loaded SVGs. RE-AUDIT before consuming the output via
+// `<object>`, `<iframe>`, or inline `<svg>` — those execution contexts run
+// `<script>`, event handlers, SMIL animations, and CSS `expression()`.
+// See `docs/UI_APP_SHELL.md` §"SVG sanitization contract".
 function sanitizeSvgForImage(svg: string): string {
-  return svg
-    .replace(/<script\b[\s\S]*?<\/script>/giu, "")
-    .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/giu, "");
+  return (
+    svg
+      // <script>...</script> blocks (DOM execution vector).
+      .replace(/<script\b[\s\S]*?<\/script>/giu, "")
+      // <style>...</style> blocks (CSS `expression()` + `url(javascript:)`).
+      .replace(/<style\b[\s\S]*?<\/style>/giu, "")
+      // <foreignObject>...</foreignObject> blocks (HTML inside SVG; runs
+      // arbitrary markup if SVG is ever rendered inline).
+      .replace(/<foreignObject\b[\s\S]*?<\/foreignObject>/giu, "")
+      // <animate>, <animateMotion>, <animateTransform>, <set> elements —
+      // SMIL animations can `attributeName="href"` toward `javascript:` URLs
+      // even after static sanitization of the initial href.
+      .replace(/<animate\b[\s\S]*?(?:\/>|<\/animate>)/giu, "")
+      .replace(/<animateMotion\b[\s\S]*?(?:\/>|<\/animateMotion>)/giu, "")
+      .replace(/<animateTransform\b[\s\S]*?(?:\/>|<\/animateTransform>)/giu, "")
+      .replace(/<set\b[\s\S]*?(?:\/>|<\/set>)/giu, "")
+      // Strip any `href` or `xlink:href` attribute whose value is a
+      // `javascript:` URL. Applies to <a>, <use>, <image>, and any custom
+      // SVG element. Allowing http(s) hrefs would still be inert under
+      // <img src=data:> but we're defense-in-depth here.
+      .replace(
+        /\s+(?:xlink:)?href\s*=\s*(?:"\s*javascript:[^"]*"|'\s*javascript:[^']*'|javascript:[^\s>]+)/giu,
+        "",
+      )
+      // Any `on*=` event-handler attribute (the canonical DOM execution
+      // vector). Kept last so the script/style/animate strippers above can
+      // match their tags before we mutate attribute spacing.
+      .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/giu, "")
+  );
 }
 
 function imagePlaceholderDataUri(message: string): string {

@@ -184,6 +184,98 @@ describe("renderStaticHtmlForExport", () => {
     expect(decodedSvg).not.toMatch(/<script\b/iu);
     expect(decodedSvg).not.toMatch(/\sonload=/iu);
   });
+
+  // T-123p: tripwire suite for the deepened SVG sanitizer. Each case asserts
+  // a single attack vector is stripped before the SVG is embedded as a
+  // data URI. If a vector regresses (e.g., someone "simplifies" the regex
+  // list in `sanitizeSvgForImage`), the corresponding case fails fast.
+  describe("sanitizeSvgForImage tripwires (T-123p)", () => {
+    async function decodedSvgFor(rawSvg: string): Promise<string> {
+      const imageDoc = docWithImages([{ id: "image-1", src: "assets/vector.svg" }]);
+      Object.defineProperty(window, "__TAURI_INTERNALS__", {
+        configurable: true,
+        value: {
+          invoke: vi.fn(() => Promise.resolve(utf8ToBase64ForTest(rawSvg))),
+        },
+      });
+      const html = await renderStaticHtmlForExport(
+        imageDoc,
+        loadBrand(),
+        "/Users/me/Documents/proposal",
+        "/Users/me/Shared",
+      );
+      const [decoded] = decodedSvgDataUris(html);
+      expect(decoded).toBeDefined();
+      return decoded ?? "";
+    }
+
+    it("strips <foreignObject> blocks that smuggle HTML/script", async () => {
+      const decoded = await decodedSvgFor(
+        `<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><script>alert(1)</script></foreignObject><text>Safe</text></svg>`,
+      );
+      expect(decoded).toContain("Safe");
+      expect(decoded).not.toMatch(/<foreignObject\b/iu);
+      expect(decoded).not.toMatch(/<script\b/iu);
+    });
+
+    it("strips <style> blocks (CSS expression / url(javascript:) vector)", async () => {
+      const decoded = await decodedSvgFor(
+        `<svg xmlns="http://www.w3.org/2000/svg"><style>* { background: url(javascript:alert(1)) }</style><text>Safe</text></svg>`,
+      );
+      expect(decoded).toContain("Safe");
+      expect(decoded).not.toMatch(/<style\b/iu);
+      expect(decoded).not.toMatch(/javascript:/iu);
+    });
+
+    it("strips SMIL <animate> with attributeName=href→javascript:", async () => {
+      const decoded = await decodedSvgFor(
+        `<svg xmlns="http://www.w3.org/2000/svg"><a href="#"><animate attributeName="href" to="javascript:alert(1)" /><text>Safe</text></a></svg>`,
+      );
+      expect(decoded).toContain("Safe");
+      expect(decoded).not.toMatch(/<animate\b/iu);
+      expect(decoded).not.toMatch(/javascript:/iu);
+    });
+
+    it("strips <animateMotion>, <animateTransform>, and <set>", async () => {
+      const decoded = await decodedSvgFor(
+        `<svg xmlns="http://www.w3.org/2000/svg">` +
+          `<animateMotion path="M0,0 L10,10" />` +
+          `<animateTransform attributeName="transform" type="rotate" />` +
+          `<set attributeName="href" to="javascript:alert(1)" />` +
+          `<text>Safe</text>` +
+          `</svg>`,
+      );
+      expect(decoded).toContain("Safe");
+      expect(decoded).not.toMatch(/<animateMotion\b/iu);
+      expect(decoded).not.toMatch(/<animateTransform\b/iu);
+      expect(decoded).not.toMatch(/<set\b/iu);
+      expect(decoded).not.toMatch(/javascript:/iu);
+    });
+
+    it("strips <use href=javascript:…>", async () => {
+      const decoded = await decodedSvgFor(
+        `<svg xmlns="http://www.w3.org/2000/svg"><use href="javascript:alert(1)" /><text>Safe</text></svg>`,
+      );
+      expect(decoded).toContain("Safe");
+      expect(decoded).not.toMatch(/javascript:/iu);
+    });
+
+    it("strips <a xlink:href=javascript:…>", async () => {
+      const decoded = await decodedSvgFor(
+        `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:href="javascript:alert(1)"><text>Safe</text></a></svg>`,
+      );
+      expect(decoded).toContain("Safe");
+      expect(decoded).not.toMatch(/javascript:/iu);
+    });
+
+    it("preserves benign http(s) hrefs and harmless content", async () => {
+      const decoded = await decodedSvgFor(
+        `<svg xmlns="http://www.w3.org/2000/svg"><a href="https://example.com"><text>Click</text></a></svg>`,
+      );
+      expect(decoded).toContain("Click");
+      expect(decoded).toContain("https://example.com");
+    });
+  });
 });
 
 describe("renderStaticHtmlForExport without Node Buffer", () => {

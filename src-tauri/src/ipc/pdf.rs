@@ -73,6 +73,25 @@ fn cleanup_export_temp_dir_at(root: &Path) -> std::io::Result<()> {
             );
         }
         Ok(_) => {
+            // Defense-in-depth (T-123p): before `remove_dir_all`, prune any
+            // top-level child that is itself a symlink so we never traverse
+            // into the target's filesystem. `remove_dir_all` already refuses
+            // to follow root-level symlinks (handled above), but the per-OS
+            // recursion behavior for nested symlinks is documented as
+            // implementation-defined and may change between Rust versions.
+            // Removing the symlink entry by name (not by metadata) breaks
+            // only the link, leaving any target tree intact.
+            for entry in fs::read_dir(root)? {
+                let entry = entry?;
+                let entry_metadata = fs::symlink_metadata(entry.path())?;
+                if entry_metadata.file_type().is_symlink() {
+                    log::warn!(
+                        "removing symlink {} inside export temp root before recursive delete",
+                        entry.path().display()
+                    );
+                    fs::remove_file(entry.path())?;
+                }
+            }
             fs::remove_dir_all(root)?;
         }
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
@@ -197,6 +216,33 @@ mod tests {
         assert!(target.join("keep.txt").exists());
         assert!(root.exists());
         let _ = fs::remove_file(root);
+        let _ = fs::remove_dir_all(target);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn cleanup_export_temp_dir_unlinks_nested_symlink_without_touching_target() {
+        // T-123p: a nested symlink inside the export temp root must be
+        // unlinked by name only — the target it points to must stay intact.
+        let target = unique_test_dir("nested-symlink-target");
+        fs::create_dir_all(&target).expect("create symlink target dir");
+        fs::write(target.join("precious.txt"), "must-survive").expect("write target file");
+
+        let root = unique_test_dir("nested-symlink-root");
+        fs::create_dir_all(&root).expect("create root dir");
+        fs::create_dir_all(root.join("export-1")).expect("create real subdir");
+        fs::write(root.join("export-1").join("doc.html"), "<html/>").expect("write real file");
+        std::os::unix::fs::symlink(&target, root.join("innocent-symlink"))
+            .expect("create nested symlink");
+
+        cleanup_export_temp_dir_at(&root).expect("cleanup nested symlink root");
+
+        assert!(!root.exists(), "root should be removed");
+        assert!(target.exists(), "target directory must be untouched");
+        assert!(
+            target.join("precious.txt").exists(),
+            "files inside the symlink target must survive cleanup"
+        );
         let _ = fs::remove_dir_all(target);
     }
 }
