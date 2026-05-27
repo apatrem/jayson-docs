@@ -1624,7 +1624,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Acceptance:** both loaders compile and return empty lists (until T-141 creates the folders); schema-purity test from T-139 still passes.
 - **est.** 2h
 
-### T-141 [ ] · Folder layout scaffolding (legacy-wrapper approach, schema + runtime per block)
+### T-141 [x] · Folder layout scaffolding (legacy-wrapper approach, schema + runtime per block)
 - **Depends-on:** T-140
 - **Reads:** `docs/adr/0008-block-registry-manifest-shape.md`
 - **Outputs:**

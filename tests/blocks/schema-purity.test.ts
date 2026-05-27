@@ -81,10 +81,6 @@ const schemaFiles = walkTs(join(repoRoot, "src", "schema"));
 const blockSchemaFiles = findBlockSchemaFiles();
 
 describe("schema purity", () => {
-  it("no src/blocks/*/schema.ts files exist yet (T-141 not yet scaffolded)", () => {
-    expect(blockSchemaFiles.length).toBe(0);
-  });
-
   for (const absPath of schemaFiles) {
     const relPath = absPath.replace(repoRoot + "/", "");
     it(`${relPath} does not transitively import react, @tiptap/*, or src/renderer/`, () => {
@@ -96,7 +92,9 @@ describe("schema purity", () => {
     });
   }
 
-  it("all src/blocks/*/schema.ts files (when they exist) are pure", () => {
+  it(`src/blocks/*/schema.ts: all ${blockSchemaFiles.length} block schema files are pure`, () => {
+    // T-141 scaffolded 15 per-block schema.ts files; this test verifies they remain pure.
+    expect(blockSchemaFiles.length).toBeGreaterThan(0);
     for (const file of blockSchemaFiles) {
       const relPath = file.replace(repoRoot + "/", "");
       const forbidden = checkPurity(file);
