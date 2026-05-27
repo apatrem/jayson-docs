@@ -2,7 +2,13 @@ import { readFileSync } from "node:fs";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "../../src/App";
+import { serializeDocModel } from "../../src/docmodel/serialize";
+import type { BootStrategy } from "../../src/ui/router/boot";
 import type { DocModel } from "../../src/schema/docmodel";
+
+const welcomeBootStrategy: BootStrategy = {
+  bootRoute: () => Promise.resolve({ kind: "welcome" }),
+};
 
 const doc: Extract<DocModel, { kind: "document" }> = {
   kind: "document",
@@ -47,17 +53,23 @@ describe("App shell", () => {
   });
 
   it("shows the welcome state with an accessible Open Document button", () => {
-    render(<App />);
+    render(<App bootStrategy={welcomeBootStrategy} />);
 
     expect(screen.getByLabelText("Welcome")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Open Document" })).toBeTruthy();
   });
 
   it("switches to the document state after loading a document", async () => {
-    const onOpenDocument = vi.fn(() =>
-      Promise.resolve({ path: "/Users/me/Documents/proposal.yaml", doc }),
+    const docYaml = serializeDocModel(doc);
+    render(
+      <App
+        bootStrategy={welcomeBootStrategy}
+        fileActions={{
+          selectOpenPath: () => Promise.resolve("/Users/me/Documents/proposal.yaml"),
+          readYamlFile: vi.fn(() => Promise.resolve(docYaml)),
+        }}
+      />,
     );
-    render(<App onOpenDocument={onOpenDocument} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Open Document" }));
 
@@ -73,6 +85,7 @@ describe("App shell", () => {
   it("returns to the welcome state from the multi-section constraint", async () => {
     render(
       <App
+        bootStrategy={welcomeBootStrategy}
         fileActions={{
           selectOpenPath: () => Promise.resolve("/Users/me/Documents/sample-proposal.yaml"),
           readYamlFile: () =>

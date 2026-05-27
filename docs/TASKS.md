@@ -1465,7 +1465,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Acceptance:** cargo test in src-tauri passes for the 7 newly-hardened commands; JS smoke tests pass for all 7.
 - **est.** 4h
 
-### T-126 [ ] · Router infrastructure (Routes.tsx + types) + folder-existence check
+### T-126 [x] · Router infrastructure (Routes.tsx + types) + folder-existence check
 - **Depends-on:** T-124
 - **Reads:** `docs/UI_APP_SHELL.md` (M8 decisions, esp. router-library choice), `src/App.tsx` (M7-spike state — single-document shell)
 - **Outputs:**

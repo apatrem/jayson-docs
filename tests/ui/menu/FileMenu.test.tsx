@@ -2,7 +2,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "../../../src/App";
 import { serializeDocModel } from "../../../src/docmodel/serialize";
+import type { BootStrategy } from "../../../src/ui/router/boot";
 import type { DocModel } from "../../../src/schema/docmodel";
+
+const welcomeBootStrategy: BootStrategy = {
+  bootRoute: () => Promise.resolve({ kind: "welcome" }),
+};
 
 const doc: Extract<DocModel, { kind: "document" }> = {
   kind: "document",
@@ -51,6 +56,7 @@ describe("FileMenu", () => {
 
     render(
       <App
+        bootStrategy={welcomeBootStrategy}
         fileActions={{
           selectOpenPath: () => Promise.resolve("/Users/me/Documents/menu.yaml"),
           readYamlFile,

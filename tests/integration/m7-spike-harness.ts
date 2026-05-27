@@ -9,6 +9,11 @@ import App from "../../src/App";
 import { parseDocModelYaml } from "../../src/docmodel/serialize";
 import { DocModelSchema } from "../../src/schema/docmodel";
 import type { DocModel } from "../../src/schema/docmodel";
+import type { BootStrategy } from "../../src/ui/router/boot";
+
+const welcomeBootStrategy: BootStrategy = {
+  bootRoute: () => Promise.resolve({ kind: "welcome" as const }),
+};
 
 vi.mock("echarts", async () => {
   const actual = await vi.importActual<typeof EChartsModule>("echarts");
@@ -42,6 +47,7 @@ export interface M7HarnessOptions {
   writeYamlFile?: (path: string, yaml: string) => Promise<void>;
   initialDocument?: { path: string; doc: DocModel };
   useRealOpenPath?: boolean;
+  bootStrategy?: BootStrategy;
 }
 
 export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
@@ -86,6 +92,7 @@ export function renderM7SpikeHarness(options: M7HarnessOptions = {}) {
 
   const rtl = render(
     createElement(App, {
+      bootStrategy: options.bootStrategy ?? welcomeBootStrategy,
       ...(options.initialDocument === undefined
         ? {}
         : { initialDocument: options.initialDocument }),
