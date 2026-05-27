@@ -119,6 +119,28 @@ export const AUTHORED_BLOCK_LINT_RULES: readonly LintRule[] = [
       "timestamp, and slug matching the manifest's slug field.",
     severity: "reject",
   },
+
+  // ── Identity invariants (ADR-0009) ───────────────────────────────────────
+
+  {
+    id: "A012-slug-kebab-case",
+    description:
+      "The `slug` field inside `defineAuthoredBlock({...})` must be a " +
+      "kebab-case string matching `/^[a-z][a-z0-9-]*$/`: all lowercase, " +
+      "starts with a letter, may contain digits and hyphens, no uppercase " +
+      "letters, no underscores, no leading or trailing hyphens.",
+    severity: "reject",
+  },
+  {
+    id: "A013-sender-valid-email",
+    description:
+      "The `sender` field in the manifest header must be a syntactically " +
+      "valid email address matching the pattern " +
+      "`/^[^@:\\s]+@[^@:\\s]+\\.[^@:\\s.]+$/` (local-part, @, domain, dot, " +
+      "TLD — no whitespace, no colons). Semantic deliverability is not " +
+      "checked; syntax alone determines validity.",
+    severity: "reject",
+  },
 ] as const;
 
 /**

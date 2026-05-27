@@ -1831,7 +1831,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** round-trip test passes; malformed headers produce typed errors.
 - **est.** 3h
 
-### T-162 [ ] · Identity scheme validator (`{sender}:{slug}` block types)
+### T-162 [x] · Identity scheme validator (`{sender}:{slug}` block types)
 - **Depends-on:** T-161
 - **Reads:** `docs/adr/0009-authored-block-identity-and-replacement.md`, `src/schema/blocks/index.ts`
 - **Outputs:**

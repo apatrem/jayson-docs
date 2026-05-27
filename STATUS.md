@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-27T22:30:00Z
+**Last fire:** 2026-05-27T22:55:00Z
 **State:** RUNNING
 **Running on:** Claude Sonnet 4.6 at high
 **Halt reason:** N/A
@@ -10,39 +10,42 @@
 
 ## Progress since the previous fire
 
-- ✅ **T-161 closed this fire** — Manifest header parser + serializer.
-  `src/blocks/authored/manifest-header.ts` (NEW): parses and serializes the
-  strict block-comment header required at the top of every Authored `.tsx`.
-  Header fields: format-version tag (`authored-block-header: 1`), scaffold-version,
-  generator, generator-version, sender, timestamp, slug, original-prompt.
-  Round-trip guarantee: `parse(serialize(header))` returns bytes-identical output.
-  `tests/blocks/manifest-header.test.ts` (NEW scope expansion): 23 tests across
-  valid parse, invalid parse, serialization, round-trip, and `buildFileHeader`.
+- ✅ **T-162 closed this fire** — Identity scheme validator (`{sender}:{slug}`).
+  - `src/schema/blocks/block-type-string.ts` (NEW) — `BlockTypeStringSchema` Zod
+    validator accepting either Standard/Brand kebab-case identifiers or Authored
+    `{email}:{slug}` type strings. Regex constants: `BLOCK_IDENTIFIER_RE`,
+    `AUTHORED_SLUG_RE`, `AUTHORED_SENDER_RE`, `AUTHORED_TYPE_RE`.
+  - `src/schema/blocks/block-base.ts` (UPDATED) — `BlockBaseSchema.type` now uses
+    `BlockTypeStringSchema` instead of bare `z.string()`.
+  - `src/blocks/authored/lint-rules.ts` (UPDATED) — added A012-slug-kebab-case and
+    A013-sender-valid-email (severity: reject) per ADR-0009.
+  - `src/blocks/authored/identity.ts` (NEW, scope expansion) — `parseAuthoredBlockType()`,
+    `buildAuthoredBlockType()`, `isAuthoredBlockType()`, `validateAuthoredIdentity()`.
+  - `tests/blocks/authored-identity.test.ts` (NEW, scope expansion) — 50 tests.
 
-- ✅ T-160 — `defineAuthoredBlock` runtime implementation (this fire).
-- ✅ T-159 — declarative API design (prior fire).
+- ✅ T-161 — manifest header parser + serializer (this fire).
+- ✅ T-160 — runtime implementation (this fire).
 
 ## At a glance
 
-Total tasks: 205   Done: 185 (90%)   Blocked: 0   Waiting: 0   Open: 17   Skipped: 1
+Total tasks: 205   Done: 186 (91%)   Blocked: 0   Waiting: 0   Open: 16   Skipped: 1
 
 ## Next eligible task
 
-**T-162** — Identity scheme validator `{sender}:{slug}` block types (depends T-161 ✓ as of now).
-**T-179** — Update `docs/BLOCK_IMPLEMENTATION_GUIDE.md` for `defineAuthoredBlock` pattern (depends T-159 ✓).
-
-T-162 is lower-numbered; loop will pick it next.
+**T-163** — Lint-at-receive (Rust sidecar via Tauri IPC) + AST-to-data extractor
+(depends T-136 ✓, T-137 ✓, T-161 ✓, T-162 ✓ as of now).
+T-163 is the first Rust task in M9b — est. 8h, in the escalation tier.
 
 ## Recent commits
 
+T-162: identity scheme validator
 T-161: manifest header parser + serializer
 T-160: defineAuthoredBlock runtime implementation
 T-159: defineAuthoredBlock declarative API design
 T-158: memo §3 + cross-reference cleanup
-T-157c: schema-side registry wire-through
 
 ## CI status (origin/main)
 
-Latest run: success (post-T-160 push)
+Latest run: success (post-T-161 push)
 
 Loop is running cleanly — no action needed.
