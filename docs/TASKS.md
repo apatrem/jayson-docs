@@ -1914,7 +1914,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** the management UI works; removal warnings show open-doc counts.
 - **est.** 3h
 
-### T-170 [ ] · Replacement logic (same-sender v2 replaces v1 in whichever folder v1 was in)
+### T-170 [x] · Replacement logic (same-sender v2 replaces v1 in whichever folder v1 was in)
 - **Depends-on:** T-168
 - **Reads:** `docs/adr/0009-authored-block-identity-and-replacement.md`
 - **Outputs:**

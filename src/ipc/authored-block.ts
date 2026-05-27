@@ -78,54 +78,75 @@ export interface AuthoredReceiveResult {
  * Runs the full receive-time pipeline for one Authored block `.tsx` file:
  *
  * 1. Lints the source via the Rust sidecar (`lint_authored_block`).
- * 2a. If lint **passes**: writes the file to `{activeDir}/{slug}.tsx` and
- *     writes a sidecar `{slug}.json` with the extracted manifest.
- * 2b. If lint **fails**: writes the file to `{quarantineDir}/{filename}` and
- *     writes a `{filename}.violations.json` sidecar so T-165's quarantine UI
- *     can show failure reasons without re-parsing.
+ * 2. If lint **passes** — apply the replacement rule (T-170, ADR-0009):
+ *    - Parse the incoming manifest header for `{slug}` + `{sender}`.
+ *    - Check `active/` and `archived/` for an existing `{slug}.tsx` file with
+ *      the same sender → if found, replace in-place (v2 replaces v1).
+ *    - If no same-sender match → install to `active/` (new block).
+ *    - Writes a `.manifest.json` sidecar alongside every installed `.tsx`.
+ * 3. If lint **fails** → quarantine the file with a `.violations.json` sidecar.
  *
- * Both `activeDir` and `quarantineDir` must already exist or be creatable
- * via `ensure_directory` before calling this function.
+ * `activeDir`, `archivedDir`, and `quarantineDir` must already exist or be
+ * creatable via `ensure_directory`.
  *
  * @param source        Full text of the `.tsx` file.
  * @param filename      Leaf file name (used as the quarantine key when lint fails).
  * @param activeDir     Absolute path to `generated-blocks/active/`.
  * @param quarantineDir Absolute path to `generated-blocks/quarantine/`.
+ * @param archivedDir   Absolute path to `generated-blocks/archived/`.
+ *                      Defaults to `active/../archived` when not supplied.
  */
 export async function receiveAuthoredBlock(
   source: string,
   filename: string,
   activeDir: string,
   quarantineDir: string,
+  archivedDir?: string,
 ): Promise<AuthoredReceiveResult> {
   // Step 1 — lint
   const lintResult = await lintAuthoredBlock(source);
 
   if (lintResult.ok) {
-    // Step 2a — install to active/
-    // Derive the slug from the manifest header (already validated by lint).
+    // Derive slug and sender from the manifest header (already validated by lint).
     const parseResult = parseManifestHeader(source);
     const slug = parseResult.ok ? parseResult.header.slug : filename.replace(/\.tsx$/u, "");
-    const targetPath = activeDir.endsWith("/")
-      ? `${activeDir}${slug}.tsx`
-      : `${activeDir}/${slug}.tsx`;
+    const sender = parseResult.ok ? parseResult.header.sender : null;
 
-    await invoke("ensure_directory", { path: activeDir });
-    await invoke("write_yaml_file", { path: targetPath, content: source });
+    // Step 2 — replacement check (T-170, ADR-0009)
+    // Resolve the archived directory (default: sibling of active/).
+    const resolvedArchivedDir =
+      archivedDir ?? activeDir.replace(/\/active\/?$/, "/archived").replace(/\\active\\?$/, "\\archived");
 
-    // Write a companion sidecar JSON with the extracted manifest so the UI
-    // can render palette entries without re-parsing the .tsx source.
+    // Prefer in-place replacement if a same-sender file already exists.
+    const targetPath = sender !== null
+      ? await findExistingInstallDir(slug, sender, activeDir, resolvedArchivedDir)
+          .then((dir) => {
+            if (dir === null) return null;
+            const normalized = dir.endsWith("/") ? dir : `${dir}/`;
+            return `${normalized}${slug}.tsx`;
+          })
+      : null;
+
+    const installPath = targetPath ??
+      (activeDir.endsWith("/") ? `${activeDir}${slug}.tsx` : `${activeDir}/${slug}.tsx`);
+
+    const installDir = installPath.replace(/\/[^/]+$/, "");
+
+    await invoke("ensure_directory", { path: installDir });
+    await invoke("write_yaml_file", { path: installPath, content: source });
+
+    // Write a companion sidecar JSON with the extracted manifest.
     if (lintResult.extractedManifest !== null) {
-      const sidecarPath = targetPath.replace(/\.tsx$/u, ".manifest.json");
+      const sidecarPath = installPath.replace(/\.tsx$/u, ".manifest.json");
       await invoke("write_yaml_file", {
         path: sidecarPath,
         content: JSON.stringify(lintResult.extractedManifest, null, 2),
       });
     }
 
-    return { ok: true, installedPath: targetPath, violations: [] };
+    return { ok: true, installedPath: installPath, violations: [] };
   } else {
-    // Step 2b — quarantine
+    // Step 3 — quarantine
     const quarantinePath = quarantineDir.endsWith("/")
       ? `${quarantineDir}${filename}`
       : `${quarantineDir}/${filename}`;
@@ -142,6 +163,47 @@ export async function receiveAuthoredBlock(
 
     return { ok: false, installedPath: quarantinePath, violations: lintResult.violations };
   }
+}
+
+/**
+ * Returns the directory (`active/` or `archived/`) that contains an existing
+ * `.tsx` file for the given slug sent by the same sender.
+ *
+ * Both directories are checked in order: `active/` first, then `archived/`.
+ * Returns `null` if no same-sender match is found in either directory
+ * (new block → caller installs to `active/`).
+ *
+ * The sender match is verified by reading the existing file's manifest header
+ * to prevent a different sender's same-slug file from being silently replaced.
+ */
+async function findExistingInstallDir(
+  slug: string,
+  incomingSender: string,
+  activeDir: string,
+  archivedDir: string,
+): Promise<string | null> {
+  for (const dir of [activeDir, archivedDir]) {
+    const candidate = dir.endsWith("/") ? `${dir}${slug}.tsx` : `${dir}/${slug}.tsx`;
+    let exists: boolean;
+    try {
+      exists = await invoke<boolean>("file_exists", { path: candidate });
+    } catch {
+      exists = false;
+    }
+    if (!exists) continue;
+
+    // Verify same sender by reading the existing file's manifest header.
+    try {
+      const existingSource = await invoke<string>("read_yaml_file", { path: candidate });
+      const parsed = parseManifestHeader(existingSource);
+      if (parsed.ok && parsed.header.sender === incomingSender) {
+        return dir;
+      }
+    } catch {
+      // Unreadable existing file — skip, don't replace.
+    }
+  }
+  return null;
 }
 
 // ─── Soft-archive lifecycle commands (T-167, ADR-0010) ────────────────────────
