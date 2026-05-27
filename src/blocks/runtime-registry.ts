@@ -1,4 +1,6 @@
+import { createContext, useContext } from "react";
 import type { BlockRegistryRecord } from "./defineBlock";
+import type { BlockPaletteItem } from "../editor/BlockPalette";
 import bulletListBlock from "./bullet-list/index";
 import calloutBlock from "./callout/index";
 import chartBlock from "./chart/index";
@@ -48,4 +50,77 @@ export function loadAllBlocks(): readonly BlockRegistryRecord[] {
     timelineBlock,
     // T-164 (M9b): dynamic scan of generated-blocks/active/ wired here.
   ];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Brand-block context  (T-141c)
+//
+// Provides generated/brand palette items to the editor palette.  Populated at
+// app boot via loadBrandBlockPaletteItems(); injected in tests via
+// App.loadGeneratedBlocks prop or GeneratedBlocksProvider wrapper.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * React context that holds the current list of brand-block palette items.
+ * Wrap the app tree with BrandBlocksContext.Provider to populate it.
+ */
+export const BrandBlocksContext = createContext<BlockPaletteItem[]>([]);
+
+/**
+ * Hook for reading the current brand-block palette items from the registry
+ * context.  Components that previously called useGeneratedBlocks() from
+ * GeneratedBlocksContext should migrate to this hook.
+ */
+export function useBrandBlocksFromRegistry(): BlockPaletteItem[] {
+  return useContext(BrandBlocksContext);
+}
+
+/**
+ * Default async loader for brand blocks — scans generated-blocks/active/ via
+ * Tauri IPC and returns BlockPaletteItem descriptors.
+ *
+ * Used as the default value of App.loadGeneratedBlocks prop.  Tests inject a
+ * synchronous mock instead.  M9b (T-164) will promote these entries from
+ * palette-only descriptors to full BlockRegistryRecord entries.
+ */
+export async function loadBrandBlockPaletteItems(
+  cloudSyncRoot: string,
+): Promise<BlockPaletteItem[]> {
+  const { invoke } = await import("@tauri-apps/api/core");
+  type IpcEntry = { name: string; path: string; is_dir: boolean };
+
+  const activeDir = cloudSyncRoot.endsWith("/")
+    ? `${cloudSyncRoot}generated-blocks/active`
+    : `${cloudSyncRoot}/generated-blocks/active`;
+
+  let entries: IpcEntry[];
+  try {
+    entries = await invoke<IpcEntry[]>("list_directory", { path: activeDir });
+  } catch {
+    return [];
+  }
+
+  const items: BlockPaletteItem[] = [];
+  for (const entry of entries) {
+    if (!entry.is_dir || entry.name.startsWith(".")) continue;
+    const schemaPath = entry.path.endsWith("/")
+      ? `${entry.path}schema.ts`
+      : `${entry.path}/schema.ts`;
+    const exists = await invoke<boolean>("file_exists", { path: schemaPath });
+    if (!exists) continue;
+    items.push({
+      id: entry.name,
+      name: toTitleCase(entry.name),
+      when: "",
+      command: `insertGenerated_${entry.name}`,
+      generated: true,
+    });
+  }
+  return items.sort((a, b) => a.id.localeCompare(b.id));
+}
+
+function toTitleCase(id: string): string {
+  return id
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }

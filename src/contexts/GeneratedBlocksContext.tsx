@@ -1,23 +1,25 @@
+/**
+ * src/contexts/GeneratedBlocksContext.tsx — thin shim over runtime-registry (T-141c).
+ *
+ * The brand-block loading function (formerly loadGeneratedBlocksIpc) and the
+ * BrandBlocksContext/hook have moved to src/blocks/runtime-registry.ts.  This
+ * module is now a compatibility shim:
+ *
+ * - Re-exports useGeneratedBlocks → useBrandBlocksFromRegistry (same signature)
+ * - Keeps GeneratedBlocksProvider for tests that wrap DocumentView with it
+ *   (tests/ui/lifecycle/generated-blocks-load.test.tsx)
+ *
+ * New code should import from src/blocks/runtime-registry instead.
+ */
+import { useEffect, useState, type ReactNode } from "react";
 import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+  BrandBlocksContext,
+  useBrandBlocksFromRegistry,
+} from "../blocks/runtime-registry";
 import type { BlockPaletteItem } from "../editor/BlockPalette";
 
-export interface GeneratedBlocksContextValue {
-  blocks: BlockPaletteItem[];
-}
-
-export const GeneratedBlocksContext = createContext<GeneratedBlocksContextValue>(
-  { blocks: [] },
-);
-
-export function useGeneratedBlocks(): BlockPaletteItem[] {
-  return useContext(GeneratedBlocksContext).blocks;
-}
+/** @deprecated — import useBrandBlocksFromRegistry from src/blocks/runtime-registry */
+export { useBrandBlocksFromRegistry as useGeneratedBlocks };
 
 export interface GeneratedBlocksProviderProps {
   cloudSyncRoot: string;
@@ -25,6 +27,10 @@ export interface GeneratedBlocksProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Test-friendly provider: calls loadBlocks() and populates BrandBlocksContext.
+ * Used by tests/ui/lifecycle/generated-blocks-load.test.tsx.
+ */
 export function GeneratedBlocksProvider({
   cloudSyncRoot,
   loadBlocks,
@@ -36,55 +42,16 @@ export function GeneratedBlocksProvider({
     loadBlocks(cloudSyncRoot)
       .then(setBlocks)
       .catch((e: unknown) => {
-        console.error("Generated blocks load failed — palette degraded to defaults:", e);
+        console.error(
+          "Generated blocks load failed — palette degraded to defaults:",
+          e,
+        );
       });
   }, [cloudSyncRoot, loadBlocks]);
 
   return (
-    <GeneratedBlocksContext.Provider value={{ blocks }}>
+    <BrandBlocksContext.Provider value={blocks}>
       {children}
-    </GeneratedBlocksContext.Provider>
+    </BrandBlocksContext.Provider>
   );
-}
-
-export async function loadGeneratedBlocksIpc(
-  cloudSyncRoot: string,
-): Promise<BlockPaletteItem[]> {
-  const { invoke } = await import("@tauri-apps/api/core");
-  type IpcEntry = { name: string; path: string; is_dir: boolean };
-
-  const activeDir = cloudSyncRoot.endsWith("/")
-    ? `${cloudSyncRoot}generated-blocks/active`
-    : `${cloudSyncRoot}/generated-blocks/active`;
-
-  let entries: IpcEntry[];
-  try {
-    entries = await invoke<IpcEntry[]>("list_directory", { path: activeDir });
-  } catch {
-    return [];
-  }
-
-  const items: BlockPaletteItem[] = [];
-  for (const entry of entries) {
-    if (!entry.is_dir || entry.name.startsWith(".")) continue;
-    const schemaPath = entry.path.endsWith("/")
-      ? `${entry.path}schema.ts`
-      : `${entry.path}/schema.ts`;
-    const exists = await invoke<boolean>("file_exists", { path: schemaPath });
-    if (!exists) continue;
-    items.push({
-      id: entry.name,
-      name: toTitleCase(entry.name),
-      when: "",
-      command: `insertGenerated_${entry.name}`,
-      generated: true,
-    });
-  }
-  return items.sort((a, b) => a.id.localeCompare(b.id));
-}
-
-function toTitleCase(id: string): string {
-  return id
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }

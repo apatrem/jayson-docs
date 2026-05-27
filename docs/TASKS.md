@@ -1654,7 +1654,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Acceptance:** all existing DocModel ⇄ ProseMirror losslessness tests still pass; the registry-first path is exercised (test that proves mapping.ts now reads from the registry when an entry exists).
 - **est.** 2h
 
-### T-141c [ ] · Bridge: refactor M8's generated-blocks loader onto the runtime registry
+### T-141c [x] · Bridge: refactor M8's generated-blocks loader onto the runtime registry
 - **Depends-on:** T-141, T-132
 - **Reads:** `src/setup/load-generated-blocks.ts`, `src/contexts/GeneratedBlocksContext.tsx` (created by T-132), `src/blocks/runtime-registry.ts`
 - **Outputs:**

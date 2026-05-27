@@ -17,7 +17,7 @@ import {
 } from "../../editor/mapping";
 import { DocumentRenderer, type DocumentModel } from "../../renderer/DocumentRenderer";
 import { DocModelSchema } from "../../schema/docmodel";
-import { useGeneratedBlocks } from "../../contexts/GeneratedBlocksContext";
+import { useBrandBlocksFromRegistry } from "../../blocks/runtime-registry";
 
 export interface EditorSurfaceProps {
   initialContent: JSONContent;
@@ -69,7 +69,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
   onBackToWelcome,
   EditorComponent = DefaultEditorSurface,
 }) => {
-  const generatedBlocks = useGeneratedBlocks();
+  const generatedBlocks = useBrandBlocksFromRegistry();
   const [doc, setDoc] = useState<DocumentModel | null>(initialDoc ?? null);
   const [editorSeed, setEditorSeed] = useState<JSONContent | null>(() =>
     initialDoc === undefined ? null : documentToEditorContent(initialDoc),

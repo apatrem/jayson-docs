@@ -4,9 +4,9 @@ import type { DocumentViewProps } from "./ui/views/DocumentView";
 import { createIpcBootStrategy, type BootStrategy } from "./ui/router/boot";
 import { Routes, type FileActionDeps } from "./ui/router/Routes";
 import {
-  GeneratedBlocksContext,
-  loadGeneratedBlocksIpc,
-} from "./contexts/GeneratedBlocksContext";
+  BrandBlocksContext,
+  loadBrandBlockPaletteItems,
+} from "./blocks/runtime-registry";
 import type { BlockPaletteItem } from "./editor/BlockPalette";
 
 export { DEFAULT_DOCUMENT_VIEW_RENDER_BUDGET_MS } from "./ui/router/Routes";
@@ -36,7 +36,7 @@ export default function App({
   DocumentViewComponent,
   documentWatchdogBudgetMs,
   readAppConfig = readAppConfigDefault,
-  loadGeneratedBlocks = loadGeneratedBlocksIpc,
+  loadGeneratedBlocks = loadBrandBlockPaletteItems,
 }: AppProps) {
   const [generatedBlocks, setGeneratedBlocks] = useState<BlockPaletteItem[]>([]);
 
@@ -76,7 +76,7 @@ export default function App({
   }, [initialDocument]);
 
   return (
-    <GeneratedBlocksContext.Provider value={{ blocks: generatedBlocks }}>
+    <BrandBlocksContext.Provider value={generatedBlocks}>
       <Routes
         bootStrategy={resolvedBootStrategy}
         {...(initialDocContent !== undefined ? { initialDocContent } : {})}
@@ -84,7 +84,7 @@ export default function App({
         {...(DocumentViewComponent !== undefined ? { DocumentViewComponent } : {})}
         {...(documentWatchdogBudgetMs !== undefined ? { documentWatchdogBudgetMs } : {})}
       />
-    </GeneratedBlocksContext.Provider>
+    </BrandBlocksContext.Provider>
   );
 }
 
