@@ -1700,7 +1700,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Reads/Outputs/Acceptance:** as T-142 for BulletList
 - **est.** 1h
 
-### T-147 [ ] · Migrate NumberedList block to registry
+### T-147 [x] · Migrate NumberedList block to registry
 - **Depends-on:** T-146
 - **Reads/Outputs/Acceptance:** as T-142 for NumberedList
 - **est.** 1h

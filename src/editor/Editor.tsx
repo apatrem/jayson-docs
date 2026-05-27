@@ -26,7 +26,7 @@ import { DividerTipTapNode } from "../blocks/divider";
 import { HeadingTipTapNode } from "../blocks/heading";
 import { ImageTipTapNode } from "./nodes/ImageNode";
 import { KpiCardsTipTapNode } from "./nodes/KpiCardsNode";
-import { NumberedListTipTapNode } from "./nodes/NumberedListNode";
+import { NumberedListTipTapNode } from "../blocks/numbered-list";
 import { ProseTipTapNode } from "../blocks/prose";
 import { RiskMatrixTipTapNode } from "./nodes/RiskMatrixNode";
 import { RoadmapTipTapNode } from "./nodes/RoadmapNode";

@@ -21,10 +21,6 @@ import {
   proseMirrorToKpiCardsBlock,
 } from "./nodes/KpiCardsNode";
 import {
-  numberedListBlockToProseMirror,
-  proseMirrorToNumberedListBlock,
-} from "./nodes/NumberedListNode";
-import {
   proseMirrorToRiskMatrixBlock,
   riskMatrixBlockToProseMirror,
 } from "./nodes/RiskMatrixNode";
@@ -225,8 +221,6 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
   }
   // Fallback switch (T-157a removes this entire section):
   switch (block.type) {
-    case "numbered-list":
-      return numberedListBlockToProseMirror(block);
     case "kpi-cards":
       return kpiCardsBlockToProseMirror(block);
     case "image":
@@ -262,10 +256,6 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
   }
   // Fallback switch (T-157a removes this entire section):
   switch (node.type) {
-    case "numberedList":
-      return proseMirrorToNumberedListBlock(
-        node as unknown as Parameters<typeof proseMirrorToNumberedListBlock>[0],
-      );
     case "kpiCards":
       return proseMirrorToKpiCardsBlock(
         node as unknown as Parameters<typeof proseMirrorToKpiCardsBlock>[0],

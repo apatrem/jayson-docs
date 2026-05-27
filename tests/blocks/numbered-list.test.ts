@@ -10,12 +10,12 @@ import {
   NumberedListTipTapNode,
   numberedListBlockToProseMirror,
   proseMirrorToNumberedListBlock,
-} from "../../src/editor/nodes/NumberedListNode";
-import { NumberedList } from "../../src/renderer/blocks/NumberedList";
+  NumberedList,
+} from "../../src/blocks/numbered-list";
 import {
   NumberedListBlockSchema,
   type NumberedListBlock,
-} from "../../src/schema/blocks/numbered-list";
+} from "../../src/blocks/numbered-list/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const fragment = (text: string) => ({
