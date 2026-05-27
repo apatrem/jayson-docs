@@ -10,14 +10,12 @@ import {
   KpiCardsTipTapNode,
   kpiCardsBlockToProseMirror,
   proseMirrorToKpiCardsBlock,
-} from "../../src/editor/nodes/KpiCardsNode";
-import { KpiCards } from "../../src/renderer/blocks/KpiCards";
-import {
+  KpiCards,
   KpiCardsBlockSchema,
   kpiEmphasisColorRef,
   kpiTrendColorRef,
   type KpiCardsBlock,
-} from "../../src/schema/blocks/kpi-cards";
+} from "../../src/blocks/kpi-cards";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const validKpis: KpiCardsBlock = {

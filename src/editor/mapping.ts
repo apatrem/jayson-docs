@@ -9,10 +9,6 @@ import {
   proseMirrorToChartBlock,
 } from "./nodes/ChartNode";
 import {
-  kpiCardsBlockToProseMirror,
-  proseMirrorToKpiCardsBlock,
-} from "./nodes/KpiCardsNode";
-import {
   proseMirrorToTableBlock,
   tableBlockToProseMirror,
 } from "./nodes/TableNode";
@@ -197,8 +193,6 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
   }
   // Fallback switch (T-157a removes this entire section):
   switch (block.type) {
-    case "kpi-cards":
-      return kpiCardsBlockToProseMirror(block);
     case "table":
       return tableBlockToProseMirror(block);
     case "chart":
@@ -220,10 +214,6 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
   }
   // Fallback switch (T-157a removes this entire section):
   switch (node.type) {
-    case "kpiCards":
-      return proseMirrorToKpiCardsBlock(
-        node as unknown as Parameters<typeof proseMirrorToKpiCardsBlock>[0],
-      );
     case "docTable":
       return proseMirrorToTableBlock(
         node as unknown as Parameters<typeof proseMirrorToTableBlock>[0],

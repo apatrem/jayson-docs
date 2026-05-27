@@ -1735,7 +1735,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Reads/Outputs/Acceptance:** as T-142 for Team
 - **est.** 1.5h
 
-### T-154 [ ] · Migrate KpiCards block to registry (atom-node-with-grid-panel pattern)
+### T-154 [x] · Migrate KpiCards block to registry (atom-node-with-grid-panel pattern)
 - **Depends-on:** T-153 (build up to the atom-node patterns)
 - **Reads:** as T-142, plus any side-panel files used by KpiCards
 - **Outputs:** as T-142, with `src/blocks/kpi-cards/` co-locating any side-panel component

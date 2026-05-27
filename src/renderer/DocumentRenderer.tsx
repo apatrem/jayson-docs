@@ -16,7 +16,7 @@ import { Diagram } from "../blocks/diagram";
 import { Divider } from "../blocks/divider";
 import { Heading } from "../blocks/heading";
 import { Image } from "../blocks/image";
-import { KpiCards } from "./blocks/KpiCards";
+import { KpiCards } from "../blocks/kpi-cards";
 import { NumberedList } from "../blocks/numbered-list";
 import { Prose } from "../blocks/prose";
 import { RiskMatrix } from "../blocks/risk-matrix";
