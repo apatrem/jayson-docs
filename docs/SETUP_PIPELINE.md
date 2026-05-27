@@ -552,7 +552,36 @@ These tie back to `DECISIONS.md` open items:
 
 ---
 
-## 10. The runbook (for devops on first install at a new consultancy)
+## 10. Validation
+
+### Test fixtures
+
+Three small fixture files live in `tests/fixtures/demos/`:
+
+| File | Format | Purpose |
+|---|---|---|
+| `sample.docx` | DOCX | Exercises mammoth ingestion + OOXML style extraction |
+| `sample.pptx` | PPTX | Exercises officeparser ingestion + slide-layout hints |
+| `sample.pdf` | PDF | Exercises pdf-parse text extraction |
+
+These files feed all four acceptance criteria:
+
+- **(a)** `brand.draft.yaml` is written and validates against `BrandTokensSchema`.
+- **(b)** `catalogue-diff.json` is structurally valid (`CatalogueDiffSchema`).
+- **(c)** 0–10 generated-block proposals appear in `generated-blocks/pending/`.
+- **(d)** The lint pass rejects a generated block that contains `dangerouslySetInnerHTML` — tested via a `MockLlmClient` that returns malicious code and asserts `scanDemos` throws `lint failed for stat-badge`.
+
+### Running the e2e test locally
+
+```bash
+npm test -- tests/integration/setup-pipeline-e2e.test.ts
+```
+
+No API keys required — the tests use `MockLlmClient` throughout.
+
+---
+
+## 11. The runbook (for devops on first install at a new consultancy)
 
 1. Collect 3–10 demo files from the consultancy (DOCX/PPTX/PDF). Put them in `/input/demos/`.
 2. Run `npm run setup:scan-demos -- --input /input/demos --output /tmp/setup-output`.

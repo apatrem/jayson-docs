@@ -1539,7 +1539,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Acceptance:** any blocks in `generated-blocks/active/` appear in the editor's block palette alongside the 15 standard blocks. Removing blocks + restarting hides them.
 - **est.** 2h
 
-### T-133 [ ] · Validate generated-block pipeline end-to-end
+### T-133 [x] · Validate generated-block pipeline end-to-end
 - **Depends-on:** T-132
 - **Reads:** `src/setup/scan-demos.ts`, `src/setup/generate-block.ts`, `src/setup/lint-generated.ts`, `src/setup/regenerate.ts`, `docs/SETUP_PIPELINE.md`, `generated-blocks/{pending,active}/`
 - **Outputs:**
