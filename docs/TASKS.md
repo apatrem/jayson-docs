@@ -1478,7 +1478,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Note: don't lock out future tabs.** M8 ships single-doc UX but route shape supports multi-doc. **Note: app always starts at library — never at a previously-open document.** Do NOT add `lastOpenPath` persistence to config; M9+ may revisit.
 - **est.** 4h
 
-### T-127 [ ] · First-launch folder picker (single-dialog install) + missing-folder re-pick
+### T-127 [x] · First-launch folder picker (single-dialog install) + missing-folder re-pick
 - **Depends-on:** T-125 (needs config IPC), T-126 (needs router)
 - **Reads:** `docs/UI_APP_SHELL.md`
 - **Outputs:**

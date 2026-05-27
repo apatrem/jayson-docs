@@ -19,6 +19,7 @@ import { formatErrorMessage } from "../../ipc/errors";
 import type { DocModel } from "../../schema/docmodel";
 import { DocModelSchema } from "../../schema/docmodel";
 import { AppErrorBoundary } from "../AppErrorBoundary";
+import { FolderPickerScreen } from "../install/FolderPickerScreen";
 import { MenuBar } from "../menu/MenuBar";
 import { DocumentView, type DocumentViewProps } from "../views/DocumentView";
 import type { BootStrategy } from "./boot";
@@ -254,15 +255,7 @@ export function Routes({
           </section>
         </main>
       ) : route.kind === "folder-picker" ? (
-        <main aria-label="Folder picker" style={styles.welcome}>
-          <section style={styles.welcomeCard}>
-            <h1 style={styles.title}>
-              {route.reason === "first-launch"
-                ? "Choose where your documents are saved"
-                : "Your documents folder isn't where it used to be. Choose a new location."}
-            </h1>
-          </section>
-        </main>
+        <FolderPickerScreen reason={route.reason} dispatch={dispatch} />
       ) : route.kind === "library" ? (
         <main aria-label="Library" style={styles.welcome}>
           <section style={styles.welcomeCard}>
