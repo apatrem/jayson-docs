@@ -1454,7 +1454,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Acceptance:** spec covers every M8 surface concretely enough that T-125..T-134 can execute without further architectural latitude.
 - **est.** 4h
 
-### T-125 [ ] · Harden remaining fs + config IPC commands
+### T-125 [x] · Harden remaining fs + config IPC commands
 - **Depends-on:** T-124
 - **Reads:** `docs/UI_APP_SHELL.md` (M8 decisions), `src-tauri/src/ipc/fs.rs` (post-M7-spike state — 2 of 6 hardened), `src-tauri/src/ipc/config.rs` (all 3 commands no-op stubs)
 - **Outputs:**

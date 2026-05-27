@@ -10,7 +10,8 @@ async function writeYamlFile(path: string, content: string): Promise<void> {
   await invoke("write_yaml_file", { path, content });
 }
 
-const DEFERRED_M7_FS_COMMANDS = [
+// T-125 promoted these from deferred to registered.
+const M8_FS_COMMANDS = [
   "list_directory",
   "file_exists",
   "ensure_directory",
@@ -75,12 +76,11 @@ describe("fs IPC smoke contract", () => {
     await expect(readYamlFile("/tmp/outside.yaml")).rejects.toMatchObject(error);
   });
 
-  it("keeps deferred M7 filesystem commands out of the Tauri invoke surface", () => {
+  it("confirms M8 filesystem commands are registered in the Tauri invoke surface (T-125)", () => {
     const libRs = readFileSync("src-tauri/src/lib.rs", "utf8");
 
-    // The removed runtime mock check was tautological; this static grep is the real drift detector.
-    for (const command of DEFERRED_M7_FS_COMMANDS) {
-      expect(libRs).not.toContain(`ipc::fs::${command}`);
+    for (const command of M8_FS_COMMANDS) {
+      expect(libRs).toContain(`ipc::fs::${command}`);
     }
   });
 });

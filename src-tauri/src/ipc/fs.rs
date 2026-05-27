@@ -4,11 +4,20 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
+use serde::Serialize;
+
 use super::types::{IpcError, IpcResult};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use tauri::Manager;
 
 const MAX_BINARY_FILE_BYTES: u64 = 5_242_880;
+
+#[derive(Debug, Serialize)]
+pub struct DirectoryEntry {
+    pub name: String,
+    pub path: String,
+    pub is_dir: bool,
+}
 
 #[tauri::command]
 pub async fn read_yaml_file(app: tauri::AppHandle, path: String) -> IpcResult<String> {
@@ -30,6 +39,33 @@ pub async fn write_yaml_file(
 pub async fn read_binary_file(app: tauri::AppHandle, path: String) -> IpcResult<String> {
     let roots = asset_scope_roots(&app);
     read_binary_file_from_path(&path, &roots)
+}
+
+#[tauri::command]
+pub async fn list_directory(
+    app: tauri::AppHandle,
+    path: String,
+) -> IpcResult<Vec<DirectoryEntry>> {
+    let roots = asset_scope_roots(&app);
+    list_directory_at_path(&path, &roots)
+}
+
+#[tauri::command]
+pub async fn file_exists(app: tauri::AppHandle, path: String) -> IpcResult<bool> {
+    let roots = asset_scope_roots(&app);
+    file_exists_at_path(&path, &roots)
+}
+
+#[tauri::command]
+pub async fn ensure_directory(app: tauri::AppHandle, path: String) -> IpcResult<()> {
+    let roots = asset_scope_roots(&app);
+    ensure_directory_at_path(&path, &roots)
+}
+
+#[tauri::command]
+pub async fn move_file(app: tauri::AppHandle, src: String, dst: String) -> IpcResult<()> {
+    let roots = asset_scope_roots(&app);
+    move_file_at_path(&src, &dst, &roots)
 }
 
 fn read_yaml_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<String> {
@@ -91,6 +127,121 @@ fn write_yaml_file_to_path(path: &str, content: &str, allowed_roots: &[PathBuf])
     }
 
     write_result
+}
+
+fn list_directory_at_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<Vec<DirectoryEntry>> {
+    let raw_path = validate_absolute_path(path)?;
+    let canonical = raw_path
+        .canonicalize()
+        .map_err(|e| map_path_error(e, path.to_string()))?;
+    ensure_path_in_scope(&canonical, allowed_roots)?;
+
+    let mut entries = Vec::new();
+    for entry_result in fs::read_dir(&canonical).map_err(|e| IpcError::Io(e.to_string()))? {
+        let entry = entry_result.map_err(|e| IpcError::Io(e.to_string()))?;
+        let meta =
+            fs::symlink_metadata(entry.path()).map_err(|e| IpcError::Io(e.to_string()))?;
+        if meta.file_type().is_symlink() {
+            continue;
+        }
+        entries.push(DirectoryEntry {
+            name: entry.file_name().to_string_lossy().to_string(),
+            path: entry.path().to_string_lossy().to_string(),
+            is_dir: meta.is_dir(),
+        });
+    }
+    entries.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(entries)
+}
+
+fn file_exists_at_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<bool> {
+    let raw_path = validate_absolute_path(path)?;
+    match raw_path.canonicalize() {
+        Ok(canonical) => {
+            ensure_path_in_scope(&canonical, allowed_roots)?;
+            Ok(true)
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            let canonical_ancestor = find_canonical_ancestor(&raw_path)?;
+            ensure_path_in_scope(&canonical_ancestor, allowed_roots)?;
+            Ok(false)
+        }
+        Err(e) => Err(IpcError::Io(e.to_string())),
+    }
+}
+
+fn ensure_directory_at_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<()> {
+    let raw_path = validate_absolute_path(path)?;
+    let canonical_ancestor = find_canonical_ancestor(&raw_path)?;
+    ensure_path_in_scope(&canonical_ancestor, allowed_roots)?;
+    fs::create_dir_all(&raw_path).map_err(|e| IpcError::Io(e.to_string()))?;
+    // Post-creation canonical check catches symlink-based scope escapes.
+    let canonical = raw_path
+        .canonicalize()
+        .map_err(|e| IpcError::Io(e.to_string()))?;
+    ensure_path_in_scope(&canonical, allowed_roots)
+}
+
+fn move_file_at_path(src: &str, dst: &str, allowed_roots: &[PathBuf]) -> IpcResult<()> {
+    let src_raw = validate_absolute_path(src)?;
+    let dst_raw = validate_absolute_path(dst)?;
+    let canonical_src = src_raw
+        .canonicalize()
+        .map_err(|e| map_path_error(e, src.to_string()))?;
+    ensure_path_in_scope(&canonical_src, allowed_roots)?;
+    let dst_parent = dst_raw
+        .parent()
+        .ok_or_else(|| IpcError::Invalid("destination must have a parent directory".to_string()))?;
+    let canonical_dst_parent = dst_parent
+        .canonicalize()
+        .map_err(|e| map_path_error(e, dst_parent.to_string_lossy().to_string()))?;
+    let dst_file_name = dst_raw
+        .file_name()
+        .ok_or_else(|| IpcError::Invalid("destination must have a file name".to_string()))?;
+    let canonical_dst = canonical_dst_parent.join(dst_file_name);
+    ensure_path_in_scope(&canonical_dst, allowed_roots)?;
+    rename_tmp_file(&canonical_src, &canonical_dst)
+}
+
+/// Validates that a path is absolute and contains no `..` components.
+/// Does not require a specific extension — used for directory paths.
+fn validate_absolute_path(path: &str) -> IpcResult<PathBuf> {
+    let path = PathBuf::from(path);
+    if !path.is_absolute() {
+        return Err(IpcError::Invalid("path must be absolute".to_string()));
+    }
+    if path
+        .components()
+        .any(|c| matches!(c, Component::ParentDir))
+    {
+        return Err(IpcError::Invalid("paths must not contain '..'".to_string()));
+    }
+    Ok(path)
+}
+
+/// Walks up the path tree to find the deepest existing ancestor and returns its
+/// canonical form. Used to scope-check paths that don't exist yet (e.g., before
+/// `ensure_directory` creates them).
+fn find_canonical_ancestor(path: &Path) -> IpcResult<PathBuf> {
+    let mut candidate = path.to_path_buf();
+    loop {
+        match candidate.canonicalize() {
+            Ok(canonical) => return Ok(canonical),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                match candidate.parent().map(|p| p.to_path_buf()) {
+                    Some(parent) if parent != candidate => {
+                        candidate = parent;
+                    }
+                    _ => {
+                        return Err(IpcError::PermissionDenied(
+                            "path is outside configured asset scope".to_string(),
+                        ));
+                    }
+                }
+            }
+            Err(e) => return Err(IpcError::Io(e.to_string())),
+        }
+    }
 }
 
 fn canonical_read_target(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<PathBuf> {
@@ -543,5 +694,173 @@ mod tests {
         } else {
             Ok(PathBuf::from(pattern.as_ref()))
         }
+    }
+
+    // --- T-125: tests for newly hardened commands ---
+
+    #[test]
+    fn list_directory_returns_entries_in_scope() {
+        let root = unique_test_dir("list-dir-allowed");
+        std::fs::write(root.join("a.yaml"), "x: 1\n").unwrap();
+        std::fs::create_dir(root.join("subdir")).unwrap();
+
+        let entries = list_directory_at_path(root.to_str().unwrap(), &[root.clone()])
+            .expect("list allowed directory");
+
+        assert_eq!(entries.len(), 2);
+        assert!(entries.iter().any(|e| e.name == "a.yaml" && !e.is_dir));
+        assert!(entries.iter().any(|e| e.name == "subdir" && e.is_dir));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn list_directory_skips_symlinks() {
+        let root = unique_test_dir("list-dir-symlink");
+        let real_file = root.join("real.yaml");
+        std::fs::write(&real_file, "x: 1\n").unwrap();
+
+        #[cfg(unix)]
+        {
+            let link = root.join("link.yaml");
+            std::os::unix::fs::symlink(&real_file, &link).unwrap();
+            let entries = list_directory_at_path(root.to_str().unwrap(), &[root.clone()])
+                .expect("list with symlink present");
+            assert!(
+                !entries.iter().any(|e| e.name == "link.yaml"),
+                "symlinks must be excluded from directory listing"
+            );
+        }
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn list_directory_rejects_outside_scope() {
+        let root = unique_test_dir("list-dir-root");
+        let outside = unique_test_dir("list-dir-outside");
+
+        let err = list_directory_at_path(outside.to_str().unwrap(), &[root.clone()])
+            .expect_err("outside-scope list should fail");
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(&root);
+        let _ = std::fs::remove_dir_all(&outside);
+    }
+
+    #[test]
+    fn file_exists_returns_true_for_existing_path() {
+        let root = unique_test_dir("file-exists-true");
+        let file = root.join("doc.yaml");
+        std::fs::write(&file, "x: 1\n").unwrap();
+
+        assert!(
+            file_exists_at_path(file.to_str().unwrap(), &[root.clone()])
+                .expect("file_exists on real file")
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn file_exists_returns_false_for_missing_path() {
+        let root = unique_test_dir("file-exists-false");
+
+        assert!(
+            !file_exists_at_path(root.join("missing.yaml").to_str().unwrap(), &[root.clone()])
+                .expect("file_exists on missing file")
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn file_exists_rejects_outside_scope() {
+        let root = unique_test_dir("file-exists-scope-root");
+        let outside = unique_test_dir("file-exists-scope-outside");
+        let probe = outside.join("secret.yaml");
+        std::fs::write(&probe, "x: 1\n").unwrap();
+
+        let err = file_exists_at_path(probe.to_str().unwrap(), &[root.clone()])
+            .expect_err("outside-scope file_exists should fail");
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(&root);
+        let _ = std::fs::remove_dir_all(&outside);
+    }
+
+    #[test]
+    fn ensure_directory_creates_nested_dirs() {
+        let root = unique_test_dir("ensure-dir-create");
+        let target = root.join("a").join("b").join("c");
+
+        ensure_directory_at_path(target.to_str().unwrap(), &[root.clone()])
+            .expect("ensure_directory creates nested path");
+        assert!(target.is_dir());
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn ensure_directory_is_idempotent() {
+        let root = unique_test_dir("ensure-dir-idempotent");
+        let target = root.join("existing");
+        std::fs::create_dir(&target).unwrap();
+
+        ensure_directory_at_path(target.to_str().unwrap(), &[root.clone()])
+            .expect("ensure_directory on existing dir is a no-op");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn ensure_directory_rejects_outside_scope() {
+        let root = unique_test_dir("ensure-dir-scope-root");
+        let outside = unique_test_dir("ensure-dir-scope-outside");
+        let target = outside.join("new-subdir");
+
+        let err = ensure_directory_at_path(target.to_str().unwrap(), &[root.clone()])
+            .expect_err("outside-scope ensure_directory should fail");
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(&root);
+        let _ = std::fs::remove_dir_all(&outside);
+    }
+
+    #[test]
+    fn move_file_renames_within_scope() {
+        let root = unique_test_dir("move-file-ok");
+        let src = root.join("source.yaml");
+        let dst = root.join("target.yaml");
+        std::fs::write(&src, "x: moved\n").unwrap();
+
+        move_file_at_path(src.to_str().unwrap(), dst.to_str().unwrap(), &[root.clone()])
+            .expect("move within scope");
+
+        assert!(!src.exists(), "source must no longer exist after move");
+        assert_eq!(std::fs::read_to_string(&dst).unwrap(), "x: moved\n");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn move_file_rejects_src_outside_scope() {
+        let root = unique_test_dir("move-src-root");
+        let outside = unique_test_dir("move-src-outside");
+        let src = outside.join("doc.yaml");
+        let dst = root.join("doc.yaml");
+        std::fs::write(&src, "x: 1\n").unwrap();
+
+        let err = move_file_at_path(src.to_str().unwrap(), dst.to_str().unwrap(), &[root.clone()])
+            .expect_err("src outside scope must fail");
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(&root);
+        let _ = std::fs::remove_dir_all(&outside);
+    }
+
+    #[test]
+    fn move_file_rejects_dst_outside_scope() {
+        let root = unique_test_dir("move-dst-root");
+        let outside = unique_test_dir("move-dst-outside");
+        let src = root.join("doc.yaml");
+        let dst = outside.join("doc.yaml");
+        std::fs::write(&src, "x: 1\n").unwrap();
+        std::fs::create_dir_all(&outside).unwrap();
+
+        let err = move_file_at_path(src.to_str().unwrap(), dst.to_str().unwrap(), &[root.clone()])
+            .expect_err("dst outside scope must fail");
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(&root);
+        let _ = std::fs::remove_dir_all(&outside);
     }
 }

@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const DEFERRED_M7_FS_COMMANDS = [
+// T-125 promoted these from M7-deferred to registered on the invoke surface.
+const M8_FS_COMMANDS = [
   "list_directory",
   "file_exists",
   "ensure_directory",
@@ -16,13 +17,14 @@ describe("fs binary IPC source hardening", () => {
     expect(fsRs).toContain("rejects_binary_symlink_to_disallowed_canonical_extension");
   });
 
-  it("does not keep deferred M7 filesystem command bodies in fs.rs", () => {
-    for (const command of DEFERRED_M7_FS_COMMANDS) {
-      expect(fsRs).not.toContain(`pub async fn ${command}`);
+  it("confirms M8 filesystem commands are implemented in fs.rs (T-125)", () => {
+    for (const command of M8_FS_COMMANDS) {
+      expect(fsRs).toContain(`pub async fn ${command}`);
     }
   });
 
-  it("does not keep the legacy validate_path helper", () => {
+  it("uses validate_absolute_path (not the legacy untyped validate_path) for directory commands", () => {
+    expect(fsRs).toContain("fn validate_absolute_path(");
     expect(fsRs).not.toContain("fn validate_path(");
   });
 
