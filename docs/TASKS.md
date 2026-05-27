@@ -1506,7 +1506,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Acceptance:** the card grid filters/sorts/searches per the existing 28+16+8 library-module tests; UX matches UI_LIBRARY.md wireframe.
 - **est.** 4h
 
-### T-130 [ ] · Create 4 standard document templates
+### T-130 [x] · Create 4 standard document templates
 - **Depends-on:** none (template content is self-contained YAML)
 - **Reads:** `examples/sample-proposal.yaml`, `examples/sample-deck.yaml`, `brand.example.yaml`
 - **Outputs:**
