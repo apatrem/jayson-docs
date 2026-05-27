@@ -747,9 +747,10 @@ export async function scanCloudSyncRoot(root: string): Promise<LibraryIndex>;
 When the library scan returns zero docs, render `EmptyLibraryState.tsx` with a single "Use Sample Document" button. On click:
 
 1. Read `examples/sample-proposal.yaml` from the app bundle via Vite raw import (`import sampleProposalYaml from '../../../examples/sample-proposal.yaml?raw'`).
-2. Call `write_yaml_file` IPC with `{ path: <cloudSyncRoot>/Sample Proposal.yaml, content: sampleProposalYaml }`.
-3. Re-run `scanCloudSyncRoot(cloudSyncRoot)` → returns 1-doc index.
-4. Render the card grid.
+2. Call `ensure_directory` IPC to create `<cloudSyncRoot>/Sample Proposal/` (per D-19: each doc is a folder, not a flat file).
+3. Call `write_yaml_file` IPC with `{ path: <cloudSyncRoot>/Sample Proposal/proposal.yaml, content: sampleProposalYaml }`.
+4. Re-run `scanCloudSyncRoot(cloudSyncRoot)` → returns 1-doc index.
+5. Render the card grid.
 
 The Vite raw import keeps the sample bundled inside the app binary (no install-time copy step). The same approach is used by the 4 templates (D-108) and by `src/brand/defaultBrand.ts` for `brand.example.yaml`.
 
@@ -763,9 +764,10 @@ The Vite raw import keeps the sample bundled inside the app binary (no install-t
 1. Parse the template's YAML to `DocModel`.
 2. Update `meta.client`, `meta.project`, `meta.createdAt`, `meta.updatedAt`, and regenerate stable IDs (`meta.docId`, every `block.id`, every `section.id`, every `slide.id`).
 3. Serialize back to YAML via the existing `serializeDocModel`.
-4. Write to `<cloudSyncRoot>/<sanitizedName>.yaml` via `write_yaml_file` IPC. Sanitization rule: same as `src-tauri/src/ipc/pdf.rs::sanitize_suggested_name` — `[A-Za-z0-9._ -]+` allowed; collisions get `(2)` / `(3)` suffix.
-5. Refresh the library index.
-6. Route to `document` with `openDocs: [{ id: <path>, path: <sanitizedPath> }]`, `activeIndex: 0`.
+4. Create folder `<cloudSyncRoot>/<sanitizedName>/` via `ensure_directory` IPC (per D-19: each doc is a folder). Sanitization rule: same as `src-tauri/src/ipc/pdf.rs::sanitize_suggested_name` — `[A-Za-z0-9._ -]+` allowed; collisions get `(2)` / `(3)` suffix.
+5. Write `<cloudSyncRoot>/<sanitizedName>/proposal.yaml` via `write_yaml_file` IPC.
+6. Refresh the library index.
+7. Route to `document` with `openDocs: [{ id: <docFolderPath>, path: <cloudSyncRoot>/<sanitizedName>/proposal.yaml }]`, `activeIndex: 0`.
 
 **Why regen stable IDs at clone time.** Every doc needs unique stable IDs for the comment-thread tracking that lands in M9. Cloning a template without regenerating IDs would create duplicate IDs across docs the moment two consultants both clone the same template — a future ID collision waiting for M9. Doing it at clone time is cheap (~ms for a 30-section template) and lets M9 assume uniqueness without retroactive migration.
 
@@ -777,12 +779,27 @@ The Vite raw import keeps the sample bundled inside the app binary (no install-t
 
 **M8 adds the runtime wiring.**
 - `src/contexts/GeneratedBlocksContext.tsx` (NEW) — React context. Value is the loaded `GeneratedBlock[]` plus a `reload()` function. Default value is `{ blocks: [], reload: () => {} }`.
-- `src/App.tsx` — on mount, after config is loaded (boot strategy resolved), call `loadGeneratedBlocks(<cloudSyncRoot>/generated-blocks/active/)` and write the result into the context. On failure, log the error and keep `blocks: []` (palette degrades gracefully to defaults only; documented in T-132 acceptance).
+- `src/App.tsx` — on mount, after config is loaded (boot strategy resolved), call `loadGeneratedBlocks(cloudSyncRoot)` and write the result into the context. (`loadGeneratedBlocks` calls `resolveGeneratedBlockPaths` internally, which appends `generated-blocks/active/` — do NOT pre-append the suffix here.) On failure, log the error and keep `blocks: []` (palette degrades gracefully to defaults only; documented in T-132 acceptance).
 - `src/ui/views/DocumentView.tsx` — reads `GeneratedBlocksContext`, passes `context.blocks` into the existing `<BlockPalette generatedBlocks={…} />` slot.
 
 **Path discovery.** `<cloudSyncRoot>/generated-blocks/active/` is the production location. The install-time pipeline writes proposals into `<cloudSyncRoot>/generated-blocks/pending/`; the linter promotes accepted ones to `active/`. M8 only reads from `active/`.
 
 **Reload triggers.** None in M8 — the context is built once at app startup. M9 wires a file watcher.
+
+## D-110 — Config file format: YAML on disk, JSON over IPC
+
+**Problem.** Two writers, two formats: `src/setup/install.ts` writes YAML to `config.yaml`; the current `config.rs` stub reads/writes JSON at `config.json`. T-125 must close this gap.
+
+**Decision: YAML on disk (`config.yaml`); JSON over IPC.**
+
+- **Read path.** `read_app_config` reads `<configDir>/config.yaml`, parses with `serde_yaml::from_str::<serde_yaml::Value>`, converts to `serde_json::Value` via `serde_json::to_value`, and returns it to JS. The JS side runs `M8PartialConfigSchema.safeParse(...)` then falls back to `InstallAppConfigSchema.safeParse(...)` — no Rust-side schema knowledge needed.
+- **Write path.** `write_app_config` takes `serde_json::Value` from JS, converts to `serde_yaml::Value` via `serde_json::from_value::<serde_yaml::Value>`, serializes via `serde_yaml::to_string`, then write-then-renames to `<configDir>/config.yaml` (same atomicity pattern as `write_yaml_file`).
+- **`config_path` helper.** Change `config.json` → `config.yaml`. T-125 owns this change in `src-tauri/src/ipc/config.rs`.
+- **`serde_yaml` dep.** Already planned for the YAML IPC commands (T-125 hardening scope). Add one `serde_yaml = "0.9"` entry to `src-tauri/Cargo.toml`; reuse across `config.rs` and `fs.rs`.
+
+**Rationale.** YAML on disk matches the CLI install writer — no two-format divergence. JSON over IPC is already the Tauri command transport contract (every other IPC command returns JSON). Using `serde_yaml` as a transparent YAML↔JSON bridge in Rust keeps format concerns out of the JS layer.
+
+**Migration.** Any `config.json` files written by the current dev stub are abandoned — they were never written by a real install flow and can be deleted manually. No data-migration path needed.
 
 ## M8 component file map
 
