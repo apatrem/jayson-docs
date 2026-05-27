@@ -33,7 +33,7 @@ describe("block primitives", () => {
     const html = render(
       createElement(Card, null, createElement("span", null, "body")),
     );
-    expect(html).toContain("#F8FAFC");
-    expect(html).toContain("#E2E8F0");
+    expect(html).toContain("#F7F8FA");
+    expect(html).toContain("#D9DBE0");
   });
 });

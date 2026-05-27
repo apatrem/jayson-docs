@@ -5,6 +5,6 @@ import { BrandTokensSchema } from "../../src/schema/brand";
 describe("defaultBrand", () => {
   it("loads brand.example.yaml through the shared validated brand module", () => {
     expect(() => BrandTokensSchema.parse(defaultBrand)).not.toThrow();
-    expect(defaultBrand.identity.name).toBe("Acme Strategy Partners");
+    expect(defaultBrand.identity.name).toBe("Corporate Consulting Example");
   });
 });

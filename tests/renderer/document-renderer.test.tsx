@@ -56,7 +56,7 @@ describe("DocumentRenderer (T-51)", () => {
     expect(html).toContain('data-block-type="kpi-cards"');
     expect(html).toContain('data-block-type="callout"');
     expect(html).toContain("Acme Industrial");
-    expect(html).toMatch(/#0B3D91|rgb\(11,\s*61,\s*145\)/);
+    expect(html).toMatch(/#001A70|rgb\(0,\s*26,\s*112\)/);
   });
 
   it("is deterministic for the same DocModel input", () => {

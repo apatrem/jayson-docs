@@ -13,12 +13,12 @@ const brand = BrandTokensSchema.parse(
 
 describe("resolveBrandToken", () => {
   it("resolves a direct color path", () => {
-    expect(resolveBrandToken(brand, "colors.brand.primary")).toBe("#0B3D91");
+    expect(resolveBrandToken(brand, "colors.brand.primary")).toBe("#001A70");
   });
 
   it("resolves a one-level semantic alias", () => {
     expect(resolveBrandToken(brand, "colors.semantic.textPrimary")).toBe(
-      "#1E293B",
+      "#1B2130",
     );
   });
 

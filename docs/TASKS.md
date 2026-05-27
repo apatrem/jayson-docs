@@ -1634,7 +1634,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Acceptance:** both registries populate via the wrappers; the schema-purity test passes; `npm run build && npm test` green; no behaviour change in the running app.
 - **est.** 3h
 
-### T-141a [ ] · Example brand theme: professional consulting style + structural HTML snapshot baselines
+### T-141a [x] · Example brand theme: professional consulting style + structural HTML snapshot baselines
 - **Depends-on:** T-136, T-137
 - **Reads:** `brand.example.yaml`, `reference/primitives/BrandProvider.tsx`, `src/brand-tokens/`
 - **Outputs:**

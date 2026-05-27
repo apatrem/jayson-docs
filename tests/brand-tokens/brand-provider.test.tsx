@@ -24,7 +24,7 @@ describe("BrandProvider + useBrandTokens", () => {
     const html = renderToStaticMarkup(
       createElement(BrandProvider, { tokens: testTokens }, createElement(Consumer)),
     );
-    expect(html).toContain("Acme Strategy Partners");
+    expect(html).toContain("Corporate Consulting Example");
   });
 
   it("throws when used outside the provider", () => {
