@@ -1932,7 +1932,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** the button opens the authoring UI; the document context is correctly threaded through.
 - **est.** 2h
 
-### T-172 [ ] · Preview-first hybrid authoring UI (chat + structured fields, live preview)
+### T-172 [x] · Preview-first hybrid authoring UI (chat + structured fields, live preview)
 - **Depends-on:** T-171
 - **Reads:** `docs/adr/0011-authored-block-generation-ux.md`
 - **Outputs:**

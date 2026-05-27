@@ -18,6 +18,7 @@ import {
 import { DocumentRenderer, type DocumentModel } from "../../renderer/DocumentRenderer";
 import { DocModelSchema } from "../../schema/docmodel";
 import { useBrandBlocksFromRegistry } from "../../blocks/runtime-registry";
+import { AuthoringPanel } from "../authoring/AuthoringPanel";
 
 export interface EditorSurfaceProps {
   initialContent: JSONContent;
@@ -85,6 +86,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [editor, setEditor] = useState<BlockPaletteProps["editor"]>(null);
+  const [authoringContext, setAuthoringContext] = useState<DocumentModel | null>(null);
   const currentDoc = useRef<DocumentModel | null>(initialDoc ?? null);
   const autosave = useRef<AutosaveController | null>(null);
 
@@ -249,20 +251,27 @@ export const DocumentView: FC<DocumentViewProps> = ({
               onInsert={() => {
                 setPaletteOpen(false);
               }}
-              {...(onCreateAuthoredBlock !== undefined
-                ? {
-                    onCreateAuthoredBlock: () => {
-                      const current = currentDoc.current;
-                      if (current !== null) {
-                        onCreateAuthoredBlock(current);
-                      }
-                    },
-                  }
-                : {})}
+              onCreateAuthoredBlock={() => {
+                const current = currentDoc.current;
+                if (current !== null) {
+                  setAuthoringContext(current);
+                  onCreateAuthoredBlock?.(current);
+                }
+              }}
             />
           </section>
         ) : null}
       </div>
+      {authoringContext !== null ? (
+        <div style={styles.authoringOverlay}>
+          <AuthoringPanel
+            docContext={authoringContext}
+            onClose={() => {
+              setAuthoringContext(null);
+            }}
+          />
+        </div>
+      ) : null}
     </main>
   );
 };
@@ -396,5 +405,8 @@ const styles = {
   errorText: {
     color: "CanvasText",
     margin: 0,
+  },
+  authoringOverlay: {
+    marginTop: "1rem",
   },
 } satisfies Record<string, CSSProperties>;
