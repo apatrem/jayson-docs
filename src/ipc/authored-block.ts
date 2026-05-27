@@ -9,6 +9,10 @@
 
 import { invoke } from "@tauri-apps/api/core";
 import { parseManifestHeader } from "../blocks/authored/manifest-header";
+import {
+  isScaffoldCompatible,
+  APP_SCAFFOLD_VERSION,
+} from "../blocks/authored/scaffold-version";
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -103,6 +107,36 @@ export async function receiveAuthoredBlock(
   quarantineDir: string,
   archivedDir?: string,
 ): Promise<AuthoredReceiveResult> {
+  // Step 0 — scaffold version check (T-166, ADR-0005)
+  // If the block was generated against a different scaffold version, quarantine
+  // immediately with a specific "scaffold-version-mismatch" violation so the
+  // QuarantinePanel can surface a "Regenerate against current scaffold" action.
+  // Only run the check when the header is parseable — unreadable headers fall
+  // through to the lint which will reject them with an appropriate rule.
+  const headerResult = parseManifestHeader(source);
+  if (headerResult.ok && !isScaffoldCompatible(headerResult.header.scaffoldVersion)) {
+    const mismatchViolation: LintViolation = {
+      rule: "scaffold-version-mismatch",
+      message:
+        `Block scaffold v${headerResult.header.scaffoldVersion} differs from ` +
+        `app scaffold v${APP_SCAFFOLD_VERSION}. ` +
+        `Click "Regenerate against current scaffold" to update.`,
+      line: 1,
+      column: 0,
+    };
+    const quarantinePath = quarantineDir.endsWith("/")
+      ? `${quarantineDir}${filename}`
+      : `${quarantineDir}/${filename}`;
+    await invoke("ensure_directory", { path: quarantineDir });
+    await invoke("write_yaml_file", { path: quarantinePath, content: source });
+    const sidecarPath = `${quarantinePath}.violations.json`;
+    await invoke("write_yaml_file", {
+      path: sidecarPath,
+      content: JSON.stringify([mismatchViolation], null, 2),
+    });
+    return { ok: false, installedPath: quarantinePath, violations: [mismatchViolation] };
+  }
+
   // Step 1 — lint
   const lintResult = await lintAuthoredBlock(source);
 

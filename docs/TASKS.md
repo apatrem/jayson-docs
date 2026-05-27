@@ -1872,7 +1872,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** quarantined blocks are visible; reasons are human-readable; actions work.
 - **est.** 3h
 
-### T-166 [ ] · Scaffold-mismatch detection + "Regenerate against current scaffold" UX
+### T-166 [x] · Scaffold-mismatch detection + "Regenerate against current scaffold" UX
 - **Depends-on:** T-165, T-175 (needs the LLM category provisioned)
 - **Reads:** `docs/adr/0005-authored-block-transport-format.md`
 - **Outputs:**

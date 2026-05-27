@@ -30,6 +30,17 @@ export interface QuarantinePanelDeps {
    * Called with the absolute path of the .tsx file.
    */
   importAuthoredBlock: (path: string) => Promise<AuthoredReceiveResult>;
+  /**
+   * Regenerate a scaffold-mismatched block against the current scaffold.
+   * Called for entries quarantined with the `scaffold-version-mismatch` rule
+   * (T-166). The dep reads the original prompt from the manifest header, calls
+   * the LLM with the current scaffold context, re-runs the receive pipeline,
+   * and returns the result.
+   *
+   * Optional — if not provided, scaffold-mismatch entries show a disabled
+   * Regenerate button (useful when no LLM client is configured).
+   */
+  regenerateBlock?: (sourcePath: string) => Promise<AuthoredReceiveResult>;
 }
 
 export interface QuarantinePanelProps {
@@ -39,6 +50,10 @@ export interface QuarantinePanelProps {
   /** Called after a successful retry so the palette can refresh. */
   onRetrySuccess?: () => void;
 }
+
+// ─── Internal constants ───────────────────────────────────────────────────────
+
+const SCAFFOLD_MISMATCH_RULE = "scaffold-version-mismatch";
 
 // ─── Internal types ───────────────────────────────────────────────────────────
 
@@ -53,6 +68,8 @@ interface QuarantineEntry {
   sender: string;
   /** Violation list from the sidecar JSON. Empty when sidecar is missing. */
   violations: LintViolation[];
+  /** True when the sole reason for quarantine is a scaffold-version mismatch. */
+  isScaffoldMismatch: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -104,7 +121,9 @@ export const QuarantinePanel: FC<QuarantinePanelProps> = ({
         // Missing or malformed sidecar — show empty violations.
       }
 
-      loaded.push({ sourcePath: file.path, filename: file.name, slug, sender, violations });
+      const isScaffoldMismatch =
+        violations.length === 1 && violations[0]?.rule === SCAFFOLD_MISMATCH_RULE;
+      loaded.push({ sourcePath: file.path, filename: file.name, slug, sender, violations, isScaffoldMismatch });
     }
     setEntries(loaded);
   }, [quarantineDir, deps]);
@@ -178,6 +197,48 @@ export const QuarantinePanel: FC<QuarantinePanelProps> = ({
     [deps, removeEntry, onRetrySuccess],
   );
 
+  const handleRegenerate = useCallback(
+    async (entry: QuarantineEntry): Promise<void> => {
+      if (deps.regenerateBlock === undefined) return;
+      try {
+        const result = await deps.regenerateBlock(entry.sourcePath);
+        if (result.ok) {
+          // Regeneration produced a lint-passing block — delete quarantine files.
+          await deps.deleteFile(entry.sourcePath);
+          try {
+            await deps.deleteFile(`${entry.sourcePath}.violations.json`);
+          } catch {
+            /* sidecar may not exist */
+          }
+          removeEntry(entry.sourcePath);
+          onRetrySuccess?.();
+        } else {
+          // Regeneration produced a block that still fails lint — update entry.
+          const isScaffoldMismatch =
+            result.violations.length === 1 &&
+            result.violations[0]?.rule === SCAFFOLD_MISMATCH_RULE;
+          setEntries((prev) =>
+            prev.map((e) =>
+              e.sourcePath === entry.sourcePath
+                ? { ...e, violations: result.violations, isScaffoldMismatch }
+                : e,
+            ),
+          );
+          setActionErrors((prev) => ({
+            ...prev,
+            [entry.sourcePath]: `Regeneration failed: ${result.violations.length} violation(s) — ${result.violations[0]?.message ?? "unknown"}`,
+          }));
+        }
+      } catch (err: unknown) {
+        setActionErrors((prev) => ({
+          ...prev,
+          [entry.sourcePath]: `Regeneration error: ${err instanceof Error ? err.message : String(err)}`,
+        }));
+      }
+    },
+    [deps, removeEntry, onRetrySuccess],
+  );
+
   if (entries.length === 0) return null;
 
   return (
@@ -219,14 +280,26 @@ export const QuarantinePanel: FC<QuarantinePanelProps> = ({
                   <p role="alert" style={styles.actionError}>{actionError}</p>
                 )}
                 <div style={styles.actions}>
-                  <button
-                    type="button"
-                    aria-label={`Retry import for ${entry.slug}`}
-                    onClick={() => { void handleRetry(entry); }}
-                    style={styles.retryButton}
-                  >
-                    Retry
-                  </button>
+                  {entry.isScaffoldMismatch ? (
+                    <button
+                      type="button"
+                      aria-label={`Regenerate ${entry.slug} against current scaffold`}
+                      disabled={deps.regenerateBlock === undefined}
+                      onClick={() => { void handleRegenerate(entry); }}
+                      style={styles.regenerateButton}
+                    >
+                      Regenerate against current scaffold
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      aria-label={`Retry import for ${entry.slug}`}
+                      onClick={() => { void handleRetry(entry); }}
+                      style={styles.retryButton}
+                    >
+                      Retry
+                    </button>
+                  )}
                   <button
                     type="button"
                     aria-label={`Delete quarantined block ${entry.slug}`}
@@ -307,6 +380,11 @@ const styles = {
   } as CSSProperties,
   retryButton: {
     cursor: "pointer",
+    padding: "0.25rem 0.75rem",
+  } as CSSProperties,
+  regenerateButton: {
+    cursor: "pointer",
+    fontWeight: 600,
     padding: "0.25rem 0.75rem",
   } as CSSProperties,
   deleteButton: {
