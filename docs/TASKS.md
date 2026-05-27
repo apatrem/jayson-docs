@@ -1841,16 +1841,16 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **est.** 2h
 
 ### T-163 [ ] · Lint-at-receive (Rust sidecar via Tauri IPC) + AST-to-data extractor
-- **Depends-on:** T-136, T-137 (lint rules), T-161, T-162; **also gated on swc_ecma_parser ratification** — see Note below
-- **Reads:** `docs/adr/0006-authored-block-threat-model.md`, `docs/adr/0013-authored-blocks-are-declarative-data.md`, `src/setup/lint-generated.ts` (rule set to mirror)
+- **Depends-on:** T-136, T-137 (lint rules), T-161, T-162
+- **Reads:** `docs/adr/0006-authored-block-threat-model.md`, `docs/adr/0013-authored-blocks-are-declarative-data.md`, `docs/adr/0014-ratify-swc-ecma-parser-rust-runtime-dependency.md`, `src/setup/lint-generated.ts` (rule set to mirror)
 - **Outputs:**
-  - `src-tauri/Cargo.toml` — add `swc_ecma_parser` dependency (Apache-2.0). **First sub-step:** confirm with the project owner that the new Rust runtime dependency is acceptable under R10. If unratified, mark this task `[?]` and halt.
+  - `src-tauri/Cargo.toml` — add `swc_ecma_parser` dependency (Apache-2.0). **Ratified via [ADR-0014](../adr/0014-ratify-swc-ecma-parser-rust-runtime-dependency.md)** — no further human approval needed. Dep scoped to `src-tauri/src/lint/` only per ADR-0014.
   - `src-tauri/src/lint/` (NEW Rust module) — parser + lint + extractor. Mirrors the rule set in `src/setup/lint-generated.ts` plus the Authored-specific rules from T-160 plus the URL-attribute rule from T-137.
   - New IPC command `lint_authored_block(source: string) → LintResult { ok, violations, extracted_manifest? }`.
   - `src/ipc/authored-block.ts` (NEW) — TypeScript client for the IPC command.
   - `tests/blocks/authored/fixtures/` (NEW) — shared fixture set run against BOTH the TypeScript setup-time lint and the Rust runtime lint. CI fails if the two produce different pass/fail or violation lists. The bar is "both lints agree," not "both lints exist."
 - **Acceptance:** the CI shared-fixture test passes — every fixture produces identical pass/fail + violation list (rule name, line, column) from both lints.
-- **Note:** **Rust runtime dependency requires explicit human ratification** before this task can complete. The loop should treat unratified state as `[?]`, not auto-proceed.
+- **Note:** Rust runtime dependency ratification landed in [ADR-0014](../adr/0014-ratify-swc-ecma-parser-rust-runtime-dependency.md). The loop may proceed without additional gating.
 - **est.** 8h (Rust port of the rule set is the bulk)
 
 ### T-164 [ ] · Drag-onto-window install + "Import block" menu item
