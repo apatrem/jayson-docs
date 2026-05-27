@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-27T21:30:00Z
+**Last fire:** 2026-05-27T22:10:00Z
 **State:** RUNNING
 **Running on:** Claude Sonnet 4.6 at high
 **Halt reason:** N/A
@@ -10,46 +10,49 @@
 
 ## Progress since the previous fire
 
-- ✅ **T-159 closed this fire** — `defineAuthoredBlock` declarative API design.
-  `src/blocks/authored/defineAuthoredBlock.ts` (NEW): full type hierarchy for
-  Authored blocks — `AttrFieldDef` (StringAttrField / EnumAttrField /
-  NumberAttrField / BoolAttrField / RepeatedItemAttrField), `RenderNode`
-  (TextRenderNode / HeadingRenderNode / BoxRenderNode / RowRenderNode /
-  ColumnRenderNode / BadgeRenderNode / RichTextSlotRenderNode /
-  ForEachRenderNode), `AuthoredBlockManifest`, and `defineAuthoredBlock()`
-  factory stub (throws pending T-160).  ADR-0007 capability ceiling enforced
-  structurally: no `tiptapNode`, `renderer`, `toPm`, `fromPm`, or function-typed
-  field in `AuthoredBlockManifest` — atom-node, side-panel, and ECharts patterns
-  are TypeScript compile errors.
-  `reference/authored-block/` (NEW): worked example manifest
-  (`sector-risk-summary.ts`), README covering constraints + codegen rules, and
-  template test file.
+- ✅ **T-160 closed this fire** — `defineAuthoredBlock` runtime implementation.
+  Scope-expanded to four helper modules (same `src/blocks/authored/` subsystem):
+  - `src/blocks/authored/schema-builder.ts` (NEW) — `buildAuthoredSchema()`,
+    `buildAllowedAttrs()`, `buildDefaultAttrs()`: derive Zod schema + registry
+    metadata from the manifest at call time.
+  - `src/blocks/authored/template-expander.tsx` (NEW) — `expandRenderNode()`:
+    recursive pure function that maps `RenderNode` tree → React elements using
+    brand tokens; `buildAuthoredRenderer()`: FC factory that wires useBrandTokens.
+  - `src/blocks/authored/node-builder.ts` (NEW) — `buildAuthoredTipTapNode()`:
+    dynamic TipTap Node with manifest-derived attrs, parseHTML/renderHTML, generic
+    insert command, and `AttrWidget`-powered node view.
+  - `src/blocks/authored/lint-rules.ts` (NEW) — 11 AST lint rules (A001–A011) for
+    the Rust receive-time validator (T-163); `AUTHORED_IMPORT_ALLOW_LIST`.
+  - `src/blocks/authored/defineAuthoredBlock.ts` (UPDATED) — real factory body
+    replacing throw stub; delegates to all four helper modules; `buildToPm()` /
+    `buildFromPm()` inline mapping helpers with `exactOptionalPropertyTypes` fix.
+  - `tests/blocks/authored-block.test.ts` (NEW) — 35 tests across 4 layers
+    (schema, renderer, mapping, registry record). All gates pass.
 
+- ✅ T-159 — `defineAuthoredBlock` declarative API design (prior fire).
 - ✅ T-158 — vocabulary normalization (prior fire).
-- ✅ T-157c — schema-side registry wire-through (prior fire).
 
 ## At a glance
 
-Total tasks: 205   Done: 183 (89%)   Blocked: 0   Waiting: 2   Open: 19   Skipped: 1
+Total tasks: 205   Done: 184 (90%)   Blocked: 0   Waiting: 0   Open: 18   Skipped: 1
 
 ## Next eligible task
 
-**T-160** — `defineAuthoredBlock` runtime implementation (depends on T-159 ✓).  
-**T-161** — Manifest header parser + serializer (depends on T-159 ✓).
+**T-161** — Manifest header parser + serializer (depends on T-159 ✓, T-160 ✓ as of now).
+**T-179** — Update `docs/BLOCK_IMPLEMENTATION_GUIDE.md` for `defineAuthoredBlock` pattern (depends on T-159 ✓).
 
-Both T-160 and T-161 depend on T-159 only and are now eligible.
-T-160 is lower-numbered; loop will pick it next.
+T-161 is lower-numbered; loop will pick it next.
 
 ## Recent commits
 
+T-160: defineAuthoredBlock runtime implementation
 T-159: defineAuthoredBlock declarative API design
 T-158: memo §3 + cross-reference cleanup
 T-157c: schema-side registry wire-through
 T-157b: renderer-side registry wire-through
-T-157a: editor-side registry wire-through
 
 ## CI status (origin/main)
 
-Latest run: success (post-T-158 push)
+Latest run: success (post-T-159 push)
 
 Loop is running cleanly — no action needed.

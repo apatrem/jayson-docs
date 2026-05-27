@@ -260,36 +260,90 @@ export interface AuthoredBlockManifest {
 
 // ─── Factory ──────────────────────────────────────────────────────────────────
 
+import { buildAuthoredSchema, buildAllowedAttrs } from "./schema-builder";
+import { buildAuthoredRenderer, type AuthoredBlockRecord } from "./template-expander";
+import { buildAuthoredTipTapNode } from "./node-builder";
+import type { ProseMirrorNode } from "../../editor/mapping";
+
+// Mapping helpers — derived from the manifest at call time, no custom code
+
+function buildToPm(
+  manifest: AuthoredBlockManifest,
+): (block: unknown) => ProseMirrorNode {
+  return function toPm(block: unknown): ProseMirrorNode {
+    const b = block as AuthoredBlockRecord;
+    const attrs: Record<string, unknown> = {
+      blockId: b.id,
+      note: b.note ?? "",
+    };
+    for (const field of manifest.attrs) {
+      attrs[field.fieldId] = b[field.fieldId] ?? null;
+    }
+    const pm: ProseMirrorNode = { type: manifest.slug, attrs };
+    if (manifest.content === "rich-text" && b.body !== undefined) {
+      pm.content = b.body.content as unknown[];
+    }
+    return pm;
+  };
+}
+
+function buildFromPm(
+  manifest: AuthoredBlockManifest,
+): (node: ProseMirrorNode) => unknown {
+  return function fromPm(node: ProseMirrorNode): AuthoredBlockRecord {
+    const nodeAttrs = node.attrs ?? {};
+    const record: AuthoredBlockRecord = {
+      id: String(nodeAttrs.blockId ?? ""),
+      type: manifest.slug,
+      ...(nodeAttrs.note ? { note: String(nodeAttrs.note) } : {}),
+    };
+    for (const field of manifest.attrs) {
+      record[field.fieldId] = nodeAttrs[field.fieldId] ?? null;
+    }
+    if (manifest.content === "rich-text") {
+      record.body = {
+        type: "doc",
+        content: Array.isArray(node.content) ? node.content : [],
+      };
+    }
+    return record;
+  };
+}
+
 /**
  * Defines an Authored block (Tier 3) from a pure declarative manifest.
  *
  * Returns a `BlockRegistryRecord` compatible with both registries:
- *   - `schema-registry` uses the `SchemaEntry` subset (pure, no TipTap/React).
- *   - `runtime-registry` uses the full record including the expansion.
+ *   - `schema-registry` receives the `SchemaEntry` subset (pure, no TipTap/React).
+ *   - `runtime-registry` receives the full record with the runtime expansion.
  *
  * ## Capability ceiling — compile-time guarantee (ADR-0007 + ADR-0013)
  * The `manifest` parameter type (`AuthoredBlockManifest`) has no field that
- * accepts a TipTap Node, React ComponentType, ECharts instance, or any
- * function.  Any attempt to pass atom-node, side-panel, or ECharts/Mermaid
- * patterns is a **TypeScript compile error**, not a lint failure.
+ * accepts a TipTap Node, React ComponentType, ECharts instance, or any function.
+ * Atom-node, side-panel, and ECharts/Mermaid patterns are TypeScript compile
+ * errors, not lint failures.
  *
- * ## Implementation status
- * **T-159 (this task):** stub only — the function throws if called.
- * **T-160:** replaces the body with the real runtime expansion (Zod schema
- * derivation, TipTap node construction, form-panel node view, renderer
- * template expansion, toPm/fromPm generation).
+ * ## Runtime expansion (T-160)
+ * Delegates to built-in helper modules:
+ *   - `schema-builder.ts`   — Zod schema + allowedAttrs derivation
+ *   - `template-expander.tsx` — React renderer from the declarative template
+ *   - `node-builder.ts`     — TipTap node + auto-generated form-panel node view
+ *   - Inline mapping helpers — toPm / fromPm from manifest shape
  *
  * @param manifest The declarative manifest. All values must be literal data.
  */
 export function defineAuthoredBlock(
   manifest: AuthoredBlockManifest,
 ): BlockRegistryRecord {
-  // T-160 provides the runtime expansion.  This stub is intentionally loud —
-  // if anything invokes defineAuthoredBlock before T-160 lands, the error is
-  // immediately visible rather than silently returning a half-baked record.
-  throw new Error(
-    `defineAuthoredBlock: runtime expansion not yet implemented ` +
-      `(slug="${manifest.slug}"). ` +
-      `See T-160 to activate Authored-block support.`,
-  );
+  return {
+    schemaName: manifest.slug,
+    schema: buildAuthoredSchema(manifest),
+    allowedAttrs: buildAllowedAttrs(manifest),
+    paletteLabel: manifest.paletteLabel,
+    tiptapNode: buildAuthoredTipTapNode(manifest),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderer: buildAuthoredRenderer(manifest) as BlockRegistryRecord["renderer"],
+    toPm: buildToPm(manifest),
+    fromPm: buildFromPm(manifest),
+  };
 }

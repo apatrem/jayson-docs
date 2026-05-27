@@ -1813,7 +1813,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** the API compiles; the type system rejects atom-node/side-panel/echarts patterns at compile time.
 - **est.** 5h
 
-### T-160 [ ] · `defineAuthoredBlock` runtime implementation (built-in expander code)
+### T-160 [x] · `defineAuthoredBlock` runtime implementation (built-in expander code)
 - **Depends-on:** T-159
 - **Reads:** `docs/adr/0013-authored-blocks-are-declarative-data.md`
 - **Outputs:**
