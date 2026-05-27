@@ -339,3 +339,34 @@ Two different actions (`dtolnay/rust-toolchain@1.83.0` and `ruby/setup-ruby@v1`)
 - The 3 Windows `.bak`-recovery edge cases + their `#[cfg(windows)]` tests are MOOT: `src-tauri/src/ipc/fs.rs::rename_tmp_file` no longer uses a `.bak` swap. T-123o's follow-up commit `26a9acc` replaced the multi-step swap with a single `MoveFileExW(REPLACE_EXISTING | WRITE_THROUGH)` call. The kernel guarantees atomicity in one step; there are no inter-step failure windows to test. The existing `windows_rename_replaces_existing_target_without_backup_swap` test asserts the new behavior, and the new `windows-cargo-test` CI job runs it on a real Windows runner.
 - The SVG sanitizer extension (foreignObject / animate / use / style / `href=javascript:`) and its 5 negative tests were CLOSED by T-123p (drift `[drift-2026-05-26i]`). T-123p added 7 tripwire tests covering the same vectors plus a benign-http(s) preserve case. T-123q would have produced a duplicate diff.
 
+### [audit-2026-05-27a] M9 plan [BLOCKER #2] — `verify-task-commit.sh` allow-list — no-op (closed)
+
+**Detected at:** 2026-05-27 (cross-plan audit of `/Users/pierresupau/.claude/plans/can-you-lay-out-playful-squid.md` vs landed M9a state).
+**Plan reference:** "Pre-implementation concerns to settle before launch", item 2 — flagged as `[BLOCKER]` by the plan author.
+**What the plan asked:** Extend `scripts/verify-task-commit.sh`'s static allow-list to include `docs/adr/`, `CONTEXT.md`, `docs/BUILD_BRIEF.md`, `docs/DECISIONS.md`. The plan claimed that without these paths the pre-commit hook would reject every M9 doc-touching task commit (T-135, T-158, T-167, T-179, etc.).
+**What was found:** Current `scripts/verify-task-commit.sh` (read 2026-05-27, post-M7.5 hardening) does NOT have a static path allow-list. It enforces:
+  - Assertion 1 — loop-managed file bundling for `docs/TASKS.md` / `STATUS.md` / `BLOCKERS.md`.
+  - Assertion 1b / 1c — STATUS.md regeneration discipline.
+  - Assertion 2 — a forbidden-paths *denylist* (`node_modules`, `target`, `dist`, `.env`, `.DS_Store`, IDE files).
+  - Assertion 3 — a 5MB per-file size cap (no per-path exceptions).
+  - Assertion 4 — project-wide gates (tsc + lint + tests) on TS/JS/Rust changes.
+  - Assertion 5 — Q2 one-`[x]`-per-commit rule.
+  There is no allow-list of permitted paths to extend; arbitrary paths under `docs/` are accepted by default unless they're loop-managed (in which case the bundling rule applies, not a rejection).
+**Empirical confirmation:** M9a shipped 9 new ADRs (`docs/adr/0004-…` through `0012-…`), a new `docs/adr/0013-…`, `docs/adr/0014-…`, `CONTEXT.md`, inline edits to `docs/BUILD_BRIEF.md` / `docs/DECISIONS.md`, plus `docs/DOCUMENT_SYSTEM_ARCHITECTURE.md` / `docs/BLOCK_IMPLEMENTATION_GUIDE.md` / `docs/SETUP_PIPELINE.md` / `docs/setup-runbook.md` / `docs/TAURI_IPC.md` updates across commits `ebe84b9`, `08fc725`, `4dac6ed`, `74cbfc7`, `8c76d0d`, and others. None were rejected by the hook. T-135's intent (the "commit grilling outputs" task) was achieved by `ebe84b9` without any hook friction.
+**Resolution:** No code change required. The plan's `[BLOCKER]` was based on an outdated or misremembered hook version (possibly conflating the size cap's "allow-list" comment at line 226 with a path allow-list — the script comment uses the word but the implementation is a denylist + size cap). Closing as no-op.
+**Lesson:** Plan-review pre-implementation concerns should be re-validated against the actual current file at execution time. A quick `cat scripts/verify-task-commit.sh` at plan-finalisation time would have caught this; the plan was written from memory.
+
+### [audit-2026-05-27b] Deferred decision — in-app surface to trigger Brand-block creation (open)
+
+**Detected at:** 2026-05-27 (cross-plan audit of `/Users/pierresupau/.claude/plans/can-you-generate-for-playful-pudding.md` vs landed M8 state).
+**Plan reference:** "Open questions to grill on later (tracked, not yet resolved)" — last bullet, the only one in that list that was NOT marked Resolved.
+**Status:** OPEN. Decision intentionally deferred until M8 has been in consultants' hands for some real duration and we see how often devops gets new-block requests.
+**Context:** M8 (T-132) wires runtime *loading* of Brand blocks from `generated-blocks/active/` into the BlockPalette, but *creation* of new Brand blocks still requires devops to run `setup:scan-demos` CLI. Consultants who need a new Brand block must email devops. The plan author noted: at some point a faster loop will be needed — Q7-C in grilling explicitly raised "user wants consultants 'using this a lot'".
+**Three options recorded in the plan (verbatim, lightly trimmed):**
+  - **(a)** Keep CLI-only; document the request workflow for consultants.
+  - **(b)** In-app "Request a new block" form that posts to a devops queue (low-risk, no security review needed).
+  - **(c)** In-app "Generate this block" button that runs the pipeline inline — requires security review because consultants would trigger LLM code-gen producing potentially-malicious blocks.
+**Important: NOT resolved by M9b.** M9b's authoring UX (T-171..T-173) implements an in-app trigger for *Authored* blocks (Tier 3 — declarative-data, ADR-0013). Authored blocks operate under a tighter security envelope (no React/TipTap, no atom nodes, AST-extracted as data per ADR-0013). The deferred decision above operates on *Brand* blocks (Tier 2 — imperative `defineBlock`, full React/TipTap runtime), where consultant-triggered LLM code-gen has materially higher attack surface and would need its own threat model. The two are different decisions with different security envelopes; M9b shipping does not close this audit item.
+**Action needed:** None right now. When M8 has been in consultants' hands long enough to measure devops new-block request volume, decide which option to spec, then add a future task (T-180+) to TASKS.md. Reopen / supersede this entry at that point.
+**Suggested trigger metric:** ≥ N new-block requests/month from consultants for ≥ M consecutive months (N, M TBD by product). Until then, option (a) is the de-facto status quo.
+
