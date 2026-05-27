@@ -84,6 +84,10 @@ export function useBrandBlocksFromRegistry(): BlockPaletteItem[] {
  * - **Authored blocks** (single `.tsx` files, T-164) — id uses
  *   `authored:{slug}`; command prefix is `insertAuthored_`.
  *
+ * Only `active/` Authored blocks are returned (archived blocks are excluded
+ * from the palette).  Use {@link loadAuthoredBlockEntries} to get all
+ * Authored blocks including archived ones (T-168, for the management view).
+ *
  * Used as the default value of App.loadGeneratedBlocks prop.  Tests inject a
  * synchronous mock instead.
  */
@@ -131,10 +135,59 @@ export async function loadBrandBlockPaletteItems(
         when: "",
         command: `insertAuthored_${slug}`,
         generated: true,
+        folder: "active",
       });
     }
   }
   return items.sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/**
+ * Scans both `generated-blocks/active/` and `generated-blocks/archived/` for
+ * Authored `.tsx` files and returns all as BlockPaletteItems tagged with their
+ * `folder` origin (T-168, ADR-0010).
+ *
+ * Used by the management view (T-169) to list and act on all Authored blocks,
+ * including archived ones.  Brand block directories in `active/` are NOT
+ * included — Brand blocks don't participate in the soft-archive lifecycle.
+ *
+ * Returns an empty array when neither directory exists (e.g., first launch).
+ */
+export async function loadAuthoredBlockEntries(
+  cloudSyncRoot: string,
+): Promise<BlockPaletteItem[]> {
+  const { invoke } = await import("@tauri-apps/api/core");
+  type IpcEntry = { name: string; path: string; is_dir: boolean };
+
+  const root = cloudSyncRoot.endsWith("/") ? cloudSyncRoot : `${cloudSyncRoot}/`;
+
+  const results: BlockPaletteItem[] = [];
+
+  for (const folderName of ["active", "archived"] as const) {
+    const dirPath = `${root}generated-blocks/${folderName}`;
+    let entries: IpcEntry[];
+    try {
+      entries = await invoke<IpcEntry[]>("list_directory", { path: dirPath });
+    } catch {
+      // Directory missing (e.g. archived/ doesn't exist yet) — skip quietly.
+      continue;
+    }
+    for (const entry of entries) {
+      if (entry.name.startsWith(".") || entry.is_dir) continue;
+      if (!entry.name.endsWith(".tsx") || entry.name.endsWith(".manifest.json")) continue;
+      const slug = entry.name.slice(0, -4);
+      results.push({
+        id: `authored:${slug}`,
+        name: `${toTitleCase(slug)} (Authored)`,
+        when: "",
+        command: `insertAuthored_${slug}`,
+        generated: true,
+        folder: folderName,
+      });
+    }
+  }
+
+  return results.sort((a, b) => a.id.localeCompare(b.id));
 }
 
 function toTitleCase(id: string): string {

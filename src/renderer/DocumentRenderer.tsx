@@ -15,6 +15,8 @@ import { Divider } from "../blocks/divider";
 import { Image } from "../blocks/image";
 import { Team } from "../blocks/team";
 import { loadAllBlocks } from "../blocks/runtime-registry";
+import { RemovedBlockPlaceholder } from "../blocks/RemovedBlockPlaceholder";
+import { isAuthoredBlockType } from "../blocks/authored/identity";
 
 // ── Registry-derived renderer dispatch (T-157b) ───────────────────────────
 // All 15 Standard blocks register a `renderer` in the runtime registry.
@@ -201,6 +203,14 @@ export function BlockView({
   const Renderer = _blockRenderers.get(block.type);
   if (Renderer !== undefined) {
     return <Renderer block={block} />;
+  }
+
+  // Authored block that's not in the registry → permanently deleted.
+  // Archived Authored blocks ARE in the registry (both active/ and archived/
+  // contribute registry data); if we reach here with an Authored type string,
+  // the file was permanently deleted from disk.
+  if (isAuthoredBlockType(block.type)) {
+    return <RemovedBlockPlaceholder blockType={block.type} />;
   }
 
   // Runtime diagnostic: if data coercion bypasses TS (e.g., a YAML block type

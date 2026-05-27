@@ -1895,7 +1895,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** the three commands work; the path-scope regression test passes; the regex-wrap test mirrors the actual plugin behaviour.
 - **est.** 4h
 
-### T-168 [ ] · `generated-blocks/archived/` folder + `RemovedBlockPlaceholder`
+### T-168 [x] · `generated-blocks/archived/` folder + `RemovedBlockPlaceholder`
 - **Depends-on:** T-167, T-141c
 - **Reads:** `docs/adr/0010-authored-block-soft-archive-on-removal.md`
 - **Outputs:**

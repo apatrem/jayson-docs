@@ -6,6 +6,13 @@ export interface BlockPaletteItem {
   when: string;
   command: string;
   generated?: boolean;
+  /**
+   * For Authored blocks: the sub-folder within `generated-blocks/` the file
+   * lives in.  `"active"` blocks appear in the palette; `"archived"` blocks
+   * are hidden from the palette but still render in existing documents.
+   * Absent for Standard and Brand blocks.
+   */
+  folder?: "active" | "archived";
 }
 
 export interface BlockPaletteProps {
