@@ -1379,7 +1379,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 - **est.** 1.5h
 - **Note: NOT GATE-BLOCKING for M8 → T-124. These are defense-in-depth + cosmetic cleanup. The current code is safe today because (a) `remove_dir_all` doesn't follow nested symlinks by default per Rust docs, (b) SVG is embedded as `data:image/svg+xml` via `<img>` where browsers script-disable embedded scripts, (c) the cosmetic items are non-functional. M8 can fire before T-123p lands; T-123p can be picked by the loop in parallel with M8 work, or even after M8 ships.**
 
-### T-123q [ ] · M7.5 round-3 audit follow-ups (3 MEDIUMs + 3 LOWs batched, NOT gate-blocking)
+### T-123q [x] · M7.5 round-3 audit follow-ups (3 MEDIUMs + 3 LOWs batched, NOT gate-blocking)
 - **Depends-on:** T-123l
 - **Reads:** `src-tauri/src/ipc/fs.rs` (Windows `rename_tmp_file` line ~239-262 + the cfg-gated test line ~354-384), `src-tauri/tauri.conf.json` (the URL branch of `plugins.shell.open`), `tests/security/shell-config.test.ts` (positive/negative cases — needs lowercase-drive + trailing-newline + credential URLs added), `src/brand-tokens/BrandProvider.tsx` (line 12 — pre-existing `process.env.NODE_ENV`), `src/export/render-static-html.ts` (`sanitizeSvgForImage` line ~179-183 — only strips `<script>` and `on*=`), `.github/workflows/ci.yml` (currently Ubuntu-only — no Windows runner), `.github/workflows/release.yml` (Windows matrix runs `tauri-action` only, no `cargo test`), `~/.cargo/registry/src/index.crates.io-*/tauri-plugin-shell-*/src/scope.rs` (re-verify per AGENTS.md §Review playbook convention #1), the M7.5 round-3 security audit findings in chat history (M-1/M-2/M-3 + L-1/L-2/L-3 + convention refinement recommendations)
 - **Outputs:**

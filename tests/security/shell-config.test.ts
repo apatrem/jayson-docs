@@ -68,4 +68,56 @@ describe("Tauri shell plugin open scope", () => {
     expect(regex.test("javascript:alert(1)")).toBe(false);
     expect(regex.test("data:text/html,<script>alert(1)</script>")).toBe(false);
   });
+
+  // T-123q round-3 audit follow-ups (M-3 + L-3 coverage). Each case asserts
+  // a specific attack vector the round-2 regex permitted. If the configured
+  // `plugins.shell.open` pattern is loosened back to `https?://[^\s<>"]+`
+  // (or the host-separating refactor is regressed), the corresponding case
+  // fails immediately.
+  it("rejects credential-bearing URLs and host-confusion injection (T-123q)", () => {
+    const regex = configuredOpenRegex();
+
+    // M-3: credentials in host (`user:pass@evil.com` smuggles target host).
+    expect(regex.test("https://user:pass@evil.com/")).toBe(false);
+    expect(regex.test("https://user@evil.com/")).toBe(false);
+    expect(regex.test("http://admin:hunter2@10.0.0.1/")).toBe(false);
+    // Windows-path-via-URL injection (`example.com\..\..\Windows`).
+    expect(regex.test(String.raw`https://example.com\with\backslash`)).toBe(false);
+    // Embedded NUL (smuggles past path validators that string-trim).
+    expect(regex.test("https://example.com/foo\0")).toBe(false);
+    // Trailing newline (header-splitting / log-poisoning class vector).
+    expect(regex.test("https://example.com/foo\n")).toBe(false);
+    // Incomplete URL — empty host fails the `+` quantifier.
+    expect(regex.test("https://")).toBe(false);
+    // Unencoded space in path — `\s` exclusion catches this.
+    expect(regex.test("https://example.com/path with space")).toBe(false);
+  });
+
+  it("rejects lowercase-drive and forward-slash Windows export paths (T-123q)", () => {
+    const regex = configuredOpenRegex();
+
+    // The path branch requires uppercase `[A-Z]:\\`. Lowercase drive letter
+    // (a Windows-fs surface that some shell wrappers normalize) must reject.
+    expect(
+      regex.test(
+        String.raw`c:\Temp\docsystem-export\12345678-1234-1234-1234-1234567890ab\x.html`,
+      ),
+    ).toBe(false);
+    // Forward slashes after `C:` are a non-standard Windows path form that
+    // the regex deliberately rejects — Windows shells accept it natively,
+    // so allowing it would let the path branch double as a URL injection.
+    expect(
+      regex.test("C:/Temp/docsystem-export/12345678-1234-1234-1234-1234567890ab/x.html"),
+    ).toBe(false);
+  });
+
+  it("preserves URL-encoded space as a positive regression case (T-123q)", () => {
+    const regex = configuredOpenRegex();
+
+    // T-123q positive case: legitimate URLs may carry `%20` in the path.
+    // If the path-class is tightened so far that it rejects `%`, this fails.
+    expect(
+      regex.test("https://example.com/path%20with%20encoded%20space"),
+    ).toBe(true);
+  });
 });

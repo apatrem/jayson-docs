@@ -311,3 +311,31 @@ Two different actions (`dtolnay/rust-toolchain@1.83.0` and `ruby/setup-ruby@v1`)
 - `render-static-html.ts`: replaced `error.message.includes("file exceeds 5MB export limit")` with `error.kind === "invalid" && SIZE_CAP_MESSAGE_PATTERN.test(error.message)`. Pattern is a top-of-file constant with a comment pointing to `src-tauri/src/ipc/fs.rs:51` as the contract anchor.
 - The first cosmetic item (`editorContent useMemo([doc])`) is no longer present in `DocumentView.tsx` — the editor seed is held in `useState` initialized from `initialDoc`, then reassigned in the load effect. No memo to inspect; no-op for that bullet.
 
+---
+
+### [drift-2026-05-26l] M7.5 round-3 audit follow-ups (M-1/M-2/M-3 + L-1/L-2/L-3) — closed in T-123q
+
+**Detected at:** 2026-05-26T19:30:00Z (M7.5 round-3 security audit)
+**Tasks affected:** T-123 family (closed by T-123q).
+**What happened:** Round-3 audit surfaced 3 MEDIUMs + 3 LOWs after the M7-spike gate v4 passed:
+- **M-1 (Windows recovery edges):** the original `.bak` swap in `rename_tmp_file` had only 1 of ~5 failure-window tests.
+- **M-2 (Windows CI gap):** the `#[cfg(windows)]` rename test existed but `ci.yml` was Ubuntu-only, so the Windows fs code had 0 automated runs.
+- **M-3 (URL credentials):** the prior `https?://[^\s<>"]+` pattern accepted credential-bearing URLs like `https://user:pass@evil.com`.
+- **L-1:** `src/brand-tokens/BrandProvider.tsx` reached for `process.env.NODE_ENV`. Works in Vitest (Node provides `process`) and in production (Vite inlines the constant), but only by accident — Tauri's webview has no `process`, and a sibling renderer file that Vite doesn't statically inline would crash on launch.
+- **L-2 (SVG sanitizer depth):** the previous sanitizer only handled `<script>` and `on*=`. Closed earlier by T-123p (drift `[drift-2026-05-26i]`).
+- **L-3 (lowercase-drive + trailing-newline coverage):** the shell-config regex tests didn't exercise these surfaces.
+
+**Impact:** None today. M-1 was eclipsed by T-123o's follow-up (commit `26a9acc` switched the Windows path from a `.bak` swap to `MoveFileExW(REPLACE_EXISTING | WRITE_THROUGH)` — atomic at the kernel level, no inter-step failure windows to test). M-2 was infrastructure; M-3 wasn't reachable today because only export tmp paths flow through `shell.open` (no user-supplied URLs yet). L-1..L-3 are defense-in-depth + a future-proofing CI signal. All three MEDIUMs are gate-blocking for v1.0 external release (Phase 11 → T-108/T-109).
+
+**Fix landed:** T-123q
+- `src-tauri/tauri.conf.json` — URL branch tightened to `https?://[^/@\\\s<>"]+(?:/[^\s<>"]*)?`, with ` ` excluded from both host and path classes. Rejects credentials, embedded `@`, backslash injection, NUL, trailing newline, and incomplete URLs.
+- `tests/security/shell-config.test.ts` — 8 new negative cases + 1 positive: credential variants, backslash-injection, NUL, trailing newline, incomplete URL, lowercase-drive, forward-slash Windows path, and a `%20`-encoded positive regression.
+- `src/brand-tokens/BrandProvider.tsx` — switched the dev guard from the legacy `NODE_ENV` check to `import.meta.env.DEV` (Vite's idiomatic form). The Tauri webview never touches the Node `process` global.
+- `tests/smoke/no-node-globals.test.ts` (new) — static sweep of `src/**/*.{ts,tsx}` (minus Node-CLI exemptions: `src/setup/*.ts`, `src/export/pdf.ts`) for `Buffer.<m>`, `Buffer(`, `process.<m>`, `require(`, `__dirname`, `setImmediate(`. Strips line + block comments before matching, so prose mentions of forbidden patterns in comments are not false-positives. A runtime-deletion test (mirroring T-123n's Buffer pattern) was considered but discarded — React's `jsxDEV` itself reads the Node env at JSX-call time, so any deletion test would throw inside React, masking what the smoke test is meant to catch. The static sweep is deterministic, points at the offending file + line, and prevents the regression for the entire renderer surface.
+- `.github/workflows/ci.yml` — new `windows-cargo-test` job on `windows-latest`, runs `cargo test --locked` against `src-tauri/`. First CI run that exercises the `#[cfg(windows)]` MoveFileExW path; closes the convention #4 "synthetic CI matrix" gap.
+- `AGENTS.md §Review playbook` — the 3 round-3 convention refinements (#1 tightened with "regex/scope is the ENTIRE constraint surface", #4 extended with "CI matrix gaps are also synthetic", NEW #7 "Failure-path completeness for cfg-gated atomic operations") already landed via earlier commits before this task fired. Verified at task pickup; no further AGENTS.md edits required in T-123q.
+
+**Items the T-123q spec asked for that didn't apply:**
+- The 3 Windows `.bak`-recovery edge cases + their `#[cfg(windows)]` tests are MOOT: `src-tauri/src/ipc/fs.rs::rename_tmp_file` no longer uses a `.bak` swap. T-123o's follow-up commit `26a9acc` replaced the multi-step swap with a single `MoveFileExW(REPLACE_EXISTING | WRITE_THROUGH)` call. The kernel guarantees atomicity in one step; there are no inter-step failure windows to test. The existing `windows_rename_replaces_existing_target_without_backup_swap` test asserts the new behavior, and the new `windows-cargo-test` CI job runs it on a real Windows runner.
+- The SVG sanitizer extension (foreignObject / animate / use / style / `href=javascript:`) and its 5 negative tests were CLOSED by T-123p (drift `[drift-2026-05-26i]`). T-123p added 7 tripwire tests covering the same vectors plus a benign-http(s) preserve case. T-123q would have produced a duplicate diff.
+

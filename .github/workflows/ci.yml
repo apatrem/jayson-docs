@@ -77,3 +77,39 @@ jobs:
       - name: cargo check --locked (starter src-tauri)
         working-directory: starter/src-tauri
         run: cargo check --locked
+
+  # T-123q closure of round-3 audit M-2 ("Windows CI gap"). The
+  # `#[cfg(windows)]` tests in `src-tauri/src/ipc/fs.rs` exercise the
+  # Windows-specific MoveFileExW path that protects against the data-loss
+  # bug fixed in T-123o. Without a Windows runner, those tests are
+  # functionally synthetic per AGENTS.md §Review playbook convention #4
+  # (extended). This job runs the Rust test suite on a real Windows VM so
+  # any regression in the Windows save path fails CI before reaching main.
+  windows-cargo-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pin to the same toolchain as rust-lockfile-parity (MSRV floor).
+      - name: Install Rust 1.88.0
+        run: rustup toolchain install 1.88.0 --profile minimal
+        shell: pwsh
+
+      - name: Set default toolchain
+        run: rustup default 1.88.0
+        shell: pwsh
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: cargo test (Windows fs path)
+        working-directory: src-tauri
+        run: cargo test --locked
+        shell: pwsh
