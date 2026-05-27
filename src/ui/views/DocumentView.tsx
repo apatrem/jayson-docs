@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useRef, useState, type CSSProperties, type FC } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FC, type ReactNode } from "react";
 import type { JSONContent } from "@tiptap/react";
 import { defaultBrand } from "../../brand/defaultBrand";
 import { parseDocModelYaml } from "../../docmodel/serialize";
@@ -18,7 +18,17 @@ import {
 import { DocumentRenderer, type DocumentModel } from "../../renderer/DocumentRenderer";
 import { DocModelSchema } from "../../schema/docmodel";
 import { useBrandBlocksFromRegistry } from "../../blocks/runtime-registry";
-import { AuthoringPanel } from "../authoring/AuthoringPanel";
+import { AuthoringPanel, type AuthoringPanelGenerateParams } from "../authoring/AuthoringPanel";
+import {
+  buildGenerateAuthoredBlockRequest,
+  buildRefineAuthoredBlockRequest,
+  type AuthoredBlockConversationTurn,
+  type GenerateAuthoredBlockParams,
+} from "../../llm/generate-authored-block";
+import { buildAuthoredRenderer } from "../../blocks/authored/template-expander";
+import type { AuthoredBlockManifest } from "../../blocks/authored/defineAuthoredBlock";
+import { lintAuthoredBlock, type AuthoredBlockLintResult } from "../../ipc/authored-block";
+import type { LLMRequest, LLMResponse } from "../../llm/client";
 
 export interface EditorSurfaceProps {
   initialContent: JSONContent;
@@ -42,6 +52,19 @@ export interface DocumentViewProps {
    * can use the surrounding blocks, brand tokens, and document tone.
    */
   onCreateAuthoredBlock?: (doc: DocumentModel) => void;
+  /**
+   * Injectable LLM call function for the authored-block generation pipeline.
+   * Defaults to a no-op (null) when not provided — the Generate button still
+   * appears but calls won't reach a real LLM.  Injected from the app root once
+   * an LLMClient is available; also used in tests to assert prompt structure.
+   */
+  callLlm?: (request: LLMRequest) => Promise<LLMResponse>;
+  /**
+   * Injectable advisory lint function for the preview pipeline.
+   * Defaults to the real `lintAuthoredBlock` IPC command.
+   * Tests inject a stub that returns `{ ok: true, violations: [], extractedManifest: {...} }`.
+   */
+  lintForPreview?: (source: string) => Promise<AuthoredBlockLintResult>;
 }
 
 const DEFAULT_AUTOSAVE_DEBOUNCE_MS = 2000;
@@ -76,6 +99,8 @@ export const DocumentView: FC<DocumentViewProps> = ({
   onBackToWelcome,
   EditorComponent = DefaultEditorSurface,
   onCreateAuthoredBlock,
+  callLlm,
+  lintForPreview = defaultLintForPreview,
 }) => {
   const generatedBlocks = useBrandBlocksFromRegistry();
   const [doc, setDoc] = useState<DocumentModel | null>(initialDoc ?? null);
@@ -87,6 +112,11 @@ export const DocumentView: FC<DocumentViewProps> = ({
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [editor, setEditor] = useState<BlockPaletteProps["editor"]>(null);
   const [authoringContext, setAuthoringContext] = useState<DocumentModel | null>(null);
+  // ── Generation state (T-173) ─────────────────────────────────────────────
+  const [generating, setGenerating] = useState(false);
+  const [previewNode, setPreviewNode] = useState<ReactNode>(undefined);
+  const generationHistory = useRef<AuthoredBlockConversationTurn[]>([]);
+  const lastGenerateParams = useRef<GenerateAuthoredBlockParams | null>(null);
   const currentDoc = useRef<DocumentModel | null>(initialDoc ?? null);
   const autosave = useRef<AutosaveController | null>(null);
 
@@ -146,6 +176,79 @@ export const DocumentView: FC<DocumentViewProps> = ({
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [paletteOpen]);
+
+  // ── Generation handler (T-173) ─────────────────────────────────────────────
+  const handleGenerate = (panelParams: AuthoringPanelGenerateParams): void => {
+    const context = authoringContext ?? currentDoc.current;
+    if (context === null || callLlm === undefined) {
+      return;
+    }
+
+    const genParams: GenerateAuthoredBlockParams = {
+      description: panelParams.description,
+      slug: panelParams.slug,
+      displayName: panelParams.displayName,
+    };
+
+    const history = generationHistory.current;
+    const isRefinement = history.length > 0;
+
+    const request = isRefinement
+      ? buildRefineAuthoredBlockRequest(
+          genParams,
+          context,
+          history,
+          panelParams.description,
+        )
+      : buildGenerateAuthoredBlockRequest(genParams, context);
+
+    setGenerating(true);
+    lastGenerateParams.current = genParams;
+
+    void callLlm(request)
+      .then(async (response) => {
+        const source = response.content.trim();
+
+        // Append turns to conversation history for next refinement iteration.
+        const userMessage = isRefinement
+          ? panelParams.description
+          : `Generate ${genParams.slug}: ${genParams.description}`;
+        generationHistory.current = [
+          ...history,
+          { role: "user", content: userMessage },
+          { role: "assistant", content: source },
+        ];
+
+        // Advisory lint for preview — warnings only, does not quarantine.
+        const lintResult = await lintForPreview(source);
+        if (lintResult.ok && lintResult.extractedManifest !== null) {
+          const manifest = lintResult.extractedManifest as unknown as AuthoredBlockManifest;
+          const Renderer = buildAuthoredRenderer(manifest);
+          // Render a preview with empty attrs — the block renders its defaults.
+          const previewBlock = { id: "preview", type: manifest.slug };
+          setPreviewNode(<Renderer block={previewBlock} />);
+        } else {
+          // Lint failed on preview — show source as code so the consultant
+          // can see what the LLM generated before it's refined.
+          setPreviewNode(
+            <pre style={{ fontSize: "0.75rem", overflow: "auto", margin: 0 }}>
+              {source}
+            </pre>,
+          );
+        }
+      })
+      .catch((genError: unknown) => {
+        const msg = genError instanceof Error ? genError.message : String(genError);
+        setPreviewNode(
+          <p role="alert" style={{ color: "red", margin: 0 }}>
+            Generation failed: {msg}
+          </p>,
+        );
+      })
+      .finally(() => {
+        setGenerating(false);
+      });
+  };
 
   if (error !== null) {
     return (
@@ -268,7 +371,13 @@ export const DocumentView: FC<DocumentViewProps> = ({
             docContext={authoringContext}
             onClose={() => {
               setAuthoringContext(null);
+              setPreviewNode(undefined);
+              generationHistory.current = [];
+              lastGenerateParams.current = null;
             }}
+            {...(callLlm !== undefined ? { onGenerate: handleGenerate } : {})}
+            previewNode={previewNode}
+            generating={generating}
           />
         </div>
       ) : null}
@@ -323,6 +432,10 @@ export function editorContentToDocument(
 
 async function defaultReadYamlFile(path: string): Promise<string> {
   return invoke<string>("read_yaml_file", { path });
+}
+
+async function defaultLintForPreview(source: string): Promise<AuthoredBlockLintResult> {
+  return lintAuthoredBlock(source);
 }
 
 async function defaultWriteYamlFile(path: string, yaml: string): Promise<void> {

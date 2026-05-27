@@ -1940,7 +1940,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** the consultant can describe a block, see a draft preview, refine it via either surface; preview crashes are caught by the watchdog.
 - **est.** 8h
 
-### T-173 [ ] · Authored-block generation pipeline (LLM call + shared receive pipeline)
+### T-173 [x] · Authored-block generation pipeline (LLM call + shared receive pipeline)
 - **Depends-on:** T-172, T-175
 - **Reads:** `docs/adr/0011-authored-block-generation-ux.md`, D-13 (prompt-caching strategy)
 - **Outputs:**
