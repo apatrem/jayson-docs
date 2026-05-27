@@ -5,10 +5,9 @@ import type { DocModel } from "../schema/docmodel";
 import { loadAllBlocks } from "../blocks/runtime-registry";
 import type { BlockRegistryRecord } from "../blocks/defineBlock";
 
-// ── Registry-first dispatch (T-141b) ──────────────────────────────────────
-// Lazy lookup maps built once from loadAllBlocks(). The switch arms below are
-// fallback paths; they are removed block-by-block in T-142–T-156 and the
-// entire fallback is deleted in T-157a.
+// ── Registry dispatch (T-157a) ────────────────────────────────────────────
+// All 15 Standard blocks live in the registry. Lookup maps are built lazily
+// on first use and cached for the lifetime of the module.
 let _schemaNameToRecord: Map<string, BlockRegistryRecord> | null = null;
 let _pmNodeTypeToRecord: Map<string, BlockRegistryRecord> | null = null;
 
@@ -176,28 +175,21 @@ function proseMirrorToSlide(node: ProseMirrorNode): Slide {
 }
 
 function blockToProseMirror(block: Block): ProseMirrorNode {
-  // Registry-first: if the block type is registered, delegate to its toPm.
-  // This path covers all 15 Standard blocks after T-141; switch arms below are
-  // the fallback until they are deleted per-block in T-142–T-156.
   const record = schemaNameMap().get(block.type);
   if (record) {
     return record.toPm(block);
   }
-  // Fallback switch (T-157a removes this entire section):
-  // All 15 block types are now migrated to the registry — this default arm
-  // can only be reached if an unknown block type slips through.
+  // All 15 block types are in the registry; this path is unreachable for
+  // valid DocModel blocks but satisfies the exhaustiveness check.
   return assertNever(block as never);
 }
 
 function proseMirrorToBlock(node: ProseMirrorNode): Block {
-  // Registry-first: if the PM node type maps to a registered block, delegate.
   // The registry key is tiptapNode.name (the PM node type), not the schemaName.
   const record = pmNodeTypeMap().get(node.type);
   if (record) {
     return record.fromPm(node) as Block;
   }
-  // Fallback (T-157a removes this entire section):
-  // All 15 block types are now migrated to the registry.
   throw new MappingError(`Unknown block node type: ${node.type}`, ["blocks"]);
 }
 

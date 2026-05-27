@@ -1,4 +1,4 @@
-import type { Editor as TipTapEditor, Extensions } from "@tiptap/core";
+import type { Editor as TipTapEditor, Extensions, Node as TipTapNode } from "@tiptap/core";
 import { Blockquote } from "@tiptap/extension-blockquote";
 import { Bold } from "@tiptap/extension-bold";
 import { Code } from "@tiptap/extension-code";
@@ -18,21 +18,7 @@ import { useEffect, useMemo, useState, type CSSProperties, type FC } from "react
 import { CommentMark } from "../comments/CommentMark";
 import type { DocModel } from "../schema/docmodel";
 import { docModelToProseMirror } from "./mapping";
-import { BulletListTipTapNode } from "../blocks/bullet-list";
-import { CalloutTipTapNode } from "../blocks/callout";
-import { ChartTipTapNode } from "../blocks/chart";
-import { DiagramTipTapNode } from "../blocks/diagram";
-import { DividerTipTapNode } from "../blocks/divider";
-import { HeadingTipTapNode } from "../blocks/heading";
-import { ImageTipTapNode } from "../blocks/image";
-import { KpiCardsTipTapNode } from "../blocks/kpi-cards";
-import { NumberedListTipTapNode } from "../blocks/numbered-list";
-import { ProseTipTapNode } from "../blocks/prose";
-import { RiskMatrixTipTapNode } from "../blocks/risk-matrix";
-import { RoadmapTipTapNode } from "../blocks/roadmap";
-import { DocTableTipTapNode } from "../blocks/table";
-import { TeamTipTapNode } from "../blocks/team";
-import { TimelineTipTapNode } from "../blocks/timeline";
+import { loadAllBlocks } from "../blocks/runtime-registry";
 
 export interface EditorProps {
   initialContent?: JSONContent | string;
@@ -52,25 +38,17 @@ const DEFAULT_CONTENT: JSONContent = {
   ],
 };
 
-const blockExtensions = [
-  BulletListTipTapNode,
-  CalloutTipTapNode,
-  ChartTipTapNode,
-  DiagramTipTapNode,
-  DividerTipTapNode,
-  HeadingTipTapNode,
-  ImageTipTapNode,
-  KpiCardsTipTapNode,
-  NumberedListTipTapNode,
-  ProseTipTapNode,
-  RiskMatrixTipTapNode,
-  RoadmapTipTapNode,
-  DocTableTipTapNode,
-  TeamTipTapNode,
-  TimelineTipTapNode,
-];
+// ── Registry-derived editor configuration ────────────────────────────────
+// All Standard blocks register their TipTap node in the runtime registry.
+// Editor extensions, allowed node names, and per-node allowed attrs are
+// derived here so no per-block hand-maintenance is needed (T-157a).
 
-export const ALLOWED_EDITOR_NODE_NAMES = [
+const _allBlocks = loadAllBlocks();
+
+const blockExtensions = _allBlocks.map((r) => r.tiptapNode);
+
+// Non-block infra node names registered by TipTap built-ins.
+const STATIC_INFRA_NODE_NAMES = [
   "doc",
   "text",
   "paragraph",
@@ -79,22 +57,15 @@ export const ALLOWED_EDITOR_NODE_NAMES = [
   "codeBlock",
   "listItem",
   "orderedList",
-  "bulletList",
-  "heading",
-  "prose",
-  "callout",
-  "kpiCards",
-  "image",
-  "docTable",
-  "chart",
-  "docTimeline",
-  "docRoadmap",
-  "docRiskMatrix",
-  "docTeam",
-  "docDiagram",
-  "docDivider",
-  "numberedList",
 ] as const;
+
+// Block node names come from the registry.
+const _blockNodeNames = _allBlocks.map((r) => r.tiptapNode.name);
+
+export const ALLOWED_EDITOR_NODE_NAMES: readonly string[] = [
+  ...STATIC_INFRA_NODE_NAMES,
+  ..._blockNodeNames,
+];
 
 export const ALLOWED_EDITOR_MARK_NAMES = [
   "bold",
@@ -350,41 +321,28 @@ function assertClosedMark(mark: NonNullable<JSONContent["marks"]>[number]): void
   }
 }
 
+// Build a map of { tiptapNodeName → Set<allowedAttr> } from the registry.
+// TipTap's Node.create() stores the configuration object on the extension.
+// Calling config.addAttributes() returns the full attrs declaration,
+// so Object.keys() gives the exact attr names the node serializes to JSON.
+function _getNodeAttrNames(node: TipTapNode): Set<string> {
+  // TipTap extensions expose config.addAttributes as a plain function — we use
+  // a type-cast to access the internal config shape without importing internals.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  const raw: Record<string, unknown> = (node as any).config?.addAttributes?.() ?? {};
+  return new Set(Object.keys(raw));
+}
+
+const _blockNodeAttrsMap: Map<string, Set<string>> = new Map(
+  _allBlocks.map((r) => [r.tiptapNode.name, _getNodeAttrNames(r.tiptapNode)] as const),
+);
+
 function allowedAttrsForNode(nodeType: string): Set<string> {
-  switch (nodeType) {
-    case "heading":
-      return new Set(["blockId", "level", "text", "numbered", "note"]);
-    case "prose":
-      return new Set(["blockId", "align", "note"]);
-    case "bulletList":
-      return new Set(["blockId", "items", "note"]);
-    case "numberedList":
-      return new Set(["blockId", "items", "startAt", "note"]);
-    case "callout":
-      return new Set(["blockId", "variant", "title", "attribution", "note"]);
-    case "kpiCards":
-      return new Set(["blockId", "cards", "note"]);
-    case "image":
-      return new Set(["blockId", "src", "alt", "caption", "width", "align", "note"]);
-    case "docTable":
-      return new Set(["blockId", "columns", "rows", "caption", "note"]);
-    case "chart":
-      return new Set(["blockId", "payload"]);
-    case "docTimeline":
-      return new Set(["blockId", "items", "note"]);
-    case "docRoadmap":
-      return new Set(["blockId", "lanes", "note"]);
-    case "docRiskMatrix":
-      return new Set(["blockId", "risks", "note"]);
-    case "docTeam":
-      return new Set(["blockId", "members", "note"]);
-    case "docDiagram":
-      return new Set(["blockId", "source", "title", "caption", "width", "note"]);
-    case "docDivider":
-      return new Set(["blockId", "label", "note"]);
-    default:
-      return new Set();
-  }
+  // Block nodes — attrs derived from TipTap node definition via registry.
+  const blockAttrs = _blockNodeAttrsMap.get(nodeType);
+  if (blockAttrs) return blockAttrs;
+  // Infrastructure nodes (paragraph, doc, etc.) carry no custom attrs.
+  return new Set();
 }
 
 function allowedAttrsForMark(markType: string): Set<string> {

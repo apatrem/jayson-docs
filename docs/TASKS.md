@@ -1754,7 +1754,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Acceptance:** as T-142; ECharts SSR test still passes; chart data-panel editing round-trips
 - **est.** 2h
 
-### T-157a [ ] · Editor-side registry wire-through (delete mapping.ts switches, derive Editor.tsx from registry)
+### T-157a [x] · Editor-side registry wire-through (delete mapping.ts switches, derive Editor.tsx from registry)
 - **Depends-on:** T-156 (all 15 blocks migrated)
 - **Reads:** `src/editor/mapping.ts`, `src/editor/Editor.tsx`
 - **Outputs:**
