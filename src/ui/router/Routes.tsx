@@ -3,6 +3,7 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
   useState,
   type ComponentType,
   type CSSProperties,
@@ -16,6 +17,7 @@ import { withRenderWatchdog } from "../../block-primitives/RenderWatchdog";
 import { parseDocModelYaml, serializeDocModel } from "../../docmodel/serialize";
 import { renderStaticHtmlForExport } from "../../export/render-static-html";
 import { formatErrorMessage } from "../../ipc/errors";
+import { type AuthoredReceiveResult, receiveAuthoredBlock } from "../../ipc/authored-block";
 import type { DocModel } from "../../schema/docmodel";
 import { DocModelSchema } from "../../schema/docmodel";
 import { AppErrorBoundary } from "../AppErrorBoundary";
@@ -56,6 +58,19 @@ export interface FileActionDeps {
   writeAppConfig: (config: { paths: { cloudSyncRoot: string } }) => Promise<void>;
   readAppConfig: () => Promise<{ paths: { cloudSyncRoot: string } }>;
   listDirectory: (path: string) => Promise<{ name: string; path: string; is_dir: boolean }[]>;
+  /**
+   * T-164 — file picker for Authored block files (.tsx).
+   * Returns the chosen absolute path, or null if cancelled.
+   * Injectable for testing; default opens a native dialog.
+   */
+  selectImportPath: () => Promise<string | null>;
+  /**
+   * T-164 — receive pipeline for Authored block files.
+   * Takes the absolute path to a `.tsx` file (from drag-drop or file picker),
+   * lints it, and writes to `generated-blocks/active/` or `quarantine/`.
+   * Injectable for testing; default reads cloudSyncRoot from app config.
+   */
+  importAuthoredBlock: (path: string) => Promise<AuthoredReceiveResult>;
 }
 
 export interface RoutesProps {
@@ -111,6 +126,52 @@ export function Routes({
   const [actionError, setActionError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [boundaryResetVersion, setBoundaryResetVersion] = useState(0);
+
+  // ── Authored-block receive pipeline (T-164) ───────────────────────────────
+  // Keep a stable ref to the injectable importAuthoredBlock so the drag-drop
+  // listener is registered only once (not re-subscribed on every render).
+  const importAuthoredBlockFn = fileActions.importAuthoredBlock ?? importAuthoredBlockDefault;
+  const importAuthoredBlockRef = useRef(importAuthoredBlockFn);
+  useEffect(() => {
+    importAuthoredBlockRef.current = importAuthoredBlockFn;
+  }); // runs every render to keep ref current
+
+  const handleImportResult = useCallback((result: AuthoredReceiveResult): void => {
+    if (result.ok) {
+      setStatusMessage("Block installed — refresh the palette to see it.");
+    } else {
+      const summary = result.violations.slice(0, 2).map((v) => v.message).join("; ");
+      setActionError(
+        `Block import failed (${result.violations.length} violation${result.violations.length === 1 ? "" : "s"}): ${summary}. ` +
+        `The file has been quarantined.`,
+      );
+    }
+  }, []);
+
+  // Register Tauri drag-drop listener.  Silently skips when not running in Tauri
+  // (browser, JSDOM tests) — the dynamic import + try/catch guard prevents crashes.
+  useEffect(() => {
+    let unlisten: (() => void) | null = null;
+    void (async () => {
+      try {
+        const { getCurrentWebview } = await import("@tauri-apps/api/webview");
+        unlisten = await getCurrentWebview().onDragDropEvent((event) => {
+          if (event.payload.type !== "drop") return;
+          for (const filePath of event.payload.paths) {
+            if (!filePath.endsWith(".tsx")) continue;
+            void importAuthoredBlockRef.current(filePath)
+              .then(handleImportResult)
+              .catch((err: unknown) => {
+                setActionError(`Block import error: ${formatErrorMessage(err)}`);
+              });
+          }
+        });
+      } catch {
+        // Not running in Tauri — drag-drop unavailable (expected in tests).
+      }
+    })();
+    return () => { unlisten?.(); };
+  }, [handleImportResult]); // subscribe once; ref keeps callback current
 
   const WatchdoggedDocumentView = useMemo(
     () =>
@@ -235,6 +296,21 @@ export function Routes({
     }
   }, [docContent, fileActions]);
 
+  const importBlock = useCallback(async (): Promise<void> => {
+    setActionError(null);
+    setStatusMessage(null);
+    try {
+      const selectPath = fileActions.selectImportPath ?? selectImportPathDefault;
+      const selected = await selectPath();
+      if (selected === null) return;
+      const doImport = fileActions.importAuthoredBlock ?? importAuthoredBlockDefault;
+      const result = await doImport(selected);
+      handleImportResult(result);
+    } catch (error) {
+      setActionError(formatErrorMessage(error));
+    }
+  }, [fileActions, handleImportResult]);
+
   const canSave = route.kind === "document" && docContent !== null;
   const canExport = canSave && docContent.doc.kind === "document";
 
@@ -247,6 +323,7 @@ export function Routes({
         onSave={saveDocument}
         onSaveAs={saveDocumentAs}
         onExportPdf={exportPdf}
+        onImportBlock={importBlock}
         statusMessage={statusMessage}
       />
       {actionError ? (
@@ -348,6 +425,32 @@ export function Routes({
       ) : null}
     </div>
   );
+}
+
+/**
+ * Default implementation of the Authored-block receive pipeline (T-164).
+ * Reads cloudSyncRoot from the app config, reads the source file, then
+ * delegates to `receiveAuthoredBlock()`.  Tauri-specific; replaced by a
+ * mock in tests via fileActions.importAuthoredBlock.
+ */
+async function importAuthoredBlockDefault(path: string): Promise<AuthoredReceiveResult> {
+  const config = await invoke<{ paths: { cloudSyncRoot: string } }>("read_app_config");
+  const root = config.paths.cloudSyncRoot.endsWith("/")
+    ? config.paths.cloudSyncRoot
+    : `${config.paths.cloudSyncRoot}/`;
+  const source = await invoke<string>("read_yaml_file", { path });
+  const filename = path.split("/").at(-1) ?? "block.tsx";
+  const activeDir = `${root}generated-blocks/active`;
+  const quarantineDir = `${root}generated-blocks/quarantine`;
+  return receiveAuthoredBlock(source, filename, activeDir, quarantineDir);
+}
+
+async function selectImportPathDefault(): Promise<string | null> {
+  const selected = await openDialog({
+    multiple: false,
+    filters: [{ name: "Authored Block", extensions: ["tsx"] }],
+  });
+  return typeof selected === "string" ? selected : null;
 }
 
 async function selectOpenPathDefault(): Promise<string | null> {

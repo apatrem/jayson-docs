@@ -164,4 +164,59 @@ describe("FileMenu", () => {
     expect(openPath).toHaveBeenCalledWith("/tmp/docsystem-export/id/menu.html");
     expect(screen.getByRole("status").textContent).toContain("Opened in your browser");
   });
+
+  it("Import block… calls importAuthoredBlock with the chosen path and shows success", async () => {
+    const importAuthoredBlock = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        installedPath: "/cloud/generated-blocks/active/my-block.tsx",
+        violations: [],
+      }),
+    );
+    render(
+      <App
+        bootStrategy={welcomeBootStrategy}
+        fileActions={{
+          // selectImportPath is the injectable for the .tsx file picker dialog
+          selectImportPath: () => Promise.resolve("/cloud/blocks/my-block.tsx"),
+          importAuthoredBlock,
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Import block…" }));
+
+    await waitFor(() => {
+      expect(importAuthoredBlock).toHaveBeenCalledWith("/cloud/blocks/my-block.tsx");
+    });
+    expect(screen.getByRole("status").textContent).toContain("Block installed");
+  });
+
+  it("Import block… shows error message when lint fails", async () => {
+    const importAuthoredBlock = vi.fn(() =>
+      Promise.resolve({
+        ok: false,
+        installedPath: "/cloud/generated-blocks/quarantine/bad-block.tsx",
+        violations: [
+          { rule: "A002-no-extra-imports", message: "import from 'react' is not on the Authored allow-list", line: 10, column: 0 },
+        ],
+      }),
+    );
+    render(
+      <App
+        bootStrategy={welcomeBootStrategy}
+        fileActions={{
+          selectImportPath: () => Promise.resolve("/cloud/blocks/bad-block.tsx"),
+          importAuthoredBlock,
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Import block…" }));
+
+    await waitFor(() => {
+      expect(importAuthoredBlock).toHaveBeenCalledWith("/cloud/blocks/bad-block.tsx");
+    });
+    expect(screen.getByRole("alert").textContent).toContain("quarantined");
+  });
 });

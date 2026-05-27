@@ -1853,7 +1853,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Note:** Rust runtime dependency ratification landed in [ADR-0014](../adr/0014-ratify-swc-ecma-parser-rust-runtime-dependency.md). The loop may proceed without additional gating.
 - **est.** 8h (Rust port of the rule set is the bulk)
 
-### T-164 [ ] · Drag-onto-window install + "Import block" menu item
+### T-164 [x] · Drag-onto-window install + "Import block" menu item
 - **Depends-on:** T-163
 - **Reads:** `docs/adr/0005-authored-block-transport-format.md`
 - **Outputs:**

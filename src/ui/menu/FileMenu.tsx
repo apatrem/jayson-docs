@@ -7,6 +7,8 @@ export interface FileMenuProps {
   onSave: () => Promise<void> | void;
   onSaveAs: () => Promise<void> | void;
   onExportPdf: () => Promise<void> | void;
+  /** Import an Authored block via a file picker (T-164). */
+  onImportBlock?: () => Promise<void> | void;
 }
 
 export const FileMenu: FC<FileMenuProps> = ({
@@ -16,6 +18,7 @@ export const FileMenu: FC<FileMenuProps> = ({
   onSave,
   onSaveAs,
   onExportPdf,
+  onImportBlock,
 }) => (
   <div role="menu" aria-label="File menu">
     <button
@@ -57,5 +60,16 @@ export const FileMenu: FC<FileMenuProps> = ({
     >
       Export PDF
     </button>
+    {onImportBlock !== undefined ? (
+      <button
+        type="button"
+        role="menuitem"
+        onClick={() => {
+          void onImportBlock();
+        }}
+      >
+        Import block…
+      </button>
+    ) : null}
   </div>
 );

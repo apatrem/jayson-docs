@@ -76,12 +76,16 @@ export function useBrandBlocksFromRegistry(): BlockPaletteItem[] {
 }
 
 /**
- * Default async loader for brand blocks — scans generated-blocks/active/ via
- * Tauri IPC and returns BlockPaletteItem descriptors.
+ * Default async loader for generated blocks — scans generated-blocks/active/
+ * via Tauri IPC and returns BlockPaletteItem descriptors for both:
+ *
+ * - **Brand blocks** (directories containing a `schema.ts` file) — id uses
+ *   the directory name; command prefix is `insertGenerated_`.
+ * - **Authored blocks** (single `.tsx` files, T-164) — id uses
+ *   `authored:{slug}`; command prefix is `insertAuthored_`.
  *
  * Used as the default value of App.loadGeneratedBlocks prop.  Tests inject a
- * synchronous mock instead.  M9b (T-164) will promote these entries from
- * palette-only descriptors to full BlockRegistryRecord entries.
+ * synchronous mock instead.
  */
 export async function loadBrandBlockPaletteItems(
   cloudSyncRoot: string,
@@ -102,19 +106,33 @@ export async function loadBrandBlockPaletteItems(
 
   const items: BlockPaletteItem[] = [];
   for (const entry of entries) {
-    if (!entry.is_dir || entry.name.startsWith(".")) continue;
-    const schemaPath = entry.path.endsWith("/")
-      ? `${entry.path}schema.ts`
-      : `${entry.path}/schema.ts`;
-    const exists = await invoke<boolean>("file_exists", { path: schemaPath });
-    if (!exists) continue;
-    items.push({
-      id: entry.name,
-      name: toTitleCase(entry.name),
-      when: "",
-      command: `insertGenerated_${entry.name}`,
-      generated: true,
-    });
+    if (entry.name.startsWith(".")) continue;
+
+    if (entry.is_dir) {
+      // Brand block — directory containing schema.ts
+      const schemaPath = entry.path.endsWith("/")
+        ? `${entry.path}schema.ts`
+        : `${entry.path}/schema.ts`;
+      const exists = await invoke<boolean>("file_exists", { path: schemaPath });
+      if (!exists) continue;
+      items.push({
+        id: entry.name,
+        name: toTitleCase(entry.name),
+        when: "",
+        command: `insertGenerated_${entry.name}`,
+        generated: true,
+      });
+    } else if (entry.name.endsWith(".tsx") && !entry.name.endsWith(".manifest.json")) {
+      // Authored block — single .tsx file installed by T-164 receive pipeline
+      const slug = entry.name.slice(0, -4); // strip .tsx
+      items.push({
+        id: `authored:${slug}`,
+        name: `${toTitleCase(slug)} (Authored)`,
+        when: "",
+        command: `insertAuthored_${slug}`,
+        generated: true,
+      });
+    }
   }
   return items.sort((a, b) => a.id.localeCompare(b.id));
 }
