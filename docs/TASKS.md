@@ -1528,7 +1528,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Acceptance:** clicking "Create from Template" → picking a template → naming it → confirming → produces a new YAML in the cloud-sync folder + opens it in the editor; the library card grid refreshes to show the new card.
 - **est.** 3h
 
-### T-132 [ ] · Wire generated-blocks runtime loading + BlockPalette extension
+### T-132 [x] · Wire generated-blocks runtime loading + BlockPalette extension
 - **Depends-on:** T-126 (router), T-120b (BlockPalette mounted in M7-spike)
 - **Reads:** `src/setup/load-generated-blocks.ts` (existing — loads from `generated-blocks/active/`), `src/editor/BlockPalette.tsx` (existing — has the `generatedBlocks` prop slot)
 - **Outputs:**

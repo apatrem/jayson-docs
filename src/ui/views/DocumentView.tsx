@@ -17,6 +17,7 @@ import {
 } from "../../editor/mapping";
 import { DocumentRenderer, type DocumentModel } from "../../renderer/DocumentRenderer";
 import { DocModelSchema } from "../../schema/docmodel";
+import { useGeneratedBlocks } from "../../contexts/GeneratedBlocksContext";
 
 export interface EditorSurfaceProps {
   initialContent: JSONContent;
@@ -68,6 +69,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
   onBackToWelcome,
   EditorComponent = DefaultEditorSurface,
 }) => {
+  const generatedBlocks = useGeneratedBlocks();
   const [doc, setDoc] = useState<DocumentModel | null>(initialDoc ?? null);
   const [editorSeed, setEditorSeed] = useState<JSONContent | null>(() =>
     initialDoc === undefined ? null : documentToEditorContent(initialDoc),
@@ -236,7 +238,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
           <section aria-label="Insert block palette" style={styles.palettePane}>
             <BlockPalette
               editor={editor}
-              generatedBlocks={[]}
+              generatedBlocks={generatedBlocks}
               onInsert={() => {
                 setPaletteOpen(false);
               }}

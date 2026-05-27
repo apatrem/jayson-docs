@@ -1,8 +1,13 @@
-import { useMemo, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import type { DocModel } from "./schema/docmodel";
 import type { DocumentViewProps } from "./ui/views/DocumentView";
 import { createIpcBootStrategy, type BootStrategy } from "./ui/router/boot";
 import { Routes, type FileActionDeps } from "./ui/router/Routes";
+import {
+  GeneratedBlocksContext,
+  loadGeneratedBlocksIpc,
+} from "./contexts/GeneratedBlocksContext";
+import type { BlockPaletteItem } from "./editor/BlockPalette";
 
 export { DEFAULT_DOCUMENT_VIEW_RENDER_BUDGET_MS } from "./ui/router/Routes";
 
@@ -20,6 +25,8 @@ export interface AppProps {
   fileActions?: Partial<FileActionDeps>;
   DocumentViewComponent?: ComponentType<DocumentViewProps>;
   documentWatchdogBudgetMs?: number;
+  readAppConfig?: () => Promise<{ paths: { cloudSyncRoot: string } }>;
+  loadGeneratedBlocks?: (cloudSyncRoot: string) => Promise<BlockPaletteItem[]>;
 }
 
 export default function App({
@@ -28,7 +35,20 @@ export default function App({
   fileActions,
   DocumentViewComponent,
   documentWatchdogBudgetMs,
+  readAppConfig = readAppConfigDefault,
+  loadGeneratedBlocks = loadGeneratedBlocksIpc,
 }: AppProps) {
+  const [generatedBlocks, setGeneratedBlocks] = useState<BlockPaletteItem[]>([]);
+
+  useEffect(() => {
+    readAppConfig()
+      .then((config) => loadGeneratedBlocks(config.paths.cloudSyncRoot))
+      .then(setGeneratedBlocks)
+      .catch((e: unknown) => {
+        console.error("Generated blocks load failed — palette degraded to defaults:", e);
+      });
+  }, [readAppConfig, loadGeneratedBlocks]);
+
   const resolvedBootStrategy = useMemo((): BootStrategy => {
     if (bootStrategy !== undefined) return bootStrategy;
     if (initialDocument !== undefined) {
@@ -56,12 +76,21 @@ export default function App({
   }, [initialDocument]);
 
   return (
-    <Routes
-      bootStrategy={resolvedBootStrategy}
-      {...(initialDocContent !== undefined ? { initialDocContent } : {})}
-      {...(fileActions !== undefined ? { fileActions } : {})}
-      {...(DocumentViewComponent !== undefined ? { DocumentViewComponent } : {})}
-      {...(documentWatchdogBudgetMs !== undefined ? { documentWatchdogBudgetMs } : {})}
-    />
+    <GeneratedBlocksContext.Provider value={{ blocks: generatedBlocks }}>
+      <Routes
+        bootStrategy={resolvedBootStrategy}
+        {...(initialDocContent !== undefined ? { initialDocContent } : {})}
+        {...(fileActions !== undefined ? { fileActions } : {})}
+        {...(DocumentViewComponent !== undefined ? { DocumentViewComponent } : {})}
+        {...(documentWatchdogBudgetMs !== undefined ? { documentWatchdogBudgetMs } : {})}
+      />
+    </GeneratedBlocksContext.Provider>
   );
+}
+
+async function readAppConfigDefault(): Promise<{
+  paths: { cloudSyncRoot: string };
+}> {
+  const { invoke } = await import("@tauri-apps/api/core");
+  return invoke("read_app_config");
 }
