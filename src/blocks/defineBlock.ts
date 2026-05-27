@@ -3,17 +3,10 @@ import type { ComponentType } from "react";
 import type { ZodType } from "zod";
 import type { ProseMirrorNode } from "../editor/mapping";
 
-/**
- * Schema-only fields stored in the schema-registry.
- * No React, no TipTap, no renderer imports allowed here or in any transitively
- * imported module — enforced by tests/blocks/schema-purity.test.ts.
- */
-export interface SchemaEntry {
-  schemaName: string;
-  schema: ZodType<unknown>;
-  allowedAttrs: readonly string[];
-  paletteLabel: string;
-}
+// SchemaEntry lives in schema-entry-type.ts so schema-registry.ts can import
+// it without pulling in @tiptap/core.  Re-exported here for backwards compat.
+import type { SchemaEntry } from "./schema-entry-type";
+export type { SchemaEntry };
 
 /**
  * Full runtime record stored in the runtime-registry.

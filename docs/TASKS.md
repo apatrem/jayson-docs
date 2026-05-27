@@ -1772,7 +1772,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Acceptance:** all renderer tests (HTML + PDF export) pass; structural HTML snapshots from T-141a still match.
 - **est.** 2h
 
-### T-157c [ ] · Schema-side registry wire-through (build discriminated union from schema-registry)
+### T-157c [x] · Schema-side registry wire-through (build discriminated union from schema-registry)
 - **Depends-on:** T-156 (parallel with T-157a/b)
 - **Reads:** `src/schema/blocks/index.ts`
 - **Outputs:**
