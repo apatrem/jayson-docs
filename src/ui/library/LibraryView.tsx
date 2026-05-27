@@ -2,7 +2,17 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "r
 import { CreateFromTemplateButton } from "./CreateFromTemplateButton";
 import { CreateFromTemplateModal } from "./CreateFromTemplateModal";
 import { QuarantinePanel, type QuarantinePanelDeps } from "./QuarantinePanel";
+import {
+  AuthoredBlockManager,
+  type AuthoredBlockManagerDeps,
+} from "./AuthoredBlockManager";
 import type { AuthoredReceiveResult } from "../../ipc/authored-block";
+import {
+  archiveAuthoredBlock,
+  restoreAuthoredBlock,
+  permanentlyDeleteAuthoredBlock,
+} from "../../ipc/authored-block";
+import { loadAuthoredBlockEntries } from "../../blocks/runtime-registry";
 import { invoke } from "@tauri-apps/api/core";
 import { buildLibraryIndex } from "../../library/index-builder";
 import {
@@ -29,6 +39,8 @@ export interface LibraryViewDeps {
   // T-165 — quarantine panel dependencies
   deleteFile?: (path: string) => Promise<void>;
   importAuthoredBlock?: (path: string) => Promise<AuthoredReceiveResult>;
+  // T-169 — authored-block manager dependencies
+  authoredBlockManagerDeps?: AuthoredBlockManagerDeps;
 }
 
 export interface LibraryViewProps {
@@ -173,12 +185,24 @@ export function LibraryView({ onOpenDoc, currentUserEmail = "", deps = {} }: Lib
     />
   ) : null;
 
+  // AuthoredBlockManager — shows when cloudSyncRoot is resolved.
+  const managerDeps: AuthoredBlockManagerDeps =
+    deps.authoredBlockManagerDeps ?? defaultAuthoredBlockManagerDeps;
+
+  const authoredBlockManager = cloudSyncRoot ? (
+    <AuthoredBlockManager
+      cloudSyncRoot={cloudSyncRoot}
+      deps={managerDeps}
+    />
+  ) : null;
+
   if (status === "empty") {
     return (
       <main aria-label="Library" style={styles.shell}>
         {sharedHeader}
         {modal}
         {quarantinePanel}
+        {authoredBlockManager}
         <EmptyLibraryState
           onUseSample={() => {
             void handleUseSample();
@@ -193,6 +217,7 @@ export function LibraryView({ onOpenDoc, currentUserEmail = "", deps = {} }: Lib
       {sharedHeader}
       {modal}
       {quarantinePanel}
+      {authoredBlockManager}
       <div style={styles.layout}>
         <FilterSidebar entries={entries} state={filters} onChange={setFilters} />
         <div style={styles.main}>
@@ -298,6 +323,15 @@ async function importAuthoredBlockDefault(
     `${root}generated-blocks/quarantine`,
   );
 }
+
+// ─── Default deps for AuthoredBlockManager (T-169) ────────────────────────────
+
+const defaultAuthoredBlockManagerDeps: AuthoredBlockManagerDeps = {
+  loadEntries: loadAuthoredBlockEntries,
+  archiveBlock: archiveAuthoredBlock,
+  restoreBlock: restoreAuthoredBlock,
+  permanentlyDeleteBlock: permanentlyDeleteAuthoredBlock,
+};
 
 const styles = {
   shell: {

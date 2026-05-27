@@ -1905,7 +1905,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** archived blocks still render in existing documents; permanently-deleted blocks render the placeholder; the BlockPalette never lists archived blocks.
 - **est.** 2h
 
-### T-169 [ ] · BlockPalette filter (active-only) + Authored-block manager view
+### T-169 [x] · BlockPalette filter (active-only) + Authored-block manager view
 - **Depends-on:** T-168
 - **Reads:** `docs/adr/0010-authored-block-soft-archive-on-removal.md`
 - **Outputs:**

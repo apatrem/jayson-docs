@@ -121,9 +121,14 @@ export const BlockPalette: FC<BlockPaletteProps> = ({
   generatedBlocks = [],
   onInsert,
 }) => {
+  // Filter out archived Authored blocks — they must not appear in the palette.
+  // loadBrandBlockPaletteItems already excludes them at the loader level;
+  // this is a defense-in-depth guard in case the caller passes a mixed list.
   const items = [
     ...DEFAULT_BLOCK_PALETTE_ITEMS,
-    ...generatedBlocks.filter((block) => block.generated),
+    ...generatedBlocks.filter(
+      (block) => block.generated && block.folder !== "archived",
+    ),
   ];
 
   return (
