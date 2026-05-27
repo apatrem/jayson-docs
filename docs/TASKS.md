@@ -1804,7 +1804,7 @@ Ship the consultant-generated, peer-to-peer-shareable block tier on top of M9a's
 
 Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010 (soft archive), ADR-0011 (authoring UX), ADR-0012 (LLM provisioning), ADR-0013 (declarative data). Plan: `~/.claude/plans/can-you-lay-out-playful-squid.md`.
 
-### T-159 [ ] · `defineAuthoredBlock` declarative API design
+### T-159 [x] · `defineAuthoredBlock` declarative API design
 - **Depends-on:** T-158 (M9a complete)
 - **Reads:** `docs/adr/0007-authored-block-capability-restriction.md`, `docs/adr/0008-block-registry-manifest-shape.md`, `docs/adr/0013-authored-blocks-are-declarative-data.md`
 - **Outputs:**
