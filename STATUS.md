@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-27T13:20:00Z
+**Last fire:** 2026-05-27T13:30:00Z
 **State:** RUNNING
 **Running on:** Claude Opus 4.7 at high
 **Halt reason:** N/A
@@ -10,37 +10,46 @@
 
 ## Next eligible task
 
-**T-128** — Library view: scaffold + folder scan + empty-state "Use Sample" (4h).
-- Depends-on: T-125 (`[x]`), T-126 (`[x]`), T-127 (`[x]`).
+**T-129** — Library view: filters + sort + search (4h).
+- Depends-on: T-128 (`[x]`).
+- Note: T-130 (Create 4 standard document templates, depends-on none) is also eligible.
+  Picking T-129 first as it continues the library milestone in sequence.
 
 ## Progress since the previous fire
 
-- ✅ **T-127 closed this fire** — FolderPickerScreen for first-launch + missing-folder re-pick:
-  - **`src/ui/install/FolderPickerScreen.tsx`** (NEW) — reason-aware heading, "Choose Folder…" button,
-    injectable `deps` (selectFolder + writeAppConfig) for testability. On pick: calls `write_app_config`
-    IPC with `{ paths: { cloudSyncRoot: path } }`, then dispatches `back-to-library`. On cancel: no-op.
-  - **`src/ui/router/Routes.tsx`** — replaced folder-picker placeholder with `<FolderPickerScreen>`.
-  - **`tests/ui/install/FolderPickerScreen.test.tsx`** (NEW) — 5 tests: first-launch render,
-    missing-folder render, pick → write → dispatch (both reasons), cancel stays on screen.
-  - All gates green: tsc ✓, lint ✓, 537/537 tests pass.
+- ✅ **T-128 closed this fire** — Library view scaffold + folder scan + "Use Sample" empty state:
+  - **`src/ui/library/LibraryView.tsx`** (NEW) — mounts on the `library` route; reads config for
+    `cloudSyncRoot`, scans via `buildLibraryIndex` (with IPC filesystem adapter), renders
+    `DocCard` grid or `EmptyLibraryState`. Deps injectable for tests.
+  - **`src/ui/library/EmptyLibraryState.tsx`** (NEW) — "No documents yet" + "Use Sample Document"
+    button. On click, writes bundled `examples/sample-proposal.yaml` content to
+    `<cloudSyncRoot>/Sample Proposal.yaml` via `write_yaml_file` IPC, then re-scans.
+  - **`src/ui/router/Routes.tsx`** — library branch mounts `LibraryView` (replacing placeholder
+    stub); added `openDocumentFromPath` callback that Routes passes as `onOpenDoc`.
+  - **`tests/ui/library/LibraryView.test.tsx`** (NEW) — 4 tests: folder scan + card render,
+    card click calls `onOpenDoc`, empty-state render, "Use Sample" writes + re-scans.
+  - All gates green: tsc ✓, lint ✓, 541/541 tests pass.
 
-- ✅ **T-126 closed previous fire** — router infrastructure (Routes.tsx + types + boot strategy).
+Scope expansion:
+- `src/ui/router/Routes.tsx` — added `openDocumentFromPath`, updated library route branch.
+
+- ✅ **T-127 closed previous fire** — FolderPickerScreen.
 - ⚠ 0 tasks blocked this fire
 - ⏸ 0 tasks marked waiting this fire
 
 ## At a glance
 
-Total tasks: 206   Done: 148 (72%)   Blocked: 0   Waiting: 2   Open: 55   Skipped: 1
+Total tasks: 206   Done: 149 (72%)   Blocked: 0   Waiting: 2   Open: 54   Skipped: 1
 
 ## Recent commits
 
 (pending this fire's commit)
+T-127: FolderPickerScreen — first-launch + missing-folder re-pick
 T-126: router infrastructure (Routes.tsx + types) + folder-existence check
 e501ed9 T-125: harden 4 remaining fs + 3 config IPC commands
-31764e7 T-124 spec patch: fix D-107/D-108 storage model, D-109 path, add D-110
 
 ## CI status (origin/main)
 
-latest completed run on `main`: success (pre-T-127 push)
+latest completed run on `main`: success (pre-T-128 push)
 
-Loop is running cleanly — T-128 is next.
+Loop is running cleanly — T-129 is next.

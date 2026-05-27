@@ -1487,7 +1487,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Acceptance:** first-launch (no config) shows welcome with picker; missing-folder (config present but folder gone per T-126's boot check) shows the alternate copy with the same picker; both paths persist + route correctly.
 - **est.** 1h
 
-### T-128 [ ] · Library view: scaffold + folder scan + empty-state "Use Sample"
+### T-128 [x] · Library view: scaffold + folder scan + empty-state "Use Sample"
 - **Depends-on:** T-125 (fs IPC), T-126 (router), T-127 (folder picker writes the config the library reads)
 - **Reads:** `docs/UI_LIBRARY.md`, `src/library/` (buildLibraryIndex), `examples/sample-proposal.yaml`
 - **Outputs:**

@@ -20,6 +20,7 @@ import type { DocModel } from "../../schema/docmodel";
 import { DocModelSchema } from "../../schema/docmodel";
 import { AppErrorBoundary } from "../AppErrorBoundary";
 import { FolderPickerScreen } from "../install/FolderPickerScreen";
+import { LibraryView } from "../library/LibraryView";
 import { MenuBar } from "../menu/MenuBar";
 import { DocumentView, type DocumentViewProps } from "../views/DocumentView";
 import type { BootStrategy } from "./boot";
@@ -130,10 +131,20 @@ export function Routes({
       const raw = await (fileActions.readYamlFile ?? readYamlFileDefault)(path);
       const doc = DocModelSchema.parse(parseDocModelYaml(raw));
       setDocContent({ path, doc, dirty: false, paletteOpen: false });
-      dispatch({
-        intent: "open-document",
-        path,
-      });
+      dispatch({ intent: "open-document", path });
+    } catch (error) {
+      setActionError(formatErrorMessage(error));
+    }
+  }, [fileActions]);
+
+  const openDocumentFromPath = useCallback(async (path: string): Promise<void> => {
+    setActionError(null);
+    setStatusMessage(null);
+    try {
+      const raw = await (fileActions.readYamlFile ?? readYamlFileDefault)(path);
+      const doc = DocModelSchema.parse(parseDocModelYaml(raw));
+      setDocContent({ path, doc, dirty: false, paletteOpen: false });
+      dispatch({ intent: "open-document", path });
     } catch (error) {
       setActionError(formatErrorMessage(error));
     }
@@ -257,12 +268,17 @@ export function Routes({
       ) : route.kind === "folder-picker" ? (
         <FolderPickerScreen reason={route.reason} dispatch={dispatch} />
       ) : route.kind === "library" ? (
-        <main aria-label="Library" style={styles.welcome}>
-          <section style={styles.welcomeCard}>
-            <h1 style={styles.title}>Library</h1>
-            <p>Library view — implemented in T-128.</p>
-          </section>
-        </main>
+        <LibraryView
+          onOpenDoc={openDocumentFromPath}
+          deps={{
+            ...(fileActions.readYamlFile !== undefined
+              ? { readYamlFile: fileActions.readYamlFile }
+              : {}),
+            ...(fileActions.writeYamlFile !== undefined
+              ? { writeYamlFile: fileActions.writeYamlFile }
+              : {}),
+          }}
+        />
       ) : docContent !== null ? (
         <main aria-label="Document shell" style={styles.documentShell}>
           <header style={styles.documentHeader}>
