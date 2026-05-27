@@ -76,9 +76,8 @@ describe("LibraryView — folder scan", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Document cards")).toBeTruthy();
+      expect(screen.getByText("Acme Corp")).toBeTruthy();
     });
-    expect(screen.getByText("Acme Corp")).toBeTruthy();
     expect(deps.readAppConfig).toHaveBeenCalled();
     expect(deps.listDirectory).toHaveBeenCalledWith(CLOUD_ROOT);
     expect(deps.readYamlFile).toHaveBeenCalledWith(sampleEntry.path);
@@ -160,7 +159,7 @@ describe("LibraryView — empty state", () => {
       );
     });
     await waitFor(() => {
-      expect(screen.getByLabelText("Document cards")).toBeTruthy();
+      expect(screen.getByText("Acme Corp")).toBeTruthy();
     });
   });
 });

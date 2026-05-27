@@ -1497,7 +1497,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Acceptance:** opening the library against a non-empty folder shows cards; clicking a card dispatches a route-intent through Routes.tsx and lands on DocumentView. Opening against an empty folder shows the empty-state; clicking "Use Sample" copies the sample in and shows it as a card.
 - **est.** 4h
 
-### T-129 [ ] · Library view: filters + sort + search
+### T-129 [x] · Library view: filters + sort + search
 - **Depends-on:** T-128
 - **Reads:** `docs/UI_LIBRARY.md`, `src/library/` (applyFilters, applySort, toggleFilterValue)
 - **Outputs:**

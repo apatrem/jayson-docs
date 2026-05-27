@@ -1,8 +1,16 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { buildLibraryIndex } from "../../library/index-builder";
-import type { LibraryEntry } from "../../library/filter";
-import { DocCard } from "../../library/DocCard";
+import {
+  applyFilters,
+  applySort,
+  DEFAULT_LIBRARY_FILTER_STATE,
+  type LibraryEntry,
+  type LibraryFilterState,
+} from "../../library/filter";
+import { DocList } from "../../library/DocList";
+import { FilterSidebar } from "../../library/FilterSidebar";
+import { SearchBar } from "../../library/SearchBar";
 import { formatErrorMessage } from "../../ipc/errors";
 import { EmptyLibraryState } from "./EmptyLibraryState";
 import sampleProposalYaml from "../../../examples/sample-proposal.yaml?raw";
@@ -18,16 +26,28 @@ export interface LibraryViewDeps {
 
 export interface LibraryViewProps {
   onOpenDoc: (yamlPath: string) => Promise<void>;
+  currentUserEmail?: string;
   deps?: Partial<LibraryViewDeps>;
 }
 
 type ScanStatus = "loading" | "empty" | "loaded" | "error";
 
-export function LibraryView({ onOpenDoc, deps = {} }: LibraryViewProps) {
+const SORT_LABELS: Record<LibraryFilterState["sort"], string> = {
+  "updated-desc": "Updated (newest)",
+  "updated-asc": "Updated (oldest)",
+  "client-asc": "Client A–Z",
+  "created-desc": "Created (newest)",
+};
+
+export function LibraryView({ onOpenDoc, currentUserEmail = "", deps = {} }: LibraryViewProps) {
   const [status, setStatus] = useState<ScanStatus>("loading");
   const [entries, setEntries] = useState<LibraryEntry[]>([]);
   const [cloudSyncRoot, setCloudSyncRoot] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<LibraryFilterState>({
+    ...DEFAULT_LIBRARY_FILTER_STATE,
+    ownerMode: "all",
+  });
 
   const scan = useCallback(async (root: string): Promise<void> => {
     const readYamlFile = deps.readYamlFile ?? readYamlFileDefault;
@@ -76,6 +96,11 @@ export function LibraryView({ onOpenDoc, deps = {} }: LibraryViewProps) {
     }
   }, [cloudSyncRoot, deps.writeYamlFile, scan]);
 
+  const visibleEntries = useMemo(
+    () => applySort(applyFilters(entries, filters, currentUserEmail), filters.sort),
+    [entries, filters, currentUserEmail],
+  );
+
   const noop = () => undefined;
 
   if (status === "loading") {
@@ -96,34 +121,85 @@ export function LibraryView({ onOpenDoc, deps = {} }: LibraryViewProps) {
     );
   }
 
-  return (
-    <main aria-label="Library" style={styles.shell}>
-      <header style={styles.header}>
-        <h1 style={styles.title}>Library</h1>
-      </header>
-      {status === "empty" ? (
+  if (status === "empty") {
+    return (
+      <main aria-label="Library" style={styles.shell}>
+        <header style={styles.header}>
+          <h1 style={styles.title}>Library</h1>
+        </header>
         <EmptyLibraryState
           onUseSample={() => {
             void handleUseSample();
           }}
         />
-      ) : (
-        <section style={styles.grid} aria-label="Document cards">
-          {entries.map((entry) => (
-            <DocCard
-              key={entry.path}
-              entry={entry}
-              onOpen={(e) => {
-                void onOpenDoc(joinPath(e.path, e.yamlFilename));
-              }}
-              onOpenAsReviewer={noop}
-              onDuplicate={noop}
-              onArchive={noop}
-              onShowInFolder={noop}
-            />
-          ))}
-        </section>
-      )}
+      </main>
+    );
+  }
+
+  return (
+    <main aria-label="Library" style={styles.shell}>
+      <header style={styles.header}>
+        <h1 style={styles.title}>Library</h1>
+      </header>
+      <div style={styles.layout}>
+        <FilterSidebar entries={entries} state={filters} onChange={setFilters} />
+        <div style={styles.main}>
+          <SearchBar
+            value={filters.search}
+            onChange={(search) => setFilters((f) => ({ ...f, search }))}
+          />
+          <div style={styles.sortRow}>
+            <label style={styles.sortLabel}>
+              {"Sort: "}
+              <select
+                value={filters.sort}
+                onChange={(e) =>
+                  setFilters((f) => ({
+                    ...f,
+                    sort: e.target.value as LibraryFilterState["sort"],
+                  }))
+                }
+              >
+                {(Object.keys(SORT_LABELS) as LibraryFilterState["sort"][]).map((key) => (
+                  <option key={key} value={key}>
+                    {SORT_LABELS[key]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span style={styles.viewToggle}>
+              <button
+                type="button"
+                aria-label="Grid view"
+                aria-pressed={filters.view === "grid"}
+                onClick={() => setFilters((f) => ({ ...f, view: "grid" }))}
+              >
+                Grid
+              </button>
+              <button
+                type="button"
+                aria-label="List view"
+                aria-pressed={filters.view === "list"}
+                onClick={() => setFilters((f) => ({ ...f, view: "list" }))}
+              >
+                List
+              </button>
+            </span>
+          </div>
+          <DocList
+            entries={visibleEntries}
+            view={filters.view}
+            onResetFilters={() => setFilters(DEFAULT_LIBRARY_FILTER_STATE)}
+            onOpen={(e) => {
+              void onOpenDoc(joinPath(e.path, e.yamlFilename));
+            }}
+            onOpenAsReviewer={noop}
+            onDuplicate={noop}
+            onArchive={noop}
+            onShowInFolder={noop}
+          />
+        </div>
+      </div>
     </main>
   );
 }
@@ -165,11 +241,30 @@ const styles = {
     fontSize: "1.5rem",
     margin: 0,
   },
-  grid: {
+  layout: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+    gridTemplateColumns: "15rem 1fr",
+    gap: "1.5rem",
+    alignItems: "start",
+  },
+  main: {
+    display: "grid",
+    gap: "0.75rem",
+  },
+  sortRow: {
+    alignItems: "center",
+    display: "flex",
     gap: "1rem",
-    alignContent: "start",
+    justifyContent: "space-between",
+  },
+  sortLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+  },
+  viewToggle: {
+    display: "flex",
+    gap: "0.25rem",
   },
   loading: {
     color: "GrayText",
