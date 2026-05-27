@@ -1690,7 +1690,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Reads/Outputs/Acceptance:** as T-142 for Prose
 - **est.** 1h
 
-### T-145 [ ] · Migrate Callout block to registry
+### T-145 [x] · Migrate Callout block to registry
 - **Depends-on:** T-144
 - **Reads/Outputs/Acceptance:** as T-142 for Callout (rich-text-container variant)
 - **est.** 1.5h

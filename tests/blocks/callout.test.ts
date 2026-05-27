@@ -10,13 +10,13 @@ import {
   CalloutTipTapNode,
   calloutBlockToProseMirror,
   proseMirrorToCalloutBlock,
-} from "../../src/editor/nodes/CalloutNode";
-import { Callout } from "../../src/renderer/blocks/Callout";
+  Callout,
+} from "../../src/blocks/callout";
 import {
   CalloutBlockSchema,
   calloutTintTokenFor,
   type CalloutBlock,
-} from "../../src/schema/blocks/callout";
+} from "../../src/blocks/callout/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const validInfoCallout: CalloutBlock = {

@@ -24,7 +24,7 @@ import { describe, it, expect } from "vitest";
 import { docModelToProseMirror, proseMirrorToDocModel } from "../../src/editor/mapping";
 import { loadAllBlocks } from "../../src/blocks/runtime-registry";
 import type { DocModel } from "../../src/schema/docmodel";
-import type { CalloutBlock } from "../../src/schema/blocks/callout";
+import type { CalloutBlock } from "../../src/blocks/callout/schema";
 import type { ProseBlock } from "../../src/blocks/prose/schema";
 import type { HeadingBlock } from "../../src/blocks/heading/schema";
 import type { DividerBlock } from "../../src/blocks/divider/schema";

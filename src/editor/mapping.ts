@@ -9,10 +9,6 @@ import {
   proseMirrorToBulletListBlock,
 } from "./nodes/BulletListNode";
 import {
-  calloutBlockToProseMirror,
-  proseMirrorToCalloutBlock,
-} from "./nodes/CalloutNode";
-import {
   chartBlockToProseMirror,
   proseMirrorToChartBlock,
 } from "./nodes/ChartNode";
@@ -237,8 +233,6 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
       return bulletListBlockToProseMirror(block);
     case "numbered-list":
       return numberedListBlockToProseMirror(block);
-    case "callout":
-      return calloutBlockToProseMirror(block);
     case "kpi-cards":
       return kpiCardsBlockToProseMirror(block);
     case "image":
@@ -281,10 +275,6 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
     case "numberedList":
       return proseMirrorToNumberedListBlock(
         node as unknown as Parameters<typeof proseMirrorToNumberedListBlock>[0],
-      );
-    case "callout":
-      return proseMirrorToCalloutBlock(
-        node as unknown as Parameters<typeof proseMirrorToCalloutBlock>[0],
       );
     case "kpiCards":
       return proseMirrorToKpiCardsBlock(

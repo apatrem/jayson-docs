@@ -4,7 +4,7 @@ import { ProseBlockSchema } from "../../blocks/prose/schema";
 import { HeadingBlockSchema } from "../../blocks/heading/schema";
 import { BulletListBlockSchema } from "./bullet-list";
 import { NumberedListBlockSchema } from "./numbered-list";
-import { CalloutBlockSchema } from "./callout";
+import { CalloutBlockSchema } from "../../blocks/callout/schema";
 import { KpiCardsBlockSchema } from "./kpi-cards";
 import { ImageBlockSchema } from "./image";
 import { TableBlockDataSchema } from "./table";

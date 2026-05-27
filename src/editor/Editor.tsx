@@ -19,7 +19,7 @@ import { CommentMark } from "../comments/CommentMark";
 import type { DocModel } from "../schema/docmodel";
 import { docModelToProseMirror } from "./mapping";
 import { BulletListTipTapNode } from "./nodes/BulletListNode";
-import { CalloutTipTapNode } from "./nodes/CalloutNode";
+import { CalloutTipTapNode } from "../blocks/callout";
 import { ChartTipTapNode } from "./nodes/ChartNode";
 import { DiagramTipTapNode } from "./nodes/DiagramNode";
 import { DividerTipTapNode } from "../blocks/divider";
