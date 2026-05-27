@@ -1599,7 +1599,7 @@ Note: T-135 (commit grilling outputs) and T-158a (write ADR-0013) were completed
 - **Acceptance:** all three reference patterns reflect the new shape; the `next-task` loop's future block work has a correct copy-source.
 - **est.** 3h
 
-### T-139 [ ] · Registry API + per-block schema/runtime module split (pure schema, runtime separate)
+### T-139 [x] · Registry API + per-block schema/runtime module split (pure schema, runtime separate)
 - **Depends-on:** T-136, T-137 (prereqs landed first)
 - **Reads:** `docs/adr/0008-block-registry-manifest-shape.md`, `docs/adr/0013-authored-blocks-are-declarative-data.md`, `src/schema/blocks/callout.ts`, `src/editor/nodes/CalloutNode.tsx`, `src/renderer/blocks/Callout.tsx`
 - **Outputs:**
