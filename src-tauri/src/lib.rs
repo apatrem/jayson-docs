@@ -36,6 +36,7 @@ pub fn run() {
             ipc::fs::file_exists,
             ipc::fs::ensure_directory,
             ipc::fs::move_file,
+            ipc::fs::delete_file,
             ipc::keychain::get_secret,
             ipc::keychain::set_secret,
             ipc::keychain::delete_secret,

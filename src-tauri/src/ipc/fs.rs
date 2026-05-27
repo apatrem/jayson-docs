@@ -68,6 +68,30 @@ pub async fn move_file(app: tauri::AppHandle, src: String, dst: String) -> IpcRe
     move_file_at_path(&src, &dst, &roots)
 }
 
+/// Permanently deletes a single file within the asset scope.
+///
+/// Allowed extensions: `.tsx`, `.json` (covers quarantine source files and
+/// their `.violations.json` sidecars installed by the T-164 receive pipeline).
+/// Directories, symlinks, and out-of-scope paths are rejected.
+#[tauri::command]
+pub async fn delete_file(app: tauri::AppHandle, path: String) -> IpcResult<()> {
+    let roots = asset_scope_roots(&app);
+    delete_file_at_path(&path, &roots)
+}
+
+fn delete_file_at_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<()> {
+    // Validate extension — only quarantine-relevant files may be deleted via this command.
+    let raw = validate_scoped_path(path, &["tsx", "json"])?;
+    let canonical = raw
+        .canonicalize()
+        .map_err(|e| map_path_error(e, path.to_string()))?;
+    ensure_path_in_scope(&canonical, allowed_roots)?;
+    if canonical.is_dir() {
+        return Err(IpcError::Invalid("path must be a file, not a directory".to_string()));
+    }
+    fs::remove_file(&canonical).map_err(|e| IpcError::Io(e.to_string()))
+}
+
 fn read_yaml_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<String> {
     let path = canonical_read_target(path, allowed_roots)?;
     fs::read_to_string(path).map_err(|e| IpcError::Io(e.to_string()))

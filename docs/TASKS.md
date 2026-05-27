@@ -1863,7 +1863,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** dragging a valid Authored `.tsx` activates the block in the BlockPalette; dragging an invalid one quarantines with a visible reason.
 - **est.** 4h
 
-### T-165 [ ] · Quarantine state + UI
+### T-165 [x] · Quarantine state + UI
 - **Depends-on:** T-164
 - **Reads:** `docs/adr/0005-authored-block-transport-format.md`
 - **Outputs:**

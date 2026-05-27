@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { CreateFromTemplateButton } from "./CreateFromTemplateButton";
 import { CreateFromTemplateModal } from "./CreateFromTemplateModal";
+import { QuarantinePanel, type QuarantinePanelDeps } from "./QuarantinePanel";
+import type { AuthoredReceiveResult } from "../../ipc/authored-block";
 import { invoke } from "@tauri-apps/api/core";
 import { buildLibraryIndex } from "../../library/index-builder";
 import {
@@ -24,6 +26,9 @@ export interface LibraryViewDeps {
   listDirectory: (path: string) => Promise<IpcDirectoryEntry[]>;
   readYamlFile: (path: string) => Promise<string>;
   writeYamlFile: (path: string, content: string) => Promise<void>;
+  // T-165 — quarantine panel dependencies
+  deleteFile?: (path: string) => Promise<void>;
+  importAuthoredBlock?: (path: string) => Promise<AuthoredReceiveResult>;
 }
 
 export interface LibraryViewProps {
@@ -124,6 +129,20 @@ export function LibraryView({ onOpenDoc, currentUserEmail = "", deps = {} }: Lib
     );
   }
 
+  // Build quarantine panel deps — uses cloudSyncRoot resolved above.
+  const quarantineDir = cloudSyncRoot
+    ? (cloudSyncRoot.endsWith("/")
+        ? `${cloudSyncRoot}generated-blocks/quarantine`
+        : `${cloudSyncRoot}/generated-blocks/quarantine`)
+    : "";
+
+  const quarantineDeps: QuarantinePanelDeps = {
+    listDirectory: deps.listDirectory ?? listDirectoryDefault,
+    readFile: deps.readYamlFile ?? readYamlFileDefault,
+    deleteFile: deps.deleteFile ?? deleteFileDefault,
+    importAuthoredBlock: deps.importAuthoredBlock ?? importAuthoredBlockDefault,
+  };
+
   const sharedHeader = (
     <header style={styles.header}>
       <h1 style={styles.title}>Library</h1>
@@ -145,11 +164,21 @@ export function LibraryView({ onOpenDoc, currentUserEmail = "", deps = {} }: Lib
     />
   ) : null;
 
+  // QuarantinePanel rendered in both "empty" and "loaded" states so users can
+  // see and manage quarantined blocks even when the document library is empty.
+  const quarantinePanel = quarantineDir ? (
+    <QuarantinePanel
+      quarantineDir={quarantineDir}
+      deps={quarantineDeps}
+    />
+  ) : null;
+
   if (status === "empty") {
     return (
       <main aria-label="Library" style={styles.shell}>
         {sharedHeader}
         {modal}
+        {quarantinePanel}
         <EmptyLibraryState
           onUseSample={() => {
             void handleUseSample();
@@ -163,6 +192,7 @@ export function LibraryView({ onOpenDoc, currentUserEmail = "", deps = {} }: Lib
     <main aria-label="Library" style={styles.shell}>
       {sharedHeader}
       {modal}
+      {quarantinePanel}
       <div style={styles.layout}>
         <FilterSidebar entries={entries} state={filters} onChange={setFilters} />
         <div style={styles.main}>
@@ -244,6 +274,29 @@ async function readYamlFileDefault(path: string): Promise<string> {
 
 async function writeYamlFileDefault(path: string, content: string): Promise<void> {
   await invoke("write_yaml_file", { path, content });
+}
+
+async function deleteFileDefault(path: string): Promise<void> {
+  await invoke("delete_file", { path });
+}
+
+async function importAuthoredBlockDefault(
+  path: string,
+): Promise<AuthoredReceiveResult> {
+  // Dynamically resolve cloudSyncRoot for each retry (cheap; retries are rare).
+  const config = await invoke<{ paths: { cloudSyncRoot: string } }>("read_app_config");
+  const root = config.paths.cloudSyncRoot.endsWith("/")
+    ? config.paths.cloudSyncRoot
+    : `${config.paths.cloudSyncRoot}/`;
+  const source = await invoke<string>("read_yaml_file", { path });
+  const filename = path.split("/").at(-1) ?? "block.tsx";
+  const { receiveAuthoredBlock } = await import("../../ipc/authored-block");
+  return receiveAuthoredBlock(
+    source,
+    filename,
+    `${root}generated-blocks/active`,
+    `${root}generated-blocks/quarantine`,
+  );
 }
 
 const styles = {
