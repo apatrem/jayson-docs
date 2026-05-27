@@ -1,7 +1,7 @@
-import { dirname, join } from "node:path";
 import { parse } from "yaml";
 import type { LibraryEntry, LibraryIndex } from "./filter";
 import { MetaSchema } from "../schema/meta";
+import { dirname, joinPath } from "./path";
 
 export interface DirectoryEntry {
   name: string;
@@ -93,7 +93,7 @@ export function updateLibraryEntry(
 }
 
 export function docFolderPath(root: string, client: string, project: string): string {
-  return join(root, slug(client), slug(project));
+  return joinPath(root, slug(client), slug(project));
 }
 
 function slug(value: string): string {

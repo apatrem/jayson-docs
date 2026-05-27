@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { isIpcError } from "../../ipc/errors";
 import { M8PartialConfigSchema } from "../../schema/app-config";
-import { InstallAppConfigSchema } from "../../setup/install";
+import { InstallAppConfigSchema } from "../../schema/install-config";
 import type { Route } from "./types";
 
 export interface BootStrategy {

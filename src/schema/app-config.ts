@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // D-101: GUI writes only the partial schema (paths.cloudSyncRoot).
-// The full InstallAppConfigSchema (src/setup/install.ts) is a structural widen.
+// The full InstallAppConfigSchema (src/schema/install-config.ts) is a structural widen.
 export const M8PartialConfigSchema = z
   .object({
     schemaVersion: z.string().optional(),

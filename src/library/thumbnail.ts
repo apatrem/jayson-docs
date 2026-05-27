@@ -1,10 +1,10 @@
-import { join } from "node:path";
 import type { LibraryEntry } from "./filter";
+import { joinPath } from "./path";
 
 export const THUMBNAIL_FILENAME = ".thumbnail.png";
 
 export function thumbnailPath(entry: Pick<LibraryEntry, "path">): string {
-  return join(entry.path, THUMBNAIL_FILENAME);
+  return joinPath(entry.path, THUMBNAIL_FILENAME);
 }
 
 export function thumbnailUri(entry: LibraryEntry): string | null {
