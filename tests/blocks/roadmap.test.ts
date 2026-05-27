@@ -10,16 +10,14 @@ import {
   RoadmapTipTapNode,
   roadmapBlockToProseMirror,
   proseMirrorToRoadmapBlock,
-} from "../../src/editor/nodes/RoadmapNode";
-import {
   Roadmap,
   workstreamOffsetPercent,
   workstreamWidthPercent,
-} from "../../src/renderer/blocks/Roadmap";
+} from "../../src/blocks/roadmap";
 import {
   RoadmapBlockSchema,
   type RoadmapBlock,
-} from "../../src/schema/blocks/roadmap";
+} from "../../src/blocks/roadmap/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const validRoadmap: RoadmapBlock = {

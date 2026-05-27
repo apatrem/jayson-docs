@@ -6,9 +6,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, it, expect } from "vitest";
 import { parse } from "yaml";
 import { BrandProvider } from "../../src/brand-tokens/BrandProvider";
-import { Timeline } from "../../src/renderer/blocks/Timeline";
+import { Timeline } from "../../src/blocks/timeline";
 import { BrandTokensSchema } from "../../src/schema/brand";
-import type { TimelineBlock } from "../../src/schema/blocks/timeline";
+import type { TimelineBlock } from "../../src/blocks/timeline/schema";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const brand = BrandTokensSchema.parse(

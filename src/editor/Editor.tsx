@@ -28,11 +28,11 @@ import { ImageTipTapNode } from "../blocks/image";
 import { KpiCardsTipTapNode } from "./nodes/KpiCardsNode";
 import { NumberedListTipTapNode } from "../blocks/numbered-list";
 import { ProseTipTapNode } from "../blocks/prose";
-import { RiskMatrixTipTapNode } from "./nodes/RiskMatrixNode";
-import { RoadmapTipTapNode } from "./nodes/RoadmapNode";
+import { RiskMatrixTipTapNode } from "../blocks/risk-matrix";
+import { RoadmapTipTapNode } from "../blocks/roadmap";
 import { DocTableTipTapNode } from "./nodes/TableNode";
-import { TeamTipTapNode } from "./nodes/TeamNode";
-import { TimelineTipTapNode } from "./nodes/TimelineNode";
+import { TeamTipTapNode } from "../blocks/team";
+import { TimelineTipTapNode } from "../blocks/timeline";
 
 export interface EditorProps {
   initialContent?: JSONContent | string;

@@ -9,10 +9,10 @@ import { KpiCardsBlockSchema } from "./kpi-cards";
 import { ImageBlockSchema } from "../../blocks/image/schema";
 import { TableBlockDataSchema } from "./table";
 import { ChartBlockDataSchema } from "./chart";
-import { TimelineBlockSchema } from "./timeline";
-import { RoadmapBlockDataSchema } from "./roadmap";
-import { TeamBlockSchema } from "./team";
-import { RiskMatrixBlockDataSchema } from "./risk-matrix";
+import { TimelineBlockSchema } from "../../blocks/timeline/schema";
+import { RoadmapBlockDataSchema } from "../../blocks/roadmap/schema";
+import { TeamBlockSchema } from "../../blocks/team/schema";
+import { RiskMatrixBlockDataSchema } from "../../blocks/risk-matrix/schema";
 import { DiagramBlockSchema } from "../../blocks/diagram/schema";
 import { DividerBlockSchema } from "../../blocks/divider/schema";
 

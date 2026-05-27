@@ -13,25 +13,9 @@ import {
   proseMirrorToKpiCardsBlock,
 } from "./nodes/KpiCardsNode";
 import {
-  proseMirrorToRiskMatrixBlock,
-  riskMatrixBlockToProseMirror,
-} from "./nodes/RiskMatrixNode";
-import {
-  proseMirrorToRoadmapBlock,
-  roadmapBlockToProseMirror,
-} from "./nodes/RoadmapNode";
-import {
   proseMirrorToTableBlock,
   tableBlockToProseMirror,
 } from "./nodes/TableNode";
-import {
-  proseMirrorToTeamBlock,
-  teamBlockToProseMirror,
-} from "./nodes/TeamNode";
-import {
-  proseMirrorToTimelineBlock,
-  timelineBlockToProseMirror,
-} from "./nodes/TimelineNode";
 
 // ── Registry-first dispatch (T-141b) ──────────────────────────────────────
 // Lazy lookup maps built once from loadAllBlocks(). The switch arms below are
@@ -219,14 +203,6 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
       return tableBlockToProseMirror(block);
     case "chart":
       return chartBlockToProseMirror(block) as ProseMirrorNode;
-    case "timeline":
-      return timelineBlockToProseMirror(block);
-    case "roadmap":
-      return roadmapBlockToProseMirror(block);
-    case "risk-matrix":
-      return riskMatrixBlockToProseMirror(block);
-    case "team":
-      return teamBlockToProseMirror(block);
     default:
       // Block types migrated to the registry are intercepted above and never
       // reach this arm at runtime. Cast satisfies the exhaustiveness check
@@ -255,22 +231,6 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
     case "chart":
       return proseMirrorToChartBlock(
         node as unknown as Parameters<typeof proseMirrorToChartBlock>[0],
-      );
-    case "docTimeline":
-      return proseMirrorToTimelineBlock(
-        node as unknown as Parameters<typeof proseMirrorToTimelineBlock>[0],
-      );
-    case "docRoadmap":
-      return proseMirrorToRoadmapBlock(
-        node as unknown as Parameters<typeof proseMirrorToRoadmapBlock>[0],
-      );
-    case "docRiskMatrix":
-      return proseMirrorToRiskMatrixBlock(
-        node as unknown as Parameters<typeof proseMirrorToRiskMatrixBlock>[0],
-      );
-    case "docTeam":
-      return proseMirrorToTeamBlock(
-        node as unknown as Parameters<typeof proseMirrorToTeamBlock>[0],
       );
     default:
       throw new MappingError(`Unknown block node type: ${node.type}`, ["blocks"]);

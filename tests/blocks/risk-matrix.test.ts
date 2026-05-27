@@ -10,15 +10,13 @@ import {
   RiskMatrixTipTapNode,
   riskMatrixBlockToProseMirror,
   proseMirrorToRiskMatrixBlock,
-} from "../../src/editor/nodes/RiskMatrixNode";
-import {
   RiskMatrix,
   riskSeverityColor,
-} from "../../src/renderer/blocks/RiskMatrix";
+} from "../../src/blocks/risk-matrix";
 import {
   RiskMatrixBlockSchema,
   type RiskMatrixBlock,
-} from "../../src/schema/blocks/risk-matrix";
+} from "../../src/blocks/risk-matrix/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const validRiskMatrix: RiskMatrixBlock = {

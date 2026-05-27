@@ -6,9 +6,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, it, expect } from "vitest";
 import { parse } from "yaml";
 import { BrandProvider } from "../../src/brand-tokens/BrandProvider";
-import { Roadmap } from "../../src/renderer/blocks/Roadmap";
+import { Roadmap } from "../../src/blocks/roadmap";
 import { BrandTokensSchema } from "../../src/schema/brand";
-import type { RoadmapBlock } from "../../src/schema/blocks/roadmap";
+import type { RoadmapBlock } from "../../src/blocks/roadmap/schema";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const brand = BrandTokensSchema.parse(

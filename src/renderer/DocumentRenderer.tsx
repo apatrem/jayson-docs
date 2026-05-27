@@ -19,11 +19,11 @@ import { Image } from "../blocks/image";
 import { KpiCards } from "./blocks/KpiCards";
 import { NumberedList } from "../blocks/numbered-list";
 import { Prose } from "../blocks/prose";
-import { RiskMatrix } from "./blocks/RiskMatrix";
-import { Roadmap } from "./blocks/Roadmap";
+import { RiskMatrix } from "../blocks/risk-matrix";
+import { Roadmap } from "../blocks/roadmap";
 import { Table } from "./blocks/Table";
-import { Team } from "./blocks/Team";
-import { Timeline } from "./blocks/Timeline";
+import { Team } from "../blocks/team";
+import { Timeline } from "../blocks/timeline";
 
 export type DocumentModel = Extract<DocModel, { kind: "document" }>;
 

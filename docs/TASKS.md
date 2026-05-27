@@ -1715,7 +1715,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Reads/Outputs/Acceptance:** as T-142 for Diagram (Mermaid-backed)
 - **est.** 1.5h
 
-### T-150 [ ] · Migrate Timeline block to registry
+### T-150 [x] · Migrate Timeline block to registry
 - **Depends-on:** T-149
 - **Reads/Outputs/Acceptance:** as T-142 for Timeline
 - **est.** 1.5h

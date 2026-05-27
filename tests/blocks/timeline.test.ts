@@ -10,12 +10,12 @@ import {
   TimelineTipTapNode,
   timelineBlockToProseMirror,
   proseMirrorToTimelineBlock,
-} from "../../src/editor/nodes/TimelineNode";
-import { Timeline } from "../../src/renderer/blocks/Timeline";
+  Timeline,
+} from "../../src/blocks/timeline";
 import {
   TimelineBlockSchema,
   type TimelineBlock,
-} from "../../src/schema/blocks/timeline";
+} from "../../src/blocks/timeline/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const validTimeline: TimelineBlock = {

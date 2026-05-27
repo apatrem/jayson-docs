@@ -11,9 +11,9 @@ import {
   TeamTipTapNode,
   teamBlockToProseMirror,
   proseMirrorToTeamBlock,
-} from "../../src/editor/nodes/TeamNode";
-import { Team } from "../../src/renderer/blocks/Team";
-import { TeamBlockSchema, type TeamBlock } from "../../src/schema/blocks/team";
+  Team,
+} from "../../src/blocks/team";
+import { TeamBlockSchema, type TeamBlock } from "../../src/blocks/team/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const validTeam: TeamBlock = {

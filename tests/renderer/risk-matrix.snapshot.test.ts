@@ -6,9 +6,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, it, expect } from "vitest";
 import { parse } from "yaml";
 import { BrandProvider } from "../../src/brand-tokens/BrandProvider";
-import { RiskMatrix } from "../../src/renderer/blocks/RiskMatrix";
+import { RiskMatrix } from "../../src/blocks/risk-matrix";
 import { BrandTokensSchema } from "../../src/schema/brand";
-import type { RiskMatrixBlock } from "../../src/schema/blocks/risk-matrix";
+import type { RiskMatrixBlock } from "../../src/blocks/risk-matrix/schema";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const brand = BrandTokensSchema.parse(
