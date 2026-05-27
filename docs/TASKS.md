@@ -1974,7 +1974,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** authored-block-generation calls land in the ledger; D-32 constraints (no behavioural data) still hold.
 - **est.** 2h
 
-### T-177 [ ] · Settings → My LLM Spend view: surface the new category
+### T-177 [x] · Settings → My LLM Spend view: surface the new category
 - **Depends-on:** T-176
 - **Outputs:**
   - Add a row/section for `authored-block-generation` in the existing Settings → My LLM Spend view. Single bucket (no sub-categorisation per the simplified D-34 amendment).

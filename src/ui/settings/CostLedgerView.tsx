@@ -2,6 +2,15 @@ import type { CSSProperties, FC } from "react";
 import type { CostLedgerRow } from "../../cost-ledger/db";
 import type { CostSummary } from "../../cost-ledger/limits";
 
+// ─── Internal types ───────────────────────────────────────────────────────────
+
+interface CategoryBucket {
+  callKind: string;
+  label: string;
+  totalUsd: number;
+  callCount: number;
+}
+
 export interface CostLedgerViewProps {
   rows: CostLedgerRow[];
   summary: CostSummary;
@@ -73,6 +82,27 @@ export const CostLedgerView: FC<CostLedgerViewProps> = ({
           detail="with recorded LLM cost"
         />
       </div>
+
+      <section style={styles.section} aria-labelledby="per-category-title">
+        <h2 id="per-category-title" style={styles.sectionTitle}>
+          By category
+        </h2>
+        {rows.length === 0 ? (
+          <p style={styles.muted}>No category costs recorded yet.</p>
+        ) : (
+          <ul style={styles.docList}>
+            {summarizePerCategory(rows).map((bucket) => (
+              <li key={bucket.callKind} style={styles.docRow}>
+                <span>{bucket.label}</span>
+                <span>
+                  {money.format(bucket.totalUsd)} · {bucket.callCount}{" "}
+                  {bucket.callCount === 1 ? "call" : "calls"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section style={styles.section} aria-labelledby="per-doc-title">
         <h2 id="per-doc-title" style={styles.sectionTitle}>
@@ -165,6 +195,41 @@ const Td: FC<{ children: React.ReactNode }> = ({ children }) => (
 
 function defaultConfirm(message: string): boolean {
   return window.confirm(message);
+}
+
+/** Map a callKind enum value to a human-readable label. */
+function callKindLabel(callKind: string): string {
+  const labels: Record<string, string> = {
+    generation: "Document generation",
+    "comment-batch": "Comment batch",
+    "comment-single": "Comment (single)",
+    setup: "Workspace setup",
+    "authored-block-generation": "Authored block generation",
+  };
+  return labels[callKind] ?? callKind;
+}
+
+/**
+ * Aggregates rows by callKind, returning a sorted list of buckets (highest
+ * spend first). Each callKind is a single bucket — no sub-categorisation per
+ * the simplified D-34 amendment (T-177).
+ */
+function summarizePerCategory(rows: CostLedgerRow[]): CategoryBucket[] {
+  const map = new Map<string, { totalUsd: number; callCount: number }>();
+  for (const row of rows) {
+    const entry = map.get(row.callKind) ?? { totalUsd: 0, callCount: 0 };
+    entry.totalUsd += row.computedCostUsd;
+    entry.callCount += 1;
+    map.set(row.callKind, entry);
+  }
+  return [...map.entries()]
+    .map(([callKind, { totalUsd, callCount }]) => ({
+      callKind,
+      label: callKindLabel(callKind),
+      totalUsd,
+      callCount,
+    }))
+    .sort((a, b) => b.totalUsd - a.totalUsd);
 }
 
 function formatPercent(value: number): string {
