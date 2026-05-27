@@ -35,6 +35,12 @@ export interface DocumentViewProps {
   onDocumentChange?: (doc: DocumentModel) => void;
   onBackToWelcome?: () => void;
   EditorComponent?: FC<EditorSurfaceProps>;
+  /**
+   * Called when the consultant clicks "Create new Authored block" in the palette.
+   * Receives the current document context so the generation pipeline (T-172 / T-173)
+   * can use the surrounding blocks, brand tokens, and document tone.
+   */
+  onCreateAuthoredBlock?: (doc: DocumentModel) => void;
 }
 
 const DEFAULT_AUTOSAVE_DEBOUNCE_MS = 2000;
@@ -68,6 +74,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
   onDocumentChange,
   onBackToWelcome,
   EditorComponent = DefaultEditorSurface,
+  onCreateAuthoredBlock,
 }) => {
   const generatedBlocks = useBrandBlocksFromRegistry();
   const [doc, setDoc] = useState<DocumentModel | null>(initialDoc ?? null);
@@ -242,6 +249,16 @@ export const DocumentView: FC<DocumentViewProps> = ({
               onInsert={() => {
                 setPaletteOpen(false);
               }}
+              {...(onCreateAuthoredBlock !== undefined
+                ? {
+                    onCreateAuthoredBlock: () => {
+                      const current = currentDoc.current;
+                      if (current !== null) {
+                        onCreateAuthoredBlock(current);
+                      }
+                    },
+                  }
+                : {})}
             />
           </section>
         ) : null}

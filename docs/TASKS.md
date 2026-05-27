@@ -1923,7 +1923,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** v2 from the same sender replaces v1; v2 from a different sender coexists; both edge cases tested.
 - **est.** 2h
 
-### T-171 [ ] · In-document "Create new Authored block" trigger
+### T-171 [x] · In-document "Create new Authored block" trigger
 - **Depends-on:** T-169
 - **Reads:** `docs/adr/0011-authored-block-generation-ux.md`
 - **Outputs:**

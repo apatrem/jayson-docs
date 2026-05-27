@@ -21,6 +21,13 @@ export interface BlockPaletteProps {
   } | null;
   generatedBlocks?: BlockPaletteItem[];
   onInsert?: (blockId: string) => void;
+  /**
+   * Called when the consultant clicks "Create new Authored block".
+   * The parent is responsible for opening the authoring UI (T-172) and passing
+   * the current document context to the generation pipeline.
+   * If omitted the button is rendered but disabled.
+   */
+  onCreateAuthoredBlock?: () => void;
 }
 
 export const DEFAULT_BLOCK_PALETTE_ITEMS: BlockPaletteItem[] = [
@@ -120,6 +127,7 @@ export const BlockPalette: FC<BlockPaletteProps> = ({
   editor,
   generatedBlocks = [],
   onInsert,
+  onCreateAuthoredBlock,
 }) => {
   // Filter out archived Authored blocks — they must not appear in the palette.
   // loadBrandBlockPaletteItems already excludes them at the loader level;
@@ -162,6 +170,20 @@ export const BlockPalette: FC<BlockPaletteProps> = ({
           </button>
         ))}
       </div>
+      <div style={styles.createSection}>
+        <button
+          type="button"
+          style={styles.createButton}
+          disabled={onCreateAuthoredBlock === undefined}
+          onClick={() => {
+            onCreateAuthoredBlock?.();
+          }}
+          aria-label="Create new Authored block"
+        >
+          <span style={styles.createIcon}>✦</span>
+          Create new Authored block
+        </button>
+      </div>
     </aside>
   );
 };
@@ -201,6 +223,24 @@ const styles: Record<string, CSSProperties> = {
   when: {
     color: "GrayText",
     fontSize: "0.875rem",
+  },
+  createSection: {
+    borderTop: "1px solid ButtonBorder",
+    paddingTop: "0.75rem",
+  },
+  createButton: {
+    alignItems: "center",
+    border: "1px dashed ButtonBorder",
+    borderRadius: "0.375rem",
+    cursor: "pointer",
+    display: "flex",
+    fontSize: "0.875rem",
+    gap: "0.5rem",
+    padding: "0.625rem 0.75rem",
+    width: "100%",
+  },
+  createIcon: {
+    fontSize: "1rem",
   },
 };
 

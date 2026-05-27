@@ -319,6 +319,26 @@ describe("DocumentView", () => {
     ).toBeNull();
   });
 
+  it("threads the current DocModel to onCreateAuthoredBlock when the Create button is clicked", () => {
+    const onCreateAuthoredBlock = vi.fn();
+    render(
+      <DocumentView
+        path="/Users/me/Documents/proposal.yaml"
+        initialDoc={doc}
+        onCreateAuthoredBlock={onCreateAuthoredBlock}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Insert block" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /create new authored block/i }),
+    );
+
+    expect(onCreateAuthoredBlock).toHaveBeenCalledTimes(1);
+    const passedDoc = onCreateAuthoredBlock.mock.calls[0]?.[0] as { kind: string };
+    expect(passedDoc?.kind).toBe("document");
+  });
+
   it("renders the shared single-section M7 fixture normally", () => {
     render(
       <BrandProvider tokens={defaultBrand}>
