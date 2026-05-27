@@ -1730,7 +1730,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Reads/Outputs/Acceptance:** as T-142 for RiskMatrix
 - **est.** 1.5h
 
-### T-153 [ ] · Migrate Team block to registry
+### T-153 [x] · Migrate Team block to registry
 - **Depends-on:** T-152
 - **Reads/Outputs/Acceptance:** as T-142 for Team
 - **est.** 1.5h
