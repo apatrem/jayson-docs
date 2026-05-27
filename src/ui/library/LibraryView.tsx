@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { CreateFromTemplateButton } from "./CreateFromTemplateButton";
+import { CreateFromTemplateModal } from "./CreateFromTemplateModal";
 import { invoke } from "@tauri-apps/api/core";
 import { buildLibraryIndex } from "../../library/index-builder";
 import {
@@ -44,6 +46,7 @@ export function LibraryView({ onOpenDoc, currentUserEmail = "", deps = {} }: Lib
   const [entries, setEntries] = useState<LibraryEntry[]>([]);
   const [cloudSyncRoot, setCloudSyncRoot] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [filters, setFilters] = useState<LibraryFilterState>({
     ...DEFAULT_LIBRARY_FILTER_STATE,
     ownerMode: "all",
@@ -121,12 +124,32 @@ export function LibraryView({ onOpenDoc, currentUserEmail = "", deps = {} }: Lib
     );
   }
 
+  const sharedHeader = (
+    <header style={styles.header}>
+      <h1 style={styles.title}>Library</h1>
+      <CreateFromTemplateButton onOpen={() => setModalOpen(true)} />
+    </header>
+  );
+
+  const modal = modalOpen ? (
+    <CreateFromTemplateModal
+      cloudSyncRoot={cloudSyncRoot}
+      onConfirm={async (yamlPath) => {
+        setModalOpen(false);
+        await onOpenDoc(yamlPath);
+      }}
+      onCancel={() => setModalOpen(false)}
+      deps={
+        deps.writeYamlFile !== undefined ? { writeYamlFile: deps.writeYamlFile } : {}
+      }
+    />
+  ) : null;
+
   if (status === "empty") {
     return (
       <main aria-label="Library" style={styles.shell}>
-        <header style={styles.header}>
-          <h1 style={styles.title}>Library</h1>
-        </header>
+        {sharedHeader}
+        {modal}
         <EmptyLibraryState
           onUseSample={() => {
             void handleUseSample();
@@ -138,9 +161,8 @@ export function LibraryView({ onOpenDoc, currentUserEmail = "", deps = {} }: Lib
 
   return (
     <main aria-label="Library" style={styles.shell}>
-      <header style={styles.header}>
-        <h1 style={styles.title}>Library</h1>
-      </header>
+      {sharedHeader}
+      {modal}
       <div style={styles.layout}>
         <FilterSidebar entries={entries} state={filters} onChange={setFilters} />
         <div style={styles.main}>

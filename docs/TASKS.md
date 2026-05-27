@@ -1518,7 +1518,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - **Acceptance:** all 4 templates parse + validate; the validity test passes; previewing any template in the existing DocumentRenderer / DeckRenderer renders without errors.
 - **est.** 3h
 
-### T-131 [ ] · Library "Create from Template" surface
+### T-131 [x] · Library "Create from Template" surface
 - **Depends-on:** T-128 (library scaffold), T-130 (4 templates)
 - **Reads:** `templates/` directory, `src/ui/library/LibraryView.tsx`, `docs/UI_LIBRARY.md`
 - **Outputs:**
