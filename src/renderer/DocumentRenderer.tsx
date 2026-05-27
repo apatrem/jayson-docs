@@ -1,4 +1,4 @@
-import type { CSSProperties, FC, ReactNode } from "react";
+import type { ComponentType, CSSProperties, FC, ReactNode } from "react";
 import { BrandProvider } from "../brand-tokens/BrandProvider";
 import {
   type AssetContext,
@@ -9,21 +9,22 @@ import type { BrandTokens } from "../schema/brand";
 import type { Block } from "../schema/blocks";
 import type { DocModel } from "../schema/docmodel";
 import type { Section } from "../schema/containers";
-import { BulletList } from "../blocks/bullet-list";
-import { Callout } from "../blocks/callout";
 import { Chart } from "../blocks/chart";
 import { Diagram } from "../blocks/diagram";
 import { Divider } from "../blocks/divider";
-import { Heading } from "../blocks/heading";
 import { Image } from "../blocks/image";
-import { KpiCards } from "../blocks/kpi-cards";
-import { NumberedList } from "../blocks/numbered-list";
-import { Prose } from "../blocks/prose";
-import { RiskMatrix } from "../blocks/risk-matrix";
-import { Roadmap } from "../blocks/roadmap";
-import { Table } from "../blocks/table";
 import { Team } from "../blocks/team";
-import { Timeline } from "../blocks/timeline";
+import { loadAllBlocks } from "../blocks/runtime-registry";
+
+// ── Registry-derived renderer dispatch (T-157b) ───────────────────────────
+// All 15 Standard blocks register a `renderer` in the runtime registry.
+// For blocks whose renderer only needs `{ block }`, we dispatch via this map.
+// Five blocks (chart, diagram, divider, image, team) receive extra context
+// props and are handled explicitly in BlockView below.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _blockRenderers: Map<string, ComponentType<{ block: any }>> = new Map(
+  loadAllBlocks().map((r) => [r.schemaName, r.renderer] as const),
+);
 
 export type DocumentModel = Extract<DocModel, { kind: "document" }>;
 
@@ -160,68 +161,53 @@ export function BlockView({
   imageDataUris?: Record<string, string>;
   dividerContext?: BlockRenderContext;
 }): ReactNode {
-  switch (block.type) {
-    case "prose":
-      return <Prose block={block} />;
-    case "heading":
-      return <Heading block={block} />;
-    case "bullet-list":
-      return <BulletList block={block} />;
-    case "numbered-list":
-      return <NumberedList block={block} />;
-    case "callout":
-      return <Callout block={block} />;
-    case "kpi-cards":
-      return <KpiCards block={block} />;
-    case "image":
-      return (
-        <Image
-          block={block}
-          assetContext={assetContext}
-          dataUri={imageDataUris[block.id]}
-        />
-      );
-    case "table":
-      return <Table block={block} />;
-    case "chart": {
-      const staticSvg = chartSvgs[block.id];
-      return staticSvg !== undefined ? (
-        <Chart block={block} staticSvg={staticSvg} />
-      ) : (
-        <Chart block={block} />
-      );
-    }
-    case "timeline":
-      return <Timeline block={block} />;
-    case "roadmap":
-      return <Roadmap block={block} />;
-    case "risk-matrix":
-      return <RiskMatrix block={block} />;
-    case "team":
-      return <Team block={block} assetContext={assetContext} />;
-    case "diagram": {
-      const renderedSvg = diagramSvgs[block.id];
-      return renderedSvg !== undefined ? (
-        <Diagram block={block} renderedSvg={renderedSvg} />
-      ) : (
-        <Diagram block={block} />
-      );
-    }
-    case "divider":
-      return <Divider block={block} context={dividerContext} />;
-    default: {
-      // Compile-time exhaustiveness check: if this errors, a new block type
-      // was added to the union without a case above.
-      const exhaustiveCheck: never = block;
-      // Runtime diagnostic: if data coercion bypasses TS (e.g., the YAML
-      // contained a block type that survived validation due to a schema
-      // gap), throw with a precise message instead of silently rendering
-      // `undefined` — silent rendering hides regressions for a long time.
-      throw new Error(
-        `BlockView: unhandled block type "${String((exhaustiveCheck as unknown as { type?: string }).type)}". ` +
-          `Add a case to BlockView's switch in src/renderer/DocumentRenderer.tsx, ` +
-          `then register the block in src/schema/blocks/index.ts.`,
-      );
-    }
+  // Five blocks require extra context props beyond { block } and are handled
+  // explicitly. All others are dispatched via the runtime registry map above.
+  if (block.type === "image") {
+    return (
+      <Image
+        block={block}
+        assetContext={assetContext}
+        dataUri={imageDataUris[block.id]}
+      />
+    );
   }
+  if (block.type === "team") {
+    return <Team block={block} assetContext={assetContext} />;
+  }
+  if (block.type === "chart") {
+    const staticSvg = chartSvgs[block.id];
+    return staticSvg !== undefined ? (
+      <Chart block={block} staticSvg={staticSvg} />
+    ) : (
+      <Chart block={block} />
+    );
+  }
+  if (block.type === "diagram") {
+    const renderedSvg = diagramSvgs[block.id];
+    return renderedSvg !== undefined ? (
+      <Diagram block={block} renderedSvg={renderedSvg} />
+    ) : (
+      <Diagram block={block} />
+    );
+  }
+  if (block.type === "divider") {
+    return <Divider block={block} context={dividerContext} />;
+  }
+
+  // Remaining Standard blocks: registry dispatch.
+  // The runtime-registry covers all 15 block types; this path handles the 10
+  // blocks whose renderer only needs the block payload (no context props).
+  const Renderer = _blockRenderers.get(block.type);
+  if (Renderer !== undefined) {
+    return <Renderer block={block} />;
+  }
+
+  // Runtime diagnostic: if data coercion bypasses TS (e.g., a YAML block type
+  // survived validation due to a schema gap), throw with a precise message
+  // instead of silently rendering `undefined` — silent rendering hides regressions.
+  throw new Error(
+    `BlockView: unhandled block type "${String((block as unknown as { type?: string }).type)}". ` +
+      `Register the block in src/blocks/runtime-registry.ts.`,
+  );
 }

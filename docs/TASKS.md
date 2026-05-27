@@ -1763,7 +1763,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Acceptance:** all losslessness + editor tests pass; no hand-maintained per-block switches remain in either file.
 - **est.** 3h
 
-### T-157b [ ] · Renderer-side registry wire-through (DocumentRenderer + DeckRenderer iterate registry)
+### T-157b [x] · Renderer-side registry wire-through (DocumentRenderer + DeckRenderer iterate registry)
 - **Depends-on:** T-156 (parallel with T-157a)
 - **Reads:** `src/renderer/DocumentRenderer.tsx`, `src/renderer/DeckRenderer.tsx`
 - **Outputs:**
