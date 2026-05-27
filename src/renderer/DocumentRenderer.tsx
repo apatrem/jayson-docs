@@ -18,7 +18,7 @@ import { Heading } from "../blocks/heading";
 import { Image } from "./blocks/Image";
 import { KpiCards } from "./blocks/KpiCards";
 import { NumberedList } from "./blocks/NumberedList";
-import { Prose } from "./blocks/Prose";
+import { Prose } from "../blocks/prose";
 import { RiskMatrix } from "./blocks/RiskMatrix";
 import { Roadmap } from "./blocks/Roadmap";
 import { Table } from "./blocks/Table";

@@ -10,9 +10,9 @@ import {
   ProseTipTapNode,
   proseBlockToProseMirror,
   proseMirrorToProseBlock,
-} from "../../src/editor/nodes/ProseNode";
-import { Prose } from "../../src/renderer/blocks/Prose";
-import { ProseBlockSchema, type ProseBlock } from "../../src/schema/blocks/prose";
+  Prose,
+} from "../../src/blocks/prose";
+import { ProseBlockSchema, type ProseBlock } from "../../src/blocks/prose/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const testBrandTokens = {

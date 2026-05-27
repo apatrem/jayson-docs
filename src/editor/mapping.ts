@@ -33,10 +33,6 @@ import {
   proseMirrorToNumberedListBlock,
 } from "./nodes/NumberedListNode";
 import {
-  proseBlockToProseMirror,
-  proseMirrorToProseBlock,
-} from "./nodes/ProseNode";
-import {
   proseMirrorToRiskMatrixBlock,
   riskMatrixBlockToProseMirror,
 } from "./nodes/RiskMatrixNode";
@@ -237,8 +233,6 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
   }
   // Fallback switch (T-157a removes this entire section):
   switch (block.type) {
-    case "prose":
-      return proseBlockToProseMirror(block);
     case "bullet-list":
       return bulletListBlockToProseMirror(block);
     case "numbered-list":
@@ -280,10 +274,6 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
   }
   // Fallback switch (T-157a removes this entire section):
   switch (node.type) {
-    case "prose":
-      return proseMirrorToProseBlock(
-        node as unknown as Parameters<typeof proseMirrorToProseBlock>[0],
-      );
     case "bulletList":
       return proseMirrorToBulletListBlock(
         node as unknown as Parameters<typeof proseMirrorToBulletListBlock>[0],

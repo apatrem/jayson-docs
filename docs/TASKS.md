@@ -1685,7 +1685,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Acceptance:** as T-142
 - **est.** 1h
 
-### T-144 [ ] · Migrate Prose block to registry
+### T-144 [x] · Migrate Prose block to registry
 - **Depends-on:** T-143
 - **Reads/Outputs/Acceptance:** as T-142 for Prose
 - **est.** 1h
