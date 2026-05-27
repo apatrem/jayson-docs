@@ -7,6 +7,7 @@
 use tauri::Manager;
 
 mod ipc;
+mod lint;
 
 pub fn run() {
     tauri::Builder::default()
@@ -46,6 +47,7 @@ pub fn run() {
             ipc::cost::clear_cost_history,
             ipc::cost::prune_old_rows,
             ipc::pdf::export_pdf,
+            ipc::authored_block::lint_authored_block,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

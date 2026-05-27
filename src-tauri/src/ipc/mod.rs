@@ -1,3 +1,4 @@
+pub mod authored_block;
 pub mod config;
 pub mod cost;
 pub mod fs;

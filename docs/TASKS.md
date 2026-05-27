@@ -1840,7 +1840,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** Authored type strings validate; invalid identities are rejected at parse time + as lint failures.
 - **est.** 2h
 
-### T-163 [ ] · Lint-at-receive (Rust sidecar via Tauri IPC) + AST-to-data extractor
+### T-163 [x] · Lint-at-receive (Rust sidecar via Tauri IPC) + AST-to-data extractor
 - **Depends-on:** T-136, T-137 (lint rules), T-161, T-162
 - **Reads:** `docs/adr/0006-authored-block-threat-model.md`, `docs/adr/0013-authored-blocks-are-declarative-data.md`, `docs/adr/0014-ratify-swc-ecma-parser-rust-runtime-dependency.md`, `src/setup/lint-generated.ts` (rule set to mirror)
 - **Outputs:**

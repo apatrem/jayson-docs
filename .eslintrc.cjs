@@ -115,5 +115,8 @@ module.exports = {
     "vite.config.ts",
     "vitest.config.ts",
     "*.cjs",
+    // Authored-block lint fixture files are intentionally invalid TypeScript;
+    // they are test data for the lint engine, not production code.
+    "tests/blocks/authored/fixtures/**",
   ],
 };
