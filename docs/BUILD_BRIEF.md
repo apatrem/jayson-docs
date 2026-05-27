@@ -216,9 +216,11 @@ Deliberately narrow first integration milestone: prove a real consultant can ope
   - the brand is hardcoded to `brand.example.yaml` for the spike (no brand-picker UI yet).
   - the empty-document fixture loads without throwing.
 
-### M8 — Integrated App + Library (library + templates + generated blocks)
+### M8 — Integrated App + Library (library + templates + Brand blocks)
 
-Second integration milestone. Fires AFTER M7-spike ships and consultant testing of the editor surface has had a chance to surface any UX rework. Adds router infrastructure, first-launch folder picker, library card grid (with empty-state "Use Sample" button), 4 standard document templates with a "Create from Template" surface, generated-blocks runtime loading, and pipeline end-to-end validation.
+Second integration milestone. Fires AFTER M7-spike ships and consultant testing of the editor surface has had a chance to surface any UX rework. Adds router infrastructure, first-launch folder picker, library card grid (with empty-state "Use Sample" button), 4 standard document templates with a "Create from Template" surface, Brand-block runtime loading from `generated-blocks/active/`, and pipeline end-to-end validation.
+
+Note on vocabulary: "generated blocks" in M8 means **Brand blocks** (Tier 2 per CONTEXT.md / ADR-0004) — installed by the M1d setup pipeline. The third tier — **Authored blocks** (consultant-generated on demand, emailable peer-to-peer) — is explicitly deferred to M9+. M8 does not implement Authored-block generation, receipt, lint-at-receive, or the registry refactor those mechanics will sit on; the existing on-disk shape under `generated-blocks/active/` is sufficient for what M8 ships.
 
 - [ ] Update `UI_APP_SHELL.md` to reflect M8 architecture (router, folder-picker routing, library state model, partial-config schema decision).
 - [ ] Harden the 4 remaining fs IPC commands (`list_directory`, `file_exists`, `ensure_directory`, `move_file`) + all 3 config IPC commands.
@@ -227,16 +229,16 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 - [ ] Library view per `UI_LIBRARY.md` (card grid + filter + sort + search; reuses `src/library/` pure-logic modules; empty-state shows "Use Sample" button).
 - [ ] Router (`src/ui/router/Routes.tsx`) mediates welcome ↔ folder-picker ↔ library ↔ document; M7-spike's File → Open stays available as an "Open from disk" escape hatch.
 - [ ] **Document templates:** 4 standards shipped (commercial proposal doc + deck, standard report doc + deck) in `templates/`; library has "Create from Template" button + modal.
-- [ ] **Generated blocks runtime loading:** `generated-blocks/active/` contents loaded on app startup, available in the BlockPalette alongside the 15 standard blocks.
+- [ ] **Brand-block runtime loading:** `generated-blocks/active/` contents (Brand blocks installed by M1d) loaded on app startup, available in the BlockPalette alongside the 15 Standard blocks.
 - [ ] **End-to-end pipeline validation:** the M1d setup pipeline gets an integration test proving scan-demos → AI-propose → lint reject malicious → approve cycle works on committed fixture demos.
 - **Acceptance:**
   - first launch with no config opens the folder picker; completing it lands in the library view.
   - empty cloud-sync folder shows the empty-state with "Use Sample" button; clicking copies sample-proposal.yaml in.
   - library lists all YAML docs; filter + sort + search work.
   - "Create from Template" → pick any of 4 → name it → opens in editor; new doc appears in the card grid.
-  - BlockPalette shows any blocks from `generated-blocks/active/` alongside the 15 defaults.
+  - BlockPalette shows any Brand blocks from `generated-blocks/active/` alongside the 15 Standard defaults.
   - Clicking any library card routes to DocumentView (same view M7-spike built); the M7-spike File menu (Open / Save / Save As / Export PDF) still works.
-  - **Not in M8 (deferred to M9+):** AI / comments / cost-ledger UI; deck rendering; reviewer mode; settings panel features beyond folder re-pick; in-app surface to trigger generated-block creation (still devops CLI for M8); consultant-facing "request a new block" flow.
+  - **Not in M8 (deferred to M9+):** AI / comments / cost-ledger UI; deck rendering; reviewer mode; settings panel features beyond folder re-pick; in-app surface to trigger generated-block creation (still devops CLI for Brand blocks in M8); consultant-facing "request a new block" flow; **the entire Authored-block tier (ADR-0004 + ADR-0005)** — generation UX, `.tsx` manifest transport, drag-onto-window install, lint-at-receive, quarantine, scaffold-mismatch regen — plus the single-file block-registry refactor those mechanics depend on.
 
 ---
 
@@ -252,7 +254,7 @@ Second integration milestone. Fires AFTER M7-spike ships and consultant testing 
 | Comment-to-AI | Proposals never auto-apply; comments survive serialization; batch works |
 | Deck renderer | Closed layout set; reuses all shared layers unchanged |
 | Document Editor Spike (M7) | Single-document shell wired (File → Open → edit → save → Export PDF via browser handoff); 2 fs IPC commands hardened (`read_yaml_file`, `write_yaml_file`); `export_pdf` IPC reimplemented as HTML browser-handoff; BlockPalette mounted; T-123 integration test passes in CI |
-| Integrated App + Library (M8) | First-launch folder picker → library card grid; 4 standard document templates ship; library "Create from Template" surface works; `generated-blocks/active/` loaded at startup and surfaced in BlockPalette; M1d pipeline validated end-to-end; T-134 integration test passes in CI. M8 still does NOT include AI/comments/cost-ledger UI, deck rendering, reviewer mode, or signed installers — those are M9-M11 + Phase 9 |
+| Integrated App + Library (M8) | First-launch folder picker → library card grid; 4 standard document templates ship; library "Create from Template" surface works; `generated-blocks/active/` loaded at startup and surfaced in BlockPalette as Brand blocks; M1d pipeline validated end-to-end; T-134 integration test passes in CI. M8 still does NOT include AI/comments/cost-ledger UI, deck rendering, reviewer mode, signed installers, or the Authored-block tier (ADR-0004 + ADR-0005) and its registry refactor — those are M9-M11 + Phase 9 |
 
 ---
 
