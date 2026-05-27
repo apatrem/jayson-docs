@@ -10,7 +10,7 @@ import { DocumentRenderer, type DocumentModel } from "../renderer/DocumentRender
 import type { BrandTokens } from "../schema/brand";
 import { BrandTokensSchema } from "../schema/brand";
 import * as echarts from "echarts";
-import { getEChartsOption } from "../renderer/blocks/Chart";
+import { getEChartsOption } from "../blocks/chart";
 import { renderMermaidSvg } from "../renderer/mermaid";
 import type { Block } from "../schema/blocks";
 import { validateDocModel } from "../schema/validate";

@@ -5,19 +5,17 @@ import { Editor } from "@tiptap/core";
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
-import { ChartDataPanel } from "../../src/editor/panels/ChartDataPanel";
+import { ChartDataPanel } from "../../src/blocks/chart/ChartDataPanel";
 import {
   ChartTipTapNode,
   chartBlockToProseMirror,
   proseMirrorToChartBlock,
-} from "../../src/editor/nodes/ChartNode";
-import { getEChartsOption } from "../../src/renderer/blocks/Chart";
-import {
+  getEChartsOption,
   ChartBlockSchema,
   defaultYZeroBased,
   hasCategoryAxis,
   type ChartBlock,
-} from "../../src/schema/blocks/chart";
+} from "../../src/blocks/chart";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const minimalBarChart: ChartBlock = {

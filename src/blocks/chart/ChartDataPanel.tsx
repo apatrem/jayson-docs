@@ -1,26 +1,9 @@
 /**
- * Reference block #5 — Chart side panel (D-24 decision).
+ * src/blocks/chart/ChartDataPanel.tsx — Chart side panel (D-24 decision).
  *
  * When a chart block is selected in the editor, this panel opens on the
- * right side of the screen. It contains:
- *   - Chart-type dropdown
- *   - Title + takeaway inputs
- *   - Data grid (rows = x-labels, columns = series, cells = numbers)
- *   - Axis labels + unit
- *   - Color palette toggle (qualitative / sequential)
- *   - Legend / data-labels toggles
- *   - Excel-paste support (paste TSV into the grid)
- *
- * Production path: src/editor/panels/ChartDataPanel.tsx
- *
- * Pattern notes for copy-adapt:
- *  - The panel takes the current block + an update callback. Updates flow
- *    through TipTap's updateAttributes so the editor's undo stack captures
- *    every change.
- *  - All edits are validated via the schema BEFORE the update is committed.
- *    Invalid edits keep the panel open with a per-field error highlight.
- *  - The data grid is implemented as plain HTML <table> + <input> elements;
- *    no third-party grid lib (kept the dependency surface small).
+ * right side of the screen. Moved from src/editor/panels/ChartDataPanel.tsx
+ * as part of T-156 (chart block co-location).
  */
 
 import {
@@ -36,7 +19,7 @@ import {
   ChartBlockSchema,
   type ChartBlock,
   type ChartType,
-} from "../../schema/blocks/chart";
+} from "./schema";
 
 export interface ChartDataPanelProps {
   block: ChartBlock;
@@ -235,7 +218,7 @@ export const ChartDataPanel: FC<ChartDataPanelProps> = ({
   );
 };
 
-// ── Field wrapper (small, repetitive) ───────────────────────────────────────
+// ── Field wrapper ─────────────────────────────────────────────────────────────
 
 const Field: FC<{
   label?: string;
@@ -259,7 +242,7 @@ const Field: FC<{
   </div>
 );
 
-// ── Data grid + Excel paste ─────────────────────────────────────────────────
+// ── Data grid + Excel paste ───────────────────────────────────────────────────
 
 interface ChartDataGridProps {
   data: ChartBlock["data"];
@@ -274,7 +257,7 @@ const ChartDataGrid: FC<ChartDataGridProps> = ({ data, onChange }) => {
 
   const updateCell = (rowI: number, colI: number, raw: string) => {
     const n = Number(raw);
-    if (raw !== "" && Number.isNaN(n)) return;        // ignore non-numeric typing
+    if (raw !== "" && Number.isNaN(n)) return;
     const nextSeries = data.series.map((s, i) => {
       if (i !== colI) return s;
       const nextValues = [...s.values];
@@ -298,8 +281,6 @@ const ChartDataGrid: FC<ChartDataGridProps> = ({ data, onChange }) => {
   const handlePaste = (e: ClipboardEvent<HTMLDivElement>) => {
     const text = e.clipboardData.getData("text/plain").trim();
     if (!text) return;
-    // Detect delimiter: tab (TSV from Excel/Sheets) or comma (CSV).
-    // First line, if labels: header row. Subsequent rows: data.
     const delim = text.includes("\t") ? "\t" : ",";
     const rows = text.split(/\r?\n/).map((r) => r.split(delim));
     if (rows.length < 2) return;
@@ -308,7 +289,6 @@ const ChartDataGrid: FC<ChartDataGridProps> = ({ data, onChange }) => {
 
     const [header, ...body] = rows;
     if (!header || !body[0]) return;
-    // Heuristic: first column = labels, remaining columns = series.
     const xLabels = body.map((r) => r[0] ?? "");
     const seriesCount = header.length - 1;
     const series = Array.from({ length: seriesCount }, (_, colI) => ({

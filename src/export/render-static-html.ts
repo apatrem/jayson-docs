@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { resolveAssetPath } from "../brand-tokens/resolve-asset";
 import { isIpcError } from "../ipc/errors";
-import { getEChartsOption } from "../renderer/blocks/Chart";
+import { getEChartsOption } from "../blocks/chart";
 import { DocumentRenderer, type DocumentModel } from "../renderer/DocumentRenderer";
 import { renderMermaidSvg } from "../renderer/mermaid";
 import type { BrandTokens } from "../schema/brand";

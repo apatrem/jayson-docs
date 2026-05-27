@@ -4,10 +4,6 @@ import type { Section, Slide } from "../schema/containers";
 import type { DocModel } from "../schema/docmodel";
 import { loadAllBlocks } from "../blocks/runtime-registry";
 import type { BlockRegistryRecord } from "../blocks/defineBlock";
-import {
-  chartBlockToProseMirror,
-  proseMirrorToChartBlock,
-} from "./nodes/ChartNode";
 
 // ── Registry-first dispatch (T-141b) ──────────────────────────────────────
 // Lazy lookup maps built once from loadAllBlocks(). The switch arms below are
@@ -188,15 +184,9 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
     return record.toPm(block);
   }
   // Fallback switch (T-157a removes this entire section):
-  switch (block.type) {
-    case "chart":
-      return chartBlockToProseMirror(block) as ProseMirrorNode;
-    default:
-      // Block types migrated to the registry are intercepted above and never
-      // reach this arm at runtime. Cast satisfies the exhaustiveness check
-      // until T-157a removes this fallback entirely.
-      return assertNever(block as never);
-  }
+  // All 15 block types are now migrated to the registry — this default arm
+  // can only be reached if an unknown block type slips through.
+  return assertNever(block as never);
 }
 
 function proseMirrorToBlock(node: ProseMirrorNode): Block {
@@ -206,15 +196,9 @@ function proseMirrorToBlock(node: ProseMirrorNode): Block {
   if (record) {
     return record.fromPm(node) as Block;
   }
-  // Fallback switch (T-157a removes this entire section):
-  switch (node.type) {
-    case "chart":
-      return proseMirrorToChartBlock(
-        node as unknown as Parameters<typeof proseMirrorToChartBlock>[0],
-      );
-    default:
-      throw new MappingError(`Unknown block node type: ${node.type}`, ["blocks"]);
-  }
+  // Fallback (T-157a removes this entire section):
+  // All 15 block types are now migrated to the registry.
+  throw new MappingError(`Unknown block node type: ${node.type}`, ["blocks"]);
 }
 
 function isProseMirrorNode(value: unknown): value is ProseMirrorNode {

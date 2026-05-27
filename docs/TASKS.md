@@ -1747,7 +1747,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Reads/Outputs/Acceptance:** as T-154 for Table
 - **est.** 2h
 
-### T-156 [ ] · Migrate Chart block to registry (atom-node-with-side-panel + ECharts SSR)
+### T-156 [x] · Migrate Chart block to registry (atom-node-with-side-panel + ECharts SSR)
 - **Depends-on:** T-155
 - **Reads:** as T-142, plus `src/editor/panels/ChartDataPanel.tsx`
 - **Outputs:** `src/blocks/chart/` co-locating `ChartDataPanel.tsx`; the `getEChartsOption` SSR helper stays accessible to the renderer + PDF export path

@@ -20,7 +20,7 @@ import type { DocModel } from "../schema/docmodel";
 import { docModelToProseMirror } from "./mapping";
 import { BulletListTipTapNode } from "../blocks/bullet-list";
 import { CalloutTipTapNode } from "../blocks/callout";
-import { ChartTipTapNode } from "./nodes/ChartNode";
+import { ChartTipTapNode } from "../blocks/chart";
 import { DiagramTipTapNode } from "../blocks/diagram";
 import { DividerTipTapNode } from "../blocks/divider";
 import { HeadingTipTapNode } from "../blocks/heading";

@@ -8,7 +8,7 @@ import { CalloutBlockSchema } from "../../blocks/callout/schema";
 import { KpiCardsBlockSchema } from "../../blocks/kpi-cards/schema";
 import { ImageBlockSchema } from "../../blocks/image/schema";
 import { TableBlockDataSchema } from "../../blocks/table/schema";
-import { ChartBlockDataSchema } from "./chart";
+import { ChartBlockDataSchema } from "../../blocks/chart/schema";
 import { TimelineBlockSchema } from "../../blocks/timeline/schema";
 import { RoadmapBlockDataSchema } from "../../blocks/roadmap/schema";
 import { TeamBlockSchema } from "../../blocks/team/schema";

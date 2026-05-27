@@ -11,7 +11,7 @@ import type { DocModel } from "../schema/docmodel";
 import type { Section } from "../schema/containers";
 import { BulletList } from "../blocks/bullet-list";
 import { Callout } from "../blocks/callout";
-import { Chart } from "./blocks/Chart";
+import { Chart } from "../blocks/chart";
 import { Diagram } from "../blocks/diagram";
 import { Divider } from "../blocks/divider";
 import { Heading } from "../blocks/heading";
