@@ -1442,7 +1442,7 @@ First integration milestone. Deliberately narrow: prove a consultant can open a 
 
 Second integration milestone. Fires AFTER M7-spike ships and consultant testing of the editor surface has had a chance to surface any UX rework. Adds router infrastructure, first-launch folder picker, library card grid (with empty-state "Use Sample" button), 4 standard document templates with a "Create from Template" surface, generated-blocks runtime loading, and pipeline end-to-end validation.
 
-### T-124 [ ] · Update UI_APP_SHELL.md for M8 architecture
+### T-124 [x] · Update UI_APP_SHELL.md for M8 architecture
 - **Depends-on:** T-123o (M7-spike fully fixed per the 2026-05-26 multi-axis review across 8 rounds — see "M7-spike acceptance gate (REVISED 2026-05-26 v4)" above. T-123p is queued but NOT a Depends-on; it's the LOW-defense-in-depth batch that can land in parallel.)
 - **Reads:** `docs/UI_APP_SHELL.md` (M7-spike state from T-115), `docs/UI_LIBRARY.md`, `docs/SETUP_INSTALL_FLOW.md`, `src/setup/install.ts` (esp. line 41: `InstallAppConfigSchema`), `docs/TYPES.md`
 - **Outputs:** `docs/UI_APP_SHELL.md` — appended M8 section describing:

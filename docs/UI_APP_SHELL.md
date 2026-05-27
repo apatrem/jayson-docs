@@ -527,3 +527,329 @@ The M7-spike acceptance gate (per BUILD_BRIEF.md §3 M7) is equivalent to T-123 
 - 2026-05-26 — T-116: rewrote the "Architectural decisions" section as CLOSED. Decision #1: brand = hardcoded `brand.example.yaml` (Vite raw import). Decision #2: temp HTML in `std::env::temp_dir()/docsystem-export/<uuid>/` + cleanup-on-next-launch via Tauri `setup` hook. T-117..T-123 unblocked.
 - 2026-05-26 — M7 spec review fixes (non-task amendment commit): (a) brand import now lives in `src/brand/defaultBrand.ts` instead of being raw-imported from inside DocumentView (the original `'../brand.example.yaml?raw'` path was wrong for `src/ui/views/`); T-120 outputs updated. (b) T-118 explicitly produces no UI — `ExportPdfMenuItem.tsx` removed from T-118 outputs; T-121's `FileMenu.tsx` owns ALL menu UI for Export PDF. (c) Added the error-only `document → welcome` reset transition (button on AppErrorBoundary panel; not a user-initiated close); T-122 outputs and acceptance updated. (d) Documented the known limitation that cleanup-on-launch invalidates previously-opened browser tabs (acceptable for spike; M9+ may revisit). (e) Rust strips a trailing `.pdf` from `suggestedName` before appending `.html`, so `Proposal.pdf` → `Proposal.html` not `Proposal.pdf.html`.
 - M8 (T-124, future): appends an M8 section describing the router refactor, the folder-picker routing, the partial-config schema decision, and the multi-doc-ready route shape. M8 builds on this M7-spike spec rather than rewriting it.
+
+---
+
+# M8 — Library + Templates + Generated Blocks
+
+This section is appended by T-124. It is the architecture spec the rest of M8 (T-125..T-134) executes against. M7-spike content above is unchanged; M8 builds on top.
+
+## What M8 adds (scope)
+
+- A **router** (`src/ui/router/Routes.tsx`) — typed route table for `welcome`, `folder-picker`, `library`, `document`. The current `AppState` discriminated union in `src/App.tsx` becomes the router's `Route` type, slightly extended.
+- A **first-launch folder picker** (`src/ui/install/FolderPickerScreen.tsx`) — single screen, one button. The full CLI install in `src/setup/install.ts` stays available for batch rollouts (devops, scripted installs); the GUI picker only collects `paths.cloudSyncRoot`.
+- A **library view** — `src/ui/library/LibraryView.tsx` and friends. Recursive folder scan via `list_directory` IPC, per-folder `read_yaml_file` for `meta` blocks, filters + sort + search + grid/list. Empty-state "Use Sample" button copies `examples/sample-proposal.yaml` into the configured folder.
+- **4 standard document templates** under `templates/` — proposal, proposal-deck, report, report-deck. Loaded via Vite raw imports.
+- A **"Create from Template" modal** — clones a template into `<cloudSyncRoot>/<userName>.yaml` and routes to DocumentView.
+- **Generated-blocks runtime loading** — `loadGeneratedBlocks(generatedBlocksPath)` is called at app startup, results stashed in `GeneratedBlocksContext`, surfaced through BlockPalette's existing `generatedBlocks` prop.
+- Hardened **fs + config IPC** — the 4 remaining fs commands (`list_directory`, `file_exists`, `ensure_directory`, `move_file`) and the 3 config commands (`read_app_config`, `write_app_config`, `get_config_dir`) gain real bodies + cargo + JS smoke tests.
+
+M8 does NOT add: per-doc tabs (route shape supports them but UX is single-doc), settings panel, comments/AI proposals, deck rendering rework, reviewer mode, signed installers, auto-updater, drag-and-drop file open, recent-documents menu.
+
+## D-101 — Partial config schema for M8
+
+**The problem.** `InstallAppConfigSchema` in `src/setup/install.ts:32-59` requires the full identity + LLM keys + paths shape (`user`, `paths`, `llm`, `costLimits`, `editor`). M8 ships only `paths.cloudSyncRoot`. The other fields land in M9 (identity, keychain) and beyond. The schema needs a defined relationship with the M8-era partial state.
+
+**Decision: option (a) — introduce `M8PartialConfigSchema` requiring only `paths.cloudSyncRoot`; widen to `InstallAppConfigSchema` in M9.**
+
+Rationale:
+- Option (b) "make M9-bound fields optional in `InstallAppConfigSchema`" — would let invalid M9 states pass validation (e.g., LLM keys missing when AI features are advertised as active). Future drift; rejected.
+- Option (c) "stub config with sentinel placeholders" — `user.email: "unknown@example.com"`, `llm.fastModel.keychainEntry: "unset"`, etc. A reader can't distinguish "intentionally empty" from "wizard never asked", which breaks every downstream validator that relied on `.email()` / `.min(1)` actually meaning something. Rejected.
+- Option (a) wins because it preserves type-level distinguishability between "M8 install (paths only)" and "full M9 install (paths + identity + LLM)". The M9 migration is a structural widen — purely additive on the type lattice — and the type system catches consumers who assume the full shape against an M8 partial.
+
+**Schema (lives in `src/schema/app-config.ts`, NEW in T-125):**
+
+```typescript
+// src/schema/app-config.ts (NEW — T-125)
+import { z } from "zod";
+
+// What M8 actually writes from the GUI folder picker.
+export const M8PartialConfigSchema = z
+  .object({
+    schemaVersion: z.literal("0.1.0"),  // M8 marker; M9 bumps to "0.2.0"
+    paths: z
+      .object({
+        cloudSyncRoot: z.string().min(1),
+      })
+      .strict(),
+  })
+  .strict();
+
+export type M8PartialConfig = z.infer<typeof M8PartialConfigSchema>;
+```
+
+The full `InstallAppConfigSchema` in `src/setup/install.ts` stays untouched; it's still what the CLI install writes (CLI = full identity + LLM = full shape). When M9 lands keychain + identity + LLM into the GUI, a successor `M9AppConfigSchema` will widen the GUI write — superseding `M8PartialConfigSchema` without breaking M8 installs (the discriminator is `schemaVersion`).
+
+**Read path.** `read_app_config` IPC returns raw JSON (no Rust-side schema knowledge). The JS side parses against `M8PartialConfigSchema.safeParse(...)` and falls back to `InstallAppConfigSchema.safeParse(...)` when the M8 parse fails — so existing CLI-installed configs (full shape) keep working. On both failures, the router routes to `folder-picker` with `reason: 'first-launch'`.
+
+**Write path.** The folder picker writes only `M8PartialConfigSchema` shape; the file is YAML at `<configDir>/config.yaml` (location per `docs/SETUP_INSTALL_FLOW.md` §"Configuration file written"). The cost-ledger SQLite at `<configDir>/cost.db` stays unmodified — no M8 cost activity yet, it lands in M9. Atomicity uses the same write-then-rename pattern as `write_yaml_file`.
+
+**M8-vs-M9 migration.** When M9 lands, an idempotent migration runs on every boot:
+1. `read_app_config` returns the current JSON.
+2. If it parses as `M8PartialConfigSchema` AND not `M9AppConfigSchema`, the M9 router routes the user through the identity + keychain wizard, then `write_app_config` upgrades the shape to `M9AppConfigSchema`. The migration is a one-way structural widen — no data loss.
+
+## D-102 — Router library choice
+
+**The problem.** The current `App.tsx` uses a 2-variant discriminated union (`welcome | document`). M8 grows this to 4 variants with intent-dispatched transitions and a boot-time async config read. The mainstream options:
+
+- **React Router DOM v6** — popular, mature, but designed for URL-bar-driven routing. The desktop app has no URL bar; the route is purely in-memory state.
+- **TanStack Router** — type-safe, file-based, modern. Same URL-bar mismatch as React Router; also adds ~30KB minified to the renderer bundle.
+- **Custom typed routes** — extend the existing discriminated-union pattern in `App.tsx`. No new dependency. Type-safe via `z.discriminatedUnion` if needed.
+
+**Decision: custom typed routes — no new dependency.**
+
+Rationale:
+- The app has 4 routes. The complexity threshold where a library pays for itself isn't crossed.
+- Tauri's webview has no URL bar (no `<a href="...">`-style navigation). Routes are intents (open library, open document, etc.), not URLs.
+- Routes are deeply typed. `library` carries the scan result; `document` carries the open doc array + active index; `folder-picker` carries the `reason` flag. A library that hides those in a generic `params` bag would lose the type-safety the rest of the codebase relies on.
+- The 4 routes are unlikely to grow much in M9 (settings sub-routes will be flat siblings, not nested).
+
+**Implementation (lives in `src/ui/router/Routes.tsx`, NEW in T-126):**
+
+```typescript
+// src/ui/router/types.ts (NEW — T-126)
+export type Route =
+  | { kind: "welcome" }  // legacy reset target; never the launch route
+  | { kind: "folder-picker"; reason: "first-launch" | "missing" }
+  | { kind: "library" }
+  | {
+      kind: "document";
+      openDocs: Array<{ id: string; path: string }>;
+      activeIndex: number;
+    };
+
+export type RouteIntent =
+  | { intent: "open-document"; path: string }   // also from File → Open
+  | { intent: "create-from-template"; templateId: string; newDocName: string }
+  | { intent: "back-to-library" }
+  | { intent: "re-pick-folder" }                // from "folder missing" banner
+  | { intent: "use-sample" };                   // empty-library button
+```
+
+The `Route` discriminated union is the router's state. `RouteIntent` is the message bus: every UI event that wants to change routes dispatches a `RouteIntent`, the router reduces it to a new `Route`. This separation keeps components from manipulating route state directly — they request intents.
+
+```typescript
+// src/ui/router/Routes.tsx (NEW — T-126)
+import { useEffect, useReducer } from "react";
+import { withRenderWatchdog } from "../../block-primitives/RenderWatchdog";
+// ...
+
+interface RouterProps {
+  bootStrategy: BootStrategy;  // injected for tests; production uses the IPC implementation
+}
+
+function routeReducer(route: Route, intent: RouteIntent): Route { /* … */ }
+
+export function Routes({ bootStrategy }: RouterProps) {
+  const [route, dispatch] = useReducer(routeReducer, { kind: "welcome" });
+
+  useEffect(() => {
+    void bootStrategy.bootRoute().then((next) => dispatch({ intent: "__set", route: next }));
+  }, [bootStrategy]);
+
+  switch (route.kind) {
+    case "welcome":          return <WelcomeScreen onOpen={…} />;
+    case "folder-picker":    return <FolderPickerScreen reason={route.reason} dispatch={dispatch} />;
+    case "library":          return <LibraryView dispatch={dispatch} />;
+    case "document":         return <DocumentView openDocs={route.openDocs} activeIndex={route.activeIndex} dispatch={dispatch} />;
+  }
+}
+```
+
+Each route component is wrapped with `withRenderWatchdog` so a thrown block in the document route can't take down library navigation. The watchdog budget for `library` is `LIBRARY_VIEW_RENDER_BUDGET_MS = 1500` (covers a 500-doc index scan); `document` keeps `DEFAULT_DOCUMENT_VIEW_RENDER_BUDGET_MS = 500` from M7-spike; `folder-picker` and `welcome` are trivial and use the default block budget.
+
+## D-103 — Boot strategy + missing-folder check
+
+The router's first action on mount is to decide which route to land on:
+
+```typescript
+// src/ui/router/boot.ts (NEW — T-126)
+export interface BootStrategy {
+  bootRoute(): Promise<Route>;
+}
+
+export function createIpcBootStrategy(): BootStrategy {
+  return {
+    async bootRoute() {
+      // 1) Try to read app config.
+      let config: M8PartialConfig | InstallAppConfig | null;
+      try {
+        const raw = await invoke<unknown>("read_app_config");
+        config = parseConfig(raw);  // M8PartialConfigSchema | InstallAppConfigSchema | null
+      } catch (error) {
+        if (isIpcError(error) && error.kind === "not-found") {
+          return { kind: "folder-picker", reason: "first-launch" };
+        }
+        throw error;
+      }
+      if (config === null) {
+        return { kind: "folder-picker", reason: "first-launch" };
+      }
+
+      // 2) Verify the configured folder still exists.
+      const exists = await invoke<boolean>("file_exists", { path: config.paths.cloudSyncRoot });
+      if (!exists) {
+        return { kind: "folder-picker", reason: "missing" };
+      }
+
+      // 3) Healthy boot — go to library.
+      return { kind: "library" };
+    },
+  };
+}
+```
+
+**Why a strategy interface, not direct IPC.** Tests inject a fake `BootStrategy`. The M7-spike test (`tests/integration/m7-spike-harness.ts`) keeps working by passing a strategy that synchronously resolves to `{ kind: "document", openDocs: [<test doc>], activeIndex: 0 }` — bypassing the boot probe entirely. T-126's acceptance bullet "M7-spike happy-path test still passes after refactor" depends on this seam.
+
+**Why the welcome screen sticks around.** It's the **error-only reset target** from M7-spike (AppErrorBoundary's "Back to welcome" button). After a catastrophic render failure, the user lands on `welcome`, then clicks "Open" → goes to document. Post-M8, "Back to welcome" still works for tests and for the AppErrorBoundary's reset path; production users don't usually see it during normal navigation (they go library ↔ document).
+
+## D-104 — App always starts at library
+
+**Decision: no `lastOpenPath` persistence.** The app boots to `folder-picker` (first-launch / missing) or `library` (healthy). It never boots straight into a previously-open document.
+
+Rationale: consultants are document-bouncing-frequent — they open ~5-10 different docs per day. Auto-restoring the last-open doc would frequently land them in the wrong context. The Library is the daily-entry point per `docs/DECISIONS.md` D-27. Save the persistence work for M9 if consultant testing surfaces it.
+
+## D-105 — Multi-doc-ready route shape
+
+**Decision: `document` route carries `openDocs: Array<{id, path}>` + `activeIndex`, even though M8 renders only one doc at a time.**
+
+```typescript
+// Route type fragment.
+| {
+    kind: "document";
+    openDocs: Array<{ id: string; path: string }>;
+    activeIndex: number;
+  }
+```
+
+M8 invariant: `openDocs.length === 1`. The DocumentView component receives only `openDocs[activeIndex]` and ignores the rest. M9+ will add a tab bar that reads the array; the route shape doesn't need rearchitecting.
+
+The `id` is a stable doc identifier (used by future tab key prop + AppErrorBoundary "this tab failed" handling). For M8 it can be `<path>` itself; M9 will switch to a deterministic UUID seeded by `<path>`.
+
+## D-106 — Library state + index lifecycle
+
+The library's data shape is `LibraryIndex` per `docs/UI_LIBRARY.md:128-132`. M8 implements only the launch-scan path (`buildLibraryIndex(root) → LibraryIndex`). The file-watcher refresh path is deferred to M9.
+
+```typescript
+// src/library/index-builder.ts (existing pure logic — preserved by T-128)
+export function buildLibraryIndex(entries: RawDocFolder[]): LibraryIndex;
+
+// T-128 NEW — IO wrapper around the existing pure builder.
+export async function scanCloudSyncRoot(root: string): Promise<LibraryIndex>;
+```
+
+`scanCloudSyncRoot` issues one `list_directory(root, { recursive: true, maxDepth: 4 })` IPC call, then for every folder containing exactly one `*.yaml` file, calls `read_yaml_file` and parses **only** the `meta:` block (not the full doc — too slow at 500 docs). The full-doc parse happens only when the user opens a card.
+
+**Performance budget.** Per `docs/UI_LIBRARY.md:170`, 500-doc index in < 2s. The `verify-gates.sh` test suite doesn't enforce that budget; T-128's acceptance includes a perf assertion: `tests/ui/library/LibraryView.test.tsx` runs against a 100-doc fixture and asserts the scan completes in < 400ms locally (extrapolates to < 2s on 500 docs on a CI-comparable runner).
+
+## D-107 — "Use Sample" empty-state flow
+
+When the library scan returns zero docs, render `EmptyLibraryState.tsx` with a single "Use Sample Document" button. On click:
+
+1. Read `examples/sample-proposal.yaml` from the app bundle via Vite raw import (`import sampleProposalYaml from '../../../examples/sample-proposal.yaml?raw'`).
+2. Call `write_yaml_file` IPC with `{ path: <cloudSyncRoot>/Sample Proposal.yaml, content: sampleProposalYaml }`.
+3. Re-run `scanCloudSyncRoot(cloudSyncRoot)` → returns 1-doc index.
+4. Render the card grid.
+
+The Vite raw import keeps the sample bundled inside the app binary (no install-time copy step). The same approach is used by the 4 templates (D-108) and by `src/brand/defaultBrand.ts` for `brand.example.yaml`.
+
+## D-108 — Templates: storage + load + clone
+
+**Storage.** `templates/` directory at the repo root contains 4 YAML files committed to source: `commercial-proposal.yaml`, `commercial-proposal-deck.yaml`, `standard-report.yaml`, `standard-report-deck.yaml`. Each is a full `DocModel` validated against `DocModelSchema`, populated with placeholder copy + `[REPLACE: …]` markers.
+
+**Load.** Vite raw imports (`import proposalTemplate from '../../templates/commercial-proposal.yaml?raw'`). All 4 templates loaded at module-load time. They're small (~5-30 KB each); the bundle cost is acceptable.
+
+**Clone path.** When user picks a template + types a name "Acme Q3 Proposal":
+1. Parse the template's YAML to `DocModel`.
+2. Update `meta.client`, `meta.project`, `meta.createdAt`, `meta.updatedAt`, and regenerate stable IDs (`meta.docId`, every `block.id`, every `section.id`, every `slide.id`).
+3. Serialize back to YAML via the existing `serializeDocModel`.
+4. Write to `<cloudSyncRoot>/<sanitizedName>.yaml` via `write_yaml_file` IPC. Sanitization rule: same as `src-tauri/src/ipc/pdf.rs::sanitize_suggested_name` — `[A-Za-z0-9._ -]+` allowed; collisions get `(2)` / `(3)` suffix.
+5. Refresh the library index.
+6. Route to `document` with `openDocs: [{ id: <path>, path: <sanitizedPath> }]`, `activeIndex: 0`.
+
+**Why regen stable IDs at clone time.** Every doc needs unique stable IDs for the comment-thread tracking that lands in M9. Cloning a template without regenerating IDs would create duplicate IDs across docs the moment two consultants both clone the same template — a future ID collision waiting for M9. Doing it at clone time is cheap (~ms for a 30-section template) and lets M9 assume uniqueness without retroactive migration.
+
+## D-109 — Generated-blocks runtime loading
+
+**The existing pieces.**
+- `src/setup/load-generated-blocks.ts` already exists. It scans `generated-blocks/active/`, parses each block's manifest, and returns a list of generated-block descriptors. It's used by the install-time scaffolding pipeline.
+- `src/editor/BlockPalette.tsx` already has a `generatedBlocks` prop slot. M7-spike passes `[]` for it.
+
+**M8 adds the runtime wiring.**
+- `src/contexts/GeneratedBlocksContext.tsx` (NEW) — React context. Value is the loaded `GeneratedBlock[]` plus a `reload()` function. Default value is `{ blocks: [], reload: () => {} }`.
+- `src/App.tsx` — on mount, after config is loaded (boot strategy resolved), call `loadGeneratedBlocks(<cloudSyncRoot>/generated-blocks/active/)` and write the result into the context. On failure, log the error and keep `blocks: []` (palette degrades gracefully to defaults only; documented in T-132 acceptance).
+- `src/ui/views/DocumentView.tsx` — reads `GeneratedBlocksContext`, passes `context.blocks` into the existing `<BlockPalette generatedBlocks={…} />` slot.
+
+**Path discovery.** `<cloudSyncRoot>/generated-blocks/active/` is the production location. The install-time pipeline writes proposals into `<cloudSyncRoot>/generated-blocks/pending/`; the linter promotes accepted ones to `active/`. M8 only reads from `active/`.
+
+**Reload triggers.** None in M8 — the context is built once at app startup. M9 wires a file watcher.
+
+## M8 component file map
+
+```
+src/
+  App.tsx                            # refactored (T-126): mounts <Routes/>; removes the local AppState
+  contexts/
+    GeneratedBlocksContext.tsx       # new (T-132)
+  schema/
+    app-config.ts                    # new (T-125) — M8PartialConfigSchema
+  ui/
+    router/
+      Routes.tsx                     # new (T-126) — typed route reducer
+      types.ts                       # new (T-126) — Route + RouteIntent union
+      boot.ts                        # new (T-126) — createIpcBootStrategy
+    install/
+      FolderPickerScreen.tsx         # new (T-127)
+    library/
+      LibraryView.tsx                # new (T-128) — scaffold + scan
+      EmptyLibraryState.tsx          # new (T-128) — "Use Sample"
+      FilterSidebar.tsx              # new (T-129) — controls (filter / sort / search)
+      DocCard.tsx                    # new (T-128) — card render
+      CreateFromTemplateButton.tsx   # new (T-131)
+      CreateFromTemplateModal.tsx    # new (T-131)
+src-tauri/
+  src/
+    ipc/
+      fs.rs                          # 4 commands hardened (T-125): list_directory, file_exists, ensure_directory, move_file
+      config.rs                      # 3 commands hardened (T-125): read_app_config, write_app_config, get_config_dir
+templates/
+  commercial-proposal.yaml           # new (T-130)
+  commercial-proposal-deck.yaml      # new (T-130)
+  standard-report.yaml               # new (T-130)
+  standard-report-deck.yaml          # new (T-130)
+tests/
+  fixtures/demos/                    # new (T-133) — 2-3 small DOCX/PPTX/PDF + 1 malicious for the pipeline e2e
+  integration/
+    m8-happy-path.test.ts            # new (T-134)
+    m8-error-paths.test.ts           # new (T-134)
+    setup-pipeline-e2e.test.ts       # new (T-133)
+  ipc/
+    fs-remaining.smoke.test.ts       # new (T-125)
+    config.smoke.test.ts             # new (T-125)
+  ui/
+    router/
+      Routes.test.tsx                # new (T-126)
+    install/
+      FolderPickerScreen.test.tsx    # new (T-127)
+    library/
+      LibraryView.test.tsx           # new (T-128)
+      filters.test.tsx               # new (T-129)
+      CreateFromTemplateModal.test.tsx  # new (T-131)
+    lifecycle/
+      generated-blocks-load.test.tsx # new (T-132)
+  templates/
+    template-validity.test.ts        # new (T-130)
+```
+
+## M8 acceptance gate
+
+T-134 ships the gate. Pass criteria:
+1. `tests/integration/m8-happy-path.test.ts` and `tests/integration/m8-error-paths.test.ts` both pass in CI.
+2. The full first-launch flow works end-to-end: no config → folder picker → library → "Use Sample" → card → DocumentView → edit → save → reopen → edits preserved → "Create from Template" → new doc visible in library.
+3. BlockPalette shows the 15 standard blocks AND any blocks under `generated-blocks/active/`.
+4. M7-spike happy-path test (T-123) still passes (router refactor invisible to the M7-spike test path).
+5. The full project gates (`verify-gates.sh` = tsc + lint + tests) stay green.
+
+## M8 change log
+
+- 2026-05-27 — T-124: initial M8 spec. Locks D-101..D-109 (partial config schema, custom router, boot strategy, library-first launch, multi-doc-ready route shape, library index lifecycle, "Use Sample" flow, template clone, generated-blocks context). T-125..T-134 unblocked.
