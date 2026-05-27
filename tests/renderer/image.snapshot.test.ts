@@ -6,10 +6,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, it, expect } from "vitest";
 import { parse } from "yaml";
 import { BrandProvider } from "../../src/brand-tokens/BrandProvider";
-import { Image } from "../../src/renderer/blocks/Image";
+import { Image } from "../../src/blocks/image";
 import type { AssetContext } from "../../src/brand-tokens/resolve-asset";
 import { BrandTokensSchema } from "../../src/schema/brand";
-import type { ImageBlock } from "../../src/schema/blocks/image";
+import type { ImageBlock } from "../../src/blocks/image/schema";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const brand = BrandTokensSchema.parse(

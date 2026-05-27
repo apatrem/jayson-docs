@@ -11,12 +11,12 @@ import {
   ImageTipTapNode,
   imageBlockToProseMirror,
   proseMirrorToImageBlock,
-} from "../../src/editor/nodes/ImageNode";
-import { Image } from "../../src/renderer/blocks/Image";
+  Image,
+} from "../../src/blocks/image";
 import {
   ImageBlockSchema,
   type ImageBlock,
-} from "../../src/schema/blocks/image";
+} from "../../src/blocks/image/schema";
 import type { BrandTokens } from "../../src/schema/brand";
 
 const testBrandTokens = {

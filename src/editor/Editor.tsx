@@ -24,7 +24,7 @@ import { ChartTipTapNode } from "./nodes/ChartNode";
 import { DiagramTipTapNode } from "./nodes/DiagramNode";
 import { DividerTipTapNode } from "../blocks/divider";
 import { HeadingTipTapNode } from "../blocks/heading";
-import { ImageTipTapNode } from "./nodes/ImageNode";
+import { ImageTipTapNode } from "../blocks/image";
 import { KpiCardsTipTapNode } from "./nodes/KpiCardsNode";
 import { NumberedListTipTapNode } from "../blocks/numbered-list";
 import { ProseTipTapNode } from "../blocks/prose";

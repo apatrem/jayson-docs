@@ -1705,7 +1705,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Reads/Outputs/Acceptance:** as T-142 for NumberedList
 - **est.** 1h
 
-### T-148 [ ] · Migrate Image block to registry
+### T-148 [x] · Migrate Image block to registry
 - **Depends-on:** T-147
 - **Reads/Outputs/Acceptance:** as T-142 for Image
 - **est.** 1h
