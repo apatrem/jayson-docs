@@ -1646,7 +1646,7 @@ Already done in commit `ebe84b9` (pre-M9a). Listed here for protocol/audit compl
 - **Note:** must be `[x]` before T-141 begins so the visual baseline is settled before any registry refactoring. Runs in parallel with T-138.
 - **est.** 4h
 
-### T-141b [ ] · Make `mapping.ts` registry-aware (hybrid)
+### T-141b [x] · Make `mapping.ts` registry-aware (hybrid)
 - **Depends-on:** T-141
 - **Reads:** `src/editor/mapping.ts`
 - **Outputs:**

@@ -2,6 +2,8 @@ import type { Block } from "../schema/blocks";
 import type { Comment } from "../schema/comment";
 import type { Section, Slide } from "../schema/containers";
 import type { DocModel } from "../schema/docmodel";
+import { loadAllBlocks } from "../blocks/runtime-registry";
+import type { BlockRegistryRecord } from "../blocks/defineBlock";
 import {
   bulletListBlockToProseMirror,
   proseMirrorToBulletListBlock,
@@ -62,6 +64,31 @@ import {
   proseMirrorToTimelineBlock,
   timelineBlockToProseMirror,
 } from "./nodes/TimelineNode";
+
+// ── Registry-first dispatch (T-141b) ──────────────────────────────────────
+// Lazy lookup maps built once from loadAllBlocks(). The switch arms below are
+// fallback paths; they are removed block-by-block in T-142–T-156 and the
+// entire fallback is deleted in T-157a.
+let _schemaNameToRecord: Map<string, BlockRegistryRecord> | null = null;
+let _pmNodeTypeToRecord: Map<string, BlockRegistryRecord> | null = null;
+
+function schemaNameMap(): Map<string, BlockRegistryRecord> {
+  if (!_schemaNameToRecord) {
+    _schemaNameToRecord = new Map(
+      loadAllBlocks().map((r) => [r.schemaName, r]),
+    );
+  }
+  return _schemaNameToRecord;
+}
+
+function pmNodeTypeMap(): Map<string, BlockRegistryRecord> {
+  if (!_pmNodeTypeToRecord) {
+    _pmNodeTypeToRecord = new Map(
+      loadAllBlocks().map((r) => [r.tiptapNode.name, r]),
+    );
+  }
+  return _pmNodeTypeToRecord;
+}
 
 export interface ProseMirrorNode {
   type: string;
@@ -209,6 +236,14 @@ function proseMirrorToSlide(node: ProseMirrorNode): Slide {
 }
 
 function blockToProseMirror(block: Block): ProseMirrorNode {
+  // Registry-first: if the block type is registered, delegate to its toPm.
+  // This path covers all 15 Standard blocks after T-141; switch arms below are
+  // the fallback until they are deleted per-block in T-142–T-156.
+  const record = schemaNameMap().get(block.type);
+  if (record) {
+    return record.toPm(block);
+  }
+  // Fallback switch (T-157a removes this entire section):
   switch (block.type) {
     case "prose":
       return proseBlockToProseMirror(block);
@@ -246,6 +281,13 @@ function blockToProseMirror(block: Block): ProseMirrorNode {
 }
 
 function proseMirrorToBlock(node: ProseMirrorNode): Block {
+  // Registry-first: if the PM node type maps to a registered block, delegate.
+  // The registry key is tiptapNode.name (the PM node type), not the schemaName.
+  const record = pmNodeTypeMap().get(node.type);
+  if (record) {
+    return record.fromPm(node) as Block;
+  }
+  // Fallback switch (T-157a removes this entire section):
   switch (node.type) {
     case "prose":
       return proseMirrorToProseBlock(

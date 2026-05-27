@@ -1,6 +1,6 @@
 # Loop status — auto-generated; do not edit
 
-**Last fire:** 2026-05-27T16:05:00Z
+**Last fire:** 2026-05-27T16:15:00Z
 **State:** RUNNING
 **Running on:** Claude Sonnet 4.6 at high
 **Halt reason:** N/A
@@ -10,49 +10,43 @@
 
 ## Next eligible task
 
-**T-141b** — Make `mapping.ts` registry-aware (hybrid) (depends on T-141 ✓).
-Also eligible: **T-141c** (bridge M8 generated-blocks loader, depends on T-141 ✓, T-132 ✓).
+**T-141c** — Bridge M8 generated-blocks loader onto the runtime registry (depends on T-141 ✓, T-132 ✓).
+Also eligible: **T-142** (Migrate Divider block, depends on T-141 ✓, T-141b ✓, T-141a ✓).
 
 ## Progress since the previous fire
 
-- ✅ **T-141a closed this fire** — Example brand theme + structural HTML snapshot baselines:
-  - **`brand.example.yaml`** (UPDATED) — professional-consulting-style theme. Headings: Georgia
-    22 (scale h1–h4). Body: Arial 12. Primary: deep navy `#001A70`, secondary `#2F6FBE`, tertiary
-    `#6EA8D8`. Neutral grey scale. Chart qualitative palette: 8 blue-family colors; sequential:
-    5-stop dark-to-light ramp. Identity: "Corporate Consulting Example" (naming constraint met).
-    Headshots restored with keys matching `sample-proposal.yaml` (`jane-smith`, `pierre-dubois`,
-    `marie-chen`).
-  - **`tests/renderer/<name>.snapshot.test.ts`** × 15 (NEW) — Vitest structural HTML snapshot
-    for each Standard block rendered under the new brand tokens:
-    `bullet-list`, `callout`, `chart`, `diagram`, `divider`, `heading`, `image`,
-    `kpi-cards`, `numbered-list`, `prose`, `risk-matrix`, `roadmap`, `table`, `team`, `timeline`.
-    All 15 pass (29 test cases total, including orientation variants for Divider and Timeline).
-  - **Scope expansion (tests updated to track new brand values):**
-    - `tests/renderer/document-renderer.test.tsx` — `#0B3D91` → `#001A70` (new primary).
-    - `tests/brand-tokens/resolve.test.ts` — expected colors updated to `#001A70` / `#1B2130`.
-    - `tests/brand/defaultBrand.test.ts` — identity.name updated to "Corporate Consulting Example".
-    - `tests/brand-tokens/brand-provider.test.tsx` — identity.name updated.
-    - `tests/primitives/block-primitives.test.tsx` — surface/border colors updated to `#F7F8FA` / `#D9DBE0`.
+- ✅ **T-141b closed this fire** — mapping.ts registry-aware (hybrid):
+  - **`src/editor/mapping.ts`** (UPDATED) — added lazy lookup maps (`_schemaNameToRecord` by
+    `schemaName`, `_pmNodeTypeToRecord` by `tiptapNode.name`) initialized once from
+    `loadAllBlocks()`. Both `blockToProseMirror` and `proseMirrorToBlock` now consult the
+    registry first; fall back to the existing switch arms for any block type not yet in the
+    registry. After T-141b, per-block migration (T-142+) can safely remove each switch arm
+    without breaking dispatch. T-157a will remove the fallback entirely.
+  - **`tests/editor/mapping-registry.test.ts`** (NEW) — 4 tests proving the registry-first
+    dispatch path:
+    1. All 15 blocks present in registry
+    2. `docModelToProseMirror` output matches the registry record's `toPm` for callout
+    3. Multi-block DocModel round-trips DocModel → PM → DocModel losslessly
+    4. Registry `fromPm` reconstitutes a callout block correctly
   - Gates: tsc ✓, lint ✓, all tests pass.
 
-- ✅ **T-141 closed previous fire** — Folder layout scaffolding (legacy-wrapper approach).
+- ✅ **T-141a closed previous fire** — brand theme + snapshot baselines (15 files).
 - ⚠ 0 tasks blocked this fire
 - ⏸ 0 tasks marked waiting this fire
 
 ## At a glance
 
-Total tasks: 205   Done: 161 (79%)   Blocked: 0   Waiting: 2   Open: 41   Skipped: 1
+Total tasks: 205   Done: 162 (79%)   Blocked: 0   Waiting: 2   Open: 40   Skipped: 1
 
 ## Recent commits
 
 (pending this fire's commit)
+T-141a: professional-consulting brand theme + structural HTML snapshot baselines
 T-141: folder layout scaffolding (legacy-wrapper approach, 15 blocks)
 T-138: reference pattern refresh (new defineBlock shape + deprecate mapping/)
-T-140: registry loaders (schema + runtime, both static for M9a)
-T-139: registry API + per-block schema/runtime module split
 
 ## CI status (origin/main)
 
-Latest completed run on `main`: success (post-T-141 push)
+Latest completed run on `main`: success (post-T-141a push)
 
-T-141a done; T-141b (mapping.ts registry-aware hybrid) is next eligible.
+T-141b done; T-141c (M8 bridge) and T-142 (Divider migration) are next eligible.
