@@ -252,3 +252,33 @@ export async function restoreAuthoredBlock(
 export async function permanentlyDeleteAuthoredBlock(path: string): Promise<void> {
   await invoke("permanently_delete_authored_block", { path });
 }
+
+// ─── Share flow (T-174, ADR-0005) ────────────────────────────────────────────
+
+/**
+ * Result of a share-file operation.
+ * `method` indicates how sharing was performed so the caller can surface
+ * an appropriate confirmation to the user.
+ */
+export interface ShareBlockResult {
+  /** "share-sheet" when the OS share sheet handled the file attachment.
+   *  "clipboard" when the share-sheet was unavailable and the file path
+   *  was copied to the clipboard as a fallback. */
+  method: "share-sheet" | "clipboard";
+}
+
+/**
+ * Shares a stamped Authored block file via the OS share sheet (e.g. Mail on
+ * macOS). Falls back to copying the file path to the clipboard if the
+ * share-sheet capability is not available on the current OS.
+ *
+ * The Rust sidecar (`src-tauri/src/commands/share_block.rs`) handles the
+ * platform-specific API:
+ *   - macOS: `NSSharingServicePicker` with the file URL.
+ *   - Windows / Linux: clipboard fallback (share-sheet not available in v1).
+ *
+ * @param filePath  Absolute path to the `.tsx` file to share.
+ */
+export async function shareBlockFile(filePath: string): Promise<ShareBlockResult> {
+  return invoke<ShareBlockResult>("share_block_file", { filePath });
+}

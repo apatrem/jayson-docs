@@ -1949,7 +1949,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** generation produces a valid `defineAuthoredBlock({...})` file that passes T-163's gate; iteration messages refine without re-running the full generation prompt unnecessarily.
 - **est.** 6h
 
-### T-174 [ ] · Share flow (sender stamp + OS share-sheet attachment)
+### T-174 [x] · Share flow (sender stamp + OS share-sheet attachment)
 - **Depends-on:** T-173
 - **Reads:** `docs/adr/0005-authored-block-transport-format.md`
 - **Outputs:**
