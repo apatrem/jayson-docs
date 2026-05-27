@@ -1981,7 +1981,7 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** the new category's spend is visible; existing category views unchanged.
 - **est.** 1h
 
-### T-179 [ ] · Update `docs/BLOCK_IMPLEMENTATION_GUIDE.md` for the `defineAuthoredBlock` pattern
+### T-179 [x] · Update `docs/BLOCK_IMPLEMENTATION_GUIDE.md` for the `defineAuthoredBlock` pattern
 - **Depends-on:** T-159
 - **Outputs:**
   - New section in the guide covering the `defineAuthoredBlock` declarative pattern. Cross-references the `reference/authored-block/` scaffold from T-159 + ADR-0013 (declarative data, not executable code). Distinguishes from the imperative `defineBlock` pattern (which now points at the rewritten `reference/callout/` from T-138).

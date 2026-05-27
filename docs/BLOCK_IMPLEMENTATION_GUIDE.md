@@ -7,9 +7,10 @@ blocks or understanding the existing ones.
 
 **Audience:** the developer (or LLM) implementing or modifying Standard blocks.
 
-**Companion to:** `blocks.catalogue.yaml` (the setup-time spec for each block;
-see §8 for its role), `reference/callout/` (canonical scaffold), `reference/chart/`
-(worked example for complex blocks with a data panel).
+**Companion to:** `blocks.catalogue.yaml` (the setup-time spec for each Standard
+block), `reference/callout/` (Standard block canonical scaffold), `reference/chart/`
+(worked example for complex blocks with a data panel), `reference/authored-block/`
+(Authored block canonical scaffold — see §8 for the full `defineAuthoredBlock` pattern).
 
 > **Architecture note (ADR-0008):** as of M9a, every Standard block is a
 > single-file manifest under `src/blocks/<name>/` using the `defineBlock()`
@@ -298,3 +299,231 @@ These are mistakes that the callout reference does NOT make — don't introduce 
 | Allowing free-text in cells (e.g., table.row.cell as `string`) | Drift between editor's rich text and on-wire data | Use `ProseMirrorFragmentSchema` for any rich-text field |
 | Skipping `.strict()` on the schema | Unknown keys silently accepted; drift hidden | Always `.strict()` |
 | Defining `crypto.randomUUID()` calls during render | Non-deterministic rendering breaks PDF + tests | IDs generated only at block creation, never during render |
+
+---
+
+## 8. Authored blocks (Tier 3) — the `defineAuthoredBlock` pattern
+
+Standard blocks (§1–§7 above) cover the 15 core blocks built by the development
+team and reviewed via PR. **Authored blocks** are a separate tier that consultants
+create in-document via the LLM-powered authoring panel and share peer-to-peer as
+`.ts` file attachments. This section explains how to write, test, and reason about
+the Authored block pattern.
+
+> **See also:** `reference/authored-block/` for the canonical scaffold and
+> `sector-risk-summary.ts` as a worked example.
+> **ADR references:** ADR-0004 (three-tier library), ADR-0007 (capability
+> restriction), ADR-0013 (declarative data), ADR-0005 (transport format),
+> ADR-0011 (authoring UX).
+
+---
+
+### 8.1 What an Authored block is
+
+An Authored block is a consultant-authored, peer-to-peer-shareable block that
+extends the palette beyond the 15 Standard blocks. Unlike Standard and Brand
+blocks, Authored blocks ship **without a human review gate** — the Rust AST lint
+(at receive time) and the TypeScript capability ceiling are the only safety layers.
+
+The tier comparison:
+
+| Property | Standard (`defineBlock`) | Brand (setup-installed) | Authored (`defineAuthoredBlock`) |
+|---|---|---|---|
+| Author | Core developer | Ops team at setup | Consultant via in-app UI / LLM |
+| Human review | ✅ PR review | ✅ Ops review | ❌ — Rust lint only |
+| File format | `schema.ts` + `index.tsx` | Same as Standard | Single `.ts` file (data, not code) |
+| Runtime model | App-bundled TS executed by the browser | Same as Standard | Manifest extracted from AST; runtime is **app-bundled code** |
+| Capability ceiling | Full Standard capabilities | Full Standard capabilities | Restricted subset (ADR-0007): no atom nodes, no custom side panels, no ECharts/Mermaid |
+| Registration | `loadAllBlocks()` in `runtime-registry.ts` | Same | `generated-blocks/active/` on disk |
+| Transport | Committed to repo | Committed to repo | Shared as a `.ts` file attachment (ADR-0005) |
+
+---
+
+### 8.2 The declarative-data model (ADR-0013)
+
+**An Authored block file is data, not executable code.** The runtime never
+`eval`s or `import()`s it. Instead:
+
+1. The Rust sidecar parses the file's AST at receive time.
+2. It validates that every value inside `defineAuthoredBlock({...})` is
+   statically evaluable — no function expressions, no arrow functions, no
+   non-literal template strings, no JSX.
+3. It extracts the manifest as a typed `AuthoredBlockManifest` (a plain
+   JSON-equivalent value) and discards the rest.
+4. The app's **built-in runtime expander** (in `src/blocks/authored/defineAuthoredBlock.ts`)
+   consumes the manifest to build a TipTap node + form-based node view +
+   React renderer + mapping — without ever running the Authored file's contents.
+
+The `.ts` extension is a serialisation convenience (diffable, emailable,
+type-checkable at generation time) — not an indication of runtime execution.
+
+---
+
+### 8.3 The capability restriction (ADR-0007)
+
+Because the runtime expander is fixed app-bundled code, what an Authored block
+*can* express is the union of what `defineAuthoredBlock()` accepts:
+
+| Capability | Authored |
+|---|---|
+| Rich-text content area (`content: "rich-text"`) | ✅ |
+| Static attrs: `string`, `enum`, `number`, `bool` | ✅ |
+| Repeated-item list attrs | ✅ |
+| Brand-token consumption via `{ $token: "..." }` | ✅ |
+| Attr references in the template via `{ $ref: "fieldId" }` | ✅ |
+| Atom node with JSON payload | ❌ — type error |
+| Custom side panel | ❌ — type error |
+| ECharts / Mermaid embed | ❌ — type error |
+| Function values anywhere in the manifest | ❌ — AST lint failure at receive time |
+
+The capability ceiling is enforced at two independent layers:
+
+1. **TypeScript compile time** — `AuthoredBlockManifest` has no field that
+   accepts a TipTap `Node`, `ComponentType`, or function. Forbidden patterns
+   are type errors, not lint warnings.
+2. **Rust AST validator at receive time** — scans the literal AST for any
+   non-literal node and quarantines the block if found.
+
+---
+
+### 8.4 Writing an Authored block
+
+Copy `reference/authored-block/sector-risk-summary.ts` as a starting point.
+The minimum structure is:
+
+```typescript
+// Authored block manifests may import ONLY:
+//   - defineAuthoredBlock (this helper)
+//   - brand-token type aliases  (ColorToken, AttrRef)
+// No React, no TipTap, no echarts, no fs, no fetch.
+import { defineAuthoredBlock } from "../../src/blocks/authored/defineAuthoredBlock";
+
+export default defineAuthoredBlock({
+  // ── Identity ──────────────────────────────────────────────────────────────
+  slug: "my-block",            // kebab-case; unique per sender email
+  title: "My Block",           // displayed in the "Add block" dialog
+  paletteLabel: "My Block",    // ≤ 24 chars, palette chip label
+  content: "rich-text",        // "rich-text" | "none"
+
+  // ── Attrs ─────────────────────────────────────────────────────────────────
+  // Order here = top-to-bottom order in the auto-generated form panel.
+  attrs: [
+    { kind: "string",  fieldId: "title",  label: "Title",  maxLength: 80 },
+    { kind: "enum",    fieldId: "status", label: "Status",
+      options: [{ value: "draft", label: "Draft" }, { value: "final", label: "Final" }],
+      defaultValue: "draft" },
+    { kind: "number",  fieldId: "score",  label: "Score",  min: 0, max: 100, defaultValue: 0 },
+    { kind: "bool",    fieldId: "pinned", label: "Pinned", defaultValue: false },
+    {
+      kind: "repeated-item", fieldId: "items", label: "Items",
+      itemFields: [
+        { kind: "string", fieldId: "name", label: "Name", maxLength: 60 },
+      ],
+    },
+  ],
+
+  // ── Renderer template ──────────────────────────────────────────────────────
+  // Pure data — no JSX, no functions.
+  // AttrRef: { $ref: "fieldId" } resolves to the attr's runtime value.
+  // ColorToken: { $token: "colors.brand.primary" } resolves via brand tokens.
+  template: {
+    kind: "column",
+    gap: 2,
+    children: [
+      {
+        kind: "box",
+        padding: 3,
+        background: { $token: "colors.semantic.surfaceBackground" },
+        children: [
+          { kind: "heading", level: 2, text: { $ref: "title" } },
+          { kind: "badge",   text: { $ref: "status" } },
+        ],
+      },
+      { kind: "rich-text-slot" },   // ← ProseMirror editable area
+    ],
+  },
+});
+```
+
+#### Available render nodes
+
+| Kind | Key fields | Notes |
+|---|---|---|
+| `text` | `value: string \| AttrRef`, `color?: ColorToken` | Inline text |
+| `heading` | `level: 1–4`, `text: string \| AttrRef` | Section heading |
+| `box` | `padding?`, `background?: ColorToken`, `borderRadius?`, `children` | Block container |
+| `row` | `gap?`, `align?`, `children` | Horizontal flex |
+| `column` | `gap?`, `children` | Vertical flex |
+| `badge` | `text: string \| AttrRef`, `background?: ColorToken`, `foreground?: ColorToken` | Chip/label |
+| `rich-text-slot` | — | ProseMirror editable area (at most once; only when `content: "rich-text"`) |
+| `for-each` | `fieldId: string`, `item: RenderNode` | Repeats per `repeated-item` entry |
+
+---
+
+### 8.5 The generate → share → receive lifecycle
+
+Authored blocks are not written directly — the LLM authoring panel generates
+them from a consultant's description. The lifecycle:
+
+1. **Generate** — consultant describes the block; the LLM (using the system
+   prompt in `src/llm/generate-authored-block.ts`) generates a `.ts` file
+   matching the manifest schema. The app runs advisory lint; on pass the block
+   is previewed in-document.
+2. **Share** — consultant shares the `.ts` attachment via the OS share sheet
+   (or clipboard fallback). The `stampSender` function writes the sender's
+   email into the manifest header before sharing (ADR-0005).
+3. **Receive** — recipient drags the `.ts` onto the app window. The receive
+   pipeline (`receiveAuthoredBlock` in `src/ipc/authored-block.ts`):
+   a. Checks the scaffold version. Mismatch → quarantine with a
+      `scaffold-version-mismatch` violation; "Regenerate against current
+      scaffold" is the offered action.
+   b. Runs the Rust AST lint (A001–A013 rules). Failure → quarantine with a
+      `.violations.json` sidecar surfaced in the `QuarantinePanel`.
+   c. Passes → installs to `generated-blocks/active/<slug>.tsx`.
+   d. Writes a `.manifest.json` sidecar alongside the installed file.
+4. **Activate** — the runtime registry discovers files in `generated-blocks/active/`
+   and registers them in the block palette (via `buildAuthoredRenderer`).
+5. **Archive / delete** — lifecycle managed via IPC commands
+   (`archiveAuthoredBlock`, `restoreAuthoredBlock`, `permanentlyDeleteAuthoredBlock`).
+
+---
+
+### 8.6 Writing tests for an Authored block
+
+Copy `reference/authored-block/sector-risk-summary.test.ts` as a starting
+point. Authored block tests have four layers (not five — there is no TipTap
+layer, since TipTap integration is handled by the runtime expander, not the
+manifest):
+
+| Layer | What to test |
+|---|---|
+| **1. Manifest shape** | `defineAuthoredBlock()` returns a value; slug/title/paletteLabel are correct types and values. |
+| **2. Attrs** | Each field definition has the right `kind`, `fieldId`, and `label`; enums have non-empty `options`. |
+| **3. Template structure** | The render tree is well-formed — all nodes have a `kind`, `rich-text-slot` appears at most once, `for-each` nodes reference a valid `fieldId`. |
+| **4. Manifest header (receive-time)** | Parsed header has the right `slug` and `sender` fields; `isScaffoldCompatible` returns true for the current `APP_SCAFFOLD_VERSION`. |
+
+---
+
+### 8.7 Common mistakes to avoid in Authored blocks
+
+| Mistake | Why it's rejected | Correct approach |
+|---|---|---|
+| Importing React, TipTap, or echarts | Forbidden import list in the Rust AST lint | Import only `defineAuthoredBlock` and brand-token type aliases |
+| Using a function or arrow function as a value | AST validator rejects non-literal nodes | Use `{ $ref: "fieldId" }` or `{ $token: "..." }` for dynamic values |
+| More than one `rich-text-slot` | Runtime expander only supports one editable region | At most one `rich-text-slot` per template |
+| Omitting the manifest header | `receiveAuthoredBlock` needs header for slug/sender | Let the LLM generation pipeline stamp the header; don't strip it |
+| Hardcoding a hex color in the template | Breaks brand customization | Use `{ $token: "colors.brand.primary" }` from the brand-token system |
+| Adding top-level statements beyond the default export | AST lint rejects files with extra top-level code | One default export, one optional narrow import — nothing else |
+| Trying to use a `template: () => ...` function | Manifest values must be literals | Describe the layout declaratively using render nodes |
+
+---
+
+### 8.8 Block guide summary (all three tiers)
+
+| Task | Standard (`defineBlock`) | Brand (setup-installed) | Authored (`defineAuthoredBlock`) |
+|---|---|---|---|
+| Canonical reference | `reference/callout/` | `reference/callout/` + `starter/brand.example.yaml` | `reference/authored-block/` |
+| File(s) to create | `schema.ts` + `index.tsx` + `<name>.test.ts` | Same | One `.ts` file + `<slug>.test.ts` |
+| Register in | `runtime-registry.ts` (`loadAllBlocks`) | Same | Drop in `generated-blocks/active/` |
+| Test layers | 5 (schema valid/invalid, renderer, mapping, TipTap) | 5 | 4 (manifest, attrs, template, header) |
+| Review gate | Human PR | Ops team | Rust AST lint (automated) |
