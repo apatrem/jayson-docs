@@ -1,3 +1,29 @@
+# ⚠️ DEPRECATED — reference/mapping/
+
+**This reference pattern is superseded by the block registry (ADR-0008, T-138).**
+
+The per-block switch arms in `mapping.ts` are replaced by registry iteration:
+
+```typescript
+// NEW pattern (post-T-141b):
+import { runtimeRegistry } from "src/blocks/runtime-registry";
+
+function blockToProseMirror(block: Block): ProseMirrorNode {
+  const entry = runtimeRegistry.find(e => e.schemaName === block.type);
+  if (!entry) throw new MappingError(`Unknown block type: ${block.type}`);
+  return entry.toPm(block);
+}
+```
+
+The `toPm` / `fromPm` functions now live in each block's `src/blocks/<name>/index.ts`
+(default-exported via `defineBlock({..., toPm, fromPm})`), not in per-block
+`*Node.tsx` files registered by hand in `mapping.ts`.
+
+**Do not use this directory as the copy-source for new work.**  
+Use `reference/callout/` (rich-text blocks) or `reference/chart/` (atom-node blocks).
+
+---
+
 # DocModel ⇄ Editor mapping orchestrator
 
 The top-level dispatch that turns a `DocModel` into a TipTap document and back. Per-block mapping helpers live in each block's `*Node.tsx`; this is the file that knows about *sections*, *slides*, *comments*, and the kind discriminator.

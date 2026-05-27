@@ -127,6 +127,28 @@ export const ChartBlockSchema = BlockBaseSchema.extend({
 
 export type ChartBlock = z.infer<typeof ChartBlockSchema>;
 
+/**
+ * Schema-registry entry for the pure (no-React/TipTap) layer.
+ *
+ * Same pattern as reference/callout/schema.ts — no import from
+ * src/blocks/defineBlock (TipTap transitive dep); uses z.ZodType<unknown>
+ * inline instead, which is safe since zod is already a dep of this file.
+ */
+export const schemaEntry = {
+  schemaName: "chart",
+  schema: ChartBlockSchema,
+  allowedAttrs: [
+    "chartType", "title", "takeaway",
+    "data", "axes", "palette", "showLegend", "showDataLabels", "note",
+  ] as const,
+  paletteLabel: "Chart",
+} satisfies {
+  schemaName: string;
+  schema: z.ZodType<unknown>;
+  allowedAttrs: readonly string[];
+  paletteLabel: string;
+};
+
 // ── Helpers used by the renderer + node view ────────────────────────────────
 
 /**

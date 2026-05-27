@@ -77,3 +77,25 @@ export function calloutTintTokenFor(variant: CalloutVariant): string {
     case "tip":     return "colors.brand.secondary";
   }
 }
+
+/**
+ * Schema-registry entry for the pure (no-React/TipTap) layer.
+ *
+ * This object is imported by schema-registry.ts and must NOT transitively pull
+ * in React, @tiptap/*, or src/renderer/ — enforced by schema-purity.test.ts.
+ * Using z.ZodType<unknown> directly (zod is already a dep of this file) avoids
+ * importing SchemaEntry from src/blocks/defineBlock which would drag in TipTap.
+ */
+export const schemaEntry = {
+  schemaName: "callout",
+  schema: CalloutBlockSchema,
+  allowedAttrs: [
+    "variant", "title", "body", "attribution", "note",
+  ] as const,
+  paletteLabel: "Callout",
+} satisfies {
+  schemaName: string;
+  schema: z.ZodType<unknown>;
+  allowedAttrs: readonly string[];
+  paletteLabel: string;
+};

