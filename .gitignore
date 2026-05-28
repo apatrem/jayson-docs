@@ -16,3 +16,7 @@ target/
 
 # Setup pipeline verify artifacts (T-45 tsc check)
 generated-blocks/pending/.tsc-verify-*/
+
+# Authored client documents (confidential; see AUTHORING.md) — keep the dir, ignore contents
+documents/*
+!documents/.gitkeep

@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:perf": "vitest run tests/perf/benchmark.test.ts",
     "test:watch": "vitest",
-    "validate": "node scripts/validate.mjs",
+    "validate": "tsx scripts/validate.ts",
     "export:pdf": "node scripts/export-pdf.mjs",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
