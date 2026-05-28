@@ -182,26 +182,39 @@ describe("Table renderer", () => {
 });
 
 describe("Table mapping", () => {
-  it("round-trips doc-table atom losslessly", () => {
+  it("round-trips the doc-table node losslessly (incl. align + width)", () => {
     const pm = tableBlockToProseMirror(validTable);
     expect(proseMirrorToTableBlock(pm)).toEqual(validTable);
   });
 
-  it("builds nested TipTap table content with header row", () => {
+  it("builds nested TipTap table content with a metadata-bearing header row", () => {
     const nested = tableBlockToTipTapTableContent(validTable);
     expect(nested.type).toBe("table");
-    expect(nested.content[0]?.content[0]?.type).toBe("tableHeader");
-    expect(nested.content[1]?.content[0]?.type).toBe("tableCell");
+    const rows = (nested.content ?? []) as Array<{
+      content?: Array<{ type?: string; attrs?: Record<string, unknown> }>;
+    }>;
+    expect(rows[0]?.content?.[0]?.type).toBe("tableHeader");
+    expect(rows[0]?.content?.[0]?.attrs?.["align"]).toBe("left");
+    expect(rows[1]?.content?.[0]?.type).toBe("tableCell");
   });
 });
 
 describe("Table TipTap integration", () => {
-  it("registers insertDocTable on the doc-table atom", () => {
+  it("inserts an editable doc-table node wrapping a native table", () => {
     const editor = new Editor({
-      extensions: [Document, Paragraph, Text, DocTableTipTapNode],
+      extensions: [
+        Document,
+        Paragraph,
+        Text,
+        ...tableBlockEditorExtensions(),
+        DocTableTipTapNode,
+      ],
     });
     editor.commands.insertDocTable();
-    expect(JSON.stringify(editor.getJSON())).toContain('"type":"docTable"');
+    const json = JSON.stringify(editor.getJSON());
+    expect(json).toContain('"type":"docTable"');
+    expect(json).toContain('"type":"table"');
+    expect(json).toContain('"type":"tableHeader"');
     editor.destroy();
   });
 

@@ -12,18 +12,13 @@ import TipTapTable from "@tiptap/extension-table";
 import TipTapTableCell from "@tiptap/extension-table-cell";
 import TipTapTableHeader from "@tiptap/extension-table-header";
 import TipTapTableRow from "@tiptap/extension-table-row";
-import {
-  NodeViewWrapper,
-  ReactNodeViewRenderer,
-  type NodeViewProps,
-} from "@tiptap/react";
+import type { JSONContent } from "@tiptap/react";
 import type { CSSProperties, ComponentType, FC } from "react";
 import { useBrandTokens } from "../../brand-tokens/useBrandTokens";
 import { resolveBrandToken } from "../../brand-tokens/resolve";
 import { ProseRenderer } from "../../renderer/ProseRenderer";
 import type { ProseMirrorFragment } from "../../schema/prosemirror-fragment";
 import { defineBlock } from "../defineBlock";
-import { TablePanel } from "./TablePanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 import type { ZodType } from "zod";
 import {
@@ -64,13 +59,51 @@ declare module "@tiptap/core" {
 }
 
 // ── Table kit helpers ─────────────────────────────────────────────────────
-const ConstrainedTableCell = TipTapTableCell.extend({
+const CELL_STYLE = "border:1px solid #E2E8F0;padding:4px 8px;vertical-align:top;";
+const HEADER_STYLE = `${CELL_STYLE}background:#F8FAFC;font-weight:600;`;
+
+// Cells hold paragraph-only rich text (matches the DocModel cell fragment).
+// renderHTML adds borders so the editable grid reads like the rendered table.
+export const ConstrainedTableCell = TipTapTableCell.extend({
   content: "paragraph+",
+  renderHTML({ HTMLAttributes }) {
+    return ["td", mergeAttributes(HTMLAttributes, { style: CELL_STYLE }), 0];
+  },
+});
+
+// Header cells additionally carry the per-column metadata (align, width) so it
+// travels with the column when columns are added/removed — keeping the DocModel
+// column ⇄ header-cell round-trip lossless without a separate indexed attr.
+export const ConstrainedTableHeader = TipTapTableHeader.extend({
+  content: "paragraph+",
+  addAttributes() {
+    return {
+      ...(this.parent?.() ?? {}),
+      align: {
+        default: "left",
+        parseHTML: (el: HTMLElement) =>
+          el.getAttribute("data-align") ?? el.style.textAlign ?? "left",
+        renderHTML: (attrs: { align: TableColumnAlign }) => ({
+          "data-align": attrs.align,
+          style: `text-align:${attrs.align}`,
+        }),
+      },
+      colWidth: {
+        default: null,
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-col-width"),
+        renderHTML: (attrs: { colWidth: string | null }) =>
+          attrs.colWidth ? { "data-col-width": attrs.colWidth } : {},
+      },
+    };
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["th", mergeAttributes(HTMLAttributes, { style: HEADER_STYLE }), 0];
+  },
 });
 
 /**
- * TipTap table kit with paragraph-only cell content.
- * Used when embedding editable grids inside the doc-table block node view.
+ * TipTap table kit with paragraph-only cells and metadata-bearing headers.
+ * Registered into the editor's closed schema so doc-table grids edit inline.
  */
 export function tableBlockEditorExtensions() {
   return [
@@ -79,7 +112,7 @@ export function tableBlockEditorExtensions() {
       HTMLAttributes: { class: "doc-table-grid" },
     }),
     TipTapTableRow,
-    TipTapTableHeader,
+    ConstrainedTableHeader,
     ConstrainedTableCell,
   ];
 }
@@ -88,8 +121,8 @@ export function tableBlockEditorExtensions() {
 export const DocTableTipTapNode = Node.create({
   name: "docTable",
   group: "block",
-  atom: true,
-  selectable: true,
+  content: "table",
+  defining: true,
 
   addAttributes() {
     return {
@@ -98,32 +131,6 @@ export const DocTableTipTapNode = Node.create({
         parseHTML: (el) => el.getAttribute("data-block-id"),
         renderHTML: (attrs: { blockId: string | null }) => ({
           "data-block-id": attrs.blockId,
-        }),
-      },
-      columns: {
-        default: [],
-        parseHTML: (el) => {
-          const raw = el.getAttribute("data-columns");
-          if (!raw) {
-            return [] as TableColumn[];
-          }
-          return JSON.parse(raw) as TableColumn[];
-        },
-        renderHTML: (attrs: { columns: TableColumn[] }) => ({
-          "data-columns": JSON.stringify(attrs.columns),
-        }),
-      },
-      rows: {
-        default: [],
-        parseHTML: (el) => {
-          const raw = el.getAttribute("data-rows");
-          if (!raw) {
-            return [] as TableBlockRow[];
-          }
-          return JSON.parse(raw) as TableBlockRow[];
-        },
-        renderHTML: (attrs: { rows: TableBlockRow[] }) => ({
-          "data-rows": JSON.stringify(attrs.rows),
         }),
       },
       caption: {
@@ -148,7 +155,11 @@ export const DocTableTipTapNode = Node.create({
   renderHTML({ HTMLAttributes }) {
     return [
       "figure",
-      mergeAttributes(HTMLAttributes, { "data-block-type": "table" }),
+      mergeAttributes(HTMLAttributes, {
+        "data-block-type": "table",
+        style: "margin:0;",
+      }),
+      0,
     ];
   },
 
@@ -161,136 +172,118 @@ export const DocTableTipTapNode = Node.create({
             { header: "Column A", align: "left" as const },
             { header: "Column B", align: "left" as const },
           ];
-          const rows = attrs.rows ?? [
-            {
-              cells: columns.map(() => emptyTableCell()),
-            },
-          ];
+          const rows = attrs.rows ?? [{ cells: columns.map(() => emptyTableCell()) }];
+          const block: TableBlock = {
+            id: crypto.randomUUID(),
+            type: "table",
+            columns,
+            rows,
+            ...(attrs.caption ? { caption: attrs.caption } : {}),
+          };
           return commands.insertContent({
             type: this.name,
-            attrs: {
-              blockId: crypto.randomUUID(),
-              columns,
-              rows,
-              caption: attrs.caption ?? "",
-              note: "",
-            },
+            attrs: { blockId: block.id, caption: block.caption ?? "", note: "" },
+            content: [tableBlockToTipTapTableContent(block)],
           });
         },
     };
   },
-
-  addNodeView() {
-    return ReactNodeViewRenderer(DocTableNodeView);
-  },
 });
 
-// ── NodeView (editor) ─────────────────────────────────────────────────────
-const DocTableNodeView: FC<NodeViewProps> = ({ node, selected }) => {
-  const blockId = String(node.attrs.blockId);
-  const caption = node.attrs.caption as string | undefined;
-  const block: TableBlock = {
-    id: blockId,
-    type: "table",
-    columns: node.attrs.columns as TableColumn[],
-    rows: node.attrs.rows as TableBlockRow[],
-    ...(caption ? { caption } : {}),
-  };
-
-  return (
-    <NodeViewWrapper
-      className="doc-table-node-view"
-      data-block-id={blockId}
-      contentEditable={false}
-      style={editorBlockStyle(selected)}
-    >
-      <Table block={block} />
-    </NodeViewWrapper>
-  );
-};
-
-function editorBlockStyle(selected: boolean): CSSProperties {
-  return {
-    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
-    outlineOffset: 4,
-    cursor: "pointer",
-  };
-}
-
 // ── PM helpers ────────────────────────────────────────────────────────────
+// The doc-table block maps to a `docTable` node wrapping one native `table`.
+// Column metadata (align/width) rides on the header cells so add/remove-column
+// stays lossless; the doc-table node carries blockId/caption/note.
+type TableCellPm = { content?: ProseMirrorFragment["content"]; attrs?: Record<string, unknown> };
+type TableRowPm = { type?: string; content?: TableCellPm[] };
+type NativeTablePm = { type?: string; content?: TableRowPm[] };
 type DocTablePmNode = {
-  attrs: {
-    blockId: string;
-    columns: TableColumn[];
-    rows: TableBlockRow[];
-    caption: string;
-    note: string;
-  };
+  attrs: { blockId: string; caption: string; note: string };
+  content?: NativeTablePm[];
 };
 
 export function tableBlockToProseMirror(block: TableBlock): {
   type: string;
-  attrs: DocTablePmNode["attrs"];
+  attrs: { blockId: string; caption: string; note: string };
+  content: NativeTablePm[];
 } {
   return {
     type: "docTable",
     attrs: {
       blockId: block.id,
-      columns: block.columns,
-      rows: block.rows,
       caption: block.caption ?? "",
       note: block.note ?? "",
     },
+    content: [tableBlockToTipTapTableContent(block)],
   };
+}
+
+function cellText(cell: TableCellPm): string {
+  const paragraphs = cell.content ?? [];
+  return paragraphs
+    .flatMap((p) => ((p as { content?: { text?: string }[] }).content ?? []))
+    .map((inline) => inline.text ?? "")
+    .join("");
 }
 
 export function proseMirrorToTableBlock(node: DocTablePmNode): TableBlock {
+  const table = (node.content ?? [])[0];
+  const rows = table?.content ?? [];
+  const [headerRow, ...bodyRows] = rows;
+  const headerCells = headerRow?.content ?? [];
+
+  const columns: TableColumn[] = headerCells.map((hc) => {
+    const align = (hc.attrs?.["align"] as TableColumnAlign) ?? "left";
+    const width = hc.attrs?.["colWidth"] as string | undefined;
+    return {
+      header: cellText(hc),
+      align,
+      ...(width ? { width } : {}),
+    };
+  });
+
+  const blockRows: TableBlockRow[] = bodyRows.map((row) => ({
+    cells: (row.content ?? []).map((cell) => ({
+      type: "doc" as const,
+      content: cell.content ?? [{ type: "paragraph", content: [] }],
+    })),
+  }));
+
   return {
     id: node.attrs.blockId,
     type: "table",
-    columns: node.attrs.columns,
-    rows: node.attrs.rows,
-    caption: node.attrs.caption || undefined,
-    note: node.attrs.note || undefined,
+    columns,
+    rows: blockRows,
+    ...(node.attrs.caption ? { caption: node.attrs.caption } : {}),
+    ...(node.attrs.note ? { note: node.attrs.note } : {}),
   };
 }
 
-/** Nested TipTap table JSON for editors that mount `tableBlockEditorExtensions()`. */
-export function tableBlockToTipTapTableContent(block: TableBlock): {
-  type: "table";
-  content: Array<{
-    type: "tableRow";
-    content: Array<{
-      type: "tableHeader" | "tableCell";
-      content: ProseMirrorFragment["content"];
-    }>;
-  }>;
-} {
-  const headerRow = {
-    type: "tableRow" as const,
+/** Native TipTap table JSON: a header row carrying column metadata, then body rows. */
+export function tableBlockToTipTapTableContent(block: TableBlock): JSONContent {
+  const headerRow: JSONContent = {
+    type: "tableRow",
     content: block.columns.map((col) => ({
-      type: "tableHeader" as const,
+      type: "tableHeader",
+      attrs: { align: col.align, colWidth: col.width ?? null },
       content: [
         {
           type: "paragraph",
-          content: [{ type: "text", text: col.header }],
+          content: col.header ? [{ type: "text", text: col.header }] : [],
         },
       ],
     })),
   };
 
-  const bodyRows = block.rows.map((row) => ({
-    type: "tableRow" as const,
+  const bodyRows: JSONContent[] = block.rows.map((row) => ({
+    type: "tableRow",
     content: row.cells.map((cell) => ({
-      type: "tableCell" as const,
-      content: cell.content,
+      type: "tableCell",
+      content: cell.content as JSONContent[],
     })),
   }));
 
-  return {
-    type: "table",
-    content: [headerRow, ...bodyRows],
-  };
+  return { type: "table", content: [headerRow, ...bodyRows] };
 }
 
 // ── Renderer ──────────────────────────────────────────────────────────────
@@ -411,7 +404,6 @@ const tableBlock = defineBlock<TableBlock>({
     proseMirrorToTableBlock(
       node as unknown as Parameters<typeof proseMirrorToTableBlock>[0],
     ),
-  panel: TablePanel,
 });
 
 export default tableBlock;

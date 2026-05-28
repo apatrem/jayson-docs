@@ -24,6 +24,7 @@ import {
   SubBulletListTipTapNode,
   SubBulletItemTipTapNode,
 } from "../blocks/bullet-list";
+import { tableBlockEditorExtensions } from "../blocks/table";
 import { buildAuthoredTipTapNode } from "../blocks/authored/node-builder";
 import type { AuthoredBlockManifest } from "../blocks/authored/defineAuthoredBlock";
 import { BrandProvider } from "../brand-tokens/BrandProvider";
@@ -83,6 +84,10 @@ const STATIC_INFRA_NODE_NAMES = [
   "bulletListItem",
   "subBulletList",
   "subBulletItem",
+  "table",
+  "tableRow",
+  "tableHeader",
+  "tableCell",
 ] as const;
 
 // Block node names come from the registry.
@@ -186,6 +191,7 @@ export function createEditorExtensions(
     BulletListItemTipTapNode,
     SubBulletListTipTapNode,
     SubBulletItemTipTapNode,
+    ...tableBlockEditorExtensions(),
     CommentMark,
     ...blockExtensions,
     ...dedupeAuthoredManifests(authoredManifests).map(buildAuthoredTipTapNode),
@@ -318,6 +324,42 @@ export const Editor: FC<EditorProps> = ({
             editor?.chain().focus().toggleItalic().run();
           }}
         />
+        {editor?.isActive("table") ? (
+          <span style={styles.toolbarGroup} aria-label="Table controls">
+            <ToolbarButton
+              label="+ Row"
+              active={false}
+              disabled={!effectiveEditable}
+              onClick={() => {
+                editor?.chain().focus().addRowAfter().run();
+              }}
+            />
+            <ToolbarButton
+              label="− Row"
+              active={false}
+              disabled={!effectiveEditable}
+              onClick={() => {
+                editor?.chain().focus().deleteRow().run();
+              }}
+            />
+            <ToolbarButton
+              label="+ Col"
+              active={false}
+              disabled={!effectiveEditable}
+              onClick={() => {
+                editor?.chain().focus().addColumnAfter().run();
+              }}
+            />
+            <ToolbarButton
+              label="− Col"
+              active={false}
+              disabled={!effectiveEditable}
+              onClick={() => {
+                editor?.chain().focus().deleteColumn().run();
+              }}
+            />
+          </span>
+        ) : null}
       </div>
       {deck === null ? (
         editorSurface
@@ -442,6 +484,17 @@ const _blockNodeAttrsMap: Map<string, Set<string>> = new Map(
   _allBlocks.map((r) => [r.tiptapNode.name, _getNodeAttrNames(r.tiptapNode)] as const),
 );
 
+// Attrs carried by the native table infra nodes (TipTap built-ins + the
+// header's align/colWidth column metadata added in src/blocks/table). Listed
+// explicitly because these nodes aren't in the block registry but still appear
+// in editor content and must pass the closed-schema attr check.
+const _TABLE_NODE_ATTRS: Record<string, ReadonlySet<string>> = {
+  table: new Set(),
+  tableRow: new Set(),
+  tableHeader: new Set(["colspan", "rowspan", "colwidth", "align", "colWidth"]),
+  tableCell: new Set(["colspan", "rowspan", "colwidth"]),
+};
+
 function allowedAttrsForNode(
   nodeType: string,
   authoredAttrs: ReadonlyMap<string, Set<string>>,
@@ -455,6 +508,8 @@ function allowedAttrsForNode(
   if (nodeType === "section") {
     return new Set(["sectionId", "title"]);
   }
+  const tableAttrs = _TABLE_NODE_ATTRS[nodeType];
+  if (tableAttrs) return new Set(tableAttrs);
   // Infrastructure nodes (paragraph, doc, etc.) carry no custom attrs.
   return new Set();
 }
@@ -514,9 +569,17 @@ const styles: Record<string, CSSProperties> = {
   toolbar: {
     alignItems: "center",
     display: "flex",
+    flexWrap: "wrap",
     gap: "0.375rem",
     paddingBottom: "0.5rem",
     borderBottom: "1px solid #E2E8F0",
+  },
+  toolbarGroup: {
+    display: "inline-flex",
+    gap: "0.375rem",
+    marginLeft: "0.5rem",
+    paddingLeft: "0.5rem",
+    borderLeft: "1px solid #E2E8F0",
   },
   toolbarButton: {
     appearance: "none",
