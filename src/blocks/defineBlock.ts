@@ -9,6 +9,17 @@ import type { SchemaEntry } from "./schema-entry-type";
 export type { SchemaEntry };
 
 /**
+ * Props every structured-block side panel receives. DocumentView mounts the
+ * panel when the block is node-selected; `onUpdate` commits the edited block
+ * back to the editor (attrs-only), `onClose` dismisses the panel.
+ */
+export interface BlockPanelProps<TBlock> {
+  block: TBlock;
+  onUpdate: (next: TBlock) => void;
+  onClose: () => void;
+}
+
+/**
  * Full runtime record stored in the runtime-registry.
  * Extends SchemaEntry with editor and renderer wiring.
  */
@@ -18,6 +29,15 @@ export interface BlockRegistryRecord extends SchemaEntry {
   renderer: ComponentType<{ block: any }>;
   toPm: (block: unknown) => ProseMirrorNode;
   fromPm: (node: ProseMirrorNode) => unknown;
+  /**
+   * Optional data-editing side panel. When present, selecting the block in the
+   * editor mounts this panel (see DocumentView). Blocks whose data is fully
+   * captured in attrs (most of them) round-trip via toPm/fromPm; rich-text body
+   * content (e.g. callout) stays inline-edited and is preserved across panel
+   * updates because updateAttributes only touches attrs.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  panel?: ComponentType<BlockPanelProps<any>>;
 }
 
 /**
@@ -36,6 +56,7 @@ export function defineBlock<TBlock>(input: {
   renderer: ComponentType<{ block: TBlock }>;
   toPm: (block: TBlock) => ProseMirrorNode;
   fromPm: (node: ProseMirrorNode) => TBlock;
+  panel?: ComponentType<BlockPanelProps<TBlock>>;
 }): BlockRegistryRecord {
   return {
     schemaName: input.schemaName,
@@ -46,5 +67,8 @@ export function defineBlock<TBlock>(input: {
     renderer: input.renderer as BlockRegistryRecord["renderer"],
     toPm: input.toPm as (block: unknown) => ProseMirrorNode,
     fromPm: input.fromPm as (node: ProseMirrorNode) => unknown,
+    ...(input.panel !== undefined
+      ? { panel: input.panel as NonNullable<BlockRegistryRecord["panel"]> }
+      : {}),
   };
 }

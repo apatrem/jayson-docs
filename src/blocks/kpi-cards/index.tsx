@@ -18,6 +18,7 @@ import { useBrandTokens } from "../../brand-tokens/useBrandTokens";
 import { lookupBrandPath, resolveBrandToken } from "../../brand-tokens/resolve";
 import type { BrandTokens } from "../../schema/brand";
 import { defineBlock } from "../defineBlock";
+import { KpiCardsPanel } from "./KpiCardsPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 import type { ZodType } from "zod";
 import {
@@ -315,6 +316,7 @@ const kpiCardsBlock = defineBlock<KpiCardsBlock>({
     proseMirrorToKpiCardsBlock(
       node as unknown as Parameters<typeof proseMirrorToKpiCardsBlock>[0],
     ),
+  panel: KpiCardsPanel,
 });
 
 export default kpiCardsBlock;

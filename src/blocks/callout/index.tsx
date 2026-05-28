@@ -35,6 +35,7 @@ import { ProseRenderer } from "../../renderer/ProseRenderer";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { CalloutPanel } from "./CalloutPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -136,20 +137,10 @@ export const CalloutTipTapNode = Node.create({
   },
 });
 
-const variantLabels: Record<CalloutVariant, string> = {
-  info: "Info",
-  success: "Success",
-  warning: "Warning",
-  error: "Error",
-  quote: "Quote",
-  tip: "Tip",
-};
-
-const CalloutNodeView: FC<NodeViewProps> = ({
-  node,
-  updateAttributes,
-  selected,
-}) => {
+// Variant / title / attribution are edited in CalloutPanel.tsx (mounted by
+// DocumentView on selection). The body stays inline-editable here via
+// NodeViewContent; title + attribution render read-only from attrs.
+const CalloutNodeView: FC<NodeViewProps> = ({ node, selected }) => {
   const variant = node.attrs.variant as CalloutVariant;
   const title = node.attrs.title as string;
   const attribution = node.attrs.attribution as string;
@@ -158,47 +149,25 @@ const CalloutNodeView: FC<NodeViewProps> = ({
     <NodeViewWrapper
       className={`callout-editor variant-${variant} ${selected ? "selected" : ""}`}
       data-block-id={node.attrs.blockId as string}
+      style={{
+        outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+        outlineOffset: 4,
+      }}
     >
-      {selected ? (
-        <div className="callout-toolbar" contentEditable={false}>
-          <label>
-            Variant:{" "}
-            <select
-              value={variant}
-              onChange={(e) =>
-                updateAttributes({ variant: e.target.value as CalloutVariant })
-              }
-            >
-              {(Object.keys(variantLabels) as CalloutVariant[]).map((v) => (
-                <option key={v} value={v}>
-                  {variantLabels[v]}
-                </option>
-              ))}
-            </select>
-          </label>
+      {title ? (
+        <div className="callout-title" contentEditable={false}>
+          {title}
         </div>
       ) : null}
-
-      <input
-        className="callout-title"
-        type="text"
-        value={title}
-        placeholder="Title (optional)"
-        onChange={(e) => updateAttributes({ title: e.target.value })}
-      />
 
       <div className="callout-body">
         <NodeViewContent />
       </div>
 
-      {variant === "quote" ? (
-        <input
-          className="callout-attribution"
-          type="text"
-          value={attribution}
-          placeholder="Attribution (optional)"
-          onChange={(e) => updateAttributes({ attribution: e.target.value })}
-        />
+      {variant === "quote" && attribution ? (
+        <div className="callout-attribution" contentEditable={false}>
+          — {attribution}
+        </div>
       ) : null}
     </NodeViewWrapper>
   );
@@ -326,6 +295,7 @@ const calloutBlock = defineBlock<CalloutBlock>({
   // Cast via unknown: ProseMirrorNode.attrs is Record<string,unknown>;
   // the specific PmNode type narrows that to the node's actual attrs.
   fromPm: (node) => proseMirrorToCalloutBlock(node as unknown as CalloutPmNode),
+  panel: CalloutPanel,
 });
 
 export default calloutBlock;

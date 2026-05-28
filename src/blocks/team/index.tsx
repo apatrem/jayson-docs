@@ -38,6 +38,7 @@ import { resolveBrandToken } from "../../brand-tokens/resolve";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { TeamPanel } from "./TeamPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -457,6 +458,7 @@ const teamBlock = defineBlock<TeamBlock>({
   toPm: (block) => teamBlockToProseMirror(block) as ProseMirrorNode,
   fromPm: (node) =>
     proseMirrorToTeamBlock(node as unknown as TeamPmNode),
+  panel: TeamPanel,
 });
 
 export default teamBlock;

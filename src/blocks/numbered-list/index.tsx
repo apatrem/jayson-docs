@@ -31,6 +31,7 @@ import { ProseRenderer } from "../../renderer/ProseRenderer";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { NumberedListPanel } from "./NumberedListPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -246,6 +247,7 @@ const numberedListBlock = defineBlock<NumberedListBlock>({
   toPm: (block) => numberedListBlockToProseMirror(block) as ProseMirrorNode,
   fromPm: (node) =>
     proseMirrorToNumberedListBlock(node as unknown as NumberedListPmNode),
+  panel: NumberedListPanel,
 });
 
 export default numberedListBlock;

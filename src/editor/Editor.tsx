@@ -20,6 +20,8 @@ import { CommentMark } from "../comments/CommentMark";
 import type { DocModel } from "../schema/docmodel";
 import { docModelToProseMirror } from "./mapping";
 import { loadAllBlocks } from "../blocks/runtime-registry";
+import { BrandProvider } from "../brand-tokens/BrandProvider";
+import { defaultBrand } from "../brand/defaultBrand";
 
 export interface EditorProps {
   initialContent?: JSONContent | string;
@@ -213,6 +215,11 @@ export const Editor: FC<EditorProps> = ({
   const editorSurface = <EditorContent editor={editor} style={styles.surface} />;
 
   return (
+    // Provide brand context so block node-views (which render the real block
+    // renderers calling useBrandTokens) work regardless of how the Editor is
+    // mounted — including the standalone deck surface. Harmless double-wrap
+    // when already under DocumentView's BrandProvider.
+    <BrandProvider tokens={defaultBrand}>
     <section style={styles.shell} aria-label="WYSIWYG editor">
       <div style={styles.toolbar} aria-label="Formatting toolbar">
         <ToolbarButton
@@ -273,6 +280,7 @@ export const Editor: FC<EditorProps> = ({
         </div>
       )}
     </section>
+    </BrandProvider>
   );
 };
 

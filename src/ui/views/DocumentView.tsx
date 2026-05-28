@@ -6,10 +6,8 @@ import { NodeSelection } from "@tiptap/pm/state";
 import { defaultBrand } from "../../brand/defaultBrand";
 import { BrandProvider } from "../../brand-tokens/BrandProvider";
 import { parseDocModelYaml } from "../../docmodel/serialize";
-import { ChartDataPanel } from "../../blocks/chart/ChartDataPanel";
-import { KpiCardsPanel } from "../../blocks/kpi-cards/KpiCardsPanel";
-import type { ChartBlock } from "../../blocks/chart/schema";
-import type { KpiCard, KpiCardsBlock } from "../../blocks/kpi-cards/schema";
+import { loadAllBlocks } from "../../blocks/runtime-registry";
+import type { BlockRegistryRecord } from "../../blocks/defineBlock";
 import {
   createAutosaveController,
   type AutosaveController,
@@ -122,12 +120,12 @@ export const DocumentView: FC<DocumentViewProps> = ({
   const [editor, setEditor] = useState<TipTapEditor | null>(null);
   const [authoringContext, setAuthoringContext] = useState<DocumentModel | null>(null);
   // ── Selection-driven structured-block panel (P0c) ────────────────────────
-  // Tracks which atom block (chart, kpi-cards, …) is currently node-selected
-  // so DocumentView can mount the matching side panel. Cleared whenever the
-  // selection moves off the block.
+  // Tracks which atom block is currently node-selected so DocumentView can
+  // mount the matching side panel. Cleared whenever the selection moves off a
+  // panel-bearing block. `nodeJson` is the selected node's ProseMirror JSON
+  // (attrs + content), bridged to a typed block via the registry's fromPm.
   const [selectedNode, setSelectedNode] = useState<
-    | { type: "chart" | "kpiCards"; pos: number; attrs: Record<string, unknown> }
-    | null
+    { nodeName: string; pos: number; nodeJson: ProseMirrorNode } | null
   >(null);
   // ── Generation state (T-173) ─────────────────────────────────────────────
   const [generating, setGenerating] = useState(false);
@@ -205,11 +203,11 @@ export const DocumentView: FC<DocumentViewProps> = ({
       const { selection } = editor.state;
       if (selection instanceof NodeSelection) {
         const name = selection.node.type.name;
-        if (name === "chart" || name === "kpiCards") {
+        if (PANEL_RECORDS.has(name)) {
           setSelectedNode({
-            type: name,
+            nodeName: name,
             pos: selection.from,
-            attrs: { ...selection.node.attrs },
+            nodeJson: selection.node.toJSON() as ProseMirrorNode,
           });
           return;
         }
@@ -334,9 +332,13 @@ export const DocumentView: FC<DocumentViewProps> = ({
       <BrandProvider tokens={defaultBrand}>
       <div style={styles.contentGrid}>
         <section aria-label="Rendered document preview" style={styles.previewPane}>
-          <DocumentRenderer doc={doc} brand={defaultBrand} docFolderPath={parentPath(path)} />
+          <div style={styles.paneLabel}>Preview · read-only</div>
+          <div style={styles.paneBody}>
+            <DocumentRenderer doc={doc} brand={defaultBrand} docFolderPath={parentPath(path)} />
+          </div>
         </section>
         <section aria-label="Editable document" style={styles.editorPane}>
+          <div style={{ ...styles.paneLabel, ...styles.paneLabelEdit }}>Edit</div>
           {/* Re-seed the editor only when a different file is opened. */}
           <EditorComponent
             key={path}
@@ -413,71 +415,42 @@ export const DocumentView: FC<DocumentViewProps> = ({
   );
 };
 
+// Node-name → registry record, for every block that ships a side panel.
+// Built once at module load (loadAllBlocks is already called at module load by
+// the editor). Lets DocumentView mount the right panel generically instead of
+// switching on block type.
+const PANEL_RECORDS: ReadonlyMap<string, BlockRegistryRecord> = new Map(
+  loadAllBlocks()
+    .filter((record) => record.panel !== undefined)
+    .map((record) => [record.tiptapNode.name, record] as const),
+);
+
 function renderStructuredBlockPanel(
-  selection: {
-    type: "chart" | "kpiCards";
-    pos: number;
-    attrs: Record<string, unknown>;
-  },
+  selection: { nodeName: string; pos: number; nodeJson: ProseMirrorNode },
   editor: TipTapEditor,
   onClose: () => void,
 ): ReactNode {
-  if (selection.type === "kpiCards") {
-    const block: KpiCardsBlock = {
-      id: String(selection.attrs["blockId"]),
-      type: "kpi-cards",
-      cards: selection.attrs["cards"] as KpiCard[],
-    };
-    return (
-      <KpiCardsPanel
-        block={block}
-        onUpdate={(next) => {
-          editor
-            .chain()
-            .setNodeSelection(selection.pos)
-            .updateAttributes("kpiCards", {
-              cards: next.cards,
-              note: next.note ?? "",
-            })
-            .run();
-        }}
-        onClose={onClose}
-      />
-    );
-  }
-  if (selection.type === "chart") {
-    let block: ChartBlock | null = null;
-    try {
-      const parsed = JSON.parse(
-        String(selection.attrs["payload"]),
-      ) as Omit<ChartBlock, "id" | "type">;
-      block = {
-        id: String(selection.attrs["blockId"]),
-        type: "chart",
-        ...parsed,
-      };
-    } catch {
-      return null;
-    }
-    if (block === null) return null;
-    return (
-      <ChartDataPanel
-        block={block}
-        onUpdate={(next) => {
-          const { id: _id, type: _type, ...rest } = next;
-          editor
-            .chain()
-            .setNodeSelection(selection.pos)
-            .updateAttributes("chart", {
-              payload: JSON.stringify(rest),
-            })
-            .run();
-        }}
-        onClose={onClose}
-      />
-    );
-  }
-  return null;
+  const record = PANEL_RECORDS.get(selection.nodeName);
+  if (record?.panel === undefined) return null;
+  const Panel = record.panel;
+  // fromPm bridges the live node (attrs + content) to a typed block; toPm maps
+  // edits back. updateAttributes applies only attrs — rich-text body content
+  // (callout) is edited inline and preserved here.
+  const block: unknown = record.fromPm(selection.nodeJson);
+  return (
+    <Panel
+      block={block}
+      onUpdate={(next: unknown) => {
+        const pm = record.toPm(next);
+        editor
+          .chain()
+          .setNodeSelection(selection.pos)
+          .updateAttributes(selection.nodeName, pm.attrs ?? {})
+          .run();
+      }}
+      onClose={onClose}
+    />
+  );
 }
 
 export function documentToEditorContent(doc: DocumentModel): JSONContent {
@@ -605,10 +578,37 @@ const styles = {
   previewPane: {
     border: "1px solid ButtonBorder",
     borderRadius: "0.75rem",
+    overflow: "hidden",
+    background: "#F8FAFC",
+    display: "flex",
+    flexDirection: "column",
+    minWidth: 0,
+  },
+  paneLabel: {
+    flex: "0 0 auto",
+    fontSize: "0.6875rem",
+    fontWeight: 700,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    color: "#64748B",
+    padding: "0.5rem 0.75rem",
+    borderBottom: "1px solid #E2E8F0",
+    background: "#F1F5F9",
+  },
+  paneLabelEdit: {
+    color: "var(--brand-primary, #0B3D91)",
+    borderBottom: "2px solid var(--brand-primary, #0B3D91)",
+    background: "transparent",
+  },
+  paneBody: {
     overflow: "auto",
+    padding: "0.75rem",
+    flex: "1 1 auto",
   },
   editorPane: {
     minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
   },
   palettePane: {
     minWidth: "18rem",

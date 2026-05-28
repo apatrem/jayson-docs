@@ -32,6 +32,7 @@ import { resolveBrandToken } from "../../brand-tokens/resolve";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { HeadingPanel } from "./HeadingPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -132,41 +133,29 @@ export const HeadingTipTapNode = Node.create({
   },
 });
 
-const HeadingNodeView: FC<NodeViewProps> = ({ node, updateAttributes }) => {
-  const level = node.attrs.level as HeadingLevel;
-  const text = node.attrs.text as string;
-  const numbered = node.attrs.numbered as boolean;
+// Data editing lives in HeadingPanel.tsx, mounted by DocumentView on selection.
+const HeadingNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+  const blockId = String(node.attrs.blockId);
+  const block: HeadingBlock = {
+    id: blockId,
+    type: "heading",
+    level: node.attrs.level as HeadingLevel,
+    text: node.attrs.text as string,
+    numbered: node.attrs.numbered as boolean,
+  };
 
   return (
-    <NodeViewWrapper className="heading-node-view">
-      <label>
-        Level
-        <select
-          value={level}
-          onChange={(e) =>
-            updateAttributes({ level: Number(e.target.value) as HeadingLevel })
-          }
-        >
-          <option value={1}>H1</option>
-          <option value={2}>H2</option>
-          <option value={3}>H3</option>
-          <option value={4}>H4</option>
-        </select>
-      </label>
-      <input
-        type="text"
-        value={text}
-        maxLength={200}
-        onChange={(e) => updateAttributes({ text: e.target.value })}
-      />
-      <label>
-        <input
-          type="checkbox"
-          checked={numbered}
-          onChange={(e) => updateAttributes({ numbered: e.target.checked })}
-        />
-        Numbered
-      </label>
+    <NodeViewWrapper
+      className="heading-node-view"
+      data-block-id={blockId}
+      contentEditable={false}
+      style={{
+        outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+        outlineOffset: 4,
+        cursor: "pointer",
+      }}
+    >
+      <Heading block={block} />
     </NodeViewWrapper>
   );
 };
@@ -271,6 +260,7 @@ const headingBlock = defineBlock<HeadingBlock>({
   // the specific PmNode type narrows that to the node's actual attrs.
   fromPm: (node) =>
     proseMirrorToHeadingBlock(node as unknown as HeadingPmNode),
+  panel: HeadingPanel,
 });
 
 export default headingBlock;

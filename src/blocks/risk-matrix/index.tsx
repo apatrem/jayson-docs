@@ -41,6 +41,7 @@ import type { BrandTokens } from "../../schema/brand";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { RiskMatrixPanel } from "./RiskMatrixPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -377,6 +378,7 @@ const riskMatrixBlock = defineBlock<RiskMatrixBlock>({
   toPm: (block) => riskMatrixBlockToProseMirror(block) as ProseMirrorNode,
   fromPm: (node) =>
     proseMirrorToRiskMatrixBlock(node as unknown as RiskMatrixPmNode),
+  panel: RiskMatrixPanel,
 });
 
 export default riskMatrixBlock;

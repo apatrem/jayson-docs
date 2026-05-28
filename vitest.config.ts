@@ -23,6 +23,10 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     globals: false,                     // explicit imports of describe/it/expect
+    // Unmount rendered components after every test so live instances (ECharts
+    // charts, ResizeObservers, timers) are disposed and can't keep a worker
+    // process spinning at 100% CPU. See tests/setup.ts for the full rationale.
+    setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.ts", "tests/**/*.test.tsx", "src/**/*.test.ts", "src/**/*.test.tsx"],
     coverage: {
       provider: "v8",

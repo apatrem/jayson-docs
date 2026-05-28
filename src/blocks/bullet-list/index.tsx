@@ -31,6 +31,7 @@ import { ProseRenderer } from "../../renderer/ProseRenderer";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { BulletListPanel } from "./BulletListPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -243,6 +244,7 @@ const bulletListBlock = defineBlock<BulletListBlock>({
   toPm: (block) => bulletListBlockToProseMirror(block) as ProseMirrorNode,
   fromPm: (node) =>
     proseMirrorToBulletListBlock(node as unknown as BulletListPmNode),
+  panel: BulletListPanel,
 });
 
 export default bulletListBlock;

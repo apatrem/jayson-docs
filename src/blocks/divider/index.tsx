@@ -32,6 +32,7 @@ import { lookupBrandPath, resolveBrandToken } from "../../brand-tokens/resolve";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { DividerPanel } from "./DividerPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -318,6 +319,7 @@ const dividerBlock = defineBlock<DividerBlock>({
   // Cast via unknown: ProseMirrorNode.attrs is Record<string,unknown>;
   // the specific PmNode type narrows that to the node's actual attrs.
   fromPm: (node) => proseMirrorToDividerBlock(node as unknown as DividerPmNode),
+  panel: DividerPanel,
 });
 
 export default dividerBlock;

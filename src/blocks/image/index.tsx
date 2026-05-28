@@ -39,6 +39,7 @@ import { resolveBrandToken } from "../../brand-tokens/resolve";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { ImagePanel } from "./ImagePanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -323,6 +324,7 @@ const imageBlock = defineBlock<ImageBlock>({
   toPm: (block) => imageBlockToProseMirror(block) as ProseMirrorNode,
   fromPm: (node) =>
     proseMirrorToImageBlock(node as unknown as ImagePmNode),
+  panel: ImagePanel,
 });
 
 export default imageBlock;

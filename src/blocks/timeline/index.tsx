@@ -35,6 +35,7 @@ import { resolveBrandToken } from "../../brand-tokens/resolve";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { TimelinePanel } from "./TimelinePanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -356,6 +357,7 @@ const timelineBlock = defineBlock<TimelineBlock>({
   toPm: (block) => timelineBlockToProseMirror(block) as ProseMirrorNode,
   fromPm: (node) =>
     proseMirrorToTimelineBlock(node as unknown as TimelinePmNode),
+  panel: TimelinePanel,
 });
 
 export default timelineBlock;

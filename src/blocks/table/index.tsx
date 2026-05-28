@@ -23,6 +23,7 @@ import { resolveBrandToken } from "../../brand-tokens/resolve";
 import { ProseRenderer } from "../../renderer/ProseRenderer";
 import type { ProseMirrorFragment } from "../../schema/prosemirror-fragment";
 import { defineBlock } from "../defineBlock";
+import { TablePanel } from "./TablePanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 import type { ZodType } from "zod";
 import {
@@ -410,6 +411,7 @@ const tableBlock = defineBlock<TableBlock>({
     proseMirrorToTableBlock(
       node as unknown as Parameters<typeof proseMirrorToTableBlock>[0],
     ),
+  panel: TablePanel,
 });
 
 export default tableBlock;

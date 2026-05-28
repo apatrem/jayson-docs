@@ -26,7 +26,7 @@ import {
   type NodeViewProps,
 } from "@tiptap/react";
 import type { ZodType } from "zod";
-import type { ComponentType, CSSProperties, FC, MouseEvent } from "react";
+import type { ComponentType, CSSProperties, FC } from "react";
 
 // ── Brand-token / renderer dependencies ──────────────────────────────────────
 import { useBrandTokens } from "../../brand-tokens/useBrandTokens";
@@ -34,6 +34,7 @@ import { resolveBrandToken } from "../../brand-tokens/resolve";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { DiagramPanel } from "./DiagramPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -151,25 +152,16 @@ export const DiagramTipTapNode = Node.create({
   },
 });
 
-const stopEditorCapture = (event: MouseEvent): void => {
-  event.stopPropagation();
-};
-
-const DiagramNodeView: FC<NodeViewProps> = ({
-  node,
-  updateAttributes,
-  selected,
-}) => {
+// Data editing lives in DiagramPanel.tsx, mounted by DocumentView on selection.
+const DiagramNodeView: FC<NodeViewProps> = ({ node, selected }) => {
   const blockId = node.attrs.blockId as string;
-  const source = node.attrs.source as string;
   const title = node.attrs.title as string;
   const caption = node.attrs.caption as string;
-  const width = node.attrs.width as DiagramWidth;
   const block: DiagramBlock = {
     id: blockId,
     type: "diagram",
-    source,
-    width,
+    source: node.attrs.source as string,
+    width: node.attrs.width as DiagramWidth,
     ...(title ? { title } : {}),
     ...(caption ? { caption } : {}),
   };
@@ -182,89 +174,12 @@ const DiagramNodeView: FC<NodeViewProps> = ({
       style={{
         outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
         outlineOffset: 4,
+        cursor: "pointer",
       }}
     >
-      <div
-        style={editorFormStyle}
-        onMouseDown={stopEditorCapture}
-        aria-label="Edit diagram"
-      >
-        <label style={fieldLabelStyle}>
-          Title
-          <input
-            type="text"
-            value={title}
-            maxLength={120}
-            placeholder="Optional title"
-            onChange={(event) => {
-              updateAttributes({ title: event.target.value });
-            }}
-          />
-        </label>
-        <label style={fieldLabelStyle}>
-          Caption
-          <input
-            type="text"
-            value={caption}
-            maxLength={500}
-            placeholder="Optional caption"
-            onChange={(event) => {
-              updateAttributes({ caption: event.target.value });
-            }}
-          />
-        </label>
-        <label style={fieldLabelStyle}>
-          Width
-          <select
-            value={width}
-            onChange={(event) => {
-              updateAttributes({ width: event.target.value as DiagramWidth });
-            }}
-          >
-            <option value="medium">Medium</option>
-            <option value="large">Large</option>
-            <option value="full">Full</option>
-          </select>
-        </label>
-        <label style={fieldLabelStyle}>
-          Mermaid source
-          <textarea
-            value={source}
-            rows={8}
-            maxLength={4000}
-            spellCheck={false}
-            style={sourceTextareaStyle}
-            onChange={(event) => {
-              updateAttributes({ source: event.target.value });
-            }}
-          />
-        </label>
-      </div>
       <Diagram block={block} />
     </NodeViewWrapper>
   );
-};
-
-const editorFormStyle: CSSProperties = {
-  display: "grid",
-  gap: "0.75rem",
-  marginBottom: "0.75rem",
-  padding: "0.75rem",
-  border: "1px solid ButtonBorder",
-  borderRadius: "0.375rem",
-};
-
-const fieldLabelStyle: CSSProperties = {
-  display: "grid",
-  fontSize: "0.8125rem",
-  gap: "0.25rem",
-};
-
-const sourceTextareaStyle: CSSProperties = {
-  fontFamily: "monospace",
-  fontSize: "0.8125rem",
-  lineHeight: 1.4,
-  resize: "vertical",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -419,6 +334,7 @@ const diagramBlock = defineBlock<DiagramBlock>({
   toPm: (block) => diagramBlockToProseMirror(block) as ProseMirrorNode,
   fromPm: (node) =>
     proseMirrorToDiagramBlock(node as unknown as DiagramPmNode),
+  panel: DiagramPanel,
 });
 
 export default diagramBlock;

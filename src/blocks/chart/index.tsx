@@ -28,6 +28,7 @@ import {
 } from "../../brand-tokens/resolve";
 import type { BrandTokens } from "../../schema/brand";
 import { defineBlock } from "../defineBlock";
+import { ChartDataPanel } from "./ChartDataPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 import type { ZodType } from "zod";
 import {
@@ -549,6 +550,7 @@ const chartBlock = defineBlock<ChartBlock>({
     proseMirrorToChartBlock(
       node as unknown as Parameters<typeof proseMirrorToChartBlock>[0],
     ),
+  panel: ChartDataPanel,
 });
 
 export default chartBlock;

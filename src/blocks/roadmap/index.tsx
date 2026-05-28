@@ -40,6 +40,7 @@ import type { BrandTokens } from "../../schema/brand";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { RoadmapPanel } from "./RoadmapPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -447,6 +448,7 @@ const roadmapBlock = defineBlock<RoadmapBlock>({
   toPm: (block) => roadmapBlockToProseMirror(block) as ProseMirrorNode,
   fromPm: (node) =>
     proseMirrorToRoadmapBlock(node as unknown as RoadmapPmNode),
+  panel: RoadmapPanel,
 });
 
 export default roadmapBlock;
