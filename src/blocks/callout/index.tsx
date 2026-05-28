@@ -14,7 +14,11 @@
 
 // ── Schema ───────────────────────────────────────────────────────────────────
 import type { CalloutBlock, CalloutVariant } from "./schema";
-import { CalloutBlockSchema, calloutTintTokenFor } from "./schema";
+import {
+  CalloutBlockSchema,
+  CalloutVariantSchema,
+  calloutTintTokenFor,
+} from "./schema";
 
 // ── TipTap / editor dependencies ─────────────────────────────────────────────
 import { Node, mergeAttributes } from "@tiptap/core";
@@ -35,7 +39,6 @@ import { ProseRenderer } from "../../renderer/ProseRenderer";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
-import { CalloutPanel } from "./CalloutPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -137,40 +140,133 @@ export const CalloutTipTapNode = Node.create({
   },
 });
 
-// Variant / title / attribution are edited in CalloutPanel.tsx (mounted by
-// DocumentView on selection). The body stays inline-editable here via
-// NodeViewContent; title + attribution render read-only from attrs.
-const CalloutNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+// Fully inline-edited callout: title + attribution are controlled inputs bound
+// to attrs (contentEditable=false so the editor doesn't hijack them), the body
+// is inline rich text via NodeViewContent, and the variant is a small inline
+// select. Styled to match the print Renderer so the editor view ≈ the output.
+const stop = (event: { stopPropagation: () => void }): void => event.stopPropagation();
+
+const CalloutNodeView: FC<NodeViewProps> = ({ node, updateAttributes, selected }) => {
+  const brand = useBrandTokens();
   const variant = node.attrs.variant as CalloutVariant;
   const title = node.attrs.title as string;
   const attribution = node.attrs.attribution as string;
 
+  const tintColor = resolveBrandToken(brand, calloutTintTokenFor(variant));
+  const surfaceBg = resolveBrandToken(brand, "colors.semantic.surfaceBackground");
+  const textPrimary = resolveBrandToken(brand, "colors.semantic.textPrimary");
+
+  const containerStyle: CSSProperties = {
+    backgroundColor: surfaceBg,
+    borderLeft: `4px solid ${tintColor}`,
+    borderRadius: 4,
+    padding: `${brand.spacing.unit * 3}px ${brand.spacing.unit * 4}px`,
+    fontFamily: brand.typography.fonts.body.family,
+    fontSize: brand.typography.scale.body,
+    lineHeight: brand.typography.lineHeight.normal,
+    color: textPrimary,
+    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+    outlineOffset: 4,
+    position: "relative",
+  };
+
+  const titleInputStyle: CSSProperties = {
+    width: "100%",
+    border: "none",
+    background: "transparent",
+    padding: 0,
+    margin: `0 0 ${brand.spacing.unit * 2}px 0`,
+    fontFamily: brand.typography.fonts.heading.family,
+    fontWeight: 600,
+    color: tintColor,
+  };
+
+  const attributionInputStyle: CSSProperties = {
+    width: "100%",
+    border: "none",
+    background: "transparent",
+    padding: 0,
+    marginTop: brand.spacing.unit * 2,
+    fontSize: brand.typography.scale.caption,
+    fontStyle: "italic",
+    color: resolveBrandToken(brand, "colors.semantic.textSecondary"),
+  };
+
   return (
     <NodeViewWrapper
-      className={`callout-editor variant-${variant} ${selected ? "selected" : ""}`}
+      as="aside"
+      className={`callout-editor variant-${variant}`}
       data-block-id={node.attrs.blockId as string}
-      style={{
-        outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
-        outlineOffset: 4,
-      }}
+      data-variant={variant}
+      style={containerStyle}
     >
-      {title ? (
-        <div className="callout-title" contentEditable={false}>
-          {title}
-        </div>
-      ) : null}
-
-      <div className="callout-body">
-        <NodeViewContent />
+      <div contentEditable={false} style={styles.variantRow}>
+        <select
+          aria-label="Callout variant"
+          value={variant}
+          onChange={(event) => updateAttributes({ variant: event.target.value })}
+          onMouseDown={stop}
+          onKeyDown={stop}
+          style={styles.variantSelect}
+        >
+          {CalloutVariantSchema.options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {variant === "quote" && attribution ? (
-        <div className="callout-attribution" contentEditable={false}>
-          — {attribution}
+      <div contentEditable={false}>
+        <input
+          type="text"
+          aria-label="Callout title"
+          value={title}
+          placeholder="Title (optional)"
+          onChange={(event) => updateAttributes({ title: event.target.value })}
+          onMouseDown={stop}
+          onKeyDown={stop}
+          style={titleInputStyle}
+        />
+      </div>
+
+      <NodeViewContent />
+
+      {variant === "quote" ? (
+        <div contentEditable={false}>
+          <input
+            type="text"
+            aria-label="Quote attribution"
+            value={attribution}
+            placeholder="— Attribution"
+            onChange={(event) =>
+              updateAttributes({ attribution: event.target.value })
+            }
+            onMouseDown={stop}
+            onKeyDown={stop}
+            style={attributionInputStyle}
+          />
         </div>
       ) : null}
     </NodeViewWrapper>
   );
+};
+
+const styles: Record<string, CSSProperties> = {
+  variantRow: {
+    position: "absolute",
+    top: 4,
+    right: 8,
+  },
+  variantSelect: {
+    fontSize: "0.6875rem",
+    color: "#64748B",
+    background: "#FFFFFF",
+    border: "1px solid #D6DEE8",
+    borderRadius: "0.375rem",
+    padding: "0.1rem 0.3rem",
+    textTransform: "capitalize",
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -295,7 +391,6 @@ const calloutBlock = defineBlock<CalloutBlock>({
   // Cast via unknown: ProseMirrorNode.attrs is Record<string,unknown>;
   // the specific PmNode type narrows that to the node's actual attrs.
   fromPm: (node) => proseMirrorToCalloutBlock(node as unknown as CalloutPmNode),
-  panel: CalloutPanel,
 });
 
 export default calloutBlock;

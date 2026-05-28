@@ -61,7 +61,7 @@ A block whose editable view in the editor closely matches its rendered output, s
 _Avoid_: "classic block", "WYSIWYG block", "text block"
 
 **Panel block**:
-A block whose data cannot be shown faithfully as its rendered output while editing — structured or visually-dense data that needs form-style fields — so selecting it opens a side panel (chart, kpi-cards, risk-matrix, roadmap, timeline, diagram, image, team). Brand and Authored blocks are panel-edited by default.
+A block whose data cannot be shown faithfully as its rendered output while editing — structured or visually-dense data that needs form-style fields — so selecting it opens a side panel (chart, kpi-cards, risk-matrix, roadmap, timeline, diagram, image, team, divider). Brand and Authored blocks are panel-edited by default. (Divider carries optional label/subtitle/numbering fields, so despite rendering as a separator it is panel-edited, not insert-only.)
 _Avoid_: "custom block" (means Authored block), "complex block", "structured block"
 
 ### Authored block transport
