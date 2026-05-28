@@ -16,11 +16,7 @@ import { NumberedListBlockSchema, emptyNumberedListItem } from "./schema";
 
 // ── TipTap / editor dependencies ─────────────────────────────────────────────
 import { Node, mergeAttributes } from "@tiptap/core";
-import {
-  NodeViewWrapper,
-  ReactNodeViewRenderer,
-  type NodeViewProps,
-} from "@tiptap/react";
+import type { JSONContent } from "@tiptap/react";
 import type { ZodType } from "zod";
 import type { CSSProperties, FC } from "react";
 
@@ -31,8 +27,18 @@ import { ProseRenderer } from "../../renderer/ProseRenderer";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
-import { NumberedListPanel } from "./NumberedListPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
+
+// Shape of a ProseMirror paragraph-bearing fragment (item text) and a list item
+// node. Items store their rich text directly as the list-item node's content;
+// the DocModel item.text doc-fragment is `{ type: "doc", content: <paragraphs> }`.
+type PmContentNode = { type?: string; content?: JSONContent[] };
+const PARAGRAPH_FALLBACK: JSONContent = { type: "paragraph", content: [] };
+
+function itemTextToPmContent(text: { content?: unknown[] }): JSONContent[] {
+  const content = (text.content ?? []) as JSONContent[];
+  return content.length > 0 ? content : [PARAGRAPH_FALLBACK];
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TipTap node
@@ -49,11 +55,26 @@ declare module "@tiptap/core" {
   }
 }
 
+// A single numbered-list item: holds the item's rich text as paragraph content.
+export const NumberedListItemTipTapNode = Node.create({
+  name: "numberedListItem",
+  content: "paragraph+",
+  defining: true,
+
+  parseHTML() {
+    return [{ tag: "li[data-list-item='numbered']" }];
+  },
+
+  renderHTML() {
+    return ["li", { "data-list-item": "numbered" }, 0];
+  },
+});
+
 export const NumberedListTipTapNode = Node.create({
   name: "numberedList",
   group: "block",
-  atom: true,
-  selectable: true,
+  content: "numberedListItem+",
+  defining: true,
 
   addAttributes() {
     return {
@@ -62,19 +83,6 @@ export const NumberedListTipTapNode = Node.create({
         parseHTML: (el) => el.getAttribute("data-block-id"),
         renderHTML: (attrs: { blockId: string | null }) => ({
           "data-block-id": attrs.blockId,
-        }),
-      },
-      items: {
-        default: [emptyNumberedListItem()],
-        parseHTML: (el) => {
-          const raw = el.getAttribute("data-items");
-          if (!raw) {
-            return [emptyNumberedListItem()];
-          }
-          return JSON.parse(raw) as NumberedListItem[];
-        },
-        renderHTML: (attrs: { items: NumberedListItem[] }) => ({
-          "data-items": JSON.stringify(attrs.items),
         }),
       },
       startAt: {
@@ -98,10 +106,19 @@ export const NumberedListTipTapNode = Node.create({
     return [{ tag: 'ol[data-block-type="numbered-list"]' }];
   },
 
+  // Plain <ol> so the <li> children are direct descendants and the browser
+  // renders list markers natively (a React node view would wrap the content in
+  // an extra <div>, breaking list semantics). Font/colour inherit from the
+  // editor surface; the read-only preview pane carries full brand styling.
   renderHTML({ HTMLAttributes }) {
     return [
       "ol",
-      mergeAttributes(HTMLAttributes, { "data-block-type": "numbered-list" }),
+      mergeAttributes(HTMLAttributes, {
+        "data-block-type": "numbered-list",
+        class: "numbered-list-node-view",
+        style: "margin:0;padding-left:1.5rem;list-style-type:decimal;",
+      }),
+      0,
     ];
   },
 
@@ -109,53 +126,24 @@ export const NumberedListTipTapNode = Node.create({
     return {
       insertNumberedList:
         (attrs: { items?: NumberedListItem[]; startAt?: number } = {}) =>
-        ({ commands }) =>
-          commands.insertContent({
+        ({ commands }) => {
+          const items = attrs.items ?? [emptyNumberedListItem()];
+          return commands.insertContent({
             type: this.name,
             attrs: {
               blockId: crypto.randomUUID(),
-              items: attrs.items ?? [emptyNumberedListItem()],
               startAt: attrs.startAt ?? null,
               note: "",
             },
-          }),
+            content: items.map((item) => ({
+              type: "numberedListItem",
+              content: itemTextToPmContent(item.text),
+            })),
+          });
+        },
     };
   },
-
-  addNodeView() {
-    return ReactNodeViewRenderer(NumberedListNodeView);
-  },
 });
-
-const NumberedListNodeView: FC<NodeViewProps> = ({ node, selected }) => {
-  const blockId = String(node.attrs.blockId);
-  const startAtRaw = node.attrs.startAt as number | undefined;
-  const block: NumberedListBlock = {
-    id: blockId,
-    type: "numbered-list",
-    items: node.attrs.items as NumberedListItem[],
-    ...(startAtRaw !== undefined ? { startAt: startAtRaw } : {}),
-  };
-
-  return (
-    <NodeViewWrapper
-      className="numbered-list-node-view"
-      data-block-id={blockId}
-      contentEditable={false}
-      style={editorBlockStyle(selected)}
-    >
-      <NumberedList block={block} />
-    </NodeViewWrapper>
-  );
-};
-
-function editorBlockStyle(selected: boolean): CSSProperties {
-  return {
-    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
-    outlineOffset: 4,
-    cursor: "pointer",
-  };
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProseMirror mapping helpers
@@ -164,34 +152,41 @@ function editorBlockStyle(selected: boolean): CSSProperties {
 type NumberedListPmNode = {
   attrs: {
     blockId: string;
-    items: NumberedListItem[];
     startAt: number | null;
     note: string;
   };
+  content?: PmContentNode[];
 };
 
 export function numberedListBlockToProseMirror(block: NumberedListBlock): {
   type: string;
   attrs: NumberedListPmNode["attrs"];
+  content: PmContentNode[];
 } {
   return {
     type: "numberedList",
     attrs: {
       blockId: block.id,
-      items: block.items,
       startAt: block.startAt ?? null,
       note: block.note ?? "",
     },
+    content: block.items.map((item) => ({
+      type: "numberedListItem",
+      content: itemTextToPmContent(item.text),
+    })),
   };
 }
 
 export function proseMirrorToNumberedListBlock(
   node: NumberedListPmNode,
 ): NumberedListBlock {
+  const items: NumberedListItem[] = (node.content ?? []).map((li) => ({
+    text: { type: "doc", content: li.content ?? [PARAGRAPH_FALLBACK] },
+  }));
   return {
     id: node.attrs.blockId,
     type: "numbered-list",
-    items: node.attrs.items,
+    items: items.length > 0 ? items : [emptyNumberedListItem()],
     ...(node.attrs.startAt === null ? {} : { startAt: node.attrs.startAt }),
     ...(node.attrs.note ? { note: node.attrs.note } : {}),
   };
@@ -247,7 +242,6 @@ const numberedListBlock = defineBlock<NumberedListBlock>({
   toPm: (block) => numberedListBlockToProseMirror(block) as ProseMirrorNode,
   fromPm: (node) =>
     proseMirrorToNumberedListBlock(node as unknown as NumberedListPmNode),
-  panel: NumberedListPanel,
 });
 
 export default numberedListBlock;

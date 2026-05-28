@@ -8,8 +8,6 @@ import { SectionNode } from "./SectionNode";
 import { HardBreak } from "@tiptap/extension-hard-break";
 import { History } from "@tiptap/extension-history";
 import { Italic } from "@tiptap/extension-italic";
-import { ListItem } from "@tiptap/extension-list-item";
-import { OrderedList } from "@tiptap/extension-ordered-list";
 import { Paragraph } from "@tiptap/extension-paragraph";
 import { Strike } from "@tiptap/extension-strike";
 import { Text } from "@tiptap/extension-text";
@@ -20,6 +18,12 @@ import { CommentMark } from "../comments/CommentMark";
 import type { DocModel } from "../schema/docmodel";
 import { docModelToProseMirror } from "./mapping";
 import { loadAllBlocks } from "../blocks/runtime-registry";
+import { NumberedListItemTipTapNode } from "../blocks/numbered-list";
+import {
+  BulletListItemTipTapNode,
+  SubBulletListTipTapNode,
+  SubBulletItemTipTapNode,
+} from "../blocks/bullet-list";
 import { buildAuthoredTipTapNode } from "../blocks/authored/node-builder";
 import type { AuthoredBlockManifest } from "../blocks/authored/defineAuthoredBlock";
 import { BrandProvider } from "../brand-tokens/BrandProvider";
@@ -75,8 +79,10 @@ const STATIC_INFRA_NODE_NAMES = [
   "hardBreak",
   "blockquote",
   "codeBlock",
-  "listItem",
-  "orderedList",
+  "numberedListItem",
+  "bulletListItem",
+  "subBulletList",
+  "subBulletItem",
 ] as const;
 
 // Block node names come from the registry.
@@ -176,8 +182,10 @@ export function createEditorExtensions(
     Blockquote,
     HardBreak,
     History,
-    ListItem,
-    OrderedList,
+    NumberedListItemTipTapNode,
+    BulletListItemTipTapNode,
+    SubBulletListTipTapNode,
+    SubBulletItemTipTapNode,
     CommentMark,
     ...blockExtensions,
     ...dedupeAuthoredManifests(authoredManifests).map(buildAuthoredTipTapNode),

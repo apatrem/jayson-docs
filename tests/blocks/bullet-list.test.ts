@@ -8,8 +8,13 @@ import Text from "@tiptap/extension-text";
 import { BrandProvider } from "../../src/brand-tokens/BrandProvider";
 import {
   BulletListTipTapNode,
+  BulletListItemTipTapNode,
+  SubBulletListTipTapNode,
+  SubBulletItemTipTapNode,
   bulletListBlockToProseMirror,
   proseMirrorToBulletListBlock,
+  sinkBulletItem,
+  liftSubBulletItem,
   BulletList,
 } from "../../src/blocks/bullet-list";
 import {
@@ -204,10 +209,97 @@ describe("BulletList mapping", () => {
 describe("BulletList TipTap node", () => {
   it("registers insertBulletList command", () => {
     const editor = new Editor({
-      extensions: [Document, Paragraph, Text, BulletListTipTapNode],
+      extensions: [
+        Document,
+        Paragraph,
+        Text,
+        BulletListTipTapNode,
+        BulletListItemTipTapNode,
+        SubBulletListTipTapNode,
+        SubBulletItemTipTapNode,
+      ],
     });
     editor.commands.insertBulletList();
-    expect(JSON.stringify(editor.getJSON())).toContain('"type":"bulletList"');
+    const json = JSON.stringify(editor.getJSON());
+    expect(json).toContain('"type":"bulletList"');
+    expect(json).toContain('"type":"bulletListItem"');
+    editor.destroy();
+  });
+
+  const listEditor = () =>
+    new Editor({
+      extensions: [
+        Document,
+        Paragraph,
+        Text,
+        BulletListTipTapNode,
+        BulletListItemTipTapNode,
+        SubBulletListTipTapNode,
+        SubBulletItemTipTapNode,
+      ],
+    });
+
+  function posInNthBulletItem(editor: Editor, n: number): number {
+    let count = 0;
+    let pos = 0;
+    editor.state.doc.descendants((node, p) => {
+      if (node.type.name === "bulletListItem") {
+        count += 1;
+        if (count === n) pos = p + 2; // into the item's first paragraph text
+      }
+    });
+    return pos;
+  }
+
+  function bulletListJson(editor: Editor): Record<string, unknown> {
+    let found: Record<string, unknown> = {};
+    editor.state.doc.descendants((node) => {
+      if (node.type.name === "bulletList") {
+        found = node.toJSON() as Record<string, unknown>;
+        return false;
+      }
+      return true;
+    });
+    return found;
+  }
+
+  it("Tab sinks the 2nd item under the 1st; Shift-Tab lifts it back (lossless)", () => {
+    const editor = listEditor();
+    editor.commands.insertBulletList({
+      items: [{ text: fragment("First") }, { text: fragment("Second") }],
+    });
+
+    // Sink the second item.
+    editor.commands.setTextSelection(posInNthBulletItem(editor, 2));
+    const sunk = editor.commands.command(({ state, tr, dispatch }) =>
+      sinkBulletItem(state, tr, dispatch),
+    );
+    expect(sunk).toBe(true);
+
+    const afterSink = proseMirrorToBulletListBlock(
+      bulletListJson(editor) as never,
+    );
+    expect(afterSink.items).toHaveLength(1);
+    expect(afterSink.items[0]?.children).toHaveLength(1);
+
+    // Lift it back.
+    editor.commands.setTextSelection(posInNthBulletItem(editor, 1) + 1);
+    // place caret inside the sub-bullet: find subBulletItem position
+    let subPos = 0;
+    editor.state.doc.descendants((node, p) => {
+      if (node.type.name === "subBulletItem") subPos = p + 2;
+    });
+    editor.commands.setTextSelection(subPos);
+    const lifted = editor.commands.command(({ state, tr, dispatch }) =>
+      liftSubBulletItem(state, tr, dispatch),
+    );
+    expect(lifted).toBe(true);
+
+    const afterLift = proseMirrorToBulletListBlock(
+      bulletListJson(editor) as never,
+    );
+    expect(afterLift.items).toHaveLength(2);
+    expect(afterLift.items[0]?.children).toBeUndefined();
     editor.destroy();
   });
 });

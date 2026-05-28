@@ -8,6 +8,7 @@ import Text from "@tiptap/extension-text";
 import { BrandProvider } from "../../src/brand-tokens/BrandProvider";
 import {
   NumberedListTipTapNode,
+  NumberedListItemTipTapNode,
   numberedListBlockToProseMirror,
   proseMirrorToNumberedListBlock,
   NumberedList,
@@ -163,10 +164,18 @@ describe("NumberedList mapping", () => {
 describe("NumberedList TipTap node", () => {
   it("registers insertNumberedList command", () => {
     const editor = new Editor({
-      extensions: [Document, Paragraph, Text, NumberedListTipTapNode],
+      extensions: [
+        Document,
+        Paragraph,
+        Text,
+        NumberedListTipTapNode,
+        NumberedListItemTipTapNode,
+      ],
     });
     editor.commands.insertNumberedList();
-    expect(JSON.stringify(editor.getJSON())).toContain('"type":"numberedList"');
+    const json = JSON.stringify(editor.getJSON());
+    expect(json).toContain('"type":"numberedList"');
+    expect(json).toContain('"type":"numberedListItem"');
     editor.destroy();
   });
 });
