@@ -56,6 +56,14 @@ _Avoid_: conflating with "Renderer"
 The exact set of node and mark types the TipTap editor registers at mount. A security boundary: asserted to equal Standard block types ∪ the Installed manifest set, and nothing else. Authored blocks widen it only because their manifests passed the receive-time gate.
 _Avoid_: "the schema" (ambiguous with the DocModel's Zod schema), "allowed nodes"
 
+**Inline block**:
+A block whose editable view in the editor closely matches its rendered output, so the consultant edits it directly in the document flow with no side panel (prose, heading, bullet-list, numbered-list, table, callout). The dividing test: the editable view ≈ the rendered view, with no form-style fields.
+_Avoid_: "classic block", "WYSIWYG block", "text block"
+
+**Panel block**:
+A block whose data cannot be shown faithfully as its rendered output while editing — structured or visually-dense data that needs form-style fields — so selecting it opens a side panel (chart, kpi-cards, risk-matrix, roadmap, timeline, diagram, image, team). Brand and Authored blocks are panel-edited by default.
+_Avoid_: "custom block" (means Authored block), "complex block", "structured block"
+
 ### Authored block transport
 
 **Manifest header**:
@@ -104,6 +112,7 @@ These have been discussed but are intentionally not built in v1. Listed here so 
 
 - **Organisation-shared Authored block library** — a place where Authored blocks from across a consultancy collect for colleagues to discover and pull (vs the current email-only sharing). Future improvement. See ADR-0004.
 - **Extended Authored-block capabilities** — promotion of atom-node-with-JSON-payload, custom side panels, or ECharts/Mermaid embeds into the Authored tier (currently restricted to Standard/Brand). Triggered when (a) real usage shows the simple-container subset is too restrictive, and (b) the codegen + lint can vet the additional surface area. See ADR-0007.
+- **Flattening the section container** — reconsidering whether the `Section` concept should exist at all, vs a flat block list where headings alone do the chaptering. Sections currently carry serialization structure, chaptering, and are the unit the setup/prompting pipeline operates on; their `title` also reads as a header, creating a dual heading concept (section title vs heading block). Triggered when that duality proves confusing in practice. Needs its own grilling + ADR before any change — it is a canonical DocModel rewrite.
 
 ## Example dialogue
 
