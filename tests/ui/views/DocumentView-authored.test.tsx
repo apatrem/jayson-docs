@@ -136,7 +136,7 @@ describe("DocumentView — installed authored blocks", () => {
     // Insert → onUpdate → editorContentToDocument maps the authored node back to
     // the {sender}:{slug} DocModel block without throwing → autosave engages.
     await waitFor(() => {
-      expect(screen.getByLabelText("Autosave status").textContent).toBe("saving");
+      expect(screen.getByLabelText("Autosave status").textContent).toBe("Saving…");
     });
   });
 

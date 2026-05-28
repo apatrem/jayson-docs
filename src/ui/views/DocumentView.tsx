@@ -355,7 +355,6 @@ export const DocumentView: FC<DocumentViewProps> = ({
   return (
     <main aria-label="Document view" style={styles.shell}>
       <header style={styles.header}>
-        <span>{basename(path)}</span>
         <div style={styles.headerActions}>
           <button
             type="button"
@@ -363,11 +362,16 @@ export const DocumentView: FC<DocumentViewProps> = ({
             onClick={() => {
               setPaletteOpen((open) => !open);
             }}
-            style={styles.insertButton}
+            style={{
+              ...styles.insertButton,
+              ...(paletteOpen ? styles.insertButtonActive : {}),
+            }}
           >
-            +
+            + Add block
           </button>
-          <span aria-label="Autosave status">{saveState}</span>
+          <span aria-label="Autosave status" style={saveStatusStyle(saveState)}>
+            {SAVE_STATE_LABEL[saveState]}
+          </span>
         </div>
       </header>
       <BrandProvider tokens={defaultBrand}>
@@ -380,6 +384,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
         </section>
         <section aria-label="Editable document" style={styles.editorPane}>
           <div style={{ ...styles.paneLabel, ...styles.paneLabelEdit }}>Edit</div>
+          <div style={styles.paneBody}>
           {/* Re-seed/remount when a different file is opened OR the installed
               authored set changes (the editor schema is built once at mount). */}
           <EditorComponent
@@ -416,6 +421,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
               }
             }}
           />
+          </div>
         </section>
         {paletteOpen ? (
           <section aria-label="Insert block palette" style={styles.palettePane}>
@@ -633,14 +639,32 @@ function isProseMirrorNode(value: unknown): value is ProseMirrorNode {
   );
 }
 
-function basename(path: string): string {
-  const index = path.lastIndexOf("/");
-  return index >= 0 ? path.slice(index + 1) : path;
-}
-
 function parentPath(path: string): string {
   const index = path.lastIndexOf("/");
   return index <= 0 ? "/" : path.slice(0, index);
+}
+
+type SaveState = "idle" | "saving" | "saved" | "failed";
+
+const SAVE_STATE_LABEL: Record<SaveState, string> = {
+  idle: "All changes saved",
+  saving: "Saving…",
+  saved: "Saved",
+  failed: "Save failed",
+};
+
+const SAVE_STATE_COLOR: Record<SaveState, { color: string; background: string }> = {
+  idle: { color: "#64748B", background: "#F1F5F9" },
+  saving: { color: "#92600A", background: "#FEF3C7" },
+  saved: { color: "#166534", background: "#DCFCE7" },
+  failed: { color: "#B91C1C", background: "#FEE2E2" },
+};
+
+function saveStatusStyle(state: SaveState): CSSProperties {
+  return {
+    ...styles.saveStatus,
+    ...SAVE_STATE_COLOR[state],
+  };
 }
 
 const styles = {
@@ -649,12 +673,13 @@ const styles = {
     gap: "1rem",
     minHeight: "100%",
     padding: "1rem",
+    background: "#F1F5F9",
   },
   header: {
     alignItems: "center",
     display: "flex",
     gap: "1rem",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
   },
   headerActions: {
     alignItems: "center",
@@ -662,9 +687,25 @@ const styles = {
     gap: "0.75rem",
   },
   insertButton: {
+    appearance: "none",
     cursor: "pointer",
-    fontWeight: 700,
-    padding: "0.375rem 0.625rem",
+    fontWeight: 600,
+    fontSize: "0.8125rem",
+    color: "#0B3D91",
+    background: "#FFFFFF",
+    border: "1px solid #0B3D91",
+    borderRadius: "0.5rem",
+    padding: "0.4rem 0.85rem",
+  },
+  insertButtonActive: {
+    color: "#FFFFFF",
+    background: "#0B3D91",
+  },
+  saveStatus: {
+    fontSize: "0.75rem",
+    fontWeight: 600,
+    borderRadius: "999px",
+    padding: "0.2rem 0.6rem",
   },
   contentGrid: {
     display: "grid",
@@ -672,10 +713,11 @@ const styles = {
     gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) auto",
   },
   previewPane: {
-    border: "1px solid ButtonBorder",
+    border: "1px solid #E2E8F0",
     borderRadius: "0.75rem",
     overflow: "hidden",
-    background: "#F8FAFC",
+    background: "#FFFFFF",
+    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
     display: "flex",
     flexDirection: "column",
     minWidth: 0,
@@ -689,28 +731,38 @@ const styles = {
     color: "#64748B",
     padding: "0.5rem 0.75rem",
     borderBottom: "1px solid #E2E8F0",
-    background: "#F1F5F9",
+    background: "#F8FAFC",
   },
   paneLabelEdit: {
-    color: "var(--brand-primary, #0B3D91)",
-    borderBottom: "2px solid var(--brand-primary, #0B3D91)",
-    background: "transparent",
+    color: "#0B3D91",
+    borderBottom: "2px solid #0B3D91",
+    background: "#FFFFFF",
   },
   paneBody: {
     overflow: "auto",
-    padding: "0.75rem",
+    padding: "1rem",
     flex: "1 1 auto",
   },
   editorPane: {
     minWidth: 0,
     display: "flex",
     flexDirection: "column",
+    border: "1px solid #E2E8F0",
+    borderRadius: "0.75rem",
+    overflow: "hidden",
+    background: "#FFFFFF",
+    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
   },
   palettePane: {
     minWidth: "18rem",
+    border: "1px solid #E2E8F0",
+    borderRadius: "0.75rem",
+    overflow: "hidden",
+    background: "#FFFFFF",
+    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
   },
   errorText: {
-    color: "CanvasText",
+    color: "#B91C1C",
     margin: 0,
   },
   authoringOverlay: {

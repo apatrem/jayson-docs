@@ -101,11 +101,11 @@ describe("closed editor schema (T-78)", () => {
             attrs: {
               blockId: "heading-1",
               level: 2,
-              text: "Allowed heading",
               numbered: true,
               note: "",
               unexpected: "not allowed",
             },
+            content: [{ type: "text", text: "Allowed heading" }],
           },
         ],
       }),

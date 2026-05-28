@@ -381,9 +381,11 @@ export function Routes({
       ) : docContent !== null ? (
         <main aria-label="Document shell" style={styles.documentShell}>
           <header style={styles.documentHeader}>
-            <span>{basename(docContent.path)}</span>
+            <span style={styles.documentName}>{basename(docContent.path)}</span>
             {docContent.dirty ? (
-              <span aria-label="Unsaved changes">●</span>
+              <span aria-label="Unsaved changes" style={styles.dirtyDot}>
+                ●
+              </span>
             ) : null}
           </header>
           <section
@@ -489,9 +491,9 @@ function parentPath(path: string): string {
 const styles = {
   appShell: {
     minHeight: "100vh",
-    background: "Canvas",
-    color: "CanvasText",
-    fontFamily: "system-ui, sans-serif",
+    background: "#F1F5F9",
+    color: "#1E293B",
+    fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
   },
   welcome: {
     alignItems: "center",
@@ -501,24 +503,39 @@ const styles = {
     padding: "2rem",
   },
   welcomeCard: {
-    border: "1px solid ButtonBorder",
-    borderRadius: "0.75rem",
+    border: "1px solid #E2E8F0",
+    borderRadius: "1rem",
+    background: "#FFFFFF",
+    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
     display: "grid",
-    gap: "1rem",
+    gap: "1.25rem",
     justifyItems: "center",
-    padding: "2rem",
+    padding: "2.5rem 3rem",
   },
   title: {
     fontSize: "1.5rem",
+    fontWeight: 700,
     margin: 0,
   },
   primaryButton: {
+    appearance: "none",
+    border: "1px solid #0B3D91",
+    background: "#0B3D91",
+    color: "#FFFFFF",
+    borderRadius: "0.5rem",
+    fontSize: "0.9375rem",
+    fontWeight: 600,
     cursor: "pointer",
-    padding: "0.625rem 1rem",
+    padding: "0.625rem 1.25rem",
   },
   errorText: {
-    color: "CanvasText",
-    margin: 0,
+    color: "#B91C1C",
+    background: "#FEF2F2",
+    border: "1px solid #FECACA",
+    borderRadius: "0.5rem",
+    margin: "0.75rem 1rem",
+    padding: "0.625rem 0.875rem",
+    fontSize: "0.875rem",
   },
   documentShell: {
     display: "grid",
@@ -527,13 +544,25 @@ const styles = {
   },
   documentHeader: {
     alignItems: "center",
-    borderBottom: "1px solid ButtonBorder",
+    background: "#FFFFFF",
+    borderBottom: "1px solid #E2E8F0",
     display: "flex",
     gap: "0.5rem",
-    justifyContent: "flex-end",
-    padding: "0.75rem 1rem",
+    justifyContent: "flex-start",
+    padding: "0.625rem 1rem",
+  },
+  documentName: {
+    fontSize: "0.9375rem",
+    fontWeight: 600,
+    color: "#0F172A",
+  },
+  dirtyDot: {
+    color: "#E8A33D",
+    fontSize: "0.75rem",
+    lineHeight: 1,
   },
   documentPlaceholder: {
-    padding: "1rem",
+    padding: 0,
+    minHeight: 0,
   },
 } satisfies Record<string, CSSProperties>;

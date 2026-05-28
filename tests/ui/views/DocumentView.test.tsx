@@ -277,7 +277,7 @@ describe("DocumentView", () => {
     fireEvent.click(calloutButton);
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Autosave status").textContent).toBe("saving");
+      expect(screen.getByLabelText("Autosave status").textContent).toBe("Saving…");
     });
 
     expect(screen.getByLabelText("Document editor")).toBe(editorBefore);

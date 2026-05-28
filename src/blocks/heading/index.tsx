@@ -17,8 +17,9 @@ import type { HeadingBlock, HeadingLevel } from "./schema";
 import { HeadingBlockSchema, headingScaleKey } from "./schema";
 
 // ── TipTap / editor dependencies ─────────────────────────────────────────────
-import { Node, mergeAttributes } from "@tiptap/core";
+import { Node, mergeAttributes, InputRule } from "@tiptap/core";
 import {
+  NodeViewContent,
   NodeViewWrapper,
   ReactNodeViewRenderer,
   type NodeViewProps,
@@ -32,7 +33,6 @@ import { resolveBrandToken } from "../../brand-tokens/resolve";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
-import { HeadingPanel } from "./HeadingPanel";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -54,8 +54,9 @@ declare module "@tiptap/core" {
 export const HeadingTipTapNode = Node.create({
   name: "heading",
   group: "block",
-  atom: true,
-  selectable: true,
+  content: "text*",
+  marks: "",
+  defining: true,
 
   addAttributes() {
     return {
@@ -72,11 +73,6 @@ export const HeadingTipTapNode = Node.create({
         renderHTML: (attrs: { level: HeadingLevel }) => ({
           "data-level": attrs.level,
         }),
-      },
-      text: {
-        default: "",
-        parseHTML: (el) => el.getAttribute("data-text") ?? "",
-        renderHTML: (attrs: { text: string }) => ({ "data-text": attrs.text }),
       },
       numbered: {
         default: true,
@@ -101,6 +97,7 @@ export const HeadingTipTapNode = Node.create({
     return [
       "div",
       mergeAttributes(HTMLAttributes, { "data-block-type": "heading" }),
+      0,
     ];
   },
 
@@ -114,18 +111,39 @@ export const HeadingTipTapNode = Node.create({
             numbered?: boolean;
           } = {},
         ) =>
-        ({ commands }) =>
-          commands.insertContent({
+        ({ commands }) => {
+          const text = attrs.text ?? "New heading";
+          return commands.insertContent({
             type: this.name,
             attrs: {
               blockId: crypto.randomUUID(),
               level: attrs.level ?? 2,
-              text: attrs.text ?? "New heading",
               numbered: attrs.numbered ?? true,
               note: "",
             },
-          }),
+            content: text.length > 0 ? [{ type: "text", text }] : [],
+          });
+        },
     };
+  },
+
+  // Markdown-style level control: typing "# " … "#### " at the start of a
+  // heading sets its level. Keeps level editing inline (no side panel).
+  addInputRules() {
+    return ([1, 2, 3, 4] as const).map(
+      (level) =>
+        new InputRule({
+          find: new RegExp(`^#{${level}}\\s$`),
+          handler: ({ state, range, chain }) => {
+            const { $from } = state.selection;
+            if ($from.parent.type.name !== this.name) return;
+            chain()
+              .deleteRange(range)
+              .updateAttributes(this.name, { level })
+              .run();
+          },
+        }),
+    );
   },
 
   addNodeView() {
@@ -133,29 +151,32 @@ export const HeadingTipTapNode = Node.create({
   },
 });
 
-// Data editing lives in HeadingPanel.tsx, mounted by DocumentView on selection.
-const HeadingNodeView: FC<NodeViewProps> = ({ node, selected }) => {
-  const blockId = String(node.attrs.blockId);
-  const block: HeadingBlock = {
-    id: blockId,
-    type: "heading",
-    level: node.attrs.level as HeadingLevel,
-    text: node.attrs.text as string,
-    numbered: node.attrs.numbered as boolean,
+// Inline-editable heading: NodeViewContent renders the heading text directly,
+// styled to match the print Renderer so the editor view ≈ the rendered output.
+const HeadingNodeView: FC<NodeViewProps> = ({ node }) => {
+  const brand = useBrandTokens();
+  const level = node.attrs.level as HeadingLevel;
+  const scaleKey = headingScaleKey(level);
+  const Tag = TAG_BY_LEVEL[level];
+
+  const style: CSSProperties = {
+    fontFamily: brand.typography.fonts.heading.family,
+    fontSize: brand.typography.scale[scaleKey],
+    lineHeight: brand.typography.lineHeight.tight,
+    color: resolveBrandToken(brand, "colors.semantic.headingPrimary"),
+    margin: 0,
+    marginBottom: brand.spacing.unit * 2,
+    fontWeight: 600,
   };
 
   return (
     <NodeViewWrapper
       className="heading-node-view"
-      data-block-id={blockId}
-      contentEditable={false}
-      style={{
-        outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
-        outlineOffset: 4,
-        cursor: "pointer",
-      }}
+      data-block-id={String(node.attrs.blockId)}
+      data-block-type="heading"
+      data-level={level}
     >
-      <Heading block={block} />
+      <NodeViewContent as={Tag} style={style} />
     </NodeViewWrapper>
   );
 };
@@ -168,34 +189,40 @@ type HeadingPmNode = {
   attrs: {
     blockId: string;
     level: HeadingLevel;
-    text: string;
     numbered: boolean;
     note: string;
   };
+  content?: Array<{ type?: string; text?: string }>;
 };
 
 export function headingBlockToProseMirror(block: HeadingBlock): {
   type: string;
   attrs: HeadingPmNode["attrs"];
+  content: NonNullable<HeadingPmNode["content"]>;
 } {
   return {
     type: "heading",
     attrs: {
       blockId: block.id,
       level: block.level,
-      text: block.text,
       numbered: block.numbered,
       note: block.note ?? "",
     },
+    // Plain-text inline content (no marks). Empty text → empty content, since
+    // ProseMirror text nodes cannot be empty.
+    content: block.text.length > 0 ? [{ type: "text", text: block.text }] : [],
   };
 }
 
 export function proseMirrorToHeadingBlock(node: HeadingPmNode): HeadingBlock {
+  const text = (node.content ?? [])
+    .map((child) => (typeof child.text === "string" ? child.text : ""))
+    .join("");
   return {
     id: node.attrs.blockId,
     type: "heading",
     level: node.attrs.level,
-    text: node.attrs.text,
+    text,
     numbered: node.attrs.numbered,
     note: node.attrs.note || undefined,
   };
@@ -260,7 +287,6 @@ const headingBlock = defineBlock<HeadingBlock>({
   // the specific PmNode type narrows that to the node's actual attrs.
   fromPm: (node) =>
     proseMirrorToHeadingBlock(node as unknown as HeadingPmNode),
-  panel: HeadingPanel,
 });
 
 export default headingBlock;
