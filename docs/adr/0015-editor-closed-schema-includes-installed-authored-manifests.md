@@ -22,14 +22,14 @@ The editor's closed schema is **static block types ∪ the installed manifest se
 
 ### Load timing
 
-`useEditor` builds the schema once at mount and TipTap cannot add node types to a live schema. `DocumentView` therefore **remounts the editor via a `key`** keyed on the manifest-slug signature; the context default `[]` means a mount with no providers (and every existing test) gets the static schema synchronously, preserving today's behavior. A document opened before the manifest set has loaded (the boot race) transiently renders with the static schema — TipTap drops unknown content rather than throwing (`enableContentCheck` defaults to false) — and is restored on the keyed remount once the set arrives.
+`useEditor` builds the schema once at mount and TipTap cannot add node types to a live schema. `DocumentView` therefore **remounts the editor via a `key`** keyed on a manifest *fingerprint* (`authoredRemountSignature`: each installed block's `fullType` plus its serialized manifest, sorted) — **not** the slug alone. A slug-only key would miss a same-slug replacement (ADR-0009 / T-170, where a v2 from the same sender replaces v1 under the same slug) that changes attrs, content, sender, or template; the fingerprint forces a rebuild whenever anything that affects the schema or node view changes, and stays stable otherwise. The context default `[]` means a mount with no providers (and every existing test) gets the static schema synchronously, preserving today's behavior. A document opened before the manifest set has loaded (the boot race) transiently renders with the static schema — TipTap drops unknown content rather than throwing (`enableContentCheck` defaults to false) — and is restored on the keyed remount once the set arrives.
 
 ## Why this is consistent with the security model
 
 Widening a closed boundary from filesystem contents is acceptable here because:
 
 - **ADR-0013** makes "the manifest can never carry executable code" a hard architectural property: the runtime expander is fixed app-bundled code that reads only declarative fields. A tampered or corrupt sidecar can at worst describe an odd declarative block — never run code.
-- **ADR-0006** places the trust gate at *receive time* (the Rust AST lint) and treats the on-disk `active/`/`archived/` contents as already-validated storage. The loader re-reads the sidecar rather than re-linting; it applies only a light robustness guard (skip on JSON-parse failure or missing `slug`) to survive partial cloud-sync corruption — **not** as a security control.
+- **ADR-0006** places the trust gate at *receive time* (the Rust AST lint) and treats the on-disk `active/`/`archived/` contents as already-validated storage. The loader re-reads the sidecar rather than re-linting; it applies only a light robustness guard (skip on JSON-parse failure, or on a sidecar lacking a string `slug`, an array `attrs`, a `content` of `"rich-text"`/`"none"`, or an object `template` with a string `kind`) to survive partial cloud-sync corruption that would otherwise crash editor mount — **not** as a security control.
 - A malformed installed block that throws during render is contained by the render watchdog's error boundary (ADR-0006 prerequisite).
 
 So the set is "closed over installed + validated manifests," not arbitrary input.
