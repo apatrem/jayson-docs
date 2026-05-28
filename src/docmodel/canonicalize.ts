@@ -1,4 +1,5 @@
 import type { DocModel } from "../schema/docmodel";
+import { AUTHORED_TYPE_RE } from "../schema/blocks/block-type-string";
 
 export const KEY_ORDERS: Record<string, string[]> = {
   DocModel: ["kind", "schemaVersion", "meta", "sections", "slides", "comments"],
@@ -24,6 +25,10 @@ export const KEY_ORDERS: Record<string, string[]> = {
   Slide: ["id", "layout", "blocks", "notes"],
 
   BlockBase: ["id", "type"],
+  // Authored blocks (ADR-0016) carry per-manifest dynamic attr fields whose
+  // names aren't known here, so only the stable id/type prefix is ordered; the
+  // remaining fields (attrs, note, body) follow in object order.
+  AuthoredBlock: ["id", "type"],
 
   prose: ["id", "type", "content", "align", "note"],
   heading: ["id", "type", "level", "text", "numbered", "note"],
@@ -219,12 +224,13 @@ function inferShapeForArrayItem(
   if (parentArrayShape === "_arrayOfComment") return "Comment";
   if (parentArrayShape === "_arrayOfBlock") {
     const t = (item as { type?: string })?.type ?? "";
-    if (t && !KEY_ORDERS[t]) {
-      throw new Error(
-        `canonicalize: missing KEY_ORDERS for block type "${t}"`,
-      );
+    if (t && KEY_ORDERS[t]) return t;
+    // Authored blocks have dynamic `{sender}:{slug}` types not in KEY_ORDERS.
+    if (AUTHORED_TYPE_RE.test(t)) return "AuthoredBlock";
+    if (t) {
+      throw new Error(`canonicalize: missing KEY_ORDERS for block type "${t}"`);
     }
-    return KEY_ORDERS[t] ? t : "BlockBase";
+    return "BlockBase";
   }
   if (parentArrayShape === "_arrayOfThreadEntry") {
     const k = (item as { kind?: string })?.kind ?? "";

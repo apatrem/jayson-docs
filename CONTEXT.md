@@ -18,6 +18,10 @@ _Avoid_: "view", "format"
 A typed, schema-validated unit inside a section or slide. Carries a stable `id` so comments and patches can anchor to it across serializations.
 _Avoid_: "element", "component", "widget"
 
+**DocBlock**:
+A block as actually stored in a DocModel section/slide: a Standard block (one of the 15, strictly validated) or an Authored block (validated structurally, attrs passed through). The Authored variant's `type` is the `{sender}:{slug}` identity; the strict 15-type union is still "Block".
+_Avoid_: conflating "DocBlock" with "Block" — Block is the 15 Standard types only.
+
 ### Block tiers
 
 The block library is closed *at any given moment* but is composed of three tiers, each with a different origin, lifecycle, and trust model.
@@ -48,11 +52,23 @@ _Avoid_: "view", "template"
 A React component (one per block type) that lets the editor show and edit one block in-place inside TipTap. Lives in `src/editor/nodes/`. A different concern from a Renderer — the node view is editable, the Renderer is print-quality output.
 _Avoid_: conflating with "Renderer"
 
+**Closed editor schema**:
+The exact set of node and mark types the TipTap editor registers at mount. A security boundary: asserted to equal Standard block types ∪ the Installed manifest set, and nothing else. Authored blocks widen it only because their manifests passed the receive-time gate.
+_Avoid_: "the schema" (ambiguous with the DocModel's Zod schema), "allowed nodes"
+
 ### Authored block transport
 
 **Manifest header**:
 The strict-format comment block at the top of every Authored block `.tsx` file. Carries scaffold version, generator model, original prompt, sender email, and timestamp. Source of identity, traceability, and the data needed to regenerate the block against a new scaffold.
 _Avoid_: "header", "metadata block", "frontmatter"
+
+**Extracted manifest**:
+The `AuthoredBlockManifest` data the receive-time Rust AST lint extracts from the `.tsx` literal and writes alongside it as a `<slug>.tsx.manifest.json` sidecar. Pure JSON-equivalent data the runtime expander consumes; distinct from the Manifest header.
+_Avoid_: "the manifest" (ambiguous with the header), "block JSON"
+
+**Installed manifest set**:
+The Extracted manifests under `generated-blocks/active/` ∪ `archived/` — the two folders whose contents passed the receive-time gate. The runtime source of truth for which Authored blocks the editor knows about. Excludes `quarantine/` and `pending/`, which never passed the gate.
+_Avoid_: "loaded blocks", "the authored blocks"
 
 **Scaffold version**:
 The version of the per-tier block scaffold a generated block was produced against. Bumped when the manifest shape, the allowed imports, or the lint changes. Used at receive time to decide whether an Authored block needs regeneration.

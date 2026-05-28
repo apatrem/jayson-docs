@@ -3,7 +3,9 @@ import type { Comment } from "../schema/comment";
 import type { Section, Slide } from "../schema/containers";
 import type { DocModel } from "../schema/docmodel";
 import { loadAllBlocks } from "../blocks/runtime-registry";
+import type { InstalledAuthoredBlock } from "../blocks/runtime-registry";
 import type { BlockRegistryRecord } from "../blocks/defineBlock";
+import { defineAuthoredBlock } from "../blocks/authored/defineAuthoredBlock";
 
 // ── Registry dispatch (T-157a) ────────────────────────────────────────────
 // All 15 Standard blocks live in the registry. Lookup maps are built lazily
@@ -27,6 +29,54 @@ function pmNodeTypeMap(): Map<string, BlockRegistryRecord> {
     );
   }
   return _pmNodeTypeToRecord;
+}
+
+// ── Authored block dispatch (ADR-0016) ─────────────────────────────────────
+// Authored blocks aren't in loadAllBlocks(); they're resolved per-call from the
+// Installed manifest set so the slug-keyed editor node reconciles with the
+// `{sender}:{slug}` DocModel type. DocModel→PM looks up by fullType and strips
+// to the slug; PM→DocModel looks up by slug and restores the full type.
+
+interface AuthoredResolver {
+  /** DocModel block (`type` = fullType) → PM node (`type` = slug), or null. */
+  toPm(block: Block): ProseMirrorNode | null;
+  /** PM node (`type` = slug) → DocModel block (`type` = fullType), or null. */
+  fromPm(node: ProseMirrorNode): Block | null;
+}
+
+const EMPTY_AUTHORED_RESOLVER: AuthoredResolver = {
+  toPm: () => null,
+  fromPm: () => null,
+};
+
+function buildAuthoredResolver(
+  installed: readonly InstalledAuthoredBlock[],
+): AuthoredResolver {
+  if (installed.length === 0) return EMPTY_AUTHORED_RESOLVER;
+  const byFullType = new Map<string, { record: BlockRegistryRecord; fullType: string }>();
+  const bySlug = new Map<string, { record: BlockRegistryRecord; fullType: string }>();
+  for (const entry of installed) {
+    const record = defineAuthoredBlock(entry.manifest);
+    const value = { record, fullType: entry.fullType };
+    byFullType.set(entry.fullType, value);
+    bySlug.set(entry.manifest.slug, value);
+  }
+  return {
+    toPm(block) {
+      const entry = byFullType.get(block.type);
+      // record.toPm emits a node typed by the manifest slug (ADR-0016).
+      return entry ? entry.record.toPm(block) : null;
+    },
+    fromPm(node) {
+      const entry = bySlug.get(node.type);
+      if (!entry) return null;
+      const block = entry.record.fromPm(node) as Record<string, unknown>;
+      // record.fromPm sets `type` to the slug; restore the DocModel full type.
+      // Authored blocks aren't one of the 15 union members at the type level but
+      // are present at runtime (ADR-0016); cast to Block for the slug-keyed maps.
+      return { ...block, type: entry.fullType } as unknown as Block;
+    },
+  };
 }
 
 export interface ProseMirrorNode {
@@ -56,22 +106,30 @@ export class MappingError extends Error {
   }
 }
 
-export function docModelToProseMirror(doc: DocModel): ProseMirrorDocument {
+export function docModelToProseMirror(
+  doc: DocModel,
+  installedAuthored: readonly InstalledAuthoredBlock[] = [],
+): ProseMirrorDocument {
+  const authored = buildAuthoredResolver(installedAuthored);
   if (doc.kind === "document") {
     return {
       type: "doc",
       attrs: rootAttrs(doc),
-      content: doc.sections.map(sectionToProseMirror),
+      content: doc.sections.map((s) => sectionToProseMirror(s, authored)),
     };
   }
   return {
     type: "doc",
     attrs: rootAttrs(doc),
-    content: doc.slides.map(slideToProseMirror),
+    content: doc.slides.map((s) => slideToProseMirror(s, authored)),
   };
 }
 
-export function proseMirrorToDocModel(pm: unknown): DocModel {
+export function proseMirrorToDocModel(
+  pm: unknown,
+  installedAuthored: readonly InstalledAuthoredBlock[] = [],
+): DocModel {
+  const authored = buildAuthoredResolver(installedAuthored);
   if (!isProseMirrorNode(pm) || pm.type !== "doc") {
     throw new MappingError("Root node must be type 'doc'", []);
   }
@@ -97,7 +155,7 @@ export function proseMirrorToDocModel(pm: unknown): DocModel {
       schemaVersion,
       meta: attrs.meta as DocModel["meta"],
       sections: (pm.content ?? []).map((child) =>
-        proseMirrorToSection(asProseMirrorNode(child)),
+        proseMirrorToSection(asProseMirrorNode(child), authored),
       ),
       comments: (attrs.comments ?? []) as Comment[],
     }) as DocModel;
@@ -107,7 +165,7 @@ export function proseMirrorToDocModel(pm: unknown): DocModel {
     schemaVersion,
     meta: attrs.meta as DocModel["meta"],
     slides: (pm.content ?? []).map((child) =>
-      proseMirrorToSlide(asProseMirrorNode(child)),
+      proseMirrorToSlide(asProseMirrorNode(child), authored),
     ),
     comments: (attrs.comments ?? []) as Comment[],
   }) as DocModel;
@@ -122,18 +180,24 @@ function rootAttrs(doc: DocModel): ProseMirrorDocument["attrs"] {
   };
 }
 
-function sectionToProseMirror(section: Section): ProseMirrorNode {
+function sectionToProseMirror(
+  section: Section,
+  authored: AuthoredResolver,
+): ProseMirrorNode {
   return {
     type: "section",
     attrs: {
       sectionId: section.id,
       title: section.title ?? "",
     },
-    content: section.blocks.map(blockToProseMirror),
+    content: section.blocks.map((b) => blockToProseMirror(b, authored)),
   };
 }
 
-function slideToProseMirror(slide: Slide): ProseMirrorNode {
+function slideToProseMirror(
+  slide: Slide,
+  authored: AuthoredResolver,
+): ProseMirrorNode {
   return {
     type: "slide",
     attrs: {
@@ -141,11 +205,14 @@ function slideToProseMirror(slide: Slide): ProseMirrorNode {
       layout: slide.layout,
       notes: slide.notes ?? "",
     },
-    content: slide.blocks.map(blockToProseMirror),
+    content: slide.blocks.map((b) => blockToProseMirror(b, authored)),
   };
 }
 
-function proseMirrorToSection(node: ProseMirrorNode): Section {
+function proseMirrorToSection(
+  node: ProseMirrorNode,
+  authored: AuthoredResolver,
+): Section {
   if (node.type !== "section") {
     throw new MappingError(`Expected section, got ${node.type}`, ["sections"]);
   }
@@ -154,12 +221,15 @@ function proseMirrorToSection(node: ProseMirrorNode): Section {
     id: String(attrs.sectionId ?? ""),
     title: stringOrUndefined(attrs.title),
     blocks: (node.content ?? []).map((child) =>
-      proseMirrorToBlock(asProseMirrorNode(child)),
+      proseMirrorToBlock(asProseMirrorNode(child), authored),
     ),
   };
 }
 
-function proseMirrorToSlide(node: ProseMirrorNode): Slide {
+function proseMirrorToSlide(
+  node: ProseMirrorNode,
+  authored: AuthoredResolver,
+): Slide {
   if (node.type !== "slide") {
     throw new MappingError(`Expected slide, got ${node.type}`, ["slides"]);
   }
@@ -168,27 +238,42 @@ function proseMirrorToSlide(node: ProseMirrorNode): Slide {
     id: String(attrs.slideId ?? ""),
     layout: attrs.layout as Slide["layout"],
     blocks: (node.content ?? []).map((child) =>
-      proseMirrorToBlock(asProseMirrorNode(child)),
+      proseMirrorToBlock(asProseMirrorNode(child), authored),
     ),
     notes: stringOrUndefined(attrs.notes),
   };
 }
 
-function blockToProseMirror(block: Block): ProseMirrorNode {
+function blockToProseMirror(
+  block: Block,
+  authored: AuthoredResolver,
+): ProseMirrorNode {
   const record = schemaNameMap().get(block.type);
   if (record) {
     return record.toPm(block);
   }
-  // All 15 block types are in the registry; this path is unreachable for
-  // valid DocModel blocks but satisfies the exhaustiveness check.
-  return assertNever(block as never);
+  const authoredNode = authored.toPm(block);
+  if (authoredNode) {
+    return authoredNode;
+  }
+  // Not a Standard block and not in the Installed manifest set — e.g. an
+  // authored block that was permanently deleted (the editor-side removed-block
+  // placeholder is a deferred follow-up, ADR-0016).
+  throw new MappingError(`Unknown block type: ${block.type}`, ["blocks"]);
 }
 
-function proseMirrorToBlock(node: ProseMirrorNode): Block {
+function proseMirrorToBlock(
+  node: ProseMirrorNode,
+  authored: AuthoredResolver,
+): Block {
   // The registry key is tiptapNode.name (the PM node type), not the schemaName.
   const record = pmNodeTypeMap().get(node.type);
   if (record) {
     return record.fromPm(node) as Block;
+  }
+  const authoredBlock = authored.fromPm(node);
+  if (authoredBlock) {
+    return authoredBlock;
   }
   throw new MappingError(`Unknown block node type: ${node.type}`, ["blocks"]);
 }
@@ -210,10 +295,6 @@ function asProseMirrorNode(value: unknown): ProseMirrorNode {
 
 function stringOrUndefined(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
-}
-
-function assertNever(_block: never): never {
-  throw new MappingError("Unhandled block type in mapping dispatch", ["blocks"]);
 }
 
 function stripUndefined(value: unknown): unknown {

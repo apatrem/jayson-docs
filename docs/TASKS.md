@@ -2007,6 +2007,19 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 - **Acceptance:** opening `examples/sample-proposal.yaml` shows the editor (not the M7 constraint). Inserting a block in section 1 does not move blocks in section 2 on autosave. `npm test` green.
 - **est.** 4h
 
+### T-181 [ ] · Render/export path for installed Authored blocks (preview + PDF + deck)
+- **Depends-on:** editor-side Authored wiring (ADR-0015, ADR-0016 — `createEditorExtensions(authoredManifests)`, `AuthoredManifestsContext`, `loadAuthoredManifests`, mapping `AuthoredResolver`)
+- **Reads:** `docs/adr/0016-authored-blocks-persist-as-sender-slug-editor-keyed-by-slug.md` ("deferred edges" section), `docs/adr/0013-authored-blocks-are-declarative-data.md`, `src/renderer/DocumentRenderer.tsx`, `src/renderer/DeckRenderer.tsx`, `src/blocks/authored/template-expander.ts` (`buildAuthoredRenderer`), `src/blocks/runtime-registry.ts` (`useAuthoredManifestsFromRegistry`)
+- **Context:** The editor path now inserts/saves/reloads installed Authored blocks (slug-keyed TipTap node ↔ `{sender}:{slug}` DocModel type via the installed manifest set). But the render/export path still builds its dispatch map from static `loadAllBlocks()` only (`DocumentRenderer.tsx:28`), so any Authored block type misses the map and falls through to `RemovedBlockPlaceholder` (`DocumentRenderer.tsx:213`). Result: a doc the editor renders fine shows authored blocks as "removed" in the preview pane and in exported PDF/deck output. This is the explicit deferral recorded in ADR-0016.
+- **Outputs:**
+  - `src/renderer/DocumentRenderer.tsx` — accept the Installed manifest set (prop, defaulting to `useAuthoredManifestsFromRegistry()` so existing callers don't break). For an Authored block type, resolve its manifest by `fullType`/slug and render via `buildAuthoredRenderer(manifest)` (the renderer counterpart of `buildAuthoredTipTapNode`) instead of falling through to `RemovedBlockPlaceholder`. Keep the placeholder only for genuinely-uninstalled types (permanently-deleted blocks).
+  - `src/renderer/DeckRenderer.tsx` — same threading for slide-based docs.
+  - PDF export path — ensure the installed set reaches the renderer used for export (preview and PDF must agree).
+  - `src/ui/views/DocumentView.tsx` — pass the installed set (already read from `AuthoredManifestsContext`) into `DocumentRenderer` (currently rendered without it, ~line 372).
+  - Tests: a doc containing an installed Authored block renders the expanded block (not the placeholder) in `DocumentRenderer` and `DeckRenderer`; an uninstalled/permanently-deleted authored type still renders `RemovedBlockPlaceholder`; PDF export of an authored-block doc does not emit the placeholder.
+- **Acceptance:** opening a document that contains an installed Authored block shows the block (not "removed") in the preview pane and in exported PDF/deck output; uninstalled authored types still show the placeholder.
+- **est.** 4h
+
 ---
 
 ## Phase 11 — Deployment & Release
