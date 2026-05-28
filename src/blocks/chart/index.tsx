@@ -465,25 +465,38 @@ export const Chart: FC<ChartProps> = ({
   useEffect(() => {
     const el = chartElRef.current;
     if (staticSvg || !el) return;
+    if (renderer === "canvas" && !canUseCanvasRenderer()) return;
 
     let cancelled = false;
     let chart: ECharts | null = null;
     let resizeObserver: ResizeObserver | null = null;
 
     // Lazy-load ECharts only when a live chart actually renders.
-    void import("echarts").then((echarts) => {
-      if (cancelled || chartElRef.current === null) return;
-      chart = echarts.init(el, undefined, { renderer });
-      chartRef.current = chart;
-      chart.setOption(option, true);
-      resizeObserver = new ResizeObserver(() => chart?.resize());
-      resizeObserver.observe(el);
-    });
+    void import("echarts")
+      .then((echarts) => {
+        if (cancelled || chartElRef.current === null) return;
+        chart = echarts.init(el, undefined, { renderer });
+        chartRef.current = chart;
+        chart.setOption(option, true);
+        resizeObserver = new ResizeObserver(() => chart?.resize());
+        resizeObserver.observe(el);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          // eslint-disable-next-line no-console
+          console.error("Chart renderer failed to initialize", error);
+        }
+      });
 
     return () => {
       cancelled = true;
       resizeObserver?.disconnect();
-      chart?.dispose();
+      try {
+        chart?.dispose();
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Chart renderer failed to dispose", error);
+      }
       if (chartRef.current === chart) {
         chartRef.current = null;
       }
@@ -547,6 +560,12 @@ export const Chart: FC<ChartProps> = ({
     />,
   );
 };
+
+function canUseCanvasRenderer(): boolean {
+  if (typeof document === "undefined") return false;
+  const canvas = document.createElement("canvas");
+  return canvas.getContext("2d") !== null;
+}
 
 // ── Registry manifest ─────────────────────────────────────────────────────
 const chartBlock = defineBlock<ChartBlock>({

@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
   useEffect,
+  useCallback,
   useMemo,
   useRef,
   useState,
@@ -163,6 +164,12 @@ export const DocumentView: FC<DocumentViewProps> = ({
   const [selectedNode, setSelectedNode] = useState<
     { nodeName: string; pos: number; nodeJson: ProseMirrorNode } | null
   >(null);
+  const handleEditorReady = useCallback(
+    (readyEditor: BlockPaletteProps["editor"]) => {
+      setEditor(readyEditor as TipTapEditor | null);
+    },
+    [],
+  );
   // ── Generation state (T-173) ─────────────────────────────────────────────
   const [generating, setGenerating] = useState(false);
   const [previewNode, setPreviewNode] = useState<ReactNode>(undefined);
@@ -380,7 +387,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
             initialContent={editorSeed}
             editable={true}
             authoredManifests={authoredManifests}
-            onEditorReady={(e) => setEditor(e as TipTapEditor | null)}
+            onEditorReady={handleEditorReady}
             onUpdate={(content) => {
               try {
                 // `currentDoc.current` is initialized at mount (initialDoc or
