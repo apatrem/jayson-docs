@@ -145,17 +145,40 @@ export const TeamTipTapNode = Node.create({
   },
 });
 
-const TeamNodeView: FC<NodeViewProps> = ({ node }) => {
-  const members = node.attrs.members as TeamMember[];
-  const layout = node.attrs.layout as TeamLayout;
+const TeamNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+  const brand = useBrandTokens();
+  const blockId = String(node.attrs.blockId);
+  const block: TeamBlock = {
+    id: blockId,
+    type: "team",
+    layout: node.attrs.layout as TeamLayout,
+    members: node.attrs.members as TeamMember[],
+  };
+  const assetContext: AssetContext = {
+    sharedFolderPath: "/shared",
+    docFolderPath: "/docs",
+    brand,
+  };
+
   return (
-    <NodeViewWrapper className="team-node-view">
-      <span>
-        Team ({layout}, {members.length} members)
-      </span>
+    <NodeViewWrapper
+      className="team-node-view"
+      data-block-id={blockId}
+      contentEditable={false}
+      style={editorBlockStyle(selected)}
+    >
+      <Team block={block} assetContext={assetContext} />
     </NodeViewWrapper>
   );
 };
+
+function editorBlockStyle(selected: boolean): CSSProperties {
+  return {
+    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+    outlineOffset: 4,
+    cursor: "pointer",
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProseMirror mapping helpers

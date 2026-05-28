@@ -126,14 +126,38 @@ export const DividerTipTapNode = Node.create({
   },
 });
 
-const DividerNodeView: FC<NodeViewProps> = ({ node }) => {
-  const label = node.attrs.label as string;
+const DividerNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+  const blockId = String(node.attrs.blockId);
+  const label = node.attrs.label as string | undefined;
+  const subtitle = node.attrs.subtitle as string | undefined;
+  const numbering = node.attrs.numbering as string | undefined;
+  const block: DividerBlock = {
+    id: blockId,
+    type: "divider",
+    ...(label ? { label } : {}),
+    ...(subtitle ? { subtitle } : {}),
+    ...(numbering ? { numbering } : {}),
+  };
+
   return (
-    <NodeViewWrapper className="divider-node-view">
-      <span>Divider{label ? `: ${label}` : ""}</span>
+    <NodeViewWrapper
+      className="divider-node-view"
+      data-block-id={blockId}
+      contentEditable={false}
+      style={editorBlockStyle(selected)}
+    >
+      <Divider block={block} />
     </NodeViewWrapper>
   );
 };
+
+function editorBlockStyle(selected: boolean): CSSProperties {
+  return {
+    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+    outlineOffset: 4,
+    cursor: "pointer",
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProseMirror mapping helpers

@@ -163,18 +163,44 @@ export const ImageTipTapNode = Node.create({
   },
 });
 
-const ImageNodeView: FC<NodeViewProps> = ({ node }) => {
-  const alt = node.attrs.alt as string;
-  const src = node.attrs.src as string;
+const ImageNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+  const brand = useBrandTokens();
+  const blockId = String(node.attrs.blockId);
+  const caption = node.attrs.caption as string | undefined;
+  const block: ImageBlock = {
+    id: blockId,
+    type: "image",
+    src: String(node.attrs.src),
+    alt: String(node.attrs.alt),
+    width: (node.attrs.width as ImageWidth | undefined) ?? "medium",
+    align: (node.attrs.align as ImageAlign | undefined) ?? "center",
+    ...(caption ? { caption } : {}),
+  };
+  const assetContext: AssetContext = {
+    sharedFolderPath: "/shared",
+    docFolderPath: "/docs",
+    brand,
+  };
 
   return (
-    <NodeViewWrapper className="image-node-view">
-      <span>
-        Image: {alt || "(no alt)"} — {src}
-      </span>
+    <NodeViewWrapper
+      className="image-node-view"
+      data-block-id={blockId}
+      contentEditable={false}
+      style={editorBlockStyle(selected)}
+    >
+      <Image block={block} assetContext={assetContext} />
     </NodeViewWrapper>
   );
 };
+
+function editorBlockStyle(selected: boolean): CSSProperties {
+  return {
+    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+    outlineOffset: 4,
+    cursor: "pointer",
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProseMirror mapping helpers

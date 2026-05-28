@@ -13,7 +13,7 @@ import {
   ReactNodeViewRenderer,
   type NodeViewProps,
 } from "@tiptap/react";
-import type { CSSProperties, ComponentType, FC, MouseEvent } from "react";
+import type { CSSProperties, ComponentType, FC } from "react";
 import { useBrandTokens } from "../../brand-tokens/useBrandTokens";
 import { lookupBrandPath, resolveBrandToken } from "../../brand-tokens/resolve";
 import type { BrandTokens } from "../../schema/brand";
@@ -27,7 +27,6 @@ import {
   kpiTrendColorRef,
   type KpiCard,
   type KpiCardsBlock,
-  type KpiEmphasis,
   type KpiTrend,
 } from "./schema";
 
@@ -125,29 +124,15 @@ export const KpiCardsTipTapNode = Node.create({
 });
 
 // ── NodeView (editor) ─────────────────────────────────────────────────────
-const stopEditorCapture = (event: MouseEvent): void => {
-  event.stopPropagation();
-};
+// Data editing lives in KpiCardsPanel.tsx, mounted by DocumentView when the
+// block is selected. This NodeView renders only the visual + selection outline.
 
-const KpiCardsNodeView: FC<NodeViewProps> = ({
-  node,
-  updateAttributes,
-  selected,
-}) => {
-  const cards = node.attrs.cards as KpiCard[];
+const KpiCardsNodeView: FC<NodeViewProps> = ({ node, selected }) => {
   const blockId = node.attrs.blockId as string;
   const block: KpiCardsBlock = {
     id: blockId,
     type: "kpi-cards",
-    cards,
-  };
-
-  const updateCard = (index: number, patch: Partial<KpiCard>): void => {
-    updateAttributes({
-      cards: cards.map((card, cardIndex) =>
-        cardIndex === index ? { ...card, ...patch } : card,
-      ),
-    });
+    cards: node.attrs.cards as KpiCard[],
   };
 
   return (
@@ -158,132 +143,12 @@ const KpiCardsNodeView: FC<NodeViewProps> = ({
       style={{
         outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
         outlineOffset: 4,
+        cursor: "pointer",
       }}
     >
       <KpiCards block={block} />
-      <div
-        style={editorFormStyle}
-        onMouseDown={stopEditorCapture}
-        aria-label="Edit KPI cards"
-      >
-        {cards.map((card, index) => (
-          <fieldset key={index} style={cardFieldStyle}>
-            <legend>Card {index + 1}</legend>
-            <label style={fieldLabelStyle}>
-              Value
-              <input
-                type="text"
-                value={card.value}
-                onChange={(event) => {
-                  updateCard(index, { value: event.target.value });
-                }}
-              />
-            </label>
-            <label style={fieldLabelStyle}>
-              Label
-              <input
-                type="text"
-                value={card.label}
-                maxLength={60}
-                onChange={(event) => {
-                  updateCard(index, { label: event.target.value });
-                }}
-              />
-            </label>
-            <label style={fieldLabelStyle}>
-              Sublabel
-              <input
-                type="text"
-                value={card.sublabel ?? ""}
-                maxLength={80}
-                onChange={(event) => {
-                  updateCard(index, {
-                    sublabel: event.target.value || undefined,
-                  });
-                }}
-              />
-            </label>
-            <label style={fieldLabelStyle}>
-              Trend
-              <select
-                value={card.trend ?? "none"}
-                onChange={(event) => {
-                  updateCard(index, { trend: event.target.value as KpiTrend });
-                }}
-              >
-                <option value="none">None</option>
-                <option value="up">Up</option>
-                <option value="down">Down</option>
-                <option value="flat">Flat</option>
-              </select>
-            </label>
-            <label style={fieldLabelStyle}>
-              Emphasis
-              <select
-                value={card.emphasis ?? "neutral"}
-                onChange={(event) => {
-                  updateCard(index, {
-                    emphasis: event.target.value as KpiEmphasis,
-                  });
-                }}
-              >
-                <option value="neutral">Neutral</option>
-                <option value="positive">Positive</option>
-                <option value="negative">Negative</option>
-                <option value="brand">Brand</option>
-              </select>
-            </label>
-            {cards.length > 1 ? (
-              <button
-                type="button"
-                onClick={() => {
-                  updateAttributes({
-                    cards: cards.filter((_, cardIndex) => cardIndex !== index),
-                  });
-                }}
-              >
-                Remove card
-              </button>
-            ) : null}
-          </fieldset>
-        ))}
-        {cards.length < 4 ? (
-          <button
-            type="button"
-            onClick={() => {
-              updateAttributes({ cards: [...cards, defaultKpiCard()] });
-            }}
-          >
-            Add card
-          </button>
-        ) : null}
-      </div>
     </NodeViewWrapper>
   );
-};
-
-const editorFormStyle: CSSProperties = {
-  display: "grid",
-  gap: "0.75rem",
-  marginTop: "0.75rem",
-  padding: "0.75rem",
-  border: "1px solid ButtonBorder",
-  borderRadius: "0.375rem",
-};
-
-const cardFieldStyle: CSSProperties = {
-  border: "1px solid ButtonBorder",
-  borderRadius: "0.375rem",
-  display: "grid",
-  gap: "0.5rem",
-  margin: 0,
-  padding: "0.625rem",
-};
-
-const fieldLabelStyle: CSSProperties = {
-  display: "grid",
-  fontSize: "0.8125rem",
-  gap: "0.25rem",
 };
 
 // ── PM helpers ────────────────────────────────────────────────────────────

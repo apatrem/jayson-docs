@@ -153,21 +153,45 @@ export const RoadmapTipTapNode = Node.create({
   },
 });
 
-const RoadmapNodeView: FC<NodeViewProps> = ({ node }) => {
-  let summary = "Roadmap";
+const RoadmapNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+  const blockId = String(node.attrs.blockId);
+  let block: RoadmapBlock | null = null;
   try {
     const parsed = JSON.parse(String(node.attrs.payload)) as RoadmapPayload;
-    summary = `Roadmap (${parsed.workstreams.length} workstreams)`;
+    block = {
+      id: blockId,
+      type: "roadmap",
+      ...parsed,
+    };
   } catch {
-    summary = "Roadmap (invalid payload)";
+    block = null;
   }
 
   return (
-    <NodeViewWrapper className="roadmap-node-view">
-      <span>{summary}</span>
+    <NodeViewWrapper
+      className="roadmap-node-view"
+      data-block-id={blockId}
+      contentEditable={false}
+      style={editorBlockStyle(selected)}
+    >
+      {block !== null ? (
+        <Roadmap block={block} />
+      ) : (
+        <span style={{ color: "#B91C1C", fontSize: 12 }}>
+          Roadmap (invalid payload)
+        </span>
+      )}
     </NodeViewWrapper>
   );
 };
+
+function editorBlockStyle(selected: boolean): CSSProperties {
+  return {
+    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+    outlineOffset: 4,
+    cursor: "pointer",
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProseMirror mapping helpers

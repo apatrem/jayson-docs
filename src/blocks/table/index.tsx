@@ -185,18 +185,36 @@ export const DocTableTipTapNode = Node.create({
 });
 
 // ── NodeView (editor) ─────────────────────────────────────────────────────
-const DocTableNodeView: FC<NodeViewProps> = ({ node }) => {
-  const columns = node.attrs.columns as TableColumn[];
-  const rows = node.attrs.rows as TableBlockRow[];
+const DocTableNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+  const blockId = String(node.attrs.blockId);
+  const caption = node.attrs.caption as string | undefined;
+  const block: TableBlock = {
+    id: blockId,
+    type: "table",
+    columns: node.attrs.columns as TableColumn[],
+    rows: node.attrs.rows as TableBlockRow[],
+    ...(caption ? { caption } : {}),
+  };
 
   return (
-    <NodeViewWrapper className="doc-table-node-view">
-      <span>
-        Table ({columns.length}×{rows.length})
-      </span>
+    <NodeViewWrapper
+      className="doc-table-node-view"
+      data-block-id={blockId}
+      contentEditable={false}
+      style={editorBlockStyle(selected)}
+    >
+      <Table block={block} />
     </NodeViewWrapper>
   );
 };
+
+function editorBlockStyle(selected: boolean): CSSProperties {
+  return {
+    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+    outlineOffset: 4,
+    cursor: "pointer",
+  };
+}
 
 // ── PM helpers ────────────────────────────────────────────────────────────
 type DocTablePmNode = {

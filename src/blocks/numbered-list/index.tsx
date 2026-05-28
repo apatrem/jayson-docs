@@ -126,18 +126,35 @@ export const NumberedListTipTapNode = Node.create({
   },
 });
 
-const NumberedListNodeView: FC<NodeViewProps> = ({ node }) => {
-  const items = node.attrs.items as NumberedListItem[];
-  const count = items.length;
+const NumberedListNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+  const blockId = String(node.attrs.blockId);
+  const startAtRaw = node.attrs.startAt as number | undefined;
+  const block: NumberedListBlock = {
+    id: blockId,
+    type: "numbered-list",
+    items: node.attrs.items as NumberedListItem[],
+    ...(startAtRaw !== undefined ? { startAt: startAtRaw } : {}),
+  };
 
   return (
-    <NodeViewWrapper className="numbered-list-node-view">
-      <span>
-        Numbered list ({count} item{count === 1 ? "" : "s"})
-      </span>
+    <NodeViewWrapper
+      className="numbered-list-node-view"
+      data-block-id={blockId}
+      contentEditable={false}
+      style={editorBlockStyle(selected)}
+    >
+      <NumberedList block={block} />
     </NodeViewWrapper>
   );
 };
+
+function editorBlockStyle(selected: boolean): CSSProperties {
+  return {
+    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+    outlineOffset: 4,
+    cursor: "pointer",
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProseMirror mapping helpers

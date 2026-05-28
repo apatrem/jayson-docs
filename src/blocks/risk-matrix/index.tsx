@@ -149,16 +149,37 @@ export const RiskMatrixTipTapNode = Node.create({
   },
 });
 
-const RiskMatrixNodeView: FC<NodeViewProps> = ({ node }) => {
+const RiskMatrixNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+  const blockId = String(node.attrs.blockId);
   const payload = parsePayload(node.attrs.payload as string);
+  const block: RiskMatrixBlock = {
+    id: blockId,
+    type: "risk-matrix",
+    gridSize: payload.gridSize,
+    xAxisLabel: payload.xAxisLabel,
+    yAxisLabel: payload.yAxisLabel,
+    risks: payload.risks,
+  };
+
   return (
-    <NodeViewWrapper className="risk-matrix-node-view">
-      <span>
-        Risk matrix ({payload.gridSize}, {payload.risks.length} risks)
-      </span>
+    <NodeViewWrapper
+      className="risk-matrix-node-view"
+      data-block-id={blockId}
+      contentEditable={false}
+      style={editorBlockStyle(selected)}
+    >
+      <RiskMatrix block={block} />
     </NodeViewWrapper>
   );
 };
+
+function editorBlockStyle(selected: boolean): CSSProperties {
+  return {
+    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+    outlineOffset: 4,
+    cursor: "pointer",
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProseMirror mapping helpers

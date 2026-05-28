@@ -155,18 +155,36 @@ export const TimelineTipTapNode = Node.create({
   },
 });
 
-const TimelineNodeView: FC<NodeViewProps> = ({ node }) => {
-  const phases = node.attrs.phases as TimelinePhase[];
-  const orientation = node.attrs.orientation as TimelineOrientation;
+const TimelineNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+  const blockId = String(node.attrs.blockId);
+  const connector = node.attrs.connector as TimelineConnector | undefined;
+  const block: TimelineBlock = {
+    id: blockId,
+    type: "timeline",
+    phases: node.attrs.phases as TimelinePhase[],
+    orientation: node.attrs.orientation as TimelineOrientation,
+    connector: connector ?? "arrow",
+  };
 
   return (
-    <NodeViewWrapper className="timeline-node-view">
-      <span>
-        Timeline ({phases.length} phases, {orientation})
-      </span>
+    <NodeViewWrapper
+      className="timeline-node-view"
+      data-block-id={blockId}
+      contentEditable={false}
+      style={editorBlockStyle(selected)}
+    >
+      <Timeline block={block} />
     </NodeViewWrapper>
   );
 };
+
+function editorBlockStyle(selected: boolean): CSSProperties {
+  return {
+    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+    outlineOffset: 4,
+    cursor: "pointer",
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProseMirror mapping helpers

@@ -1,8 +1,15 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useRef, useState, type CSSProperties, type FC, type ReactNode } from "react";
 import type { JSONContent } from "@tiptap/react";
+import type { Editor as TipTapEditor } from "@tiptap/core";
+import { NodeSelection } from "@tiptap/pm/state";
 import { defaultBrand } from "../../brand/defaultBrand";
+import { BrandProvider } from "../../brand-tokens/BrandProvider";
 import { parseDocModelYaml } from "../../docmodel/serialize";
+import { ChartDataPanel } from "../../blocks/chart/ChartDataPanel";
+import { KpiCardsPanel } from "../../blocks/kpi-cards/KpiCardsPanel";
+import type { ChartBlock } from "../../blocks/chart/schema";
+import type { KpiCard, KpiCardsBlock } from "../../blocks/kpi-cards/schema";
 import {
   createAutosaveController,
   type AutosaveController,
@@ -112,8 +119,16 @@ export const DocumentView: FC<DocumentViewProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [editor, setEditor] = useState<BlockPaletteProps["editor"]>(null);
+  const [editor, setEditor] = useState<TipTapEditor | null>(null);
   const [authoringContext, setAuthoringContext] = useState<DocumentModel | null>(null);
+  // ── Selection-driven structured-block panel (P0c) ────────────────────────
+  // Tracks which atom block (chart, kpi-cards, …) is currently node-selected
+  // so DocumentView can mount the matching side panel. Cleared whenever the
+  // selection moves off the block.
+  const [selectedNode, setSelectedNode] = useState<
+    | { type: "chart" | "kpiCards"; pos: number; attrs: Record<string, unknown> }
+    | null
+  >(null);
   // ── Generation state (T-173) ─────────────────────────────────────────────
   const [generating, setGenerating] = useState(false);
   const [previewNode, setPreviewNode] = useState<ReactNode>(undefined);
@@ -178,6 +193,34 @@ export const DocumentView: FC<DocumentViewProps> = ({
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [paletteOpen]);
+
+  useEffect(() => {
+    if (editor === null) return undefined;
+    // Tests inject a mock editor that exposes only `commands`. Skip the
+    // selection-listener wiring when the full TipTap API isn't available.
+    if (typeof editor.on !== "function" || typeof editor.off !== "function") {
+      return undefined;
+    }
+    const onSelectionUpdate = (): void => {
+      const { selection } = editor.state;
+      if (selection instanceof NodeSelection) {
+        const name = selection.node.type.name;
+        if (name === "chart" || name === "kpiCards") {
+          setSelectedNode({
+            type: name,
+            pos: selection.from,
+            attrs: { ...selection.node.attrs },
+          });
+          return;
+        }
+      }
+      setSelectedNode(null);
+    };
+    editor.on("selectionUpdate", onSelectionUpdate);
+    return () => {
+      editor.off("selectionUpdate", onSelectionUpdate);
+    };
+  }, [editor]);
 
   // ── Generation handler (T-173) ─────────────────────────────────────────────
   const handleGenerate = (panelParams: AuthoringPanelGenerateParams): void => {
@@ -288,6 +331,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
           <span aria-label="Autosave status">{saveState}</span>
         </div>
       </header>
+      <BrandProvider tokens={defaultBrand}>
       <div style={styles.contentGrid}>
         <section aria-label="Rendered document preview" style={styles.previewPane}>
           <DocumentRenderer doc={doc} brand={defaultBrand} docFolderPath={parentPath(path)} />
@@ -298,7 +342,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
             key={path}
             initialContent={editorSeed}
             editable={true}
-            onEditorReady={setEditor}
+            onEditorReady={(e) => setEditor(e as TipTapEditor | null)}
             onUpdate={(content) => {
               try {
                 // `currentDoc.current` is initialized at mount (initialDoc or
@@ -327,7 +371,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
         {paletteOpen ? (
           <section aria-label="Insert block palette" style={styles.palettePane}>
             <BlockPalette
-              editor={editor}
+              editor={editor as BlockPaletteProps["editor"]}
               generatedBlocks={generatedBlocks}
               onInsert={() => {
                 setPaletteOpen(false);
@@ -343,6 +387,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
           </section>
         ) : null}
       </div>
+      </BrandProvider>
       {authoringContext !== null ? (
         <div style={styles.authoringOverlay}>
           <AuthoringPanel
@@ -359,9 +404,81 @@ export const DocumentView: FC<DocumentViewProps> = ({
           />
         </div>
       ) : null}
+      {selectedNode !== null && editor !== null
+        ? renderStructuredBlockPanel(selectedNode, editor, () =>
+            setSelectedNode(null),
+          )
+        : null}
     </main>
   );
 };
+
+function renderStructuredBlockPanel(
+  selection: {
+    type: "chart" | "kpiCards";
+    pos: number;
+    attrs: Record<string, unknown>;
+  },
+  editor: TipTapEditor,
+  onClose: () => void,
+): ReactNode {
+  if (selection.type === "kpiCards") {
+    const block: KpiCardsBlock = {
+      id: String(selection.attrs["blockId"]),
+      type: "kpi-cards",
+      cards: selection.attrs["cards"] as KpiCard[],
+    };
+    return (
+      <KpiCardsPanel
+        block={block}
+        onUpdate={(next) => {
+          editor
+            .chain()
+            .setNodeSelection(selection.pos)
+            .updateAttributes("kpiCards", {
+              cards: next.cards,
+              note: next.note ?? "",
+            })
+            .run();
+        }}
+        onClose={onClose}
+      />
+    );
+  }
+  if (selection.type === "chart") {
+    let block: ChartBlock | null = null;
+    try {
+      const parsed = JSON.parse(
+        String(selection.attrs["payload"]),
+      ) as Omit<ChartBlock, "id" | "type">;
+      block = {
+        id: String(selection.attrs["blockId"]),
+        type: "chart",
+        ...parsed,
+      };
+    } catch {
+      return null;
+    }
+    if (block === null) return null;
+    return (
+      <ChartDataPanel
+        block={block}
+        onUpdate={(next) => {
+          const { id: _id, type: _type, ...rest } = next;
+          editor
+            .chain()
+            .setNodeSelection(selection.pos)
+            .updateAttributes("chart", {
+              payload: JSON.stringify(rest),
+            })
+            .run();
+        }}
+        onClose={onClose}
+      />
+    );
+  }
+  return null;
+}
 
 export function documentToEditorContent(doc: DocumentModel): JSONContent {
   const mapped = docModelToProseMirror(doc);

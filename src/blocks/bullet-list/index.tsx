@@ -113,23 +113,33 @@ export const BulletListTipTapNode = Node.create({
   },
 });
 
-const BulletListNodeView: FC<NodeViewProps> = ({ node }) => {
-  const items = node.attrs.items as BulletListItem[];
-  const topLevel = items.length;
-  const nested = items.reduce(
-    (sum, item) => sum + (item.children?.length ?? 0),
-    0,
-  );
+const BulletListNodeView: FC<NodeViewProps> = ({ node, selected }) => {
+  const blockId = String(node.attrs.blockId);
+  const block: BulletListBlock = {
+    id: blockId,
+    type: "bullet-list",
+    items: node.attrs.items as BulletListItem[],
+  };
 
   return (
-    <NodeViewWrapper className="bullet-list-node-view">
-      <span>
-        Bullet list ({topLevel} item{topLevel === 1 ? "" : "s"}
-        {nested > 0 ? `, ${nested} nested` : ""})
-      </span>
+    <NodeViewWrapper
+      className="bullet-list-node-view"
+      data-block-id={blockId}
+      contentEditable={false}
+      style={editorBlockStyle(selected)}
+    >
+      <BulletList block={block} />
     </NodeViewWrapper>
   );
 };
+
+function editorBlockStyle(selected: boolean): CSSProperties {
+  return {
+    outline: selected ? "2px solid var(--brand-primary, #0B3D91)" : "none",
+    outlineOffset: 4,
+    cursor: "pointer",
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProseMirror mapping helpers
