@@ -278,6 +278,30 @@ const ChartDataGrid: FC<ChartDataGridProps> = ({ data, onChange }) => {
     onChange({ ...data, series: nextSeries });
   };
 
+  // Schema allows 1–8 series. Add a zero-filled series sized to the current rows.
+  const MAX_SERIES = 8;
+  const addSeries = () => {
+    if (data.series.length >= MAX_SERIES) return;
+    const values = Array.from({ length: Math.max(rowCount, 1) }, () => 0);
+    onChange({
+      ...data,
+      series: [...data.series, { name: `Series ${data.series.length + 1}`, values }],
+    });
+  };
+
+  const removeSeries = (colI: number) => {
+    if (data.series.length <= 1) return;
+    onChange({ ...data, series: data.series.filter((_, i) => i !== colI) });
+  };
+
+  const addRow = () => {
+    onChange({
+      ...data,
+      xLabels: [...(data.xLabels ?? []), ""],
+      series: data.series.map((s) => ({ ...s, values: [...s.values, 0] })),
+    });
+  };
+
   const handlePaste = (e: ClipboardEvent<HTMLDivElement>) => {
     const text = e.clipboardData.getData("text/plain").trim();
     if (!text) return;
@@ -300,50 +324,105 @@ const ChartDataGrid: FC<ChartDataGridProps> = ({ data, onChange }) => {
 
   return (
     <div onPaste={handlePaste} tabIndex={0} style={{ outline: "none" }}>
-      <table style={{ width: "100%", fontSize: 11, borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={th()}>Label</th>
-            {data.series.map((s, i) => (
-              <th key={i} style={th()}>
-                <input
-                  type="text"
-                  value={s.name}
-                  onChange={(e) => updateSeriesName(i, e.target.value)}
-                  style={{ width: "100%", fontWeight: 600 }}
-                />
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: rowCount }, (_, rowI) => (
-            <tr key={rowI}>
-              <td style={td()}>
-                <input
-                  type="text"
-                  value={data.xLabels?.[rowI] ?? ""}
-                  onChange={(e) => updateLabel(rowI, e.target.value)}
-                  style={{ width: "100%" }}
-                />
-              </td>
-              {Array.from({ length: seriesCount }, (_, colI) => (
-                <td key={colI} style={td()}>
-                  <input
-                    type="number"
-                    value={data.series[colI]?.values[rowI] ?? ""}
-                    onChange={(e) => updateCell(rowI, colI, e.target.value)}
-                    style={{ width: "100%", textAlign: "right" }}
-                  />
-                </td>
+      {/* Horizontal scroll so many series don't overflow the fixed-width panel;
+          fixed layout + border-box inputs keep the name fields from spilling. */}
+      <div style={{ overflowX: "auto" }}>
+        <table
+          style={{ fontSize: 11, borderCollapse: "collapse", tableLayout: "fixed", width: "100%" }}
+        >
+          <thead>
+            <tr>
+              <th style={th()}>Label</th>
+              {data.series.map((s, i) => (
+                <th key={i} style={th()}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <input
+                      type="text"
+                      aria-label={`Series ${i + 1} name`}
+                      value={s.name}
+                      onChange={(e) => updateSeriesName(i, e.target.value)}
+                      style={{ width: "100%", minWidth: 0, boxSizing: "border-box", fontWeight: 600 }}
+                    />
+                    {data.series.length > 1 ? (
+                      <button
+                        type="button"
+                        aria-label={`Remove series ${i + 1}`}
+                        onClick={() => removeSeries(i)}
+                        style={removeBtn()}
+                      >
+                        ×
+                      </button>
+                    ) : null}
+                  </div>
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {Array.from({ length: rowCount }, (_, rowI) => (
+              <tr key={rowI}>
+                <td style={td()}>
+                  <input
+                    type="text"
+                    value={data.xLabels?.[rowI] ?? ""}
+                    onChange={(e) => updateLabel(rowI, e.target.value)}
+                    style={{ width: "100%", minWidth: 0, boxSizing: "border-box" }}
+                  />
+                </td>
+                {Array.from({ length: seriesCount }, (_, colI) => (
+                  <td key={colI} style={td()}>
+                    <input
+                      type="number"
+                      value={data.series[colI]?.values[rowI] ?? ""}
+                      onChange={(e) => updateCell(rowI, colI, e.target.value)}
+                      style={{ width: "100%", minWidth: 0, boxSizing: "border-box", textAlign: "right" }}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+        <button
+          type="button"
+          onClick={addSeries}
+          disabled={data.series.length >= MAX_SERIES}
+          style={gridActionBtn()}
+        >
+          + Add series
+        </button>
+        <button type="button" onClick={addRow} style={gridActionBtn()}>
+          + Add row
+        </button>
+      </div>
     </div>
   );
 };
+
+const removeBtn = (): CSSProperties => ({
+  appearance: "none",
+  border: "none",
+  background: "transparent",
+  color: "#94A3B8",
+  cursor: "pointer",
+  fontSize: 12,
+  lineHeight: 1,
+  padding: "0 2px",
+});
+
+const gridActionBtn = (): CSSProperties => ({
+  appearance: "none",
+  border: "1px solid #D6DEE8",
+  background: "#FFFFFF",
+  color: "#0B3D91",
+  borderRadius: 6,
+  fontSize: 11,
+  fontWeight: 600,
+  padding: "4px 10px",
+  cursor: "pointer",
+});
 
 const th = (): CSSProperties => ({
   border: "1px solid #E2E8F0",

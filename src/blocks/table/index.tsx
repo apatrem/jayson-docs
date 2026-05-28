@@ -108,7 +108,7 @@ export const ConstrainedTableHeader = TipTapTableHeader.extend({
 export function tableBlockEditorExtensions() {
   return [
     TipTapTable.configure({
-      resizable: false,
+      resizable: true,
       HTMLAttributes: { class: "doc-table-grid" },
     }),
     TipTapTableRow,
@@ -234,7 +234,7 @@ export function proseMirrorToTableBlock(node: DocTablePmNode): TableBlock {
 
   const columns: TableColumn[] = headerCells.map((hc) => {
     const align = (hc.attrs?.["align"] as TableColumnAlign) ?? "left";
-    const width = hc.attrs?.["colWidth"] as string | undefined;
+    const width = widthFromHeaderAttrs(hc.attrs);
     return {
       header: cellText(hc),
       align,
@@ -259,13 +259,36 @@ export function proseMirrorToTableBlock(node: DocTablePmNode): TableBlock {
   };
 }
 
+// Width reconciliation between the schema `width` string and TipTap's native
+// column-resize attr. TipTap writes pixel widths to `colwidth` (number[]) when
+// the user drags a column border; our `colWidth` string preserves the original
+// value (e.g. a "30%" from a template) until it's resized.
+function widthFromHeaderAttrs(attrs: Record<string, unknown> | undefined): string | undefined {
+  const colwidth = attrs?.["colwidth"];
+  if (Array.isArray(colwidth) && typeof colwidth[0] === "number" && colwidth[0] > 0) {
+    return `${colwidth[0]}px`;
+  }
+  const colWidth = attrs?.["colWidth"];
+  return typeof colWidth === "string" && colWidth.length > 0 ? colWidth : undefined;
+}
+
+function widthToHeaderAttrs(
+  width: string | undefined,
+): { colWidth: string | null; colwidth: number[] | null } {
+  if (width === undefined) return { colWidth: null, colwidth: null };
+  const px = /^(\d+)(?:px)?$/u.exec(width);
+  // Pixel widths drive TipTap's resize colgroup directly; non-px (e.g. "%")
+  // is preserved in colWidth and applied by the renderer's colgroup.
+  return px ? { colWidth: null, colwidth: [Number(px[1])] } : { colWidth: width, colwidth: null };
+}
+
 /** Native TipTap table JSON: a header row carrying column metadata, then body rows. */
 export function tableBlockToTipTapTableContent(block: TableBlock): JSONContent {
   const headerRow: JSONContent = {
     type: "tableRow",
     content: block.columns.map((col) => ({
       type: "tableHeader",
-      attrs: { align: col.align, colWidth: col.width ?? null },
+      attrs: { align: col.align, ...widthToHeaderAttrs(col.width) },
       content: [
         {
           type: "paragraph",
