@@ -1,5 +1,12 @@
 import { readFileSync } from "node:fs";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, type FC } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -171,7 +178,11 @@ describe("DocumentView", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Original heading")).toBeTruthy();
+      expect(
+        within(screen.getByLabelText("Rendered document preview")).getByText(
+          "Original heading",
+        ),
+      ).toBeTruthy();
     });
     expect(readYamlFile).toHaveBeenCalledWith("/Users/me/Documents/proposal.yaml");
     expect(screen.getByLabelText("Rendered document preview")).toBeTruthy();
