@@ -134,11 +134,10 @@ export const DocumentView: FC<DocumentViewProps> = ({
     () => installedAuthored.map((i) => i.manifest),
     [installedAuthored],
   );
-  // Remount the editor when the installed set changes: TipTap builds the schema
-  // once at mount and can't add node types to a live schema (ADR-0015).
+  // Remount the editor when the installed set changes in a way that affects
+  // the schema or node views (see authoredRemountSignature / ADR-0015).
   const authoredSignature = useMemo(
-    () =>
-      [...new Set(installedAuthored.map((i) => i.manifest.slug))].sort().join(","),
+    () => authoredRemountSignature(installedAuthored),
     [installedAuthored],
   );
   const [doc, setDoc] = useState<DocumentModel | null>(initialDoc ?? null);
@@ -492,6 +491,30 @@ function renderStructuredBlockPanel(
       onClose={onClose}
     />
   );
+}
+
+/**
+ * A stable string that changes whenever the installed set would produce a
+ * different editor schema or node view, used as the editor remount key
+ * (ADR-0015). TipTap builds the node set, per-node attrs, and node views once
+ * at mount and can't mutate them on a live editor, so the surrounding
+ * component remounts the editor whenever this value changes.
+ *
+ * Derived from each manifest's `fullType` AND its full serialized manifest --
+ * not slugs alone -- so a same-slug replacement (T-170, where a v2 replaces
+ * v1 under the same slug) that changes sender, content, attrs, or template
+ * still forces a rebuild. Entries are sorted by `fullType` (unique per
+ * installed block, since the set is deduped by slug) so the result is
+ * independent of load order, then serialized as one JSON string (unambiguous
+ * -- distinct installed sets cannot collide on the same signature).
+ */
+export function authoredRemountSignature(
+  installedAuthored: readonly InstalledAuthoredBlock[],
+): string {
+  const pairs = installedAuthored
+    .map((i) => [i.fullType, i.manifest] as const)
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  return JSON.stringify(pairs);
 }
 
 export function documentToEditorContent(

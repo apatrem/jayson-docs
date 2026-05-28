@@ -12,7 +12,10 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DocumentView } from "../../../src/ui/views/DocumentView";
+import {
+  DocumentView,
+  authoredRemountSignature,
+} from "../../../src/ui/views/DocumentView";
 import {
   AuthoredManifestsContext,
   BrandBlocksContext,
@@ -150,5 +153,76 @@ describe("DocumentView — installed authored blocks", () => {
         document.querySelector('[data-block-type="sector-risk"]'),
       ).not.toBeNull();
     });
+  });
+});
+
+describe("authoredRemountSignature (editor remount key)", () => {
+  // Clone the base fixture, applying a manifest override, so each case differs
+  // from `installed` in exactly one dimension.
+  function withManifest(
+    overrides: Partial<InstalledAuthoredBlock["manifest"]> = {},
+    entryOverrides: Partial<InstalledAuthoredBlock> = {},
+  ): InstalledAuthoredBlock {
+    const base = installed[0]!;
+    return {
+      ...base,
+      ...entryOverrides,
+      manifest: { ...base.manifest, ...overrides },
+    };
+  }
+
+  it("is stable for an unchanged installed set (no needless remount)", () => {
+    expect(authoredRemountSignature(installed)).toBe(
+      authoredRemountSignature([withManifest()]),
+    );
+  });
+
+  it("differs when an installed manifest is added", () => {
+    expect(authoredRemountSignature([])).not.toBe(
+      authoredRemountSignature(installed),
+    );
+  });
+
+  // The point-3 fix: a same-sender v2 replacing v1 keeps the slug (and thus the
+  // old slug-only key), so the editor would not have rebuilt its schema. The
+  // fingerprint must change when attrs change under the same slug.
+  it("differs when attrs change under the SAME slug (T-170 v2 replacement)", () => {
+    const v2 = withManifest({
+      attrs: [
+        { kind: "string", fieldId: "riskLevel", label: "Risk" },
+        { kind: "string", fieldId: "owner", label: "Owner" },
+      ],
+    });
+    expect(authoredRemountSignature([v2])).not.toBe(
+      authoredRemountSignature(installed),
+    );
+  });
+
+  it("differs when content mode changes under the same slug", () => {
+    const richText = withManifest({ content: "rich-text" });
+    expect(authoredRemountSignature([richText])).not.toBe(
+      authoredRemountSignature(installed),
+    );
+  });
+
+  it("differs when the sender (fullType) changes under the same slug", () => {
+    const otherSender = withManifest(
+      {},
+      { sender: "bob@firm.example", fullType: "bob@firm.example:sector-risk" },
+    );
+    expect(authoredRemountSignature([otherSender])).not.toBe(
+      authoredRemountSignature(installed),
+    );
+  });
+
+  it("is independent of load order", () => {
+    const a = withManifest({}, { sender: "a@x.example", fullType: "a@x.example:sector-risk" });
+    const b = withManifest(
+      { slug: "other" },
+      { fullType: `${SENDER}:other` },
+    );
+    expect(authoredRemountSignature([a, b])).toBe(
+      authoredRemountSignature([b, a]),
+    );
   });
 });
