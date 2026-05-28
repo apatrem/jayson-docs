@@ -20,6 +20,8 @@ import { CommentMark } from "../comments/CommentMark";
 import type { DocModel } from "../schema/docmodel";
 import { docModelToProseMirror } from "./mapping";
 import { loadAllBlocks } from "../blocks/runtime-registry";
+import { buildAuthoredTipTapNode } from "../blocks/authored/node-builder";
+import type { AuthoredBlockManifest } from "../blocks/authored/defineAuthoredBlock";
 import { BrandProvider } from "../brand-tokens/BrandProvider";
 import { defaultBrand } from "../brand/defaultBrand";
 
@@ -29,6 +31,14 @@ export interface EditorProps {
   editable?: boolean;
   onUpdate?: (content: JSONContent) => void;
   onEditorReady?: (editor: TipTapEditor | null) => void;
+  /**
+   * The Installed manifest set (ADR-0015) — authored manifests whose TipTap
+   * nodes are appended to the closed schema at mount. Default [] reproduces
+   * today's static-only behavior. The schema is built once at mount; the parent
+   * (DocumentView) remounts via a key when this set changes (TipTap can't add
+   * node types to a live schema).
+   */
+  authoredManifests?: AuthoredBlockManifest[];
 }
 
 const DEFAULT_CONTENT: JSONContent = {
@@ -72,10 +82,49 @@ const STATIC_INFRA_NODE_NAMES = [
 // Block node names come from the registry.
 const _blockNodeNames = _allBlocks.map((r) => r.tiptapNode.name);
 
-export const ALLOWED_EDITOR_NODE_NAMES: readonly string[] = [
+// Names already claimed by the static schema — an authored slug colliding with
+// one of these is dropped so it can never shadow or double-register a node.
+const _staticNodeNames = new Set<string>([
   ...STATIC_INFRA_NODE_NAMES,
   ..._blockNodeNames,
-];
+]);
+
+// Dedupe the supplied manifests against the static schema and against each
+// other (first occurrence wins — loadAuthoredManifests already orders
+// active-before-archived). Returns the manifests whose nodes will register.
+function dedupeAuthoredManifests(
+  authoredManifests: readonly AuthoredBlockManifest[],
+): AuthoredBlockManifest[] {
+  const seen = new Set<string>(_staticNodeNames);
+  const out: AuthoredBlockManifest[] = [];
+  for (const manifest of authoredManifests) {
+    if (seen.has(manifest.slug)) continue;
+    seen.add(manifest.slug);
+    out.push(manifest);
+  }
+  return out;
+}
+
+/**
+ * The closed editor node-name set (CONTEXT.md) for a given Installed manifest
+ * set: static infra ∪ Standard block names ∪ authored slugs. The exported
+ * {@link ALLOWED_EDITOR_NODE_NAMES} is this with no authored manifests — the
+ * static base used by the no-arg path and by tests as today's baseline.
+ *
+ * The closed-schema security invariant requires this to stay in lock-step with
+ * the node set {@link createEditorExtensions} registers for the SAME manifests.
+ */
+export function allowedEditorNodeNames(
+  authoredManifests: readonly AuthoredBlockManifest[] = [],
+): readonly string[] {
+  return [
+    ...STATIC_INFRA_NODE_NAMES,
+    ..._blockNodeNames,
+    ...dedupeAuthoredManifests(authoredManifests).map((m) => m.slug),
+  ];
+}
+
+export const ALLOWED_EDITOR_NODE_NAMES: readonly string[] = allowedEditorNodeNames();
 
 export const ALLOWED_EDITOR_MARK_NAMES = [
   "bold",
@@ -105,14 +154,15 @@ const ALLOWED_HTML_TAGS = new Set([
   "UL",
 ]);
 
-const ALLOWED_NODE_NAMES = new Set<string>(ALLOWED_EDITOR_NODE_NAMES);
 const ALLOWED_MARK_NAMES = new Set<string>(ALLOWED_EDITOR_MARK_NAMES);
 
 const DocumentWithSections = Document.extend({
   content: "section+",
 });
 
-export function createEditorExtensions(): Extensions {
+export function createEditorExtensions(
+  authoredManifests: readonly AuthoredBlockManifest[] = [],
+): Extensions {
   return [
     DocumentWithSections,
     SectionNode,
@@ -130,11 +180,32 @@ export function createEditorExtensions(): Extensions {
     OrderedList,
     CommentMark,
     ...blockExtensions,
+    ...dedupeAuthoredManifests(authoredManifests).map(buildAuthoredTipTapNode),
   ];
 }
 
-export function assertClosedEditorContent(content: JSONContent): void {
-  assertClosedNode(content);
+// Per-authored-slug attr allow-list, derived from the SAME TipTap node the
+// editor registers (via _getNodeAttrNames) so the attr check can never drift
+// from what the node actually serializes.
+function authoredAttrsMap(
+  authoredManifests: readonly AuthoredBlockManifest[],
+): Map<string, Set<string>> {
+  return new Map(
+    dedupeAuthoredManifests(authoredManifests).map(
+      (m) =>
+        [m.slug, _getNodeAttrNames(buildAuthoredTipTapNode(m))] as const,
+    ),
+  );
+}
+
+export function assertClosedEditorContent(
+  content: JSONContent,
+  authoredManifests: readonly AuthoredBlockManifest[] = [],
+): void {
+  const allowedNodeNames = new Set<string>(
+    allowedEditorNodeNames(authoredManifests),
+  );
+  assertClosedNode(content, allowedNodeNames, authoredAttrsMap(authoredManifests));
 }
 
 export function runAsSeparateUndoStep(
@@ -159,6 +230,7 @@ export const Editor: FC<EditorProps> = ({
   editable = true,
   onUpdate,
   onEditorReady,
+  authoredManifests = [],
 }) => {
   const deck = docModel?.kind === "deck" ? docModel : null;
   // M6 known limitation (see BLOCKERS.md drift-2026-05-25b): the deck surface
@@ -183,7 +255,7 @@ export const Editor: FC<EditorProps> = ({
     [activeSlideIndex, deck, initialContent],
   );
   const editor = useEditor({
-    extensions: createEditorExtensions(),
+    extensions: createEditorExtensions(authoredManifests),
     content: editorContent,
     editable: effectiveEditable,
     editorProps: {
@@ -304,12 +376,16 @@ function isJsonContentNode(value: unknown): value is JSONContent {
   return typeof (value as { type?: unknown }).type === "string";
 }
 
-function assertClosedNode(node: JSONContent): void {
-  if (node.type === undefined || !ALLOWED_NODE_NAMES.has(node.type)) {
+function assertClosedNode(
+  node: JSONContent,
+  allowedNodeNames: ReadonlySet<string>,
+  authoredAttrs: ReadonlyMap<string, Set<string>>,
+): void {
+  if (node.type === undefined || !allowedNodeNames.has(node.type)) {
     throw new Error(`Unknown editor node type: ${node.type ?? "(missing)"}`);
   }
   if (node.attrs !== undefined) {
-    const allowedAttrs = allowedAttrsForNode(node.type);
+    const allowedAttrs = allowedAttrsForNode(node.type, authoredAttrs);
     for (const attrName of Object.keys(node.attrs)) {
       if (!allowedAttrs.has(attrName)) {
         throw new Error(
@@ -322,7 +398,7 @@ function assertClosedNode(node: JSONContent): void {
     assertClosedMark(mark);
   }
   for (const child of node.content ?? []) {
-    assertClosedNode(child);
+    assertClosedNode(child, allowedNodeNames, authoredAttrs);
   }
 }
 
@@ -358,10 +434,16 @@ const _blockNodeAttrsMap: Map<string, Set<string>> = new Map(
   _allBlocks.map((r) => [r.tiptapNode.name, _getNodeAttrNames(r.tiptapNode)] as const),
 );
 
-function allowedAttrsForNode(nodeType: string): Set<string> {
-  // Block nodes — attrs derived from TipTap node definition via registry.
+function allowedAttrsForNode(
+  nodeType: string,
+  authoredAttrs: ReadonlyMap<string, Set<string>>,
+): Set<string> {
+  // Standard block nodes — attrs derived from TipTap node definition via registry.
   const blockAttrs = _blockNodeAttrsMap.get(nodeType);
   if (blockAttrs) return blockAttrs;
+  // Installed authored nodes — attrs derived from the built TipTap node.
+  const authored = authoredAttrs.get(nodeType);
+  if (authored) return authored;
   if (nodeType === "section") {
     return new Set(["sectionId", "title"]);
   }

@@ -1,5 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useRef, useState, type CSSProperties, type FC, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FC,
+  type ReactNode,
+} from "react";
 import type { JSONContent } from "@tiptap/react";
 import type { Editor as TipTapEditor } from "@tiptap/core";
 import { NodeSelection } from "@tiptap/pm/state";
@@ -7,6 +15,7 @@ import { defaultBrand } from "../../brand/defaultBrand";
 import { BrandProvider } from "../../brand-tokens/BrandProvider";
 import { parseDocModelYaml } from "../../docmodel/serialize";
 import { loadAllBlocks } from "../../blocks/runtime-registry";
+import type { InstalledAuthoredBlock } from "../../blocks/runtime-registry";
 import type { BlockRegistryRecord } from "../../blocks/defineBlock";
 import {
   createAutosaveController,
@@ -26,7 +35,10 @@ import {
 } from "../../editor/mapping";
 import { DocumentRenderer, type DocumentModel } from "../../renderer/DocumentRenderer";
 import { DocModelSchema } from "../../schema/docmodel";
-import { useBrandBlocksFromRegistry } from "../../blocks/runtime-registry";
+import {
+  useBrandBlocksFromRegistry,
+  useAuthoredManifestsFromRegistry,
+} from "../../blocks/runtime-registry";
 import { AuthoringPanel, type AuthoringPanelGenerateParams } from "../authoring/AuthoringPanel";
 import {
   buildGenerateAuthoredBlockRequest,
@@ -44,6 +56,11 @@ export interface EditorSurfaceProps {
   editable: boolean;
   onUpdate: (content: JSONContent) => void;
   onEditorReady?: (editor: BlockPaletteProps["editor"]) => void;
+  /**
+   * Installed authored manifests whose TipTap nodes the editor appends to its
+   * closed schema (ADR-0015). Default [] = static blocks only.
+   */
+  authoredManifests?: AuthoredBlockManifest[];
 }
 
 export interface DocumentViewProps {
@@ -82,11 +99,13 @@ const DefaultEditorSurface: FC<EditorSurfaceProps> = ({
   editable,
   onUpdate,
   onEditorReady,
+  authoredManifests = [],
 }) => (
   <Editor
     initialContent={initialContent}
     editable={editable}
     onUpdate={onUpdate}
+    authoredManifests={authoredManifests}
     {...(onEditorReady === undefined
       ? {}
       : {
@@ -110,9 +129,27 @@ export const DocumentView: FC<DocumentViewProps> = ({
   lintForPreview = defaultLintForPreview,
 }) => {
   const generatedBlocks = useBrandBlocksFromRegistry();
+  const installedAuthored = useAuthoredManifestsFromRegistry();
+  const authoredManifests = useMemo(
+    () => installedAuthored.map((i) => i.manifest),
+    [installedAuthored],
+  );
+  // Remount the editor when the installed set changes: TipTap builds the schema
+  // once at mount and can't add node types to a live schema (ADR-0015).
+  const authoredSignature = useMemo(
+    () =>
+      [...new Set(installedAuthored.map((i) => i.manifest.slug))].sort().join(","),
+    [installedAuthored],
+  );
   const [doc, setDoc] = useState<DocumentModel | null>(initialDoc ?? null);
-  const [editorSeed, setEditorSeed] = useState<JSONContent | null>(() =>
-    initialDoc === undefined ? null : documentToEditorContent(initialDoc),
+  // editorSeed is the DocModel projected to editor JSON. It depends on the
+  // installed set because authored blocks need the mapping to reconcile their
+  // {sender}:{slug} type (ADR-0016); a doc referencing a not-yet-loaded authored
+  // block yields null → "Loading…" until the set arrives (the boot race) or the
+  // block is permanently deleted (deferred removed-block edge).
+  const editorSeed = useMemo<JSONContent | null>(
+    () => (doc === null ? null : safeDocumentToEditorContent(doc, installedAuthored)),
+    [doc, installedAuthored],
   );
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
@@ -156,7 +193,6 @@ export const DocumentView: FC<DocumentViewProps> = ({
     if (initialDoc !== undefined) {
       currentDoc.current = initialDoc;
       setDoc(initialDoc);
-      setEditorSeed(documentToEditorContent(initialDoc));
       return;
     }
     void readYamlFile(path)
@@ -165,7 +201,6 @@ export const DocumentView: FC<DocumentViewProps> = ({
         if (!cancelled) {
           currentDoc.current = loadedDoc;
           setDoc(loadedDoc);
-          setEditorSeed(documentToEditorContent(loadedDoc));
         }
       })
       .catch((loadError: unknown) => {
@@ -339,11 +374,13 @@ export const DocumentView: FC<DocumentViewProps> = ({
         </section>
         <section aria-label="Editable document" style={styles.editorPane}>
           <div style={{ ...styles.paneLabel, ...styles.paneLabelEdit }}>Edit</div>
-          {/* Re-seed the editor only when a different file is opened. */}
+          {/* Re-seed/remount when a different file is opened OR the installed
+              authored set changes (the editor schema is built once at mount). */}
           <EditorComponent
-            key={path}
+            key={`${path}::${authoredSignature}`}
             initialContent={editorSeed}
             editable={true}
+            authoredManifests={authoredManifests}
             onEditorReady={(e) => setEditor(e as TipTapEditor | null)}
             onUpdate={(content) => {
               try {
@@ -354,7 +391,11 @@ export const DocumentView: FC<DocumentViewProps> = ({
                 // here, the ref is always non-null — no `?? doc` fallback
                 // needed.
                 const previous = currentDoc.current!;
-                const updated = editorContentToDocument(previous, content);
+                const updated = editorContentToDocument(
+                  previous,
+                  content,
+                  installedAuthored,
+                );
                 currentDoc.current = updated;
                 setSaveState("saving");
                 onDocumentChange?.(updated);
@@ -453,25 +494,50 @@ function renderStructuredBlockPanel(
   );
 }
 
-export function documentToEditorContent(doc: DocumentModel): JSONContent {
-  const mapped = docModelToProseMirror(doc);
+export function documentToEditorContent(
+  doc: DocumentModel,
+  installedAuthored: readonly InstalledAuthoredBlock[] = [],
+): JSONContent {
+  const mapped = docModelToProseMirror(doc, installedAuthored);
   return normalizeProseMarksForEditor({
     type: "doc",
     content: (mapped.content ?? []).filter(isProseMirrorNode) as JSONContent[],
   });
 }
 
+/**
+ * documentToEditorContent that returns null instead of throwing when a block
+ * can't be mapped — typically an authored block whose manifest hasn't loaded
+ * yet (the boot race). The caller shows "Loading…" and recomputes when the
+ * installed set arrives. A permanently-deleted authored block stays unmappable
+ * (deferred removed-block edge, ADR-0016).
+ */
+function safeDocumentToEditorContent(
+  doc: DocumentModel,
+  installedAuthored: readonly InstalledAuthoredBlock[],
+): JSONContent | null {
+  try {
+    return documentToEditorContent(doc, installedAuthored);
+  } catch {
+    return null;
+  }
+}
+
 export function editorContentToDocument(
   previousDoc: DocumentModel,
   editorContent: JSONContent,
+  installedAuthored: readonly InstalledAuthoredBlock[] = [],
 ): DocumentModel {
-  const previousPm = docModelToProseMirror(previousDoc);
+  const previousPm = docModelToProseMirror(previousDoc, installedAuthored);
   const normalized = denormalizeProseMarksForDocModel(editorContent);
-  const nextDoc = proseMirrorToDocModel({
-    type: "doc",
-    attrs: previousPm.attrs,
-    content: editorSectionsFromContent(normalized, previousDoc, previousPm),
-  } satisfies ProseMirrorDocument);
+  const nextDoc = proseMirrorToDocModel(
+    {
+      type: "doc",
+      attrs: previousPm.attrs,
+      content: editorSectionsFromContent(normalized, previousDoc, previousPm),
+    } satisfies ProseMirrorDocument,
+    installedAuthored,
+  );
   if (nextDoc.kind !== "document") {
     throw new Error("DocumentView only supports kind=document");
   }

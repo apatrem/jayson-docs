@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BlockSchema } from "./blocks";
+import { DocBlockSchema } from "./blocks";
 import { StableIdSchema } from "./stable-id";
 
 export const SlideLayoutSchema = z.enum([
@@ -26,7 +26,7 @@ export const SectionSchema = z
   .object({
     id: StableIdSchema,
     title: z.string().min(1).max(200).optional(),
-    blocks: z.array(BlockSchema).min(1),
+    blocks: z.array(DocBlockSchema).min(1),
   })
   .strict();
 
@@ -36,7 +36,7 @@ export const SlideSchema = z
   .object({
     id: StableIdSchema,
     layout: SlideLayoutSchema,
-    blocks: z.array(BlockSchema),
+    blocks: z.array(DocBlockSchema),
     notes: z.string().max(2000).optional(),
   })
   .strict();

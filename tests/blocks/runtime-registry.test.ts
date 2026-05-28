@@ -25,9 +25,38 @@ vi.mock("@tauri-apps/api/core", () => ({
 import {
   loadBrandBlockPaletteItems,
   loadAuthoredBlockEntries,
+  loadAuthoredManifests,
 } from "../../src/blocks/runtime-registry";
+import type { AuthoredBlockManifest } from "../../src/blocks/authored/defineAuthoredBlock";
 
 type IpcEntry = { name: string; path: string; is_dir: boolean };
+
+/** Helper: a minimal valid Extracted-manifest JSON string (the sidecar). */
+function manifestJson(slug: string, overrides: Partial<AuthoredBlockManifest> = {}): string {
+  return JSON.stringify({
+    slug,
+    title: `${slug} title`,
+    paletteLabel: slug,
+    content: "none",
+    attrs: [],
+    template: { kind: "text", value: "hello" },
+    ...overrides,
+  });
+}
+
+/** Helper: a .tsx source carrying a valid Manifest header (sender lives here). */
+function tsxWithHeader(slug: string, sender: string): string {
+  return [
+    "/**",
+    " * authored-block-header: 1",
+    " * scaffold-version: 1.0.0",
+    ` * sender: ${sender}`,
+    " * timestamp: 2026-05-28T00:00:00Z",
+    ` * slug: ${slug}`,
+    " */",
+    "export default {};",
+  ].join("\n");
+}
 
 /** Helper: build a file entry for a given filename. */
 function fileEntry(name: string, dir: string): IpcEntry {
@@ -247,5 +276,264 @@ describe("loadAuthoredBlockEntries (T-168)", () => {
     const result = await loadAuthoredBlockEntries(rootWithSlash);
     expect(result).toHaveLength(1);
     expect(result[0]?.folder).toBe("active");
+  });
+});
+
+describe("loadAuthoredManifests — the Installed manifest set (ADR-0015 / ADR-0016)", () => {
+  const root = "/Users/me/Dropbox";
+  const activeDir = `${root}/generated-blocks/active`;
+  const archivedDir = `${root}/generated-blocks/archived`;
+  const sender = "alice@firm.example";
+
+  beforeEach(() => {
+    mockInvoke.mockReset();
+  });
+
+  /**
+   * Builds a mockInvoke implementation from a per-folder map of
+   * filename → { manifest?: string; tsx?: string }. A missing field means that
+   * read rejects (simulating a missing/unreadable file).
+   */
+  function mockFs(
+    folders: Partial<
+      Record<"active" | "archived", Record<string, { manifest?: string; tsx?: string }>>
+    >,
+  ): void {
+    const dirOf = { active: activeDir, archived: archivedDir };
+    mockInvoke.mockImplementation((cmd, args) => {
+      const path = args?.["path"] as string | undefined;
+      for (const folder of ["active", "archived"] as const) {
+        const files = folders[folder];
+        const dir = dirOf[folder];
+        if (cmd === "list_directory" && path === dir) {
+          if (files === undefined) return Promise.reject(new Error("NotFound"));
+          return Promise.resolve(Object.keys(files).map((name) => fileEntry(name, dir)));
+        }
+        if (cmd === "read_authored_block_file" && files !== undefined) {
+          for (const [name, content] of Object.entries(files)) {
+            if (path === `${dir}/${name}` && content.tsx !== undefined) {
+              return Promise.resolve(content.tsx);
+            }
+            if (path === `${dir}/${name}.manifest.json` && content.manifest !== undefined) {
+              return Promise.resolve(content.manifest);
+            }
+          }
+        }
+      }
+      return Promise.reject(new Error(`unexpected/NotFound: ${cmd} ${path ?? ""}`));
+    });
+  }
+
+  it("returns empty array when both directories are missing", async () => {
+    mockInvoke.mockRejectedValue(new Error("NotFound"));
+    const result = await loadAuthoredManifests(root);
+    expect(result).toEqual([]);
+  });
+
+  it("resolves manifest (sidecar) + sender (.tsx header) into an InstalledAuthoredBlock", async () => {
+    mockFs({
+      active: {
+        "sector-risk.tsx": {
+          tsx: tsxWithHeader("sector-risk", sender),
+          manifest: manifestJson("sector-risk"),
+        },
+      },
+    });
+
+    const result = await loadAuthoredManifests(root);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      sender,
+      fullType: `${sender}:sector-risk`,
+      folder: "active",
+    });
+    expect(result[0]?.manifest.slug).toBe("sector-risk");
+  });
+
+  it("merges active/ ∪ archived/ with folder tags (both render in existing docs)", async () => {
+    mockFs({
+      active: {
+        "active-block.tsx": {
+          tsx: tsxWithHeader("active-block", sender),
+          manifest: manifestJson("active-block"),
+        },
+      },
+      archived: {
+        "archived-block.tsx": {
+          tsx: tsxWithHeader("archived-block", sender),
+          manifest: manifestJson("archived-block"),
+        },
+      },
+    });
+
+    const result = await loadAuthoredManifests(root);
+    const byType = Object.fromEntries(result.map((i) => [i.manifest.slug, i.folder]));
+    expect(byType).toEqual({ "active-block": "active", "archived-block": "archived" });
+  });
+
+  it("skips a .tsx whose sidecar is missing (robustness guard)", async () => {
+    mockFs({
+      active: {
+        "ok.tsx": { tsx: tsxWithHeader("ok", sender), manifest: manifestJson("ok") },
+        "no-sidecar.tsx": { tsx: tsxWithHeader("no-sidecar", sender) },
+      },
+    });
+
+    const result = await loadAuthoredManifests(root);
+    expect(result.map((i) => i.manifest.slug)).toEqual(["ok"]);
+  });
+
+  it("skips a .tsx whose header won't parse (no resolvable sender)", async () => {
+    mockFs({
+      active: {
+        "headerless.tsx": {
+          tsx: "export default {};", // no manifest header
+          manifest: manifestJson("headerless"),
+        },
+      },
+    });
+
+    const result = await loadAuthoredManifests(root);
+    expect(result).toEqual([]);
+  });
+
+  it("skips a sidecar with invalid JSON without throwing", async () => {
+    mockFs({
+      active: {
+        "broken.tsx": {
+          tsx: tsxWithHeader("broken", sender),
+          manifest: "{ this is not valid json ",
+        },
+      },
+    });
+
+    const result = await loadAuthoredManifests(root);
+    expect(result).toEqual([]);
+  });
+
+  it("skips a sidecar whose manifest lacks a string slug", async () => {
+    mockFs({
+      active: {
+        "no-slug.tsx": {
+          tsx: tsxWithHeader("no-slug", sender),
+          manifest: JSON.stringify({ title: "x", attrs: [] }),
+        },
+      },
+    });
+
+    const result = await loadAuthoredManifests(root);
+    expect(result).toEqual([]);
+  });
+
+  it("skips a sidecar whose attrs field is not an array", async () => {
+    mockFs({
+      active: {
+        "bad-attrs.tsx": {
+          tsx: tsxWithHeader("bad-attrs", sender),
+          manifest: JSON.stringify({
+            slug: "bad-attrs",
+            title: "x",
+            paletteLabel: "x",
+            content: "none",
+            attrs: "not-an-array",
+            template: { kind: "text", value: "x" },
+          }),
+        },
+      },
+    });
+
+    const result = await loadAuthoredManifests(root);
+    expect(result).toEqual([]);
+  });
+
+  it("skips a sidecar whose content field is not 'rich-text' or 'none'", async () => {
+    mockFs({
+      active: {
+        "bad-content.tsx": {
+          tsx: tsxWithHeader("bad-content", sender),
+          manifest: JSON.stringify({
+            slug: "bad-content",
+            title: "x",
+            paletteLabel: "x",
+            content: "invalid",
+            attrs: [],
+            template: { kind: "text", value: "x" },
+          }),
+        },
+      },
+    });
+
+    const result = await loadAuthoredManifests(root);
+    expect(result).toEqual([]);
+  });
+
+  it("skips a sidecar whose template lacks a kind string", async () => {
+    mockFs({
+      active: {
+        "bad-template.tsx": {
+          tsx: tsxWithHeader("bad-template", sender),
+          manifest: JSON.stringify({
+            slug: "bad-template",
+            title: "x",
+            paletteLabel: "x",
+            content: "none",
+            attrs: [],
+            template: { value: "x" },
+          }),
+        },
+      },
+    });
+
+    const result = await loadAuthoredManifests(root);
+    expect(result).toEqual([]);
+  });
+
+  it("dedupes by slug, active winning over archived", async () => {
+    mockFs({
+      active: {
+        "dup.tsx": {
+          tsx: tsxWithHeader("dup", sender),
+          manifest: manifestJson("dup", { title: "ACTIVE" }),
+        },
+      },
+      archived: {
+        "dup.tsx": {
+          tsx: tsxWithHeader("dup", sender),
+          manifest: manifestJson("dup", { title: "ARCHIVED" }),
+        },
+      },
+    });
+
+    const result = await loadAuthoredManifests(root);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.manifest.title).toBe("ACTIVE");
+    expect(result[0]?.folder).toBe("active");
+  });
+
+  it("skips dot-files, directories and .manifest.json entries in the scan", async () => {
+    mockInvoke.mockImplementation((cmd, args) => {
+      const path = args?.["path"] as string | undefined;
+      if (cmd === "list_directory" && path === activeDir) {
+        return Promise.resolve([
+          fileEntry(".gitkeep", activeDir),
+          dirEntry("brand-dir", activeDir),
+          fileEntry("real.tsx.manifest.json", activeDir),
+          fileEntry("real.tsx", activeDir),
+        ]);
+      }
+      if (cmd === "list_directory" && path === archivedDir) {
+        return Promise.reject(new Error("NotFound"));
+      }
+      if (cmd === "read_authored_block_file" && path === `${activeDir}/real.tsx`) {
+        return Promise.resolve(tsxWithHeader("real", sender));
+      }
+      if (cmd === "read_authored_block_file" && path === `${activeDir}/real.tsx.manifest.json`) {
+        return Promise.resolve(manifestJson("real"));
+      }
+      return Promise.reject(new Error(`unexpected invoke: ${cmd} ${path ?? ""}`));
+    });
+
+    const result = await loadAuthoredManifests(root);
+    expect(result.map((i) => i.manifest.slug)).toEqual(["real"]);
   });
 });

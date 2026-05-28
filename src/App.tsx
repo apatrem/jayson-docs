@@ -5,7 +5,10 @@ import { createIpcBootStrategy, type BootStrategy } from "./ui/router/boot";
 import { Routes, type FileActionDeps } from "./ui/router/Routes";
 import {
   BrandBlocksContext,
+  AuthoredManifestsContext,
   loadBrandBlockPaletteItems,
+  loadAuthoredManifests,
+  type InstalledAuthoredBlock,
 } from "./blocks/runtime-registry";
 import type { BlockPaletteItem } from "./editor/BlockPalette";
 
@@ -27,6 +30,9 @@ export interface AppProps {
   documentWatchdogBudgetMs?: number;
   readAppConfig?: () => Promise<{ paths: { cloudSyncRoot: string } }>;
   loadGeneratedBlocks?: (cloudSyncRoot: string) => Promise<BlockPaletteItem[]>;
+  loadAuthoredManifestSet?: (
+    cloudSyncRoot: string,
+  ) => Promise<InstalledAuthoredBlock[]>;
 }
 
 export default function App({
@@ -37,8 +43,12 @@ export default function App({
   documentWatchdogBudgetMs,
   readAppConfig = readAppConfigDefault,
   loadGeneratedBlocks = loadBrandBlockPaletteItems,
+  loadAuthoredManifestSet = loadAuthoredManifests,
 }: AppProps) {
   const [generatedBlocks, setGeneratedBlocks] = useState<BlockPaletteItem[]>([]);
+  const [authoredManifests, setAuthoredManifests] = useState<
+    InstalledAuthoredBlock[]
+  >([]);
 
   useEffect(() => {
     readAppConfig()
@@ -48,6 +58,20 @@ export default function App({
         console.error("Generated blocks load failed — palette degraded to defaults:", e);
       });
   }, [readAppConfig, loadGeneratedBlocks]);
+
+  // Parallel channel to the palette load: the Installed manifest set feeds the
+  // editor's closed schema and the editor↔DocModel mapping (ADR-0015/0016).
+  useEffect(() => {
+    readAppConfig()
+      .then((config) => loadAuthoredManifestSet(config.paths.cloudSyncRoot))
+      .then(setAuthoredManifests)
+      .catch((e: unknown) => {
+        console.error(
+          "Authored manifests load failed — editor schema degraded to static blocks:",
+          e,
+        );
+      });
+  }, [readAppConfig, loadAuthoredManifestSet]);
 
   const resolvedBootStrategy = useMemo((): BootStrategy => {
     if (bootStrategy !== undefined) return bootStrategy;
@@ -77,13 +101,15 @@ export default function App({
 
   return (
     <BrandBlocksContext.Provider value={generatedBlocks}>
-      <Routes
-        bootStrategy={resolvedBootStrategy}
-        {...(initialDocContent !== undefined ? { initialDocContent } : {})}
-        {...(fileActions !== undefined ? { fileActions } : {})}
-        {...(DocumentViewComponent !== undefined ? { DocumentViewComponent } : {})}
-        {...(documentWatchdogBudgetMs !== undefined ? { documentWatchdogBudgetMs } : {})}
-      />
+      <AuthoredManifestsContext.Provider value={authoredManifests}>
+        <Routes
+          bootStrategy={resolvedBootStrategy}
+          {...(initialDocContent !== undefined ? { initialDocContent } : {})}
+          {...(fileActions !== undefined ? { fileActions } : {})}
+          {...(DocumentViewComponent !== undefined ? { DocumentViewComponent } : {})}
+          {...(documentWatchdogBudgetMs !== undefined ? { documentWatchdogBudgetMs } : {})}
+        />
+      </AuthoredManifestsContext.Provider>
     </BrandBlocksContext.Provider>
   );
 }
