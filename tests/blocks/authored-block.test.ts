@@ -512,6 +512,23 @@ describe("defineAuthoredBlock — BlockRegistryRecord", () => {
     expect(record.tiptapNode.name).toBe(SIMPLE_MANIFEST.slug);
   });
 
+  it("tiptapNode registers an insertAuthored_<slug> command matching the palette", () => {
+    // The runtime registry advertises palette commands as `insertAuthored_<slug>`
+    // with the kebab-case slug preserved (runtime-registry.ts). The node's
+    // addCommands must register exactly that key — otherwise BlockPalette
+    // disables the button because `editor.commands[command]` is undefined.
+    const record = defineAuthoredBlock(SIMPLE_MANIFEST);
+    const addCommands = (
+      record.tiptapNode as unknown as {
+        config: { addCommands?: () => Record<string, unknown> };
+      }
+    ).config.addCommands;
+    const commands = addCommands ? addCommands.call({}) : {};
+    expect(Object.keys(commands)).toContain(
+      `insertAuthored_${SIMPLE_MANIFEST.slug}`,
+    );
+  });
+
   it("renderer is a function", () => {
     const record = defineAuthoredBlock(SIMPLE_MANIFEST);
     expect(typeof record.renderer).toBe("function");

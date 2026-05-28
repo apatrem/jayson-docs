@@ -35,6 +35,40 @@ pub async fn write_yaml_file(
     write_yaml_file_to_path(&path, &content, &roots)
 }
 
+/// Reads an Authored block file from within the asset scope.
+///
+/// Allowed extensions: `.tsx`, `.json` (covers the `.tsx` source plus its
+/// `.manifest.json` / `.violations.json` sidecars written by the T-164 receive
+/// pipeline).  The generic `read_yaml_file` command is YAML-only by design, so
+/// the receive pipeline uses this command to read existing Authored sources
+/// (e.g. the same-sender replacement check in ADR-0009).
+#[tauri::command]
+pub async fn read_authored_block_file(
+    app: tauri::AppHandle,
+    path: String,
+) -> IpcResult<String> {
+    let roots = asset_scope_roots(&app);
+    read_authored_block_file_from_path(&path, &roots)
+}
+
+/// Atomically writes an Authored block file into the asset scope.
+///
+/// Allowed extensions: `.tsx`, `.json` — the `.tsx` source installed by the
+/// receive pipeline plus its `.manifest.json` / `.violations.json` sidecars.
+/// The generic `write_yaml_file` command rejects these extensions by design
+/// (it is the YAML document-write boundary), so the Authored-block receive
+/// pipeline (T-164 / T-170) uses this dedicated command instead.  The
+/// allow-list mirrors `delete_file`, which already covers the same files.
+#[tauri::command]
+pub async fn write_authored_block_file(
+    app: tauri::AppHandle,
+    path: String,
+    content: String,
+) -> IpcResult<()> {
+    let roots = asset_scope_roots(&app);
+    write_authored_block_file_to_path(&path, &content, &roots)
+}
+
 #[tauri::command]
 pub async fn read_binary_file(app: tauri::AppHandle, path: String) -> IpcResult<String> {
     let roots = asset_scope_roots(&app);
@@ -221,6 +255,23 @@ fn read_yaml_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<
     fs::read_to_string(path).map_err(|e| IpcError::Io(e.to_string()))
 }
 
+fn read_authored_block_file_from_path(
+    path: &str,
+    allowed_roots: &[PathBuf],
+) -> IpcResult<String> {
+    let path = canonical_scoped_read_target(path, allowed_roots, &["tsx", "json"])?;
+    fs::read_to_string(path).map_err(|e| IpcError::Io(e.to_string()))
+}
+
+fn write_authored_block_file_to_path(
+    path: &str,
+    content: &str,
+    allowed_roots: &[PathBuf],
+) -> IpcResult<()> {
+    let target = canonical_scoped_write_target(path, allowed_roots, &["tsx", "json"])?;
+    write_content_to_canonical_path(&target, content)
+}
+
 fn read_binary_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<String> {
     let path = canonical_scoped_read_target(
         path,
@@ -240,7 +291,14 @@ fn read_binary_file_from_path(path: &str, allowed_roots: &[PathBuf]) -> IpcResul
 }
 
 fn write_yaml_file_to_path(path: &str, content: &str, allowed_roots: &[PathBuf]) -> IpcResult<()> {
-    let path = canonical_write_target(path, allowed_roots)?;
+    let target = canonical_write_target(path, allowed_roots)?;
+    write_content_to_canonical_path(&target, content)
+}
+
+/// Atomically writes `content` to an already-validated, in-scope canonical
+/// path via the write-tmp-then-rename pattern (shared by every scoped write
+/// command).  The caller is responsible for extension + scope validation.
+fn write_content_to_canonical_path(path: &Path, content: &str) -> IpcResult<()> {
     let parent = path
         .parent()
         .ok_or_else(|| IpcError::Invalid("path must have a parent directory".to_string()))?;
@@ -265,7 +323,7 @@ fn write_yaml_file_to_path(path: &str, content: &str, allowed_roots: &[PathBuf])
             .map_err(|e| IpcError::Io(e.to_string()))?;
         drop(tmp_file);
 
-        rename_tmp_file(&tmp_path, &path)?;
+        rename_tmp_file(&tmp_path, path)?;
         sync_parent_directory(parent)?;
         Ok(())
     })();
@@ -421,6 +479,25 @@ fn canonical_scoped_read_target(
 
 fn canonical_write_target(path: &str, allowed_roots: &[PathBuf]) -> IpcResult<PathBuf> {
     let raw_path = validate_yaml_target_path(path)?;
+    resolve_canonical_write_target(raw_path, allowed_roots)
+}
+
+fn canonical_scoped_write_target(
+    path: &str,
+    allowed_roots: &[PathBuf],
+    allowed_extensions: &[&str],
+) -> IpcResult<PathBuf> {
+    let raw_path = validate_scoped_path(path, allowed_extensions)?;
+    resolve_canonical_write_target(raw_path, allowed_roots)
+}
+
+/// Canonicalises the parent directory of a validated raw path, rejoins the
+/// file name, and enforces that the result is inside the asset scope.  Shared
+/// by every scoped write command after extension + traversal validation.
+fn resolve_canonical_write_target(
+    raw_path: PathBuf,
+    allowed_roots: &[PathBuf],
+) -> IpcResult<PathBuf> {
     let parent = raw_path
         .parent()
         .ok_or_else(|| IpcError::Invalid("path must have a parent directory".to_string()))?;
@@ -1211,5 +1288,151 @@ mod tests {
 
         assert!(matches!(err, IpcError::Invalid(_)));
         let _ = std::fs::remove_dir_all(&root);
+    }
+
+    // ─── Authored-block file read/write commands ──────────────────────────────
+    //
+    // The receive pipeline (T-164 / T-170) installs `.tsx` sources and `.json`
+    // sidecars, and reads existing `.tsx` sources for the same-sender
+    // replacement check (ADR-0009).  The YAML-only read/write commands reject
+    // those extensions, so these dedicated commands carry the work.
+
+    #[test]
+    fn write_authored_block_file_writes_tsx_inside_scope() {
+        let root = unique_test_dir("authored-write-tsx");
+        let active = root.join("generated-blocks").join("active");
+        std::fs::create_dir_all(&active).unwrap();
+        let path = active.join("risk-matrix.tsx");
+
+        write_authored_block_file_to_path(
+            path.to_str().unwrap(),
+            "// block source\n",
+            &[root.clone()],
+        )
+        .expect("write authored .tsx");
+
+        assert_eq!(
+            std::fs::read_to_string(&path).expect("read written .tsx"),
+            "// block source\n"
+        );
+        assert!(
+            !active.join("risk-matrix.tsx.tmp").exists(),
+            "successful atomic write must not leave a tmp sibling"
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn write_authored_block_file_writes_json_sidecar_inside_scope() {
+        let root = unique_test_dir("authored-write-json");
+        std::fs::create_dir_all(&root).unwrap();
+        // Mirrors the manifest sidecar naming the receive pipeline produces:
+        // `<slug>.tsx.manifest.json`.
+        let path = root.join("risk-matrix.tsx.manifest.json");
+
+        write_authored_block_file_to_path(
+            path.to_str().unwrap(),
+            r#"{"slug":"risk-matrix"}"#,
+            &[root.clone()],
+        )
+        .expect("write authored .json sidecar");
+
+        assert_eq!(
+            std::fs::read_to_string(&path).expect("read written sidecar"),
+            r#"{"slug":"risk-matrix"}"#
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn write_authored_block_file_rejects_disallowed_extension() {
+        let root = unique_test_dir("authored-write-ext");
+        let path = root.join("doc.yaml");
+
+        let err = write_authored_block_file_to_path(
+            path.to_str().unwrap(),
+            "kind: document\n",
+            &[root.clone()],
+        )
+        .expect_err("yaml extension must be rejected by the authored write command");
+
+        assert!(matches!(err, IpcError::Invalid(_)));
+        assert!(!path.exists(), "rejected write must not create the file");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn write_authored_block_file_rejects_outside_scope() {
+        let root = unique_test_dir("authored-write-scope-root");
+        let outside = unique_test_dir("authored-write-scope-outside");
+        let path = outside.join("block.tsx");
+
+        let err = write_authored_block_file_to_path(
+            path.to_str().unwrap(),
+            "// block\n",
+            &[root.clone()],
+        )
+        .expect_err("write outside scope must fail");
+
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(&root);
+        let _ = std::fs::remove_dir_all(&outside);
+    }
+
+    #[test]
+    fn write_authored_block_file_rejects_parent_escape() {
+        let root = unique_test_dir("authored-write-escape");
+        let path = root.join("../escaped.tsx");
+
+        let err = write_authored_block_file_to_path(
+            path.to_str().unwrap(),
+            "// block\n",
+            &[root.clone()],
+        )
+        .expect_err("parent-directory escape must fail");
+
+        assert!(matches!(err, IpcError::Invalid(_)));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn read_authored_block_file_reads_tsx_inside_scope() {
+        let root = unique_test_dir("authored-read-tsx");
+        let path = root.join("risk-matrix.tsx");
+        std::fs::write(&path, "// existing source\n").expect("write fixture");
+
+        let content = read_authored_block_file_from_path(path.to_str().unwrap(), &[root.clone()])
+            .expect("read authored .tsx");
+
+        assert_eq!(content, "// existing source\n");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn read_authored_block_file_rejects_non_authored_extension() {
+        let root = unique_test_dir("authored-read-ext");
+        let path = root.join("doc.yaml");
+        std::fs::write(&path, "kind: document\n").expect("write fixture");
+
+        let err = read_authored_block_file_from_path(path.to_str().unwrap(), &[root.clone()])
+            .expect_err("yaml extension must be rejected by the authored read command");
+
+        assert!(matches!(err, IpcError::Invalid(_)));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn read_authored_block_file_rejects_outside_scope() {
+        let root = unique_test_dir("authored-read-scope-root");
+        let outside = unique_test_dir("authored-read-scope-outside");
+        let path = outside.join("block.tsx");
+        std::fs::write(&path, "// outside\n").expect("write fixture");
+
+        let err = read_authored_block_file_from_path(path.to_str().unwrap(), &[root.clone()])
+            .expect_err("read outside scope must fail");
+
+        assert!(matches!(err, IpcError::PermissionDenied(_)));
+        let _ = std::fs::remove_dir_all(&root);
+        let _ = std::fs::remove_dir_all(&outside);
     }
 }

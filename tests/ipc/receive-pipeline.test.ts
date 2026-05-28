@@ -74,7 +74,7 @@ describe("receiveAuthoredBlock — replacement logic (T-170, ADR-0009)", () => {
       if (cmd === "lint_authored_block") return Promise.resolve(LINT_OK);
       if (cmd === "file_exists") return Promise.resolve(false);
       if (cmd === "ensure_directory") return Promise.resolve();
-      if (cmd === "write_yaml_file") return Promise.resolve();
+      if (cmd === "write_authored_block_file") return Promise.resolve();
       return Promise.reject(new Error(`unexpected: ${cmd}`));
     });
 
@@ -98,11 +98,11 @@ describe("receiveAuthoredBlock — replacement logic (T-170, ADR-0009)", () => {
         return Promise.resolve(true);
       }
       if (cmd === "file_exists") return Promise.resolve(false);
-      if (cmd === "read_yaml_file" && path === `${ACTIVE}/risk-matrix.tsx`) {
+      if (cmd === "read_authored_block_file" && path === `${ACTIVE}/risk-matrix.tsx`) {
         return Promise.resolve(v1);
       }
       if (cmd === "ensure_directory") return Promise.resolve();
-      if (cmd === "write_yaml_file") return Promise.resolve();
+      if (cmd === "write_authored_block_file") return Promise.resolve();
       return Promise.reject(new Error(`unexpected: ${cmd} ${path ?? ""}`));
     });
 
@@ -114,8 +114,8 @@ describe("receiveAuthoredBlock — replacement logic (T-170, ADR-0009)", () => {
     // Should be written to active/, not a new path
     expect(result.installedPath).toContain("active");
     expect(result.installedPath).toContain("risk-matrix.tsx");
-    // write_yaml_file should have been called with the active/ path
-    const writeCalls = mockInvoke.mock.calls.filter(([cmd]) => cmd === "write_yaml_file");
+    // write_authored_block_file should have been called with the active/ path
+    const writeCalls = mockInvoke.mock.calls.filter(([cmd]) => cmd === "write_authored_block_file");
     expect(writeCalls.some(([, a]) => (a?.["path"] as string).includes("active"))).toBe(true);
   });
 
@@ -135,11 +135,11 @@ describe("receiveAuthoredBlock — replacement logic (T-170, ADR-0009)", () => {
         return Promise.resolve(true);
       }
       if (cmd === "file_exists") return Promise.resolve(false);
-      if (cmd === "read_yaml_file" && path === `${ARCHIVED}/risk-matrix.tsx`) {
+      if (cmd === "read_authored_block_file" && path === `${ARCHIVED}/risk-matrix.tsx`) {
         return Promise.resolve(v1);
       }
       if (cmd === "ensure_directory") return Promise.resolve();
-      if (cmd === "write_yaml_file") return Promise.resolve();
+      if (cmd === "write_authored_block_file") return Promise.resolve();
       return Promise.reject(new Error(`unexpected: ${cmd} ${path ?? ""}`));
     });
 
@@ -151,7 +151,7 @@ describe("receiveAuthoredBlock — replacement logic (T-170, ADR-0009)", () => {
     // Block should be written to archived/, not active/
     expect(result.installedPath).toContain("archived");
     expect(result.installedPath).toContain("risk-matrix.tsx");
-    const writeCalls = mockInvoke.mock.calls.filter(([cmd]) => cmd === "write_yaml_file");
+    const writeCalls = mockInvoke.mock.calls.filter(([cmd]) => cmd === "write_authored_block_file");
     expect(writeCalls.some(([, a]) => (a?.["path"] as string).includes("archived"))).toBe(true);
   });
 
@@ -168,11 +168,11 @@ describe("receiveAuthoredBlock — replacement logic (T-170, ADR-0009)", () => {
       }
       if (cmd === "file_exists") return Promise.resolve(false);
       // Active file belongs to Carol, not Alice
-      if (cmd === "read_yaml_file" && path === `${ACTIVE}/risk-matrix.tsx`) {
+      if (cmd === "read_authored_block_file" && path === `${ACTIVE}/risk-matrix.tsx`) {
         return Promise.resolve(carolV1);
       }
       if (cmd === "ensure_directory") return Promise.resolve();
-      if (cmd === "write_yaml_file") return Promise.resolve();
+      if (cmd === "write_authored_block_file") return Promise.resolve();
       return Promise.reject(new Error(`unexpected: ${cmd} ${path ?? ""}`));
     });
 
@@ -196,7 +196,7 @@ describe("receiveAuthoredBlock — replacement logic (T-170, ADR-0009)", () => {
     mockInvoke.mockImplementation((cmd) => {
       if (cmd === "lint_authored_block") return Promise.resolve(LINT_FAIL);
       if (cmd === "ensure_directory") return Promise.resolve();
-      if (cmd === "write_yaml_file") return Promise.resolve();
+      if (cmd === "write_authored_block_file") return Promise.resolve();
       return Promise.reject(new Error(`unexpected: ${cmd}`));
     });
 
@@ -218,7 +218,7 @@ describe("receiveAuthoredBlock — replacement logic (T-170, ADR-0009)", () => {
       if (cmd === "lint_authored_block") return Promise.resolve(LINT_OK);
       if (cmd === "file_exists") return Promise.resolve(false);
       if (cmd === "ensure_directory") return Promise.resolve();
-      if (cmd === "write_yaml_file") {
+      if (cmd === "write_authored_block_file") {
         writtenPaths.push(args?.["path"] as string);
         return Promise.resolve();
       }
@@ -236,5 +236,87 @@ describe("receiveAuthoredBlock — replacement logic (T-170, ADR-0009)", () => {
     // Both active/ and derived archived/ should have been checked.
     const checkedPaths = existsCalls.map(([, a]) => (a?.["path"] as string) ?? "");
     expect(checkedPaths.some((p) => p.includes("archived"))).toBe(true);
+  });
+
+  // ─── P0: writes go through the dedicated authored-file command ──────────────
+  // The YAML write command (`write_yaml_file`) rejects `.tsx` / `.json` paths in
+  // the Rust sidecar, so abusing it would make the receive pipeline fail at
+  // runtime. The pipeline must use `write_authored_block_file`, never
+  // `write_yaml_file`.
+  it("writes authored files via write_authored_block_file, never write_yaml_file", async () => {
+    const source = makeSource("alice@example.com", "risk-matrix");
+    mockInvoke.mockImplementation((cmd) => {
+      if (cmd === "lint_authored_block") return Promise.resolve(LINT_OK);
+      if (cmd === "file_exists") return Promise.resolve(false);
+      if (cmd === "ensure_directory") return Promise.resolve();
+      if (cmd === "write_authored_block_file") return Promise.resolve();
+      return Promise.reject(new Error(`unexpected: ${cmd}`));
+    });
+
+    const result = await receiveAuthoredBlock(
+      source, "risk-matrix.tsx", ACTIVE, QUARANTINE, ARCHIVED,
+    );
+
+    expect(result.ok).toBe(true);
+    const calledCommands = mockInvoke.mock.calls.map(([cmd]) => cmd);
+    expect(calledCommands).toContain("write_authored_block_file");
+    expect(calledCommands).not.toContain("write_yaml_file");
+  });
+
+  // ─── P1: manifest sidecar naming matches the Rust archive/delete convention ──
+  // Rust derives the sidecar as `<file>.tsx.manifest.json`; the writer must use
+  // the same name or the sidecar is orphaned on archive / permanently-delete.
+  it("names the manifest sidecar <slug>.tsx.manifest.json", async () => {
+    const source = makeSource("alice@example.com", "risk-matrix");
+    const writtenPaths: string[] = [];
+    mockInvoke.mockImplementation((cmd, args) => {
+      if (cmd === "lint_authored_block") return Promise.resolve(LINT_OK);
+      if (cmd === "file_exists") return Promise.resolve(false);
+      if (cmd === "ensure_directory") return Promise.resolve();
+      if (cmd === "write_authored_block_file") {
+        writtenPaths.push(args?.["path"] as string);
+        return Promise.resolve();
+      }
+      return Promise.reject(new Error(`unexpected: ${cmd}`));
+    });
+
+    await receiveAuthoredBlock(
+      source, "risk-matrix.tsx", ACTIVE, QUARANTINE, ARCHIVED,
+    );
+
+    expect(writtenPaths).toContain(`${ACTIVE}/risk-matrix.tsx`);
+    expect(writtenPaths).toContain(`${ACTIVE}/risk-matrix.tsx.manifest.json`);
+    // The bare `<slug>.manifest.json` form (the old bug) must NOT be produced.
+    expect(writtenPaths).not.toContain(`${ACTIVE}/risk-matrix.manifest.json`);
+  });
+
+  // ─── P0 (read path): the same-sender replacement check reads via the ─────────
+  // dedicated authored-file command, not the YAML-only read command.
+  it("reads an existing same-sender source via read_authored_block_file", async () => {
+    const v1 = makeSource("alice@example.com", "risk-matrix", 1);
+    const v2 = makeSource("alice@example.com", "risk-matrix", 2);
+    mockInvoke.mockImplementation((cmd, args) => {
+      if (cmd === "lint_authored_block") return Promise.resolve(LINT_OK);
+      const path = args?.["path"] as string | undefined;
+      if (cmd === "file_exists" && path === `${ACTIVE}/risk-matrix.tsx`) {
+        return Promise.resolve(true);
+      }
+      if (cmd === "file_exists") return Promise.resolve(false);
+      if (cmd === "read_authored_block_file" && path === `${ACTIVE}/risk-matrix.tsx`) {
+        return Promise.resolve(v1);
+      }
+      if (cmd === "ensure_directory") return Promise.resolve();
+      if (cmd === "write_authored_block_file") return Promise.resolve();
+      return Promise.reject(new Error(`unexpected: ${cmd} ${path ?? ""}`));
+    });
+
+    const result = await receiveAuthoredBlock(
+      v2, "risk-matrix.tsx", ACTIVE, QUARANTINE, ARCHIVED,
+    );
+
+    expect(result.ok).toBe(true);
+    const calledCommands = mockInvoke.mock.calls.map(([cmd]) => cmd);
+    expect(calledCommands).toContain("read_authored_block_file");
+    expect(calledCommands).not.toContain("read_yaml_file");
   });
 });

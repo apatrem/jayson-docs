@@ -73,6 +73,25 @@ const handlers: Record<string, Handler> = {
     return Promise.resolve(null);
   },
 
+  read_authored_block_file: (args) => {
+    const path = String(args["path"] ?? "");
+    const cached = writtenFiles.get(path);
+    if (cached !== undefined) return Promise.resolve(cached);
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+    return Promise.reject(ipcError("not-found", `File not found in stub: ${path}`));
+  },
+
+  write_authored_block_file: (args) => {
+    const path = String(args["path"] ?? "");
+    const content = String(args["content"] ?? "");
+    writtenFiles.set(path, content);
+    // eslint-disable-next-line no-console
+    console.info(
+      `[browser-ipc-stub] write_authored_block_file: ${path} (${content.length} bytes — held in memory only)`,
+    );
+    return Promise.resolve(null);
+  },
+
   read_binary_file: () => Promise.resolve("/9j/"),
 
   delete_file: () => Promise.resolve(null),

@@ -275,8 +275,12 @@ export function buildAuthoredTipTapNode(manifest: AuthoredBlockManifest): Node {
     },
 
     addCommands() {
-      // Generic insert command named insert_<slug> (kebab → underscore)
-      const cmdName = `insert_${manifest.slug.replace(/-/g, "_")}`;
+      // Insert command named `insertAuthored_<slug>` — the slug keeps its
+      // kebab-case form so this matches exactly the command string the runtime
+      // registry advertises for palette items (see runtime-registry.ts
+      // `loadBrandBlockPaletteItems` / `loadAuthoredBlockEntries`). The two
+      // must agree or BlockPalette disables the (undefined-command) button.
+      const cmdName = `insertAuthored_${manifest.slug}`;
       const slug = manifest.slug;
       const isRichText = manifest.content === "rich-text";
       return {

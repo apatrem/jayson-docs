@@ -64,6 +64,31 @@ export async function lintAuthoredBlock(
   return invoke<AuthoredBlockLintResult>("lint_authored_block", { source });
 }
 
+/**
+ * Reads an Authored block file (`.tsx` source or `.json` sidecar) from the
+ * asset scope.
+ *
+ * The generic `read_yaml_file` command is YAML-only, so the receive pipeline
+ * uses the dedicated `read_authored_block_file` command (allow-list:
+ * `.tsx`, `.json`) — for example to read an existing same-sender source during
+ * the in-place replacement check (ADR-0009).
+ */
+async function readAuthoredFile(path: string): Promise<string> {
+  return invoke<string>("read_authored_block_file", { path });
+}
+
+/**
+ * Atomically writes an Authored block file (`.tsx` source or a
+ * `.manifest.json` / `.violations.json` sidecar) into the asset scope.
+ *
+ * The generic `write_yaml_file` command rejects non-YAML extensions by design
+ * (it is the document-write boundary), so the receive pipeline uses the
+ * dedicated `write_authored_block_file` command instead.
+ */
+async function writeAuthoredFile(path: string, content: string): Promise<void> {
+  await invoke("write_authored_block_file", { path, content });
+}
+
 // ─── Receive pipeline (T-164) ─────────────────────────────────────────────────
 
 /**
@@ -128,12 +153,9 @@ export async function receiveAuthoredBlock(
       ? `${quarantineDir}${filename}`
       : `${quarantineDir}/${filename}`;
     await invoke("ensure_directory", { path: quarantineDir });
-    await invoke("write_yaml_file", { path: quarantinePath, content: source });
+    await writeAuthoredFile(quarantinePath, source);
     const sidecarPath = `${quarantinePath}.violations.json`;
-    await invoke("write_yaml_file", {
-      path: sidecarPath,
-      content: JSON.stringify([mismatchViolation], null, 2),
-    });
+    await writeAuthoredFile(sidecarPath, JSON.stringify([mismatchViolation], null, 2));
     return { ok: false, installedPath: quarantinePath, violations: [mismatchViolation] };
   }
 
@@ -167,15 +189,20 @@ export async function receiveAuthoredBlock(
     const installDir = installPath.replace(/\/[^/]+$/, "");
 
     await invoke("ensure_directory", { path: installDir });
-    await invoke("write_yaml_file", { path: installPath, content: source });
+    await writeAuthoredFile(installPath, source);
 
     // Write a companion sidecar JSON with the extracted manifest.
+    //
+    // Naming MUST be `<installPath>.manifest.json` (i.e. `<slug>.tsx.manifest.json`)
+    // to match the Rust archive / permanently-delete sidecar convention in
+    // `src-tauri/src/ipc/fs.rs` (`format!("{}.manifest.json", canonical_src)`).
+    // A bare `<slug>.manifest.json` would be orphaned on archive/delete.
     if (lintResult.extractedManifest !== null) {
-      const sidecarPath = installPath.replace(/\.tsx$/u, ".manifest.json");
-      await invoke("write_yaml_file", {
-        path: sidecarPath,
-        content: JSON.stringify(lintResult.extractedManifest, null, 2),
-      });
+      const sidecarPath = `${installPath}.manifest.json`;
+      await writeAuthoredFile(
+        sidecarPath,
+        JSON.stringify(lintResult.extractedManifest, null, 2),
+      );
     }
 
     return { ok: true, installedPath: installPath, violations: [] };
@@ -186,14 +213,11 @@ export async function receiveAuthoredBlock(
       : `${quarantineDir}/${filename}`;
 
     await invoke("ensure_directory", { path: quarantineDir });
-    await invoke("write_yaml_file", { path: quarantinePath, content: source });
+    await writeAuthoredFile(quarantinePath, source);
 
     // Write a violations sidecar so T-165 can surface reasons without re-linting.
     const sidecarPath = `${quarantinePath}.violations.json`;
-    await invoke("write_yaml_file", {
-      path: sidecarPath,
-      content: JSON.stringify(lintResult.violations, null, 2),
-    });
+    await writeAuthoredFile(sidecarPath, JSON.stringify(lintResult.violations, null, 2));
 
     return { ok: false, installedPath: quarantinePath, violations: lintResult.violations };
   }
@@ -228,7 +252,7 @@ async function findExistingInstallDir(
 
     // Verify same sender by reading the existing file's manifest header.
     try {
-      const existingSource = await invoke<string>("read_yaml_file", { path: candidate });
+      const existingSource = await readAuthoredFile(candidate);
       const parsed = parseManifestHeader(existingSource);
       if (parsed.ok && parsed.header.sender === incomingSender) {
         return dir;

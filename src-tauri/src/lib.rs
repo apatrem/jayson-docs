@@ -31,6 +31,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             ipc::fs::read_yaml_file,
             ipc::fs::write_yaml_file,
+            ipc::fs::read_authored_block_file,
+            ipc::fs::write_authored_block_file,
             ipc::fs::read_binary_file,
             ipc::fs::list_directory,
             ipc::fs::file_exists,
