@@ -27,6 +27,8 @@ const marksFixture: ProseMirrorFragment = {
         { type: "text", text: " " },
         { type: "text", text: "underline", marks: [{ type: "underline" }] },
         { type: "text", text: " " },
+        { type: "text", text: "strike", marks: [{ type: "strike" }] },
+        { type: "text", text: " " },
         { type: "text", text: "code", marks: [{ type: "code" }] },
         { type: "text", text: " " },
         {
@@ -59,6 +61,7 @@ describe("ProseRenderer (T-50)", () => {
     expect(html).toContain("<strong>bold</strong>");
     expect(html).toContain("<em>italic</em>");
     expect(html).toContain("<u>underline</u>");
+    expect(html).toContain("<s>strike</s>");
     expect(html).toMatch(/<code[^>]*>code<\/code>/);
     expect(html).toContain('href="https://example.com/docs"');
     expect(html).toContain("<a ");

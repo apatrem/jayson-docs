@@ -384,7 +384,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
         </section>
         <section aria-label="Editable document" style={styles.editorPane}>
           <div style={{ ...styles.paneLabel, ...styles.paneLabelEdit }}>Edit</div>
-          <div style={styles.paneBody}>
+          <div style={styles.editorBody}>
           {/* Re-seed/remount when a different file is opened OR the installed
               authored set changes (the editor schema is built once at mount). */}
           <EditorComponent
@@ -737,9 +737,18 @@ const styles = {
     color: "#0B3D91",
     borderBottom: "2px solid #0B3D91",
     background: "#FFFFFF",
+    borderTopLeftRadius: "0.75rem",
+    borderTopRightRadius: "0.75rem",
   },
   paneBody: {
     overflow: "auto",
+    padding: "1rem",
+    flex: "1 1 auto",
+  },
+  // The editor body must NOT create a scroll/clip context (no `overflow`), so
+  // the editor's position:sticky toolbar resolves against the window and pins
+  // to the viewport top as the page scrolls.
+  editorBody: {
     padding: "1rem",
     flex: "1 1 auto",
   },
@@ -749,7 +758,6 @@ const styles = {
     flexDirection: "column",
     border: "1px solid #E2E8F0",
     borderRadius: "0.75rem",
-    overflow: "hidden",
     background: "#FFFFFF",
     boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
   },

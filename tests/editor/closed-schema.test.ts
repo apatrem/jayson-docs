@@ -82,6 +82,46 @@ describe("closed editor schema (T-78)", () => {
     }
   });
 
+  it("toggles underline/strike/code marks via toolbar commands, all in-schema", () => {
+    const editor = new CoreEditor({
+      extensions: createEditorExtensions(),
+      content: {
+        type: "doc",
+        content: [
+          {
+            type: "section",
+            attrs: { sectionId: "section-1", title: "Section" },
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: "format me" }] },
+            ],
+          },
+        ],
+      },
+    });
+
+    try {
+      const allowed = new Set<string>(ALLOWED_EDITOR_MARK_NAMES);
+      // Each mark is toggled independently on the selected text: TipTap's `code`
+      // mark excludes other marks, so they're verified one at a time, not chained.
+      const cases = [
+        { name: "underline", toggle: () => editor.chain().toggleUnderline().run() },
+        { name: "strike", toggle: () => editor.chain().toggleStrike().run() },
+        { name: "code", toggle: () => editor.chain().toggleCode().run() },
+      ];
+      for (const { name, toggle } of cases) {
+        expect(allowed.has(name)).toBe(true);
+        editor.commands.setTextSelection({ from: 2, to: 11 });
+        toggle();
+        expect(editor.isActive(name)).toBe(true);
+        expect(JSON.stringify(editor.getJSON())).toContain(`"type":"${name}"`);
+        toggle(); // untoggle to reset for the next mark
+        expect(editor.isActive(name)).toBe(false);
+      }
+    } finally {
+      editor.destroy();
+    }
+  });
+
   it("rejects unknown editor node types", () => {
     expect(() =>
       assertClosedEditorContent({

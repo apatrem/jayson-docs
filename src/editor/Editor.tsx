@@ -11,6 +11,7 @@ import { Italic } from "@tiptap/extension-italic";
 import { Paragraph } from "@tiptap/extension-paragraph";
 import { Strike } from "@tiptap/extension-strike";
 import { Text } from "@tiptap/extension-text";
+import { Underline } from "@tiptap/extension-underline";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import { closeHistory } from "@tiptap/pm/history";
 import { useEffect, useMemo, useState, type CSSProperties, type FC } from "react";
@@ -140,6 +141,7 @@ export const ALLOWED_EDITOR_NODE_NAMES: readonly string[] = allowedEditorNodeNam
 export const ALLOWED_EDITOR_MARK_NAMES = [
   "bold",
   "italic",
+  "underline",
   "strike",
   "code",
   "commentMark",
@@ -160,8 +162,10 @@ const ALLOWED_HTML_TAGS = new Set([
   "OL",
   "P",
   "PRE",
+  "S",
   "SPAN",
   "STRONG",
+  "U",
   "UL",
 ]);
 
@@ -181,6 +185,7 @@ export function createEditorExtensions(
     Text,
     Bold,
     Italic,
+    Underline,
     Strike,
     Code,
     CodeBlock,
@@ -322,6 +327,30 @@ export const Editor: FC<EditorProps> = ({
           disabled={editor === null || !effectiveEditable}
           onClick={() => {
             editor?.chain().focus().toggleItalic().run();
+          }}
+        />
+        <ToolbarButton
+          label="Underline"
+          active={editor?.isActive("underline") ?? false}
+          disabled={editor === null || !effectiveEditable}
+          onClick={() => {
+            editor?.chain().focus().toggleUnderline().run();
+          }}
+        />
+        <ToolbarButton
+          label="Strike"
+          active={editor?.isActive("strike") ?? false}
+          disabled={editor === null || !effectiveEditable}
+          onClick={() => {
+            editor?.chain().focus().toggleStrike().run();
+          }}
+        />
+        <ToolbarButton
+          label="Code"
+          active={editor?.isActive("code") ?? false}
+          disabled={editor === null || !effectiveEditable}
+          onClick={() => {
+            editor?.chain().focus().toggleCode().run();
           }}
         />
         {editor?.isActive("table") ? (
@@ -567,11 +596,15 @@ const styles: Record<string, CSSProperties> = {
     gap: "0.75rem",
   },
   toolbar: {
+    position: "sticky",
+    top: 0,
+    zIndex: 5,
     alignItems: "center",
     display: "flex",
     flexWrap: "wrap",
     gap: "0.375rem",
-    paddingBottom: "0.5rem",
+    padding: "0.5rem 0",
+    background: "#FFFFFF",
     borderBottom: "1px solid #E2E8F0",
   },
   toolbarGroup: {

@@ -17,6 +17,7 @@ const ALLOWED_MARKS = new Set([
   "code",
   "link",
   "underline",
+  "strike",
 ]);
 
 const SAFE_HREF = /^(?:https?:|mailto:|tel:|#)/iu;
@@ -97,6 +98,9 @@ function wrapWithMark(
 
     case "underline":
       return <u>{children}</u>;
+
+    case "strike":
+      return <s>{children}</s>;
 
     case "code":
       return (
