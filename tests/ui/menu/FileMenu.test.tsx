@@ -88,8 +88,8 @@ describe("FileMenu", () => {
         "/Users/me/Documents/menu.yaml",
         expect.stringContaining("Menu heading"),
       );
+      expect(screen.getByRole("status").textContent).toBe("Saved.");
     });
-    expect(screen.getByRole("status").textContent).toBe("Saved.");
   });
 
   it("save-as writes to the chosen path and switches the active path", async () => {
