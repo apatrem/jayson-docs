@@ -52,6 +52,14 @@ _Avoid_: "view", "template"
 A React component (one per block type) that lets the editor show and edit one block in-place inside TipTap. Lives in `src/editor/nodes/`. A different concern from a Renderer — the node view is editable, the Renderer is print-quality output.
 _Avoid_: conflating with "Renderer"
 
+**Editing surface**:
+The single in-app WYSIWYG view where the consultant edits the DocModel. Because inline blocks render as their output, the editing surface *is* the rendered view — there is no separate always-on live preview beside it.
+_Avoid_: "preview pane", "editor pane" (there is one surface, not two)
+
+**Page view**:
+An on-demand, read-only, paginated (A4) Projection of the DocModel that shows real page breaks. Toggled from the editing surface and reused as the PDF print path. A Projection, never canonical.
+_Avoid_: "preview" (ambiguous), "print mode"
+
 **Closed editor schema**:
 The exact set of node and mark types the TipTap editor registers at mount. A security boundary: asserted to equal Standard block types ∪ the Installed manifest set, and nothing else. Authored blocks widen it only because their manifests passed the receive-time gate.
 _Avoid_: "the schema" (ambiguous with the DocModel's Zod schema), "allowed nodes"
