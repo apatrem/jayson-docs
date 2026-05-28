@@ -35,6 +35,7 @@ import {
   type ProseMirrorNode,
 } from "../../editor/mapping";
 import type { DocumentModel } from "../../renderer/DocumentRenderer";
+import { PageView } from "../../renderer/PageView";
 import { DocModelSchema } from "../../schema/docmodel";
 import {
   useBrandBlocksFromRegistry,
@@ -162,6 +163,9 @@ export const DocumentView: FC<DocumentViewProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // "edit" = continuous WYSIWYG surface; "page" = on-demand read-only A4
+  // pagination (paged.js) showing real page breaks (ADR-0017).
+  const [viewMode, setViewMode] = useState<"edit" | "page">("edit");
   const [editor, setEditor] = useState<TipTapEditor | null>(null);
   const [authoringContext, setAuthoringContext] = useState<DocumentModel | null>(null);
   // ── Selection-driven structured-block panel (P0c) ────────────────────────
@@ -369,13 +373,49 @@ export const DocumentView: FC<DocumentViewProps> = ({
     <main aria-label="Document view" style={styles.shell}>
       <header style={styles.header}>
         <div style={styles.headerActions}>
+          <div role="group" aria-label="View mode" style={styles.viewToggle}>
+            <button
+              type="button"
+              aria-pressed={viewMode === "edit"}
+              onClick={() => setViewMode("edit")}
+              style={{
+                ...styles.viewToggleButton,
+                ...(viewMode === "edit" ? styles.viewToggleButtonActive : {}),
+              }}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              aria-pressed={viewMode === "page"}
+              onClick={() => setViewMode("page")}
+              style={{
+                ...styles.viewToggleButton,
+                ...(viewMode === "page" ? styles.viewToggleButtonActive : {}),
+              }}
+            >
+              Page view
+            </button>
+          </div>
           <span aria-label="Autosave status" style={saveStatusStyle(saveState)}>
             {SAVE_STATE_LABEL[saveState]}
           </span>
         </div>
       </header>
       <BrandProvider tokens={defaultBrand}>
-      <div style={contentGridStyle()}>
+      {viewMode === "page" ? (
+        <PageView
+          doc={currentDoc.current ?? doc}
+          brand={defaultBrand}
+          docFolderPath={parentPath(path)}
+        />
+      ) : null}
+      <div
+        style={{
+          ...contentGridStyle(),
+          ...(viewMode === "page" ? { display: "none" } : {}),
+        }}
+      >
         <section aria-label="Editable document" style={styles.editorPane}>
           <div style={styles.editorBody}>
           {/* Re-seed/remount when a different file is opened OR the installed
@@ -630,6 +670,11 @@ function editorSectionsFromContent(
   ];
 }
 
+function parentPath(path: string): string {
+  const index = path.lastIndexOf("/");
+  return index <= 0 ? "/" : path.slice(0, index);
+}
+
 async function defaultReadYamlFile(path: string): Promise<string> {
   return invoke<string>("read_yaml_file", { path });
 }
@@ -716,6 +761,27 @@ const styles = {
     fontWeight: 600,
     borderRadius: "999px",
     padding: "0.2rem 0.6rem",
+  },
+  viewToggle: {
+    display: "inline-flex",
+    border: "1px solid #D6DEE8",
+    borderRadius: "0.5rem",
+    overflow: "hidden",
+    background: "#FFFFFF",
+  },
+  viewToggleButton: {
+    appearance: "none",
+    border: "none",
+    background: "transparent",
+    color: "#475569",
+    cursor: "pointer",
+    fontSize: "0.8125rem",
+    fontWeight: 600,
+    padding: "0.35rem 0.75rem",
+  },
+  viewToggleButtonActive: {
+    background: "#0B3D91",
+    color: "#FFFFFF",
   },
   // The editor body must NOT create a scroll/clip context (no `overflow`), so
   // the editor's position:sticky toolbar resolves against the window and pins

@@ -22,11 +22,7 @@ const SIZE_CAP_MESSAGE_PATTERN = /exceeds\s+5MB\s+export\s+limit/iu;
 
 const PAGE_BREAK_CSS = `
 @media print {
-  [data-block-type="heading"] {
-    break-after: avoid;
-    page-break-after: avoid;
-  }
-
+  [data-block-type="heading"] { break-after: avoid; page-break-after: avoid; }
   [data-block-type="chart"],
   [data-block-type="table"],
   [data-block-type="kpi-cards"],
@@ -37,25 +33,24 @@ const PAGE_BREAK_CSS = `
   [data-block-type="roadmap"],
   [data-block-type="risk-matrix"],
   [data-block-type="team"],
-  .doc-keep-together {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  [data-block-type="table"] tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
+  .doc-keep-together { break-inside: avoid; page-break-inside: avoid; }
+  [data-block-type="table"] tr { break-inside: avoid; page-break-inside: avoid; }
   .doc-page-break,
   [data-block-type="divider"][data-render-context="document"] {
-    break-before: page;
-    page-break-before: always;
+    break-before: page; page-break-before: always;
   }
 }
 `;
 
-export async function renderStaticHtmlForExport(
+
+/**
+ * Renders the document body to a static HTML string with all assets pre-rendered
+ * (chart/diagram SVGs, inlined image data URIs) so it is safe to serialize
+ * without a live DOM — i.e. no client-only ECharts/Mermaid render during SSR.
+ * Shared by the PDF export and the in-app paged.js Page view so both show the
+ * same output.
+ */
+export async function renderExportBody(
   doc: DocumentModel,
   brand: BrandTokens,
   docFolderPath = "/docs",
@@ -64,7 +59,7 @@ export async function renderStaticHtmlForExport(
   const diagramSvgs = await preRenderDiagramSvgs(doc, brand);
   const chartSvgs = preRenderChartSvgs(doc, brand);
   const imageDataUris = await preloadImageDataUris(doc, brand, docFolderPath, sharedFolderPath);
-  const body = renderToStaticMarkup(
+  return renderToStaticMarkup(
     createElement(DocumentRenderer, {
       doc,
       brand,
@@ -75,7 +70,15 @@ export async function renderStaticHtmlForExport(
       imageDataUris,
     }),
   );
+}
 
+export async function renderStaticHtmlForExport(
+  doc: DocumentModel,
+  brand: BrandTokens,
+  docFolderPath = "/docs",
+  sharedFolderPath = "/shared",
+): Promise<string> {
+  const body = await renderExportBody(doc, brand, docFolderPath, sharedFolderPath);
   return `<!doctype html>
 <html lang="${escapeHtml(doc.meta.language ?? "en")}">
   <head>

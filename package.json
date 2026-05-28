@@ -45,6 +45,7 @@
     "mammoth": "^1.8.0",
     "mermaid": "10.9.1",
     "officeparser": "^5.2.2",
+    "pagedjs": "^0.4.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "yaml": "2.5.1",
