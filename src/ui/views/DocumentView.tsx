@@ -62,6 +62,12 @@ export interface EditorSurfaceProps {
    * closed schema (ADR-0015). Default [] = static blocks only.
    */
   authoredManifests?: AuthoredBlockManifest[];
+  /**
+   * When provided, the editor toolbar shows an "Add block" button that calls
+   * this (DocumentView opens the block-palette drawer). Omitted for surfaces
+   * with no palette (e.g. the standalone deck editor).
+   */
+  onAddBlock?: () => void;
 }
 
 export interface DocumentViewProps {
@@ -101,12 +107,14 @@ const DefaultEditorSurface: FC<EditorSurfaceProps> = ({
   onUpdate,
   onEditorReady,
   authoredManifests = [],
+  onAddBlock,
 }) => (
   <Editor
     initialContent={initialContent}
     editable={editable}
     onUpdate={onUpdate}
     authoredManifests={authoredManifests}
+    {...(onAddBlock === undefined ? {} : { onAddBlock })}
     {...(onEditorReady === undefined
       ? {}
       : {
@@ -221,6 +229,11 @@ export const DocumentView: FC<DocumentViewProps> = ({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === "Escape" && paletteOpen) {
+        event.preventDefault();
+        setPaletteOpen(false);
+        return;
+      }
       if (event.key !== "/" || paletteOpen) {
         return;
       }
@@ -356,26 +369,13 @@ export const DocumentView: FC<DocumentViewProps> = ({
     <main aria-label="Document view" style={styles.shell}>
       <header style={styles.header}>
         <div style={styles.headerActions}>
-          <button
-            type="button"
-            aria-label="Insert block"
-            onClick={() => {
-              setPaletteOpen((open) => !open);
-            }}
-            style={{
-              ...styles.insertButton,
-              ...(paletteOpen ? styles.insertButtonActive : {}),
-            }}
-          >
-            + Add block
-          </button>
           <span aria-label="Autosave status" style={saveStatusStyle(saveState)}>
             {SAVE_STATE_LABEL[saveState]}
           </span>
         </div>
       </header>
       <BrandProvider tokens={defaultBrand}>
-      <div style={contentGridStyle(paletteOpen)}>
+      <div style={contentGridStyle()}>
         <section aria-label="Editable document" style={styles.editorPane}>
           <div style={styles.editorBody}>
           {/* Re-seed/remount when a different file is opened OR the installed
@@ -386,6 +386,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
             editable={true}
             authoredManifests={authoredManifests}
             onEditorReady={handleEditorReady}
+            onAddBlock={() => setPaletteOpen(true)}
             onUpdate={(content) => {
               try {
                 // `currentDoc.current` is initialized at mount (initialDoc or
@@ -416,25 +417,50 @@ export const DocumentView: FC<DocumentViewProps> = ({
           />
           </div>
         </section>
-        {paletteOpen ? (
-          <section aria-label="Insert block palette" style={styles.palettePane}>
-            <BlockPalette
-              editor={editor as BlockPaletteProps["editor"]}
-              generatedBlocks={generatedBlocks}
-              onInsert={() => {
-                setPaletteOpen(false);
-              }}
-              onCreateAuthoredBlock={() => {
-                const current = currentDoc.current;
-                if (current !== null) {
-                  setAuthoringContext(current);
-                  onCreateAuthoredBlock?.(current);
-                }
-              }}
-            />
-          </section>
-        ) : null}
       </div>
+      {paletteOpen ? (
+        <>
+          <div
+            style={styles.drawerBackdrop}
+            onClick={() => setPaletteOpen(false)}
+            aria-hidden="true"
+          />
+          <section
+            aria-label="Insert block palette"
+            role="dialog"
+            aria-modal="true"
+            style={styles.paletteDrawer}
+          >
+            <div style={styles.drawerHeader}>
+              <span style={styles.drawerTitle}>Add block</span>
+              <button
+                type="button"
+                aria-label="Close block palette"
+                onClick={() => setPaletteOpen(false)}
+                style={styles.drawerClose}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={styles.drawerBody}>
+              <BlockPalette
+                editor={editor as BlockPaletteProps["editor"]}
+                generatedBlocks={generatedBlocks}
+                onInsert={() => {
+                  setPaletteOpen(false);
+                }}
+                onCreateAuthoredBlock={() => {
+                  const current = currentDoc.current;
+                  if (current !== null) {
+                    setAuthoringContext(current);
+                    onCreateAuthoredBlock?.(current);
+                  }
+                }}
+              />
+            </div>
+          </section>
+        </>
+      ) : null}
       </BrandProvider>
       {authoringContext !== null ? (
         <div style={styles.authoringOverlay}>
@@ -655,12 +681,13 @@ function saveStatusStyle(state: SaveState): CSSProperties {
   };
 }
 
-// Single WYSIWYG surface: one editor column, plus the palette column when open.
-function contentGridStyle(paletteOpen: boolean): CSSProperties {
+// Single WYSIWYG surface: one editor column. The block palette is a drawer
+// overlay (see styles.paletteDrawer), not a grid column.
+function contentGridStyle(): CSSProperties {
   return {
     display: "grid",
     gap: "1rem",
-    gridTemplateColumns: paletteOpen ? "minmax(0, 1fr) 20rem" : "minmax(0, 1fr)",
+    gridTemplateColumns: "minmax(0, 1fr)",
     alignItems: "start",
   };
 }
@@ -683,21 +710,6 @@ const styles = {
     alignItems: "center",
     display: "flex",
     gap: "0.75rem",
-  },
-  insertButton: {
-    appearance: "none",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: "0.8125rem",
-    color: "#0B3D91",
-    background: "#FFFFFF",
-    border: "1px solid #0B3D91",
-    borderRadius: "0.5rem",
-    padding: "0.4rem 0.85rem",
-  },
-  insertButtonActive: {
-    color: "#FFFFFF",
-    background: "#0B3D91",
   },
   saveStatus: {
     fontSize: "0.75rem",
@@ -725,13 +737,53 @@ const styles = {
     background: "#FFFFFF",
     boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
   },
-  palettePane: {
-    minWidth: "18rem",
-    border: "1px solid #E2E8F0",
-    borderRadius: "0.75rem",
-    overflow: "hidden",
+  drawerBackdrop: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(15, 23, 42, 0.25)",
+    zIndex: 40,
+  },
+  paletteDrawer: {
+    position: "fixed",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: "22rem",
+    maxWidth: "90vw",
+    zIndex: 41,
+    display: "flex",
+    flexDirection: "column",
     background: "#FFFFFF",
-    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
+    borderLeft: "1px solid #E2E8F0",
+    boxShadow: "-8px 0 24px rgba(15, 23, 42, 0.12)",
+  },
+  drawerHeader: {
+    flex: "0 0 auto",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "0.75rem 1rem",
+    borderBottom: "1px solid #E2E8F0",
+  },
+  drawerTitle: {
+    fontSize: "0.9375rem",
+    fontWeight: 700,
+    color: "#0F172A",
+  },
+  drawerClose: {
+    appearance: "none",
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+    fontSize: "0.9375rem",
+    color: "#64748B",
+    padding: "0.25rem 0.4rem",
+    borderRadius: "0.375rem",
+  },
+  drawerBody: {
+    flex: "1 1 auto",
+    overflow: "auto",
+    padding: "1rem",
   },
   errorText: {
     color: "#B91C1C",

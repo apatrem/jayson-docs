@@ -47,6 +47,12 @@ export interface EditorProps {
    * node types to a live schema).
    */
   authoredManifests?: AuthoredBlockManifest[];
+  /**
+   * When provided, the toolbar shows an "Add block" button that calls this
+   * (the parent opens the block-palette drawer). Omitted on surfaces without a
+   * palette (e.g. the standalone deck editor).
+   */
+  onAddBlock?: () => void;
 }
 
 const DEFAULT_CONTENT: JSONContent = {
@@ -252,6 +258,7 @@ export const Editor: FC<EditorProps> = ({
   onUpdate,
   onEditorReady,
   authoredManifests = [],
+  onAddBlock,
 }) => {
   const deck = docModel?.kind === "deck" ? docModel : null;
   // M6 known limitation (see BLOCKERS.md drift-2026-05-25b): the deck surface
@@ -321,6 +328,20 @@ export const Editor: FC<EditorProps> = ({
     <BrandProvider tokens={defaultBrand}>
     <section style={styles.shell} aria-label="WYSIWYG editor">
       <div style={styles.toolbar} aria-label="Formatting toolbar">
+        {onAddBlock !== undefined ? (
+          <>
+            <button
+              type="button"
+              aria-label="Insert block"
+              disabled={!effectiveEditable}
+              onClick={onAddBlock}
+              style={styles.addBlockButton}
+            >
+              + Add block
+            </button>
+            <span style={styles.toolbarGroup} aria-hidden="true" />
+          </>
+        ) : null}
         <ToolbarButton
           label="Bold"
           active={editor?.isActive("bold") ?? false}
@@ -635,6 +656,17 @@ const styles: Record<string, CSSProperties> = {
     fontSize: "0.8125rem",
     minWidth: "2rem",
     padding: "0.3rem 0.6rem",
+  },
+  addBlockButton: {
+    appearance: "none",
+    border: "1px solid #0B3D91",
+    background: "#0B3D91",
+    color: "#FFFFFF",
+    borderRadius: "0.375rem",
+    cursor: "pointer",
+    fontSize: "0.8125rem",
+    fontWeight: 600,
+    padding: "0.3rem 0.7rem",
   },
   surface: {
     minHeight: "16rem",

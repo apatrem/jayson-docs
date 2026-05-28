@@ -148,7 +148,7 @@ const FakeEditor: FC<EditorSurfaceProps> = ({ initialContent, onUpdate }) => (
 );
 
 function fakeEditorWith(commandName: string, command: () => boolean): FC<EditorSurfaceProps> {
-  const FakePaletteEditor: FC<EditorSurfaceProps> = ({ onEditorReady }) => {
+  const FakePaletteEditor: FC<EditorSurfaceProps> = ({ onEditorReady, onAddBlock }) => {
     useEffect(() => {
       onEditorReady?.({
         commands: {
@@ -159,7 +159,16 @@ function fakeEditorWith(commandName: string, command: () => boolean): FC<EditorS
         onEditorReady?.(null);
       };
     }, [onEditorReady]);
-    return <div>Fake editable surface</div>;
+    // Mirror the real editor toolbar's "Insert block" trigger so palette tests
+    // can open the drawer (the trigger now lives in the editor, not the header).
+    return (
+      <div>
+        Fake editable surface
+        <button type="button" aria-label="Insert block" onClick={() => onAddBlock?.()}>
+          + Add block
+        </button>
+      </div>
+    );
   };
   return FakePaletteEditor;
 }

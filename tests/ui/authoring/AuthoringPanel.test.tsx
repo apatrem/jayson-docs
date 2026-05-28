@@ -61,7 +61,14 @@ const minDoc: DocumentModel = {
 };
 
 /** Minimal editor stub for DocumentView integration tests. */
-const FakeEditor: FC<EditorSurfaceProps> = () => <div>editor</div>;
+const FakeEditor: FC<EditorSurfaceProps> = ({ onAddBlock }) => (
+  <div>
+    editor
+    <button type="button" aria-label="Insert block" onClick={() => onAddBlock?.()}>
+      + Add block
+    </button>
+  </div>
+);
 
 // ─── AuthoringPanel unit tests ─────────────────────────────────────────────────
 
