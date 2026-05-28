@@ -179,13 +179,13 @@ describe("DocumentView", () => {
 
     await waitFor(() => {
       expect(
-        within(screen.getByLabelText("Rendered document preview")).getByText(
+        within(screen.getByLabelText("Editable document")).getByText(
           "Original heading",
         ),
       ).toBeTruthy();
     });
     expect(readYamlFile).toHaveBeenCalledWith("/Users/me/Documents/proposal.yaml");
-    expect(screen.getByLabelText("Rendered document preview")).toBeTruthy();
+    // Single WYSIWYG surface: the editable document is the only rendered view.
     expect(screen.getByLabelText("Editable document")).toBeTruthy();
   });
 
@@ -220,12 +220,15 @@ describe("DocumentView", () => {
       <DocumentView
         path="/Users/me/Documents/proposal.yaml"
         readYamlFile={() => Promise.resolve(savedYaml)}
-        EditorComponent={FakeEditor}
       />,
     );
 
+    // Single WYSIWYG surface: the reloaded edit shows in the editable document
+    // (there is no separate preview pane).
     await waitFor(() => {
-      expect(screen.getByText("Edited heading")).toBeTruthy();
+      expect(
+        within(screen.getByLabelText("Editable document")).getByText("Edited heading"),
+      ).toBeTruthy();
     });
   });
 
@@ -343,7 +346,9 @@ describe("DocumentView", () => {
     );
 
     expect(screen.queryByText(/Multi-section documents aren't editable yet/u)).toBeNull();
-    expect(screen.getAllByText("Executive summary").length).toBeGreaterThan(0);
+    // Section title is now an inline editable input (single WYSIWYG surface),
+    // so it's matched by its value, not as text content.
+    expect(screen.getAllByDisplayValue("Executive summary").length).toBeGreaterThan(0);
     expect(
       screen.getAllByText("Projected annual OPEX by scenario").length,
     ).toBeGreaterThan(0);

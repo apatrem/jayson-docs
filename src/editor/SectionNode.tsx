@@ -22,6 +22,11 @@ export const SectionNode = Node.create({
   content: "block+",
   defining: true,
   isolating: true,
+  // Sections are structural containers, not selectable units. Making them
+  // non-selectable prevents a click near the section chrome from node-selecting
+  // the whole section (which highlighted the entire section); selection lands
+  // on the block instead.
+  selectable: false,
 
   addAttributes() {
     return {
@@ -94,7 +99,7 @@ const SectionNodeView: FC<NodeViewProps> = ({ node, updateAttributes }) => {
           style={titleStyle}
         />
       </div>
-      <NodeViewContent />
+      <NodeViewContent className="doc-section-content" />
     </NodeViewWrapper>
   );
 };

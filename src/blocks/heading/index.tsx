@@ -164,8 +164,9 @@ const HeadingNodeView: FC<NodeViewProps> = ({ node }) => {
     fontSize: brand.typography.scale[scaleKey],
     lineHeight: brand.typography.lineHeight.tight,
     color: resolveBrandToken(brand, "colors.semantic.headingPrimary"),
+    // Inter-block spacing is centralized in editor.css (--doc-block-gap); the
+    // heading sets no marginBottom of its own to avoid double gaps.
     margin: 0,
-    marginBottom: brand.spacing.unit * 2,
     fontWeight: 600,
   };
 

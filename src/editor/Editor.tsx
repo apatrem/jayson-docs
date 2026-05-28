@@ -30,6 +30,8 @@ import { buildAuthoredTipTapNode } from "../blocks/authored/node-builder";
 import type { AuthoredBlockManifest } from "../blocks/authored/defineAuthoredBlock";
 import { BrandProvider } from "../brand-tokens/BrandProvider";
 import { defaultBrand } from "../brand/defaultBrand";
+import { resolveBrandToken } from "../brand-tokens/resolve";
+import "./editor.css";
 
 export interface EditorProps {
   initialContent?: JSONContent | string;
@@ -303,7 +305,13 @@ export const Editor: FC<EditorProps> = ({
     editor.commands.setContent(editorContent, false);
   }, [deck, editor, editorContent]);
 
-  const editorSurface = <EditorContent editor={editor} style={styles.surface} />;
+  // The inter-block gap is a single brand-derived value, exposed as a CSS
+  // custom property so editor.css can apply one consistent margin between
+  // top-level blocks (see `.doc-section-content > * + *`).
+  const surfaceStyle: CSSProperties = { ...styles.surface };
+  (surfaceStyle as Record<string, string>)["--doc-block-gap"] =
+    `${defaultBrand.spacing.unit * 3}px`;
+  const editorSurface = <EditorContent editor={editor} style={surfaceStyle} />;
 
   return (
     // Provide brand context so block node-views (which render the real block
@@ -603,9 +611,12 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     flexWrap: "wrap",
     gap: "0.375rem",
-    padding: "0.5rem 0",
-    background: "#FFFFFF",
-    borderBottom: "1px solid #E2E8F0",
+    padding: "0.5rem 0.75rem",
+    margin: "0 -0.75rem",
+    background: "rgba(226, 232, 240, 0.82)",
+    backdropFilter: "blur(6px)",
+    WebkitBackdropFilter: "blur(6px)",
+    borderBottom: "1px solid #D6DEE8",
   },
   toolbarGroup: {
     display: "inline-flex",
@@ -628,6 +639,13 @@ const styles: Record<string, CSSProperties> = {
   surface: {
     minHeight: "16rem",
     padding: "0.25rem 0",
+    // Base typography matches DocumentRenderer's page so editor text is the
+    // same size/font as the rendered output (plain paragraphs would otherwise
+    // inherit the 16px browser default and look larger than the export).
+    fontFamily: defaultBrand.typography.fonts.body.family,
+    fontSize: defaultBrand.typography.scale.body,
+    lineHeight: defaultBrand.typography.lineHeight.normal,
+    color: resolveBrandToken(defaultBrand, "colors.semantic.textPrimary"),
   },
   deckShell: {
     display: "grid",

@@ -1,0 +1,19 @@
+/*
+ * Editor surface base styles. Keeps the WYSIWYG surface visually consistent
+ * with DocumentRenderer (the export/print output) and centralizes inter-block
+ * spacing in one place via the --doc-block-gap custom property (set from brand
+ * tokens on the surface in Editor.tsx).
+ */
+
+/* Match the renderer: paragraphs carry no intrinsic margin; block spacing is
+   applied centrally below, not by default browser <p> margins (which made
+   editor text blocks look larger / more spaced than the rendered output). */
+.ProseMirror p {
+  margin: 0;
+}
+
+/* One consistent gap between top-level blocks inside a section. The section
+   node view tags its content container with `doc-section-content`. */
+.doc-section-content > * + * {
+  margin-top: var(--doc-block-gap, 12px);
+}

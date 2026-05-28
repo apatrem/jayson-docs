@@ -34,7 +34,7 @@ import {
   type ProseMirrorDocument,
   type ProseMirrorNode,
 } from "../../editor/mapping";
-import { DocumentRenderer, type DocumentModel } from "../../renderer/DocumentRenderer";
+import type { DocumentModel } from "../../renderer/DocumentRenderer";
 import { DocModelSchema } from "../../schema/docmodel";
 import {
   useBrandBlocksFromRegistry,
@@ -375,15 +375,8 @@ export const DocumentView: FC<DocumentViewProps> = ({
         </div>
       </header>
       <BrandProvider tokens={defaultBrand}>
-      <div style={styles.contentGrid}>
-        <section aria-label="Rendered document preview" style={styles.previewPane}>
-          <div style={styles.paneLabel}>Preview · read-only</div>
-          <div style={styles.paneBody}>
-            <DocumentRenderer doc={doc} brand={defaultBrand} docFolderPath={parentPath(path)} />
-          </div>
-        </section>
+      <div style={contentGridStyle(paletteOpen)}>
         <section aria-label="Editable document" style={styles.editorPane}>
-          <div style={{ ...styles.paneLabel, ...styles.paneLabelEdit }}>Edit</div>
           <div style={styles.editorBody}>
           {/* Re-seed/remount when a different file is opened OR the installed
               authored set changes (the editor schema is built once at mount). */}
@@ -639,11 +632,6 @@ function isProseMirrorNode(value: unknown): value is ProseMirrorNode {
   );
 }
 
-function parentPath(path: string): string {
-  const index = path.lastIndexOf("/");
-  return index <= 0 ? "/" : path.slice(0, index);
-}
-
 type SaveState = "idle" | "saving" | "saved" | "failed";
 
 const SAVE_STATE_LABEL: Record<SaveState, string> = {
@@ -664,6 +652,16 @@ function saveStatusStyle(state: SaveState): CSSProperties {
   return {
     ...styles.saveStatus,
     ...SAVE_STATE_COLOR[state],
+  };
+}
+
+// Single WYSIWYG surface: one editor column, plus the palette column when open.
+function contentGridStyle(paletteOpen: boolean): CSSProperties {
+  return {
+    display: "grid",
+    gap: "1rem",
+    gridTemplateColumns: paletteOpen ? "minmax(0, 1fr) 20rem" : "minmax(0, 1fr)",
+    alignItems: "start",
   };
 }
 
@@ -707,53 +705,19 @@ const styles = {
     borderRadius: "999px",
     padding: "0.2rem 0.6rem",
   },
-  contentGrid: {
-    display: "grid",
-    gap: "1rem",
-    gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) auto",
-  },
-  previewPane: {
-    border: "1px solid #E2E8F0",
-    borderRadius: "0.75rem",
-    overflow: "hidden",
-    background: "#FFFFFF",
-    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
-    display: "flex",
-    flexDirection: "column",
-    minWidth: 0,
-  },
-  paneLabel: {
-    flex: "0 0 auto",
-    fontSize: "0.6875rem",
-    fontWeight: 700,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase",
-    color: "#64748B",
-    padding: "0.5rem 0.75rem",
-    borderBottom: "1px solid #E2E8F0",
-    background: "#F8FAFC",
-  },
-  paneLabelEdit: {
-    color: "#0B3D91",
-    borderBottom: "2px solid #0B3D91",
-    background: "#FFFFFF",
-    borderTopLeftRadius: "0.75rem",
-    borderTopRightRadius: "0.75rem",
-  },
-  paneBody: {
-    overflow: "auto",
-    padding: "1rem",
-    flex: "1 1 auto",
-  },
   // The editor body must NOT create a scroll/clip context (no `overflow`), so
   // the editor's position:sticky toolbar resolves against the window and pins
   // to the viewport top as the page scrolls.
   editorBody: {
-    padding: "1rem",
+    padding: "1.5rem 2rem",
     flex: "1 1 auto",
   },
+  // Single WYSIWYG surface — a centered document card.
   editorPane: {
     minWidth: 0,
+    width: "100%",
+    maxWidth: "60rem",
+    margin: "0 auto",
     display: "flex",
     flexDirection: "column",
     border: "1px solid #E2E8F0",
