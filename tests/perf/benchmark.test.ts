@@ -17,7 +17,10 @@ const TARGETS = {
 describe("M4 perf benchmark harness", () => {
   it("measures the D-39 anchor fixture in a real browser", async () => {
     const doc = readAnchorFixture();
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.launch({
+      headless: true,
+      args: ["--headless=new", "--disable-gpu"],
+    });
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 
     try {

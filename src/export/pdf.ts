@@ -261,7 +261,12 @@ export async function exportHtmlToPdf(
   templates: { headerTemplate: string; footerTemplate: string },
   kind: PdfModel["kind"] = "document",
 ): Promise<void> {
-  const browser = await chromium.launch({ headless: true });
+  // Playwright 1.47 defaults Chromium 129 to old headless, which can SIGABRT
+  // during AppKit startup on macOS 26 before any document code runs.
+  const browser = await chromium.launch({
+    headless: true,
+    args: ["--headless=new", "--disable-gpu"],
+  });
   try {
     const page = await browser.newPage();
     // `waitUntil: "load"` assumes the HTML is fully self-contained:
