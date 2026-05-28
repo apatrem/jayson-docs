@@ -18,7 +18,10 @@ import {
   type NodeViewProps,
 } from "@tiptap/react";
 import { useEffect, useMemo, useRef, type FC, type ReactNode, type ComponentType } from "react";
-import * as echarts from "echarts";
+// ECharts is loaded lazily (see the Chart effect below) so that importing the
+// block registry — which most of the test suite and the app startup do — does
+// NOT pull multi-MB of ECharts into memory. Eagerly importing it here caused
+// the heap to accumulate per test file until the worker OOM-crashed.
 import type { ECharts, EChartsOption } from "echarts";
 import { Caption } from "../../block-primitives";
 import { useBrandTokens } from "../../brand-tokens/useBrandTokens";
@@ -460,18 +463,27 @@ export const Chart: FC<ChartProps> = ({
   const chartRef = useRef<ECharts | null>(null);
 
   useEffect(() => {
-    if (staticSvg || !chartElRef.current) return;
+    const el = chartElRef.current;
+    if (staticSvg || !el) return;
 
-    const chart = echarts.init(chartElRef.current, undefined, { renderer });
-    chartRef.current = chart;
-    chart.setOption(option, true);
+    let cancelled = false;
+    let chart: ECharts | null = null;
+    let resizeObserver: ResizeObserver | null = null;
 
-    const resizeObserver = new ResizeObserver(() => chart.resize());
-    resizeObserver.observe(chartElRef.current);
+    // Lazy-load ECharts only when a live chart actually renders.
+    void import("echarts").then((echarts) => {
+      if (cancelled || chartElRef.current === null) return;
+      chart = echarts.init(el, undefined, { renderer });
+      chartRef.current = chart;
+      chart.setOption(option, true);
+      resizeObserver = new ResizeObserver(() => chart?.resize());
+      resizeObserver.observe(el);
+    });
 
     return () => {
-      resizeObserver.disconnect();
-      chart.dispose();
+      cancelled = true;
+      resizeObserver?.disconnect();
+      chart?.dispose();
       if (chartRef.current === chart) {
         chartRef.current = null;
       }
