@@ -38,7 +38,7 @@ export async function renderExportBody(
   const diagramSvgs = await preRenderDiagramSvgs(doc, brand);
   const chartSvgs = preRenderChartSvgs(doc, brand);
   const imageDataUris = await preloadImageDataUris(doc, brand, docFolderPath, sharedFolderPath);
-  return renderToStaticMarkup(
+  const rendered = renderToStaticMarkup(
     createElement(DocumentRenderer, {
       doc,
       brand,
@@ -49,6 +49,43 @@ export async function renderExportBody(
       imageDataUris,
     }),
   );
+  // The brand logo for the @page footer-left margin box (paged.js running
+  // element). Lifted out of flow by `.doc-running-footer-logo` in buildPageCss.
+  const footerLogo = await loadFooterLogoMarkup(brand, sharedFolderPath);
+  return `<div class="doc-running-footer-logo">${footerLogo}</div>${rendered}`;
+}
+
+/**
+ * Markup for the footer brand logo. Loads the real `$brand:logo.primary` SVG via
+ * the same binary-read IPC used for image blocks (sanitized, embedded as an
+ * <img> data URI). Falls back to a brand-token badge when the asset can't be
+ * read or isn't an SVG (dev stub, tests, or a missing file) so the footer
+ * always shows a logo.
+ */
+async function loadFooterLogoMarkup(
+  brand: BrandTokens,
+  sharedFolderPath: string,
+): Promise<string> {
+  try {
+    const path = resolveAssetPath(
+      { brand, docFolderPath: sharedFolderPath, sharedFolderPath },
+      "$brand:logo.primary",
+    );
+    const encoded = await readBinaryFile(path);
+    if (decodeBase64ToUtf8(encoded).includes("<svg")) {
+      const safe = svgBase64ToSafeBase64(encoded);
+      return `<img src="data:image/svg+xml;base64,${safe}" alt="" />`;
+    }
+  } catch {
+    // Fall through to the brand-token badge below.
+  }
+  const short = brand.identity.shortName ?? brand.identity.name.slice(0, 3);
+  const color = brand.colors.brand.primary;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 40" role="img" aria-label="${escapeHtml(
+    brand.identity.name,
+  )}"><rect width="128" height="40" rx="4" fill="${color}"/><text x="64" y="26" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="14" font-weight="700">${escapeHtml(
+    short,
+  )}</text></svg>`;
 }
 
 export async function renderStaticHtmlForExport(

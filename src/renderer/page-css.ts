@@ -56,8 +56,10 @@ export function buildPageCss(brand: BrandTokens, opts: PageChromeOptions): strin
   const headerBox = title
     ? `@top-center { content: "${cssEscape(title)}"; font-size: 9pt; color: ${footerColor}; }`
     : "";
-  const footerBox = showPageNumbers
-    ? `@bottom-center { content: counter(page) " / " counter(pages); font-size: 9pt; color: ${footerColor}; }`
+  // Footer: brand logo on the left (a paged.js running element pulled from the
+  // body — see `.doc-running-footer-logo`), page number on the right.
+  const footerRight = showPageNumbers
+    ? `@bottom-right { content: counter(page) " / " counter(pages); font-size: 9pt; color: ${footerColor}; }`
     : "";
 
   return `
@@ -67,8 +69,14 @@ export function buildPageCss(brand: BrandTokens, opts: PageChromeOptions): strin
     size: ${size} ${orientation};
     margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
     ${headerBox}
-    ${footerBox}
+    @bottom-left { content: element(footerLogo); }
+    ${footerRight}
   }
+  /* The footer logo lives in the body and is lifted into the @bottom-left
+     margin box by paged.js. Hidden in normal (non-paginated) flow. */
+  .doc-running-footer-logo { position: running(footerLogo); }
+  .doc-running-footer-logo img,
+  .doc-running-footer-logo svg { height: 7mm; width: auto; display: block; }
   ${BREAK_RULES}
 `;
 }
