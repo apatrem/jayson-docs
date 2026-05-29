@@ -87,3 +87,11 @@ Parses every YAML/JSON spec and fixture in the repo (CI runs this on every push)
 ## Stack
 
 Tauri 2 · React · TypeScript · TipTap · Zod · ECharts · Mermaid · Playwright · SQLite (cost ledger).
+
+## License
+
+This project is licensed under the Apache License 2.0.
+
+If you redistribute this software or derivative works, you must preserve the license, copyright notices, and attribution notices as required by the Apache License 2.0.
+
+See LICENSE and NOTICE.
