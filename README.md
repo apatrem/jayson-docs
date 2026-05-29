@@ -92,11 +92,11 @@ Parses every YAML/JSON spec and fixture in the repo (CI runs this on every push)
 
 ## Status
 
-**M0 scaffold** in progress on `main` (Vite + React + TS, Tauri shell, ESLint, Vitest, CI). Schema, blocks, editor, and setup pipeline follow **M1** in `docs/TASKS.md`.
+MVP is running. LLM not wired. In active development.
 
 ## Stack
 
-Tauri 2 · React · TypeScript · TipTap · Zod · ECharts · Mermaid · Playwright · SQLite (cost ledger).
+Tauri 2 · React · TypeScript · TipTap · Zod · ECharts · Mermaid · Playwright · optional SQLite (for the cost ledger).
 
 ## License
 
