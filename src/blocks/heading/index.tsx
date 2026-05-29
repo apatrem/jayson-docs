@@ -164,15 +164,18 @@ const HeadingNodeView: FC<NodeViewProps> = ({ node, decorations }) => {
   // (recomputed live per transaction). "" → unnumbered → no marker.
   const number = readHeadingNumberDecoration(decorations);
 
-  const style: CSSProperties = {
+  const headingType: CSSProperties = {
     fontFamily: brand.typography.fonts.heading.family,
     fontSize: brand.typography.scale[scaleKey],
     lineHeight: brand.typography.lineHeight.tight,
     color: resolveBrandToken(brand, "colors.semantic.headingPrimary"),
+    fontWeight: 600,
+  };
+  const style: CSSProperties = {
+    ...headingType,
     // Inter-block spacing is centralized in editor.css (--doc-block-gap); the
     // heading sets no marginBottom of its own to avoid double gaps.
     margin: 0,
-    fontWeight: 600,
     flex: number ? "1 1 auto" : undefined,
     minWidth: number ? 0 : undefined,
   };
@@ -183,11 +186,18 @@ const HeadingNodeView: FC<NodeViewProps> = ({ node, decorations }) => {
       data-block-id={String(node.attrs.blockId)}
       data-block-type="heading"
       data-level={level}
-      style={number ? { display: "flex", alignItems: "baseline", gap: "0.5em" } : undefined}
+      style={number ? { display: "flex", alignItems: "baseline", gap: "0.3em" } : undefined}
     >
       {number ? (
-        <span className="doc-heading-number" contentEditable={false} style={{ flex: "0 0 auto" }}>
-          {number}
+        // Matches the heading's own font/size/weight/colour, with a trailing
+        // period (e.g. "1.2."), so it reads as part of the heading.
+        <span
+          className="doc-heading-number"
+          contentEditable={false}
+          data-heading-number={number}
+          style={{ ...headingType, flex: "0 0 auto" }}
+        >
+          {`${number}.`}
         </span>
       ) : null}
       <NodeViewContent as={Tag} style={style} />
@@ -295,9 +305,11 @@ export const Heading: FC<HeadingProps> = ({ block }) => {
           {
             className: "doc-heading-number",
             "data-heading-number": number,
-            style: { marginRight: "0.5em" },
+            // Inside the heading element → inherits its font/size/weight/colour.
+            // Trailing period + a small gap, e.g. "1.2. Heading".
+            style: { marginRight: "0.3em" },
           },
-          number,
+          `${number}.`,
         );
 
   return createElement(

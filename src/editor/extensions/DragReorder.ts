@@ -24,6 +24,13 @@ import { setBlockAttr } from "../block-commands";
 
 const DRAG_DATA_TYPE = "application/x-docsystem-block-pos";
 
+// The block being dragged, tracked at module scope rather than via dataTransfer:
+// some webviews don't expose custom dataTransfer MIME types during `dragover`,
+// so a `types`-based check would skip preventDefault and the drop would never
+// fire. The handle and the editor's drop handler share this module, so this is
+// reliable. (dataTransfer.setData is still set so the OS sees a valid drag.)
+let activeBlockDragSource: number | null = null;
+
 // ── Pure helpers (unit-tested) ────────────────────────────────────────────
 
 export interface BlockBoundary {
@@ -227,7 +234,10 @@ class GutterHandleView {
   private menuBlockStart: number | null = null;
   private hideTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private readonly view: EditorView) {
+  constructor(
+    private readonly view: EditorView,
+    private readonly defaultSpacingMultiple: number,
+  ) {
     // Mount on document.body (a stable container) rather than the editor
     // wrapper — React re-renders the wrapper and can detach it mid-session,
     // which orphans an absolutely-positioned child. The handle/menu use page
@@ -341,7 +351,9 @@ class GutterHandleView {
     spacingInput.min = "0";
     spacingInput.step = "0.5";
     spacingInput.className = "doc-block-menu-input";
-    spacingInput.placeholder = "inherit";
+    // Empty input shows the inherited document spacing as a light-grey
+    // placeholder so the consultant sees the value they'd be overriding.
+    spacingInput.placeholder = String(this.defaultSpacingMultiple);
     const currentSpace: unknown = node.attrs.spaceBefore;
     spacingInput.value = typeof currentSpace === "number" ? String(currentSpace) : "";
     spacingInput.addEventListener("change", () => {
@@ -445,6 +457,7 @@ class GutterHandleView {
       return;
     }
     this.dragging = true;
+    activeBlockDragSource = this.blockStart;
     event.dataTransfer.setData(DRAG_DATA_TYPE, String(this.blockStart));
     event.dataTransfer.effectAllowed = "move";
     const blockDom = this.view.nodeDOM(this.blockStart);
@@ -455,6 +468,7 @@ class GutterHandleView {
 
   private readonly onDragEnd = (): void => {
     this.dragging = false;
+    activeBlockDragSource = null;
     setDropPos(this.view, null);
     this.hide();
   };
@@ -479,10 +493,21 @@ class GutterHandleView {
   }
 }
 
-export const DragReorder = Extension.create({
+export interface DragReorderOptions {
+  /** Document default block-spacing multiple, shown as the "Spacing above"
+   * placeholder so an unset block reveals the inherited value. */
+  defaultSpacingMultiple: number;
+}
+
+export const DragReorder = Extension.create<DragReorderOptions>({
   name: "dragReorder",
 
+  addOptions() {
+    return { defaultSpacingMultiple: 3 };
+  },
+
   addProseMirrorPlugins() {
+    const defaultSpacingMultiple = this.options.defaultSpacingMultiple;
     return [
       new Plugin<DragReorderState>({
         key: dragReorderKey,
@@ -501,18 +526,21 @@ export const DragReorder = Extension.create({
             return value;
           },
         },
-        view: (editorView) => new GutterHandleView(editorView),
+        view: (editorView) => new GutterHandleView(editorView, defaultSpacingMultiple),
         props: {
           decorations(state) {
             return dropIndicatorDecorations(state);
           },
           handleDOMEvents: {
             dragover(view, event) {
-              const types = event.dataTransfer?.types;
-              if (!types || !Array.from(types).includes(DRAG_DATA_TYPE)) {
+              if (activeBlockDragSource === null) {
                 return false;
               }
+              // Must preventDefault on dragover or the browser never fires drop.
               event.preventDefault();
+              if (event.dataTransfer) {
+                event.dataTransfer.dropEffect = "move";
+              }
               setDropPos(view, dropPosForEvent(view, event));
               return false;
             },
@@ -524,16 +552,17 @@ export const DragReorder = Extension.create({
               return false;
             },
             drop(view, event) {
-              const raw = event.dataTransfer?.getData(DRAG_DATA_TYPE);
-              if (raw === undefined || raw.length === 0) {
+              const source = activeBlockDragSource;
+              if (source === null) {
                 return false;
               }
+              activeBlockDragSource = null;
               const insertAt = dropPosForEvent(view, event);
               setDropPos(view, null);
               if (insertAt === null) {
                 return false;
               }
-              const tr = buildMoveTransaction(view.state, Number(raw), insertAt);
+              const tr = buildMoveTransaction(view.state, source, insertAt);
               if (tr === null) {
                 return false;
               }

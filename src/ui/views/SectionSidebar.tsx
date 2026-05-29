@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type DragEvent, type FC } from "react";
+import { useRef, useState, type CSSProperties, type DragEvent, type FC } from "react";
 
 /**
  * Floating, foldable section navigator (ADR-0018, item 1). Lists the document's
@@ -37,7 +37,22 @@ export const SectionSidebar: FC<SectionSidebarProps> = ({
   const [collapsed, setCollapsed] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  // `dragIndex` (state) drives the visual dim; `dragIndexRef` mirrors it
+  // synchronously so onDragOver/onDrop read the right value on the very first
+  // event (React state lags a render behind dragstart).
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const dragIndexRef = useRef<number | null>(null);
+
+  const beginDrag = (index: number, event: DragEvent): void => {
+    dragIndexRef.current = index;
+    setDragIndex(index);
+    event.dataTransfer.setData("text/plain", String(index));
+    event.dataTransfer.effectAllowed = "move";
+  };
+  const endDrag = (): void => {
+    dragIndexRef.current = null;
+    setDragIndex(null);
+  };
 
   const startEdit = (section: SectionSummary): void => {
     setEditingId(section.id);
@@ -52,10 +67,11 @@ export const SectionSidebar: FC<SectionSidebarProps> = ({
 
   const onDrop = (event: DragEvent, targetIndex: number): void => {
     event.preventDefault();
-    if (dragIndex !== null && dragIndex !== targetIndex) {
-      onReorder(dragIndex, targetIndex);
+    const from = dragIndexRef.current;
+    if (from !== null && from !== targetIndex) {
+      onReorder(from, targetIndex);
     }
-    setDragIndex(null);
+    endDrag();
   };
 
   return (
@@ -92,10 +108,13 @@ export const SectionSidebar: FC<SectionSidebarProps> = ({
               <li
                 key={section.id}
                 onDragOver={(event) => {
-                  if (dragIndex !== null) event.preventDefault();
+                  if (dragIndexRef.current !== null) {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = "move";
+                  }
                 }}
                 onDrop={(event) => onDrop(event, index)}
-                onDragEnd={() => setDragIndex(null)}
+                onDragEnd={endDrag}
                 style={{
                   ...styles.item,
                   ...(isActive ? styles.itemActive : {}),
@@ -106,11 +125,7 @@ export const SectionSidebar: FC<SectionSidebarProps> = ({
                   aria-label={`Drag section ${section.title ?? UNTITLED}`}
                   role="button"
                   draggable={!isEditing}
-                  onDragStart={(event) => {
-                    setDragIndex(index);
-                    event.dataTransfer.setData("text/plain", String(index));
-                    event.dataTransfer.effectAllowed = "move";
-                  }}
+                  onDragStart={(event) => beginDrag(index, event)}
                   style={styles.grip}
                 >
                   ⠿
@@ -214,7 +229,13 @@ const styles: Record<string, CSSProperties> = {
   },
   itemActive: { background: "rgba(37, 99, 235, 0.12)" },
   itemDragging: { opacity: 0.5 },
-  grip: { color: "rgba(100, 116, 139, 0.6)", cursor: "grab", fontSize: 12 },
+  grip: {
+    color: "rgba(100, 116, 139, 0.6)",
+    cursor: "grab",
+    fontSize: 12,
+    userSelect: "none",
+    flex: "0 0 auto",
+  },
   titleButton: {
     flex: 1,
     minWidth: 0,

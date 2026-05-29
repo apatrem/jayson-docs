@@ -21,7 +21,7 @@ import { BASE_BLOCK_ATTR_NAMES } from "./base-block-attrs";
 import { HeadingNumber } from "./extensions/HeadingNumber";
 import { DragReorder } from "./extensions/DragReorder";
 import { LayoutMarkers } from "./extensions/LayoutMarkers";
-import { resolveBlockGapPx } from "../renderer/block-spacing";
+import { resolveBlockGapPx, resolveBlockSpacingMultiple } from "../renderer/block-spacing";
 import {
   resolveNumberingScheme,
   type NumberingScheme,
@@ -196,6 +196,7 @@ const DocumentWithSections = Document.extend({
 export function createEditorExtensions(
   authoredManifests: readonly AuthoredBlockManifest[] = [],
   numberingScheme?: NumberingScheme,
+  blockSpacingMultiple = 3,
 ): Extensions {
   return [
     DocumentWithSections,
@@ -225,7 +226,8 @@ export function createEditorExtensions(
     // brand ⊕ meta at editor creation; defaults to all-decimal when omitted.
     HeadingNumber.configure(numberingScheme ? { scheme: numberingScheme } : {}),
     // Gutter drag-handle to reorder blocks within/across sections (ADR-0018).
-    DragReorder,
+    // The default spacing multiple feeds the "Spacing above" placeholder.
+    DragReorder.configure({ defaultSpacingMultiple: blockSpacingMultiple }),
     // Editor-only layout markers: a "page break" rule above breakBefore blocks
     // and a margin-top override for spaceBefore (ADR-0018, items 5/7).
     LayoutMarkers.configure({ spacingUnit: defaultBrand.spacing.unit }),
@@ -315,7 +317,11 @@ export const Editor: FC<EditorProps> = ({
     [docModel],
   );
   const editor = useEditor({
-    extensions: createEditorExtensions(authoredManifests, numberingScheme),
+    extensions: createEditorExtensions(
+      authoredManifests,
+      numberingScheme,
+      resolveBlockSpacingMultiple(docModel?.kind === "document" ? docModel.meta : undefined),
+    ),
     content: editorContent,
     editable: effectiveEditable,
     editorProps: {

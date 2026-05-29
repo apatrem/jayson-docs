@@ -67,6 +67,16 @@
   border: 1px solid rgba(148, 163, 184, 0.4);
   border-radius: 6px;
   box-shadow: 0 6px 20px rgba(15, 23, 42, 0.16);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+}
+/* Buttons and inputs don't inherit font by default — force consistency so the
+   "Spacing above" row matches the other menu items. */
+.doc-block-menu-item,
+.doc-block-menu-row,
+.doc-block-menu-input {
+  font-family: inherit;
+  font-size: inherit;
 }
 .doc-block-menu-item {
   display: block;
