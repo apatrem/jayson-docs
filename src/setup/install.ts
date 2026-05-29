@@ -461,7 +461,7 @@ function writeOsSecret(name: string, value: string): void {
   runSecretCommand("secret-tool", [
     "store",
     "--label",
-    `Document System ${name}`,
+    `Jayson Docs ${name}`,
     "service",
     "docsystem",
     "account",
@@ -583,7 +583,7 @@ Telemetry: NONE
 }
 
 const PRIVACY_NOTICE = `
-Document System — Setup
+Jayson Docs — Setup
 
 This wizard configures the app for your machine. Before continuing, review
 the privacy notice in docs/privacy-notice.md.

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This runbook lets a devops admin set up Document System for a new consultancy install in roughly one hour of hands-on devops admin clock time, **excluding** LLM-call latency, human review time for proposed brand tokens, and human review time for proposed Brand blocks. A real-world install with 5–15 Brand-block proposals plus a careful brand review can easily run 2–3 wall-clock hours; the one-hour figure is the floor, not the ceiling.
+This runbook lets a devops admin set up Jayson Docs for a new consultancy install in roughly one hour of hands-on devops admin clock time, **excluding** LLM-call latency, human review time for proposed brand tokens, and human review time for proposed Brand blocks. A real-world install with 5–15 Brand-block proposals plus a careful brand review can easily run 2–3 wall-clock hours; the one-hour figure is the floor, not the ceiling.
 
 The setup flow turns curated demo files into:
 
@@ -207,13 +207,13 @@ Do not blanket-delete `generated-blocks/active/` — earlier installs may have a
 ```bash
 # Per-consultant config lives in the app config directory. Remove the
 # config file; the wizard will recreate it on the next run.
-# macOS:   ~/Library/Application Support/DocSystem/config.yaml
-# Windows: %APPDATA%\DocSystem\config.yaml
-# Linux:   $XDG_CONFIG_HOME/DocSystem/config.yaml (default: ~/.config/DocSystem/)
+# macOS:   ~/Library/Application Support/com.consultancy.docsystem/config.yaml
+# Windows: %APPDATA%\com.consultancy.docsystem\config.yaml
+# Linux:   ~/.config/docsystem/config.yaml (or $XDG_CONFIG_HOME/docsystem/)
 
 # Also clear keychain entries (macOS example — adjust per OS):
-security delete-generic-password -s DocSystem-fast || true
-security delete-generic-password -s DocSystem-thinking || true
+security delete-generic-password -s docsystem -a llm.fast.api-key || true
+security delete-generic-password -s docsystem -a llm.thinking.api-key || true
 ```
 
 The cost ledger (`cost.db`) in the same folder is **not** touched by rollback — historical spend rows are operational data, not install state. Wipe explicitly via `Settings -> My LLM Spend -> Clear all cost history` if you also want to reset spend tracking.
@@ -222,9 +222,9 @@ The cost ledger (`cost.db`) in the same folder is **not** touched by rollback �
 
 Until T-108 (code signing) lands, installers are unsigned on macOS and Windows. The first launch will trigger OS protection prompts:
 
-- **macOS Gatekeeper:** opening the `.dmg` will show "DocSystem can't be opened because it is from an unidentified developer." Right-click the `.app` in Finder → **Open** → confirm in the dialog. macOS then remembers the choice. Do not bypass globally with `sudo spctl --master-disable` — that weakens system-wide security for one app.
+- **macOS Gatekeeper:** opening the `.dmg` will show "Jayson Docs can't be opened because it is from an unidentified developer." Right-click the `.app` in Finder → **Open** → confirm in the dialog. macOS then remembers the choice. Do not bypass globally with `sudo spctl --master-disable` — that weakens system-wide security for one app.
 - **Windows SmartScreen:** Microsoft Defender SmartScreen shows "Windows protected your PC." Click **More info** → **Run anyway**. SmartScreen also remembers the per-binary choice.
-- **Linux AppImage:** mark executable (`chmod +x DocSystem-*.AppImage`); no Gatekeeper-equivalent prompt.
+- **Linux AppImage:** mark executable (`chmod +x Jayson\ Docs-*.AppImage`); no Gatekeeper-equivalent prompt.
 
 Document this in the consultancy onboarding email so consultants know it's expected. Once T-108 ships, both prompts disappear and this section can be removed from the runbook.
 

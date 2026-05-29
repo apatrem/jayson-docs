@@ -768,33 +768,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "docsystem"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "base64 0.22.1",
- "env_logger",
- "keyring",
- "log",
- "regex",
- "serde",
- "serde_json",
- "serde_yaml",
- "swc_common",
- "swc_ecma_ast",
- "swc_ecma_parser",
- "swc_ecma_visit",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-fs",
- "tauri-plugin-shell",
- "tauri-plugin-store",
- "thiserror 1.0.69",
- "uuid",
-]
-
-[[package]]
 name = "dom_query"
 version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1838,6 +1811,33 @@ dependencies = [
  "gobject-sys",
  "libc",
  "system-deps",
+]
+
+[[package]]
+name = "jayson-docs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "env_logger",
+ "keyring",
+ "log",
+ "regex",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "swc_common",
+ "swc_ecma_ast",
+ "swc_ecma_parser",
+ "swc_ecma_visit",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-fs",
+ "tauri-plugin-shell",
+ "tauri-plugin-store",
+ "thiserror 1.0.69",
+ "uuid",
 ]
 
 [[package]]

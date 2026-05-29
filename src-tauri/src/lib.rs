@@ -6,6 +6,9 @@
 
 use tauri::Manager;
 
+#[cfg(target_os = "macos")]
+use tauri::menu::MenuItemKind;
+
 mod ipc;
 mod lint;
 
@@ -17,7 +20,23 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             env_logger::init();
-            log::info!("Document System starting (Tauri {})", tauri::VERSION);
+            log::info!("Jayson Docs starting (Tauri {})", tauri::VERSION);
+
+            #[cfg(target_os = "macos")]
+            if let (Some(menu), Some(display_name)) = (app.menu(), app.config().product_name.clone())
+            {
+                if let Ok(items) = menu.items() {
+                    if let Some(MenuItemKind::Submenu(app_submenu)) = items.first() {
+                        let _ = app_submenu.set_text(&display_name);
+                        if let Ok(sub_items) = app_submenu.items() {
+                            if let Some(MenuItemKind::Predefined(about)) = sub_items.first() {
+                                let _ = about.set_text(format!("About {display_name}"));
+                            }
+                        }
+                    }
+                }
+            }
+
             if let Err(error) = ipc::pdf::cleanup_export_temp_dir() {
                 log::warn!("failed to clean export temp dir: {error}");
             }

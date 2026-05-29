@@ -99,7 +99,7 @@ jobs:
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: "Document System ${{ github.ref_name }}"
+          releaseName: "Jayson Docs ${{ github.ref_name }}"
           releaseBody: "Signed installers for macOS and Windows; unsigned AppImage for Linux."
           releaseDraft: false
           prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}

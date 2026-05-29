@@ -1,4 +1,4 @@
-# Decisions Log — Document System
+# Decisions Log — Jayson Docs
 
 **Date:** 2026-05-21
 **Status:** Captured from a grilling session that stress-tested the architecture memo and build brief.
@@ -121,7 +121,7 @@ Expected spend with the mixed strategy: ~$120–250/month (≈ $1,500–3,000/ye
 ## 5. Setup, scaffolding & integration
 
 ### D-15 — Scaffolding skill runs in Claude Code (v1), integrated later
-Initial doc generation is a Claude Code skill that asks structured questions, references the consultancy's roster/fees/references, and outputs a YAML DocModel. Consultant loads the YAML into the docSystem editor.
+Initial doc generation is a Claude Code skill that asks structured questions, references the consultancy's roster/fees/references, and outputs a YAML DocModel. Consultant loads the YAML into the Jayson Docs editor.
 **Why:** Decoupled, fast to iterate, leverages an existing Claude Code workflow.
 **Roadmap:** v1.1+ — integrate scaffolding into the editor as "New from template" with the same questionnaire inline.
 
@@ -271,7 +271,7 @@ The `authored-block-generation` category covers initial generation, preview iter
 - Any behavioral signal beyond what's strictly needed to compute spend
 
 **Storage:**
-- Local SQLite at the app's config path (e.g., `~/Library/Application Support/DocSystem/cost.db` on macOS).
+- Local SQLite at the app's config path (e.g., `~/Library/Application Support/com.consultancy.docsystem/cost.db` on macOS).
 - Never transmitted off the machine. Never written to the cloud-synced folder.
 - Retention: 13 months (sliding window — auto-deletes older rows). Long enough for "this month vs last month" comparison; short enough to limit exposure.
 

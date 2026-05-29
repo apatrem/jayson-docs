@@ -21,7 +21,7 @@ Key ideas:
 ## Install
 
 ```bash
-git clone <repo-url> docsystem && cd docsystem
+git clone <repo-url> jayson-docs && cd jayson-docs
 npm ci
 bash scripts/install-hooks.sh   # pre-commit hook for the autonomous task loop
 ```

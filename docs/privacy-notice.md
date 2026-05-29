@@ -1,8 +1,8 @@
-# Document System Privacy Notice
+# Jayson Docs Privacy Notice
 
 ## English
 
-Document System is a local desktop app for internal consultancy staff. It does not collect usage telemetry in v1. No analytics, behavioral tracking, accept/reject ratios, edit patterns, prompt text, or response text are stored or sent to consultancy-owned servers.
+Jayson Docs is a local desktop app for internal consultancy staff. It does not collect usage telemetry in v1. No analytics, behavioral tracking, accept/reject ratios, edit patterns, prompt text, or response text are stored or sent to consultancy-owned servers.
 
 During install, the app stores:
 
@@ -34,9 +34,9 @@ The cost ledger never stores:
 
 The cost ledger is a local SQLite database at the app config path. Per platform:
 
-- macOS: `~/Library/Application Support/DocSystem/cost.db`
-- Windows: `%APPDATA%\DocSystem\cost.db`
-- Linux: `$XDG_CONFIG_HOME/DocSystem/cost.db` (falls back to `~/.config/DocSystem/cost.db`)
+- macOS: `~/Library/Application Support/com.consultancy.docsystem/cost.db`
+- Windows: `%APPDATA%\com.consultancy.docsystem\cost.db`
+- Linux: `$XDG_CONFIG_HOME/docsystem/cost.db` (falls back to `~/.config/docsystem/cost.db`)
 
 It is never written to the cloud-sync folder and is never transmitted off the machine by the app. Rows older than 13 months are pruned automatically.
 
@@ -46,7 +46,7 @@ Consultants can view cost rows in `Settings -> My LLM Spend`, clear all cost his
 
 ## Français
 
-Document System est une application de bureau locale pour les équipes internes du cabinet. La v1 ne collecte aucune télémétrie d'usage. Aucune donnée d'analyse, aucun suivi comportemental, aucun taux d'acceptation/rejet, aucun schéma d'édition, aucun prompt et aucune réponse de modèle ne sont stockés ni envoyés vers des serveurs du cabinet.
+Jayson Docs est une application de bureau locale pour les équipes internes du cabinet. La v1 ne collecte aucune télémétrie d'usage. Aucune donnée d'analyse, aucun suivi comportemental, aucun taux d'acceptation/rejet, aucun schéma d'édition, aucun prompt et aucune réponse de modèle ne sont stockés ni envoyés vers des serveurs du cabinet.
 
 Pendant l'installation, l'application stocke :
 
@@ -78,9 +78,9 @@ Le registre des coûts ne stocke jamais :
 
 Le registre des coûts est une base SQLite locale située dans le dossier de configuration de l'application. Selon la plateforme :
 
-- macOS : `~/Library/Application Support/DocSystem/cost.db`
-- Windows : `%APPDATA%\DocSystem\cost.db`
-- Linux : `$XDG_CONFIG_HOME/DocSystem/cost.db` (par défaut `~/.config/DocSystem/cost.db`)
+- macOS : `~/Library/Application Support/com.consultancy.docsystem/cost.db`
+- Windows : `%APPDATA%\com.consultancy.docsystem\cost.db`
+- Linux : `$XDG_CONFIG_HOME/docsystem/cost.db` (par défaut `~/.config/docsystem/cost.db`)
 
 L'application ne l'écrit jamais dans le dossier synchronisé et ne le transmet jamais hors de la machine. Les lignes de plus de 13 mois sont supprimées automatiquement.
 

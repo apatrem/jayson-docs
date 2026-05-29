@@ -653,7 +653,7 @@ import { z } from "zod";
  * are stored — no prompt content, no response content, no behavioral signal.
  *
  * Storage: local SQLite at the app's config path (e.g.,
- * ~/Library/Application Support/DocSystem/cost.db on macOS).
+ * ~/Library/Application Support/com.consultancy.docsystem/cost.db on macOS).
  * Retention: 13-month sliding window — older rows auto-deleted.
  */
 export const CostLedgerRowSchema = z.object({
@@ -730,7 +730,7 @@ export type LlmEndpoint = z.infer<typeof LlmEndpointSchema>;
 
 /**
  * The local config file written by the install script. Lives at the OS
- * config path (e.g. ~/Library/Application Support/DocSystem/config.yaml).
+ * config path (e.g. ~/Library/Application Support/com.consultancy.docsystem/config.yaml).
  *
  * API keys are NOT stored here — they live in the OS keychain. This file
  * just references which keychain entry to fetch.

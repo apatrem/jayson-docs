@@ -54,7 +54,7 @@ npm run setup:install \
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Document System — Setup                                                 │
+│ Jayson Docs — Setup                                                     │
 │                                                                         │
 │ This wizard configures the app for your machine. ~5 minutes.            │
 │                                                                         │

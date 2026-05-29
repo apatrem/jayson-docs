@@ -338,7 +338,7 @@ export function Routes({
       {route.kind === "welcome" ? (
         <main aria-label="Welcome" style={styles.welcome}>
           <section style={styles.welcomeCard}>
-            <h1 style={styles.title}>Document System</h1>
+            <h1 style={styles.title}>Jayson Docs</h1>
             <button
               type="button"
               aria-label="Open Document"

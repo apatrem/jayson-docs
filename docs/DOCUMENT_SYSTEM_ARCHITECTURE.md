@@ -1,4 +1,4 @@
-# Document System — Architecture Design Memo
+# Jayson Docs — Architecture Design Memo
 
 **Audience:** the developer who will build and own this system
 **Status:** design proposal, not yet approved for build

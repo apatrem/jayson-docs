@@ -1,4 +1,4 @@
-# Implementation Tasks — Document System v1
+# Implementation Tasks — Jayson Docs v1
 
 **Purpose:** decompose `BUILD_BRIEF.md` milestones (M0–M6) into atomic tasks of ≤4 hours each.
 
