@@ -226,9 +226,9 @@ export function createEditorExtensions(
     HeadingNumber.configure(numberingScheme ? { scheme: numberingScheme } : {}),
     // Gutter drag-handle to reorder blocks within/across sections (ADR-0018).
     DragReorder,
-    // Editor-only layout markers (e.g. a "page break" rule above breakBefore
-    // blocks); the continuous surface has no real pages (ADR-0018, item 5).
-    LayoutMarkers,
+    // Editor-only layout markers: a "page break" rule above breakBefore blocks
+    // and a margin-top override for spaceBefore (ADR-0018, items 5/7).
+    LayoutMarkers.configure({ spacingUnit: defaultBrand.spacing.unit }),
     ...dedupeAuthoredManifests(authoredManifests).map(buildAuthoredTipTapNode),
   ];
 }

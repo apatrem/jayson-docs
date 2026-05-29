@@ -288,6 +288,27 @@ class GutterHandleView {
     });
     menu.appendChild(item);
 
+    // "Spacing above" override (ADR-0018, item 7): a multiple of the brand unit;
+    // empty re-inherits the document default.
+    const spacingRow = document.createElement("label");
+    spacingRow.className = "doc-block-menu-row";
+    const spacingText = document.createElement("span");
+    spacingText.textContent = "Spacing above (×)";
+    const spacingInput = document.createElement("input");
+    spacingInput.type = "number";
+    spacingInput.min = "0";
+    spacingInput.step = "0.5";
+    spacingInput.className = "doc-block-menu-input";
+    spacingInput.placeholder = "inherit";
+    const currentSpace: unknown = node.attrs.spaceBefore;
+    spacingInput.value = typeof currentSpace === "number" ? String(currentSpace) : "";
+    spacingInput.addEventListener("change", () => {
+      this.applySpaceBefore(blockStart, spacingInput.value.trim());
+    });
+    spacingRow.appendChild(spacingText);
+    spacingRow.appendChild(spacingInput);
+    menu.appendChild(spacingRow);
+
     // Anchor below the handle (which is already positioned in mount coords).
     menu.style.top = `${parseFloat(this.handle.style.top || "0") + 22}px`;
     menu.style.left = this.handle.style.left || "0px";
@@ -315,6 +336,24 @@ class GutterHandleView {
     }
     this.closeMenu();
     this.view.focus();
+  }
+
+  private applySpaceBefore(blockStart: number, raw: string): void {
+    let value: number | null;
+    if (raw === "") {
+      value = null; // clear → re-inherit the document default gap
+    } else {
+      const parsed = Number(raw);
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        return;
+      }
+      value = parsed;
+    }
+    const tr = setBlockAttr(this.view.state, blockStart, "spaceBefore", value);
+    if (tr !== null) {
+      this.view.dispatch(tr);
+    }
+    // Keep the menu open so the consultant can fine-tune the value.
   }
 
   private readonly onDocMouseDown = (event: MouseEvent): void => {

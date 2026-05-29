@@ -163,14 +163,23 @@ const DocumentSection: FC<{
             imageDataUris={imageDataUris}
           />
         );
-        // breakBefore (ADR-0018, item 5) → start this block on a new printed
-        // page. The existing `.doc-page-break` rule forces break-before: page.
-        return block.breakBefore === true ? (
-          <div key={block.id} className="doc-page-break">
+        // Per-instance layout overrides (ADR-0018): breakBefore (item 5) forces
+        // a page break via `.doc-page-break`; spaceBefore (item 7) overrides the
+        // gap above this block as a multiple of the brand spacing unit.
+        const hasBreak = block.breakBefore === true;
+        const space = block.spaceBefore;
+        const hasSpace = typeof space === "number" && space >= 0;
+        if (!hasBreak && !hasSpace) {
+          return <Fragment key={block.id}>{view}</Fragment>;
+        }
+        return (
+          <div
+            key={block.id}
+            className={hasBreak ? "doc-page-break" : undefined}
+            style={hasSpace ? { marginTop: space * brand.spacing.unit } : undefined}
+          >
             {view}
           </div>
-        ) : (
-          <Fragment key={block.id}>{view}</Fragment>
         );
       })}
     </section>

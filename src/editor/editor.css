@@ -78,6 +78,22 @@
 .doc-block-menu-item:hover {
   background: rgba(148, 163, 184, 0.16);
 }
+.doc-block-menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #1e293b;
+}
+.doc-block-menu-input {
+  width: 64px;
+  padding: 3px 6px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 4px;
+  font-size: 13px;
+}
 
 /* "Page break" marker above a block whose breakBefore is set (ADR-0018, item
    5). The edit surface is continuous, so this is just an indicator that the

@@ -13,14 +13,18 @@ function loadBrand(): BrandTokens {
   return BrandTokensSchema.parse(raw);
 }
 
-function prose(id: string, text: string, breakBefore?: boolean) {
+function prose(
+  id: string,
+  text: string,
+  layout?: { breakBefore?: boolean; spaceBefore?: number },
+) {
   const base = {
     id,
     type: "prose" as const,
     align: "left" as const,
     content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text }] }] },
   };
-  return breakBefore === undefined ? base : { ...base, breakBefore };
+  return layout === undefined ? base : { ...base, ...layout };
 }
 
 function buildDoc(): DocumentModel {
@@ -46,7 +50,11 @@ function buildDoc(): DocumentModel {
       {
         id: "11111111-1111-1111-1111-111111111111",
         title: "S",
-        blocks: [prose("p1", "First"), prose("p2", "On a new page", true)],
+        blocks: [
+          prose("p1", "First"),
+          prose("p2", "On a new page", { breakBefore: true }),
+          prose("p3", "Extra space above", { spaceBefore: 6 }),
+        ],
       },
     ],
     comments: [],
@@ -64,8 +72,16 @@ describe("breakBefore — document render (ADR-0018, item 5)", () => {
     expect(html).toContain('class="doc-page-break"');
     // Exactly one block opted in.
     expect(html.match(/class="doc-page-break"/gu)).toHaveLength(1);
-    // Both blocks still render their text.
+    // All blocks still render their text.
     expect(html).toContain("First");
     expect(html).toContain("On a new page");
+    expect(html).toContain("Extra space above");
+  });
+
+  it("applies a margin-top override for a spaceBefore block", () => {
+    const html = renderToStaticMarkup(
+      createElement(DocumentRenderer, { doc: buildDoc(), brand: loadBrand() }),
+    );
+    expect(html).toMatch(/margin-top:\s*\d+px/u);
   });
 });
