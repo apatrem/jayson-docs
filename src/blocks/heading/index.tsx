@@ -33,6 +33,7 @@ import { resolveBrandToken } from "../../brand-tokens/resolve";
 
 // ── Registry factory ─────────────────────────────────────────────────────────
 import { defineBlock } from "../defineBlock";
+import { useHeadingNumber } from "./number-context";
 import type { ProseMirrorNode } from "../../editor/mapping";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -247,6 +248,9 @@ const TAG_BY_LEVEL: Record<HeadingLevel, "h1" | "h2" | "h3" | "h4"> = {
 export const Heading: FC<HeadingProps> = ({ block }) => {
   const brand = useBrandTokens();
   const scaleKey = headingScaleKey(block.level);
+  // Computed outline number (ADR-0018) — null when this heading is unnumbered
+  // or rendered outside a document (no provider). The number is a projection.
+  const number = useHeadingNumber(block.id);
 
   const style: CSSProperties = {
     fontFamily: brand.typography.fonts.heading.family,
@@ -258,6 +262,19 @@ export const Heading: FC<HeadingProps> = ({ block }) => {
     fontWeight: 600,
   };
 
+  const marker =
+    number === null
+      ? null
+      : createElement(
+          "span",
+          {
+            className: "doc-heading-number",
+            "data-heading-number": number,
+            style: { marginRight: "0.5em" },
+          },
+          number,
+        );
+
   return createElement(
     TAG_BY_LEVEL[block.level],
     {
@@ -267,6 +284,7 @@ export const Heading: FC<HeadingProps> = ({ block }) => {
       "data-numbered": block.numbered ? "true" : "false",
       style,
     },
+    marker,
     block.text,
   );
 };

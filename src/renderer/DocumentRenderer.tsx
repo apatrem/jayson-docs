@@ -15,6 +15,10 @@ import { Divider } from "../blocks/divider";
 import { Image } from "../blocks/image";
 import { Team } from "../blocks/team";
 import { loadAllBlocks } from "../blocks/runtime-registry";
+import {
+  HeadingNumberProvider,
+  buildHeadingNumberMap,
+} from "../blocks/heading/number-context";
 import { RemovedBlockPlaceholder } from "../blocks/RemovedBlockPlaceholder";
 import { isAuthoredBlockType } from "../blocks/authored/identity";
 
@@ -79,6 +83,14 @@ const DocumentBody: FC<{
   imageDataUris: Record<string, string>;
 }> = ({ doc, assetContext, diagramSvgs, chartSvgs, imageDataUris }) => {
   const brand = useBrandTokens();
+  // Compute the heading-number projection once for the whole document (ADR-0018,
+  // item 4): outline numbers are continuous across sections, so they're derived
+  // from the flat heading order, not per section.
+  const headingNumbers = buildHeadingNumberMap(
+    doc.sections.flatMap((section) => section.blocks).filter(isHeadingBlock),
+    brand,
+    doc.meta,
+  );
   const pageStyle: CSSProperties = {
     fontFamily: brand.typography.fonts.body.family,
     fontSize: brand.typography.scale.body,
@@ -90,20 +102,28 @@ const DocumentBody: FC<{
   };
 
   return (
-    <article data-doc-kind="document" style={pageStyle}>
-      {doc.sections.map((section) => (
-        <DocumentSection
-          key={section.id}
-          section={section}
-          assetContext={assetContext}
-          diagramSvgs={diagramSvgs}
-          chartSvgs={chartSvgs}
-          imageDataUris={imageDataUris}
-        />
-      ))}
-    </article>
+    <HeadingNumberProvider value={headingNumbers}>
+      <article data-doc-kind="document" style={pageStyle}>
+        {doc.sections.map((section) => (
+          <DocumentSection
+            key={section.id}
+            section={section}
+            assetContext={assetContext}
+            diagramSvgs={diagramSvgs}
+            chartSvgs={chartSvgs}
+            imageDataUris={imageDataUris}
+          />
+        ))}
+      </article>
+    </HeadingNumberProvider>
   );
 };
+
+function isHeadingBlock(
+  block: Block,
+): block is Extract<Block, { type: "heading" }> {
+  return block.type === "heading";
+}
 
 const DocumentSection: FC<{
   section: Section;

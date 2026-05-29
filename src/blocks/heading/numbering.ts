@@ -29,11 +29,17 @@ export interface NumberingScheme {
   separator: string;
 }
 
+// `| undefined` on each optional matches the schema types under
+// exactOptionalPropertyTypes (where brand.numbering / meta.layout are X | undefined).
+interface NumberingFields {
+  levelFormats?: readonly NumberFormat[] | undefined;
+  separator?: string | undefined;
+}
 interface BrandNumberingLike {
-  numbering?: { levelFormats?: readonly NumberFormat[]; separator?: string };
+  numbering?: NumberingFields | undefined;
 }
 interface MetaNumberingLike {
-  layout?: { numbering?: { levelFormats?: readonly NumberFormat[]; separator?: string } };
+  layout?: { numbering?: NumberingFields | undefined } | undefined;
 }
 
 /**
