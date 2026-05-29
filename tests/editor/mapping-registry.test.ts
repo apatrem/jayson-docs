@@ -23,6 +23,7 @@
 import { describe, it, expect } from "vitest";
 import { docModelToProseMirror, proseMirrorToDocModel } from "../../src/editor/mapping";
 import { loadAllBlocks } from "../../src/blocks/runtime-registry";
+import { withBaseAttrsOnPm } from "../../src/editor/base-block-attrs";
 import type { DocModel } from "../../src/schema/docmodel";
 import type { CalloutBlock } from "../../src/blocks/callout/schema";
 import type { ProseBlock } from "../../src/blocks/prose/schema";
@@ -133,8 +134,10 @@ describe("mapping.ts registry-first dispatch (T-141b)", () => {
     if (!sectionContent || !("content" in sectionContent)) throw new Error("no section");
     const mappingPm = (sectionContent as { content: unknown[] }).content[0];
 
-    // Both paths must produce identical ProseMirror nodes
-    expect(mappingPm).toStrictEqual(registryPm);
+    // Dispatch centrally augments every Standard block's toPm with the BlockBase
+    // layout attrs (breakBefore/spaceBefore, ADR-0018), normalised to defaults
+    // when unset — so it equals the raw registry output plus those attrs.
+    expect(mappingPm).toStrictEqual(withBaseAttrsOnPm(calloutBlock, registryPm));
   });
 
   it("round-trips DocModel → PM → DocModel losslessly for multi-block section", () => {

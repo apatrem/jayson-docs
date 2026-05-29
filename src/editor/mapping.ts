@@ -3,6 +3,7 @@ import type { Comment } from "../schema/comment";
 import type { Section, Slide } from "../schema/containers";
 import type { DocModel } from "../schema/docmodel";
 import { loadAllBlocks } from "../blocks/runtime-registry";
+import { withBaseAttrsOnPm, readBaseAttrsFromPm } from "./base-block-attrs";
 import type { InstalledAuthoredBlock } from "../blocks/runtime-registry";
 import type { BlockRegistryRecord } from "../blocks/defineBlock";
 import { defineAuthoredBlock } from "../blocks/authored/defineAuthoredBlock";
@@ -250,7 +251,9 @@ function blockToProseMirror(
 ): ProseMirrorNode {
   const record = schemaNameMap().get(block.type);
   if (record) {
-    return record.toPm(block);
+    // Merge BlockBase layout overrides (breakBefore/spaceBefore) centrally so
+    // each Standard block's toPm doesn't hand-plumb them (ADR-0018).
+    return withBaseAttrsOnPm(block, record.toPm(block));
   }
   const authoredNode = authored.toPm(block);
   if (authoredNode) {
@@ -269,7 +272,8 @@ function proseMirrorToBlock(
   // The registry key is tiptapNode.name (the PM node type), not the schemaName.
   const record = pmNodeTypeMap().get(node.type);
   if (record) {
-    return record.fromPm(node) as Block;
+    // Restore BlockBase layout overrides centrally (omitted when at defaults).
+    return { ...(record.fromPm(node) as Block), ...readBaseAttrsFromPm(node) } as Block;
   }
   const authoredBlock = authored.fromPm(node);
   if (authoredBlock) {

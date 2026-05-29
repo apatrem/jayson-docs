@@ -16,6 +16,8 @@ import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import { closeHistory } from "@tiptap/pm/history";
 import { useEffect, useMemo, useState, type CSSProperties, type FC } from "react";
 import { CommentMark } from "../comments/CommentMark";
+import { BaseBlockAttributes } from "./extensions/BaseBlockAttributes";
+import { BASE_BLOCK_ATTR_NAMES } from "./base-block-attrs";
 import type { DocModel } from "../schema/docmodel";
 import { docModelToProseMirror } from "./mapping";
 import { loadAllBlocks } from "../blocks/runtime-registry";
@@ -207,6 +209,9 @@ export function createEditorExtensions(
     ...tableBlockEditorExtensions(),
     CommentMark,
     ...blockExtensions,
+    // Adds breakBefore/spaceBefore (ADR-0018) to every Standard block node in
+    // one place; their names are unioned into allowedAttrsForNode below.
+    BaseBlockAttributes.configure({ types: [..._blockNodeNames] }),
     ...dedupeAuthoredManifests(authoredManifests).map(buildAuthoredTipTapNode),
   ];
 }
@@ -557,9 +562,11 @@ function allowedAttrsForNode(
   nodeType: string,
   authoredAttrs: ReadonlyMap<string, Set<string>>,
 ): Set<string> {
-  // Standard block nodes — attrs derived from TipTap node definition via registry.
+  // Standard block nodes — attrs derived from TipTap node definition via
+  // registry, plus the base layout attrs added globally by BaseBlockAttributes
+  // (invisible to per-node introspection, so unioned explicitly here).
   const blockAttrs = _blockNodeAttrsMap.get(nodeType);
-  if (blockAttrs) return blockAttrs;
+  if (blockAttrs) return new Set([...blockAttrs, ...BASE_BLOCK_ATTR_NAMES]);
   // Installed authored nodes — attrs derived from the built TipTap node.
   const authored = authoredAttrs.get(nodeType);
   if (authored) return authored;
