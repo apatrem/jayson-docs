@@ -14,6 +14,17 @@ export const BlockBaseSchema = z
     id: StableIdSchema,
     type: BlockTypeStringSchema,
     note: z.string().max(500).optional(),
+    /**
+     * Per-instance layout overrides (ADR-0018). Minimal, enumerable, optional —
+     * never free-form styling. Omitted when at their defaults.
+     *
+     * `breakBefore`: start this block on a new page (Page view / PDF only).
+     * `spaceBefore`: the gap above this block as a multiple of
+     *   `brand.spacing.unit` (min 0 → blocks touch). Overrides the document
+     *   block-spacing for this one gap; absent → inherit the document default.
+     */
+    breakBefore: z.boolean().optional(),
+    spaceBefore: z.number().min(0).max(40).optional(),
   })
   .strict();
 

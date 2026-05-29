@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BrandNumberingSchema } from "./numbering";
 
 const hexColor = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 
@@ -103,6 +104,14 @@ export const BrandTokensSchema = z
       unit: z.number().positive(),
       scale: z.array(z.number()).min(2),
     }),
+
+    /**
+     * Heading-numbering house style (ADR-0018). The per-level formats + dotted
+     * separator the consultancy uses by default. Optional — when absent the
+     * built-in all-decimal default ("1.1.1") applies. A document may override
+     * this via `meta.layout.numbering`.
+     */
+    numbering: BrandNumberingSchema.optional(),
 
     page: z.object({
       size: z.enum(["A4", "Letter", "Legal"]),

@@ -1,4 +1,22 @@
 import { z } from "zod";
+import { NumberingOverrideSchema } from "./numbering";
+
+/**
+ * Per-document layout overrides (ADR-0018). Optional, brand-relative, omitted
+ * when at defaults. The only non-bibliographic data allowed in `meta`.
+ *
+ * `blockSpacing`: the inter-block gap as a multiple of `brand.spacing.unit`
+ *   (brand default 3×). `numbering`: per-document heading-numbering override of
+ *   the brand house style. Edited via the Document settings popup, never by hand.
+ */
+export const DocLayoutSchema = z
+  .object({
+    blockSpacing: z.number().min(0).max(40).optional(),
+    numbering: NumberingOverrideSchema.optional(),
+  })
+  .strict();
+
+export type DocLayout = z.infer<typeof DocLayoutSchema>;
 
 /**
  * Document metadata. Populated by the scaffolding skill at creation; updated
@@ -20,6 +38,7 @@ export const MetaSchema = z
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
     brandRef: z.string().default("$brand:default"),
+    layout: DocLayoutSchema.optional(),
   })
   .strict();
 
