@@ -39,6 +39,13 @@ import { PageView } from "../../renderer/PageView";
 import { DocModelSchema } from "../../schema/docmodel";
 import type { Meta } from "../../schema/meta";
 import { DocumentSettingsDialog } from "./DocumentSettingsDialog";
+import { SectionSidebar } from "./SectionSidebar";
+import {
+  moveSection,
+  renameSection,
+  createSection,
+  deleteSection,
+} from "../../docmodel/section-ops";
 import {
   useBrandBlocksFromRegistry,
   useAuthoredManifestsFromRegistry,
@@ -145,6 +152,17 @@ function numberingSignature(doc: DocumentModel | null): string {
   return JSON.stringify(doc?.meta.layout?.numbering ?? null);
 }
 
+/**
+ * Section structure signature for the editor remount key: changes on
+ * reorder/create/delete/rename so the editor re-seeds from the updated DocModel
+ * (its content is built once at mount). Titles are included so a sidebar rename
+ * stays in sync with the in-doc section title (item 1; item 2 drops the in-doc
+ * title, after which titles no longer need to force a remount).
+ */
+function sectionSignature(doc: DocumentModel | null): string {
+  return (doc?.sections ?? []).map((section) => `${section.id}:${section.title ?? ""}`).join("|");
+}
+
 export const DocumentView: FC<DocumentViewProps> = ({
   path,
   initialDoc,
@@ -221,6 +239,67 @@ export const DocumentView: FC<DocumentViewProps> = ({
     },
     [onDocumentChange],
   );
+  // Structural section edits from the sidebar (ADR-0018, item 1). They update
+  // `doc` so the editor re-seeds (its section signature is in the remount key)
+  // and the change is autosaved like any other edit.
+  const applyDocChange = useCallback(
+    (updated: DocumentModel) => {
+      currentDoc.current = updated;
+      setDoc(updated);
+      setSaveState("saving");
+      onDocumentChange?.(updated);
+      autosave.current?.schedule(updated);
+    },
+    [onDocumentChange],
+  );
+  const handleReorderSection = useCallback(
+    (from: number, to: number) => {
+      const cur = currentDoc.current;
+      if (cur !== null) applyDocChange(moveSection(cur, from, to));
+    },
+    [applyDocChange],
+  );
+  const handleRenameSection = useCallback(
+    (sectionId: string, title: string) => {
+      const cur = currentDoc.current;
+      if (cur !== null) applyDocChange(renameSection(cur, sectionId, title));
+    },
+    [applyDocChange],
+  );
+  const handleCreateSection = useCallback(
+    (afterIndex: number) => {
+      const cur = currentDoc.current;
+      if (cur !== null) {
+        applyDocChange(
+          createSection(cur, {
+            sectionId: crypto.randomUUID(),
+            blockId: crypto.randomUUID(),
+            afterIndex,
+          }),
+        );
+      }
+    },
+    [applyDocChange],
+  );
+  const handleDeleteSection = useCallback(
+    (sectionId: string) => {
+      const cur = currentDoc.current;
+      if (cur !== null) applyDocChange(deleteSection(cur, sectionId));
+    },
+    [applyDocChange],
+  );
+  const handleJumpToSection = useCallback((sectionId: string) => {
+    if (typeof document === "undefined") {
+      return;
+    }
+    const selectorId =
+      typeof CSS !== "undefined" && typeof CSS.escape === "function"
+        ? CSS.escape(sectionId)
+        : sectionId;
+    document
+      .querySelector(`[data-section-id="${selectorId}"]`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
   // ── Generation state (T-173) ─────────────────────────────────────────────
   const [generating, setGenerating] = useState(false);
   const [previewNode, setPreviewNode] = useState<ReactNode>(undefined);
@@ -466,16 +545,30 @@ export const DocumentView: FC<DocumentViewProps> = ({
       ) : null}
       <div
         style={{
-          ...contentGridStyle(),
+          display: "flex",
+          gap: "1rem",
+          alignItems: "flex-start",
           ...(viewMode === "page" ? { display: "none" } : {}),
         }}
       >
+        <SectionSidebar
+          sections={(currentDoc.current ?? doc).sections.map((section) => ({
+            id: section.id,
+            title: section.title,
+          }))}
+          onJump={handleJumpToSection}
+          onRename={handleRenameSection}
+          onReorder={handleReorderSection}
+          onCreate={handleCreateSection}
+          onDelete={handleDeleteSection}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
         <section aria-label="Editable document" style={styles.editorPane}>
           <div style={styles.editorBody}>
           {/* Re-seed/remount when a different file is opened OR the installed
               authored set changes (the editor schema is built once at mount). */}
           <EditorComponent
-            key={`${path}::${authoredSignature}::${numberingSignature(currentDoc.current ?? doc)}`}
+            key={`${path}::${authoredSignature}::${numberingSignature(currentDoc.current ?? doc)}::${sectionSignature(currentDoc.current ?? doc)}`}
             initialContent={editorSeed}
             editable={true}
             docModel={currentDoc.current ?? doc}
@@ -512,6 +605,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
           />
           </div>
         </section>
+        </div>
       </div>
       {paletteOpen ? (
         <>
@@ -778,17 +872,6 @@ function saveStatusStyle(state: SaveState): CSSProperties {
   return {
     ...styles.saveStatus,
     ...SAVE_STATE_COLOR[state],
-  };
-}
-
-// Single WYSIWYG surface: one editor column. The block palette is a drawer
-// overlay (see styles.paletteDrawer), not a grid column.
-function contentGridStyle(): CSSProperties {
-  return {
-    display: "grid",
-    gap: "1rem",
-    gridTemplateColumns: "minmax(0, 1fr)",
-    alignItems: "start",
   };
 }
 
