@@ -50,6 +50,19 @@ describe("setBlockAttr (ADR-0018 layout toggles)", () => {
     }
   });
 
+  it("toggles a heading's numbered attr (gutter-menu numbering toggle)", () => {
+    const editor = makeEditor();
+    try {
+      const start = firstBlockStart(editor.state.doc);
+      const tr = setBlockAttr(editor.state, start, "numbered", false);
+      expect(tr).not.toBeNull();
+      editor.view.dispatch(tr!);
+      expect(editor.state.doc.nodeAt(start)?.attrs.numbered).toBe(false);
+    } finally {
+      editor.destroy();
+    }
+  });
+
   it("is a no-op when the attr already has the value", () => {
     const editor = makeEditor();
     try {

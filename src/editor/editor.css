@@ -12,11 +12,16 @@
   margin: 0;
 }
 
-/* One consistent gap between top-level blocks inside a section. The section
-   node view tags its content container with `doc-section-content`. */
+/* One consistent gap between top-level blocks inside a section. @tiptap/react's
+   NodeViewContent wraps the blocks in an inner [data-node-view-content-react]
+   div, so the blocks are grandchildren of `.doc-section-content` — the gap rule
+   must reach through that wrapper. A per-block `spaceBefore` inline margin-top
+   (LayoutMarkers decoration) overrides this default. */
+.doc-section-content > [data-node-view-content-react] > * + *,
 .doc-section-content > * + * {
   margin-top: var(--doc-block-gap, 12px);
 }
+
 
 /* Computed heading outline number (ADR-0018). Rendered as a non-editable
    marker before the heading text in the editor (the export renderer emits an

@@ -225,13 +225,14 @@ class GutterHandleView {
   private dragging = false;
   private menu: HTMLElement | null = null;
   private menuBlockStart: number | null = null;
+  private hideTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private readonly view: EditorView) {
-    const mount = view.dom.parentElement;
-    this.mount = mount ?? view.dom;
-    if (this.mount instanceof HTMLElement && this.mount.style.position === "") {
-      this.mount.style.position = "relative";
-    }
+    // Mount on document.body (a stable container) rather than the editor
+    // wrapper — React re-renders the wrapper and can detach it mid-session,
+    // which orphans an absolutely-positioned child. The handle/menu use page
+    // coordinates (rect + scroll offset) so they track the block as it scrolls.
+    this.mount = document.body;
 
     this.handle = document.createElement("div");
     this.handle.className = "doc-drag-handle";
@@ -243,11 +244,32 @@ class GutterHandleView {
     this.handle.addEventListener("dragstart", this.onDragStart);
     this.handle.addEventListener("dragend", this.onDragEnd);
     this.handle.addEventListener("click", this.onClick);
+    // Keep the handle alive while the pointer is on it (it sits in the gutter,
+    // left of the editable text — moving onto it must not trigger a hide).
+    this.handle.addEventListener("mouseenter", this.cancelHide);
+    this.handle.addEventListener("mouseleave", this.scheduleHide);
     this.mount.appendChild(this.handle);
 
     view.dom.addEventListener("mousemove", this.onMouseMove);
-    view.dom.addEventListener("mouseleave", this.onMouseLeave);
+    view.dom.addEventListener("mouseleave", this.scheduleHide);
   }
+
+  // Hide is deferred so the pointer can travel from the block into the gutter
+  // handle without it vanishing; entering the handle (or a block) cancels it.
+  private readonly scheduleHide = (): void => {
+    if (this.dragging || this.menu !== null) {
+      return;
+    }
+    this.cancelHide();
+    this.hideTimer = setTimeout(() => this.hide(), 220);
+  };
+
+  private readonly cancelHide = (): void => {
+    if (this.hideTimer !== null) {
+      clearTimeout(this.hideTimer);
+      this.hideTimer = null;
+    }
+  };
 
   // Clicking the handle (without a drag) opens a small block menu. Layout
   // toggles (breakBefore now; spaceBefore in item 7) live here, per ADR-0018.
@@ -277,6 +299,26 @@ class GutterHandleView {
     const menu = document.createElement("div");
     menu.className = "doc-block-menu";
     menu.setAttribute("contenteditable", "false");
+
+    // Heading-only: toggle outline numbering for this heading (ADR-0018 item 4).
+    if (node.type.name === "heading") {
+      const numbered = node.attrs.numbered !== false;
+      const numberItem = document.createElement("button");
+      numberItem.type = "button";
+      numberItem.className = "doc-block-menu-item";
+      numberItem.textContent = numbered ? "Remove numbering" : "Add numbering";
+      numberItem.addEventListener("click", (clickEvent) => {
+        clickEvent.preventDefault();
+        const tr = setBlockAttr(this.view.state, blockStart, "numbered", !numbered);
+        if (tr !== null) {
+          this.view.dispatch(tr);
+        }
+        this.closeMenu();
+        this.view.focus();
+      });
+      menu.appendChild(numberItem);
+    }
+
     const breakOn = node.attrs.breakBefore === true;
     const item = document.createElement("button");
     item.type = "button";
@@ -377,29 +419,25 @@ class GutterHandleView {
     if (this.dragging || this.menu !== null || !this.view.editable) {
       return; // freeze the handle while a menu is open
     }
+    this.cancelHide(); // pointer is over the editor — keep the handle alive
     const at = this.view.posAtCoords({ left: event.clientX, top: event.clientY });
     const block = at ? findTopLevelBlock(this.view.state.doc, at.pos) : null;
     if (block === null) {
-      this.hide();
+      this.scheduleHide();
       return;
     }
     const dom = this.view.nodeDOM(block.start);
-    if (!(dom instanceof HTMLElement) || !(this.mount instanceof HTMLElement)) {
-      this.hide();
+    if (!(dom instanceof HTMLElement)) {
+      this.scheduleHide();
       return;
     }
+    // Page coordinates: viewport rect + scroll offset, so the body-mounted
+    // handle aligns with the block top and scrolls with the document.
     const blockRect = dom.getBoundingClientRect();
-    const mountRect = this.mount.getBoundingClientRect();
-    this.handle.style.top = `${blockRect.top - mountRect.top + this.mount.scrollTop}px`;
-    this.handle.style.left = `${blockRect.left - mountRect.left + this.mount.scrollLeft - 22}px`;
+    this.handle.style.top = `${blockRect.top + window.scrollY}px`;
+    this.handle.style.left = `${blockRect.left + window.scrollX - 22}px`;
     this.handle.style.display = "block";
     this.blockStart = block.start;
-  };
-
-  private readonly onMouseLeave = (): void => {
-    if (!this.dragging && this.menu === null) {
-      this.hide();
-    }
   };
 
   private readonly onDragStart = (event: DragEvent): void => {
@@ -422,17 +460,21 @@ class GutterHandleView {
   };
 
   private hide(): void {
+    this.cancelHide();
     this.handle.style.display = "none";
     this.blockStart = null;
   }
 
   destroy(): void {
     this.closeMenu();
+    this.cancelHide();
     this.view.dom.removeEventListener("mousemove", this.onMouseMove);
-    this.view.dom.removeEventListener("mouseleave", this.onMouseLeave);
+    this.view.dom.removeEventListener("mouseleave", this.scheduleHide);
     this.handle.removeEventListener("dragstart", this.onDragStart);
     this.handle.removeEventListener("dragend", this.onDragEnd);
     this.handle.removeEventListener("click", this.onClick);
+    this.handle.removeEventListener("mouseenter", this.cancelHide);
+    this.handle.removeEventListener("mouseleave", this.scheduleHide);
     this.handle.remove();
   }
 }

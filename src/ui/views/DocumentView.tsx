@@ -296,9 +296,17 @@ export const DocumentView: FC<DocumentViewProps> = ({
       typeof CSS !== "undefined" && typeof CSS.escape === "function"
         ? CSS.escape(sectionId)
         : sectionId;
-    document
-      .querySelector(`[data-section-id="${selectorId}"]`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const el = document.querySelector(`[data-section-id="${selectorId}"]`);
+    if (!(el instanceof HTMLElement)) {
+      return;
+    }
+    // Deterministic scroll: land the section just below the sticky formatting
+    // toolbar (scrollIntoView + scroll-margin behaved inconsistently). Offset =
+    // toolbar height + a small gap.
+    const toolbar = document.querySelector('[aria-label="Formatting toolbar"]');
+    const offset = (toolbar instanceof HTMLElement ? toolbar.getBoundingClientRect().height : 44) + 12;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
   }, []);
   // ── Generation state (T-173) ─────────────────────────────────────────────
   const [generating, setGenerating] = useState(false);

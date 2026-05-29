@@ -91,9 +91,9 @@ export const SectionSidebar: FC<SectionSidebarProps> = ({
             return (
               <li
                 key={section.id}
-                draggable={!isEditing}
-                onDragStart={() => setDragIndex(index)}
-                onDragOver={(event) => event.preventDefault()}
+                onDragOver={(event) => {
+                  if (dragIndex !== null) event.preventDefault();
+                }}
                 onDrop={(event) => onDrop(event, index)}
                 onDragEnd={() => setDragIndex(null)}
                 style={{
@@ -102,7 +102,17 @@ export const SectionSidebar: FC<SectionSidebarProps> = ({
                   ...(dragIndex === index ? styles.itemDragging : {}),
                 }}
               >
-                <span aria-hidden="true" style={styles.grip}>
+                <span
+                  aria-label={`Drag section ${section.title ?? UNTITLED}`}
+                  role="button"
+                  draggable={!isEditing}
+                  onDragStart={(event) => {
+                    setDragIndex(index);
+                    event.dataTransfer.setData("text/plain", String(index));
+                    event.dataTransfer.effectAllowed = "move";
+                  }}
+                  style={styles.grip}
+                >
                   ⠿
                 </span>
                 {isEditing ? (
@@ -167,10 +177,20 @@ const styles: Record<string, CSSProperties> = {
   sidebar: {
     width: 220,
     flex: "0 0 220px",
-    borderRight: "1px solid rgba(148, 163, 184, 0.3)",
-    padding: "12px 8px",
+    // Floating: pins to the top as the document scrolls, with its own scroll,
+    // so the section nav stays visible without taking the page with it.
+    position: "sticky",
+    top: 56,
+    alignSelf: "flex-start",
+    maxHeight: "calc(100vh - 72px)",
     overflowY: "auto",
-    background: "rgba(248, 250, 252, 0.6)",
+    padding: "10px 8px",
+    background: "rgba(248, 250, 252, 0.92)",
+    backdropFilter: "blur(6px)",
+    WebkitBackdropFilter: "blur(6px)",
+    border: "1px solid rgba(148, 163, 184, 0.35)",
+    borderRadius: 8,
+    boxShadow: "0 4px 16px rgba(15, 23, 42, 0.08)",
   },
   header: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4 },
   collapseButton: {
