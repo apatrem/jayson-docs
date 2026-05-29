@@ -37,6 +37,8 @@ import {
 import type { DocumentModel } from "../../renderer/DocumentRenderer";
 import { PageView } from "../../renderer/PageView";
 import { DocModelSchema } from "../../schema/docmodel";
+import type { Meta } from "../../schema/meta";
+import { DocumentSettingsDialog } from "./DocumentSettingsDialog";
 import {
   useBrandBlocksFromRegistry,
   useAuthoredManifestsFromRegistry,
@@ -58,6 +60,11 @@ export interface EditorSurfaceProps {
   editable: boolean;
   onUpdate: (content: JSONContent) => void;
   onEditorReady?: (editor: BlockPaletteProps["editor"]) => void;
+  /**
+   * The current DocModel, so the editor can resolve per-document layout (block
+   * gap + heading-numbering scheme) from `meta.layout` (ADR-0018, item 6).
+   */
+  docModel?: DocumentModel;
   /**
    * Installed authored manifests whose TipTap nodes the editor appends to its
    * closed schema (ADR-0015). Default [] = static blocks only.
@@ -109,12 +116,14 @@ const DefaultEditorSurface: FC<EditorSurfaceProps> = ({
   onEditorReady,
   authoredManifests = [],
   onAddBlock,
+  docModel,
 }) => (
   <Editor
     initialContent={initialContent}
     editable={editable}
     onUpdate={onUpdate}
     authoredManifests={authoredManifests}
+    {...(docModel === undefined ? {} : { docModel })}
     {...(onAddBlock === undefined ? {} : { onAddBlock })}
     {...(onEditorReady === undefined
       ? {}
@@ -125,6 +134,16 @@ const DefaultEditorSurface: FC<EditorSurfaceProps> = ({
         })}
   />
 );
+
+/**
+ * A stable signature of the document's numbering override, used in the editor's
+ * remount key so a numbering-format change from the settings dialog rebuilds
+ * the editor (its HeadingNumber scheme is captured at creation). Block spacing
+ * doesn't need a remount — it recomputes from the re-rendered surface style.
+ */
+function numberingSignature(doc: DocumentModel | null): string {
+  return JSON.stringify(doc?.meta.layout?.numbering ?? null);
+}
 
 export const DocumentView: FC<DocumentViewProps> = ({
   path,
@@ -166,6 +185,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
   // "edit" = continuous WYSIWYG surface; "page" = on-demand read-only A4
   // pagination (paged.js) showing real page breaks (ADR-0017).
   const [viewMode, setViewMode] = useState<"edit" | "page">("edit");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [editor, setEditor] = useState<TipTapEditor | null>(null);
   const [authoringContext, setAuthoringContext] = useState<DocumentModel | null>(null);
   // ── Selection-driven structured-block panel (P0c) ────────────────────────
@@ -181,6 +201,25 @@ export const DocumentView: FC<DocumentViewProps> = ({
       setEditor(readyEditor as TipTapEditor | null);
     },
     [],
+  );
+  // Apply edited document metadata/layout from the settings dialog (ADR-0018,
+  // item 6). Updating `doc` re-renders the editor surface (so the block-gap
+  // recomputes) and changes its remount key when the numbering scheme changes.
+  const applyMeta = useCallback(
+    (nextMeta: Meta) => {
+      const previous = currentDoc.current;
+      if (previous === null) {
+        return;
+      }
+      const updated: DocumentModel = { ...previous, meta: nextMeta };
+      currentDoc.current = updated;
+      setDoc(updated);
+      setSaveState("saving");
+      onDocumentChange?.(updated);
+      autosave.current?.schedule(updated);
+      setSettingsOpen(false);
+    },
+    [onDocumentChange],
   );
   // ── Generation state (T-173) ─────────────────────────────────────────────
   const [generating, setGenerating] = useState(false);
@@ -397,11 +436,26 @@ export const DocumentView: FC<DocumentViewProps> = ({
               Page view
             </button>
           </div>
+          <button
+            type="button"
+            aria-label="Document settings"
+            onClick={() => setSettingsOpen(true)}
+            style={styles.viewToggleButton}
+          >
+            Document settings
+          </button>
           <span aria-label="Autosave status" style={saveStatusStyle(saveState)}>
             {SAVE_STATE_LABEL[saveState]}
           </span>
         </div>
       </header>
+      {settingsOpen ? (
+        <DocumentSettingsDialog
+          meta={(currentDoc.current ?? doc).meta}
+          onApply={applyMeta}
+          onClose={() => setSettingsOpen(false)}
+        />
+      ) : null}
       <BrandProvider tokens={defaultBrand}>
       {viewMode === "page" ? (
         <PageView
@@ -421,9 +475,10 @@ export const DocumentView: FC<DocumentViewProps> = ({
           {/* Re-seed/remount when a different file is opened OR the installed
               authored set changes (the editor schema is built once at mount). */}
           <EditorComponent
-            key={`${path}::${authoredSignature}`}
+            key={`${path}::${authoredSignature}::${numberingSignature(currentDoc.current ?? doc)}`}
             initialContent={editorSeed}
             editable={true}
+            docModel={currentDoc.current ?? doc}
             authoredManifests={authoredManifests}
             onEditorReady={handleEditorReady}
             onAddBlock={() => setPaletteOpen(true)}
