@@ -2026,15 +2026,20 @@ Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0009 (identity), ADR-0010
 
 ## Phase 11 — Deployment & Release
 
-### T-108 [!] · Set up code signing (macOS, Windows) ← waiting: requires real macOS/Windows signing certificates and CI secrets
+### T-108 [!] · Set up code signing (macOS, Windows) ← waiting: requires Apple Developer + Azure Trusted Signing accounts, then CI secrets
 - **Outputs:** signing certs in CI secrets; signed build outputs
-- **Acceptance:** `npm run tauri build` produces a signed `.dmg` (macOS) and `.msi` (Windows). Linux uses unsigned AppImage.
+- **Plumbing wired (2026-05-29):** macOS path is env-driven in `release.yml` (Developer ID + notarization via `APPLE_*` secrets). Windows path is Azure Trusted Signing: opt-in `signCommand` overlay `src-tauri/tauri.windows.signing.conf.json` merged in CI when `AZURE_*` secrets exist, `trusted-signing-cli` install step added. Legacy `WINDOWS_CERTIFICATE*` slots removed. Full setup in `docs/RELEASE.md`. Now purely blocked on: (1) Apple Individual enrollment (~$99/yr) + Developer ID cert export, (2) Azure Trusted Signing account + service principal, (3) populating GitHub secrets + the 3 non-secret overlay placeholders.
+- **Acceptance:** `npm run tauri build` produces a signed `.dmg` (macOS) and `.msi`/`.exe` (Windows). Linux uses unsigned AppImage.
 - **est.** 6h (mostly cert procurement bureaucracy)
 
 ### T-109 [!] · Set up Tauri updater ← waiting: requires updater signing key and hosted release-feed URL
 - **Outputs:** updater config in `tauri.conf.json`; release feed
 - **Acceptance:** App checks for updates on launch; updates from a manually-hosted JSON feed.
 - **est.** 4h
+- **What the Tauri auto-updater is (logged 2026-05-29):** Tauri's built-in mechanism for shipping updates *without users re-downloading the installer*. Once enabled, a running copy of Jayson Docs will, on launch or on demand: (1) fetch a small JSON feed we host (e.g. `latest.json` attached to each GitHub Release) listing the newest version + download URL + signature; (2) compare it to the installed version; (3) if newer, download the new bundle, **verify it against an updater public key compiled into the app**, then install and relaunch. That signature check is the key safety property — it stops a tampered/spoofed feed from pushing a malicious update.
+- **Why it's a SEPARATE key from code signing (T-108):** the updater keypair (`TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, already wired as env vars in `release.yml`) is generated with `tauri signer generate` and is *independent* of the OS code-signing certs (Apple Developer ID / Azure Trusted Signing). Code signing proves the installer's origin to the OS; the updater key proves the *update feed* to the app itself. Both must be valid for a trusted update.
+- **Why it's OFF today:** `release.yml` sets `includeUpdaterJson: false` and `tauri.conf.json` has no `app.updater`/`plugins.updater` block. Two prerequisites are missing: (a) the updater signing keypair (run `tauri signer generate`, store private key + password as the CI secrets above, paste the public key into config), and (b) a stable feed URL (the GitHub Releases `latest.json` endpoint, or a self-hosted URL). Emitting a feed the app can't validate would ship a half-working updater — hence it stays off until both land. This is independent of T-108 and can be enabled separately.
+- **To enable later:** add `tauri-plugin-updater` (npm + Cargo), add an `plugins.updater` block to `tauri.conf.json` with `endpoints` (the feed URL) + `pubkey` (from `tauri signer generate`), flip `includeUpdaterJson: true` in `release.yml`, and add a check-for-updates call on app launch. See https://v2.tauri.app/plugin/updater/ . Full release/signing context: `docs/RELEASE.md` §Auto-updater.
 
 ### T-110 [x] · Build release pipeline (3 OSes)
 - **Outputs:** GitHub Actions workflow that builds + signs + publishes installers on tag push

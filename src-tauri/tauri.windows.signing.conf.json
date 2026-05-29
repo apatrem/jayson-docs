@@ -1,0 +1,8 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "bundle": {
+    "windows": {
+      "signCommand": "trusted-signing-cli -e https://REGION.codesigning.azure.net/ -a YOUR_ACCOUNT_NAME -c YOUR_CERT_PROFILE %1"
+    }
+  }
+}

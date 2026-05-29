@@ -83,21 +83,53 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Windows signing uses Azure Trusted Signing (a.k.a. Artifact Signing) via
+      # the `trusted-signing-cli` tool invoked by Tauri's bundle.windows.signCommand.
+      # It is OPT-IN: only enabled when the AZURE_* secrets exist, so the pipeline
+      # still produces an UNSIGNED .exe/.msi until the Azure account is set up.
+      # See docs/RELEASE.md for the account + secret setup.
+      - name: Detect Windows signing config
+        id: win_sign
+        if: matrix.platform == 'windows-latest'
+        shell: bash
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        run: |
+          if [ -n "$AZURE_CLIENT_ID" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "Azure Trusted Signing credentials found — Windows build will be SIGNED."
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::AZURE_CLIENT_ID not set — Windows installer will be UNSIGNED (SmartScreen warnings). See docs/RELEASE.md."
+          fi
+
+      - name: Install trusted-signing-cli
+        if: matrix.platform == 'windows-latest' && steps.win_sign.outputs.enabled == 'true'
+        run: cargo install trusted-signing-cli --locked
+
       - name: Build and publish installer
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # macOS: Tauri signs with APPLE_SIGNING_IDENTITY (Developer ID Application)
+          # and notarizes when APPLE_ID/APPLE_PASSWORD/APPLE_TEAM_ID are present.
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          # Windows: Azure Trusted Signing service-principal credentials, consumed
+          # by trusted-signing-cli (see tauri.windows.signing.conf.json).
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         with:
+          # Merge the Windows signing overlay only when signing is enabled; empty
+          # on macOS/Linux and on unsigned Windows builds.
+          args: ${{ (matrix.platform == 'windows-latest' && steps.win_sign.outputs.enabled == 'true') && '--config src-tauri/tauri.windows.signing.conf.json' || '' }}
           tagName: ${{ github.ref_name }}
           releaseName: "Jayson Docs ${{ github.ref_name }}"
           releaseBody: "Signed installers for macOS and Windows; unsigned AppImage for Linux."
