@@ -154,11 +154,15 @@ export const HeadingTipTapNode = Node.create({
 
 // Inline-editable heading: NodeViewContent renders the heading text directly,
 // styled to match the print Renderer so the editor view ≈ the rendered output.
-const HeadingNodeView: FC<NodeViewProps> = ({ node }) => {
+const HeadingNodeView: FC<NodeViewProps> = ({ node, decorations }) => {
   const brand = useBrandTokens();
   const level = node.attrs.level as HeadingLevel;
   const scaleKey = headingScaleKey(level);
   const Tag = TAG_BY_LEVEL[level];
+
+  // The HeadingNumber plugin attaches the computed number to a node decoration
+  // (recomputed live per transaction). "" → unnumbered → no marker.
+  const number = readHeadingNumberDecoration(decorations);
 
   const style: CSSProperties = {
     fontFamily: brand.typography.fonts.heading.family,
@@ -169,6 +173,8 @@ const HeadingNodeView: FC<NodeViewProps> = ({ node }) => {
     // heading sets no marginBottom of its own to avoid double gaps.
     margin: 0,
     fontWeight: 600,
+    flex: number ? "1 1 auto" : undefined,
+    minWidth: number ? 0 : undefined,
   };
 
   return (
@@ -177,11 +183,30 @@ const HeadingNodeView: FC<NodeViewProps> = ({ node }) => {
       data-block-id={String(node.attrs.blockId)}
       data-block-type="heading"
       data-level={level}
+      style={number ? { display: "flex", alignItems: "baseline", gap: "0.5em" } : undefined}
     >
+      {number ? (
+        <span className="doc-heading-number" contentEditable={false} style={{ flex: "0 0 auto" }}>
+          {number}
+        </span>
+      ) : null}
       <NodeViewContent as={Tag} style={style} />
     </NodeViewWrapper>
   );
 };
+
+/** Pull the heading number out of the node decorations supplied by the plugin. */
+function readHeadingNumberDecoration(
+  decorations: NodeViewProps["decorations"],
+): string {
+  for (const decoration of decorations) {
+    const spec = decoration.spec as { headingNumber?: unknown } | undefined;
+    if (spec && typeof spec.headingNumber === "string") {
+      return spec.headingNumber;
+    }
+  }
+  return "";
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProseMirror mapping helpers

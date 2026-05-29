@@ -18,6 +18,15 @@
   margin-top: var(--doc-block-gap, 12px);
 }
 
+/* Computed heading outline number (ADR-0018). Rendered as a non-editable
+   marker before the heading text in the editor (the export renderer emits an
+   equivalent inline <span>). A projection — never part of the editable text. */
+.doc-heading-number {
+  font-weight: 600;
+  color: inherit;
+  user-select: none;
+}
+
 /* Comment-anchored text (CommentMark renders <mark class="doc-comment-highlight">).
    Without this rule the mark was structurally present but visually invisible —
    a soft amber highlight + underline makes commented spans legible in the

@@ -18,6 +18,11 @@ import { useEffect, useMemo, useState, type CSSProperties, type FC } from "react
 import { CommentMark } from "../comments/CommentMark";
 import { BaseBlockAttributes } from "./extensions/BaseBlockAttributes";
 import { BASE_BLOCK_ATTR_NAMES } from "./base-block-attrs";
+import { HeadingNumber } from "./extensions/HeadingNumber";
+import {
+  resolveNumberingScheme,
+  type NumberingScheme,
+} from "../blocks/heading/numbering";
 import type { DocModel } from "../schema/docmodel";
 import { docModelToProseMirror } from "./mapping";
 import { loadAllBlocks } from "../blocks/runtime-registry";
@@ -187,6 +192,7 @@ const DocumentWithSections = Document.extend({
 
 export function createEditorExtensions(
   authoredManifests: readonly AuthoredBlockManifest[] = [],
+  numberingScheme?: NumberingScheme,
 ): Extensions {
   return [
     DocumentWithSections,
@@ -212,6 +218,9 @@ export function createEditorExtensions(
     // Adds breakBefore/spaceBefore (ADR-0018) to every Standard block node in
     // one place; their names are unioned into allowedAttrsForNode below.
     BaseBlockAttributes.configure({ types: [..._blockNodeNames] }),
+    // Live heading outline numbering (decoration plugin). Scheme resolved from
+    // brand ⊕ meta at editor creation; defaults to all-decimal when omitted.
+    HeadingNumber.configure(numberingScheme ? { scheme: numberingScheme } : {}),
     ...dedupeAuthoredManifests(authoredManifests).map(buildAuthoredTipTapNode),
   ];
 }
@@ -287,8 +296,18 @@ export const Editor: FC<EditorProps> = ({
         : editorContentForDeckSlide(deck, activeSlideIndex),
     [activeSlideIndex, deck, initialContent],
   );
+  // Resolve the heading-numbering scheme once (brand house style ⊕ this
+  // document's meta override) for live editor numbering (ADR-0018, item 4).
+  const numberingScheme = useMemo(
+    () =>
+      resolveNumberingScheme(
+        defaultBrand,
+        docModel?.kind === "document" ? docModel.meta : undefined,
+      ),
+    [docModel],
+  );
   const editor = useEditor({
-    extensions: createEditorExtensions(authoredManifests),
+    extensions: createEditorExtensions(authoredManifests, numberingScheme),
     content: editorContent,
     editable: effectiveEditable,
     editorProps: {
