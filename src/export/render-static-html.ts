@@ -6,6 +6,7 @@ import { resolveAssetPath } from "../brand-tokens/resolve-asset";
 import { isIpcError } from "../ipc/errors";
 import { getEChartsOption } from "../blocks/chart";
 import { DocumentRenderer, type DocumentModel } from "../renderer/DocumentRenderer";
+import { buildPageCss } from "../renderer/page-css";
 import { renderMermaidSvg } from "../renderer/mermaid";
 import type { BrandTokens } from "../schema/brand";
 import type { Block } from "../schema/blocks";
@@ -19,28 +20,6 @@ const TOTAL_IMAGE_PAYLOAD_LIMIT_BYTES = 50 * 1024 * 1024;
 // silently coerce into placeholders. Keep this regex in sync with the Rust
 // wording — both halves of the contract live in one place per change.
 const SIZE_CAP_MESSAGE_PATTERN = /exceeds\s+5MB\s+export\s+limit/iu;
-
-const PAGE_BREAK_CSS = `
-@media print {
-  [data-block-type="heading"] { break-after: avoid; page-break-after: avoid; }
-  [data-block-type="chart"],
-  [data-block-type="table"],
-  [data-block-type="kpi-cards"],
-  [data-block-type="diagram"],
-  [data-block-type="callout"],
-  [data-block-type="image"],
-  [data-block-type="timeline"],
-  [data-block-type="roadmap"],
-  [data-block-type="risk-matrix"],
-  [data-block-type="team"],
-  .doc-keep-together { break-inside: avoid; page-break-inside: avoid; }
-  [data-block-type="table"] tr { break-inside: avoid; page-break-inside: avoid; }
-  .doc-page-break,
-  [data-block-type="divider"][data-render-context="document"] {
-    break-before: page; page-break-before: always;
-  }
-}
-`;
 
 
 /**
@@ -79,20 +58,24 @@ export async function renderStaticHtmlForExport(
   sharedFolderPath = "/shared",
 ): Promise<string> {
   const body = await renderExportBody(doc, brand, docFolderPath, sharedFolderPath);
+  // Inline the vendored paged.js polyfill so the standalone export HTML
+  // paginates itself in the browser and renders our own @page header (title) +
+  // page-number footer — Chrome's native print engine ignores @page margin
+  // boxes, so this is what lets the printed PDF drop the date and file path
+  // (with Chrome's "Headers and footers" turned off). See ADR-0017.
+  const { default: pagedPolyfill } = await import("../vendor/paged.polyfill.min.js?raw");
+  // Defensive: a literal "</script>" inside the inlined bundle would terminate
+  // our <script> early; neutralize it (current bundle has none).
+  const safePolyfill = pagedPolyfill.replace(/<\/(script)/giu, "<\\/$1");
   return `<!doctype html>
 <html lang="${escapeHtml(doc.meta.language ?? "en")}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(doc.meta.project)}</title>
-    <style>
-      * { box-sizing: border-box; }
-      @page { size: A4 portrait; margin: 1.5cm; }
-      body { margin: 0; }
-      ${PAGE_BREAK_CSS}
-    </style>
+    <style>${buildPageCss(brand, { title: doc.meta.project })}</style>
   </head>
-  <body>${body}</body>
+  <body>${body}<script>${safePolyfill}</script></body>
 </html>`;
 }
 

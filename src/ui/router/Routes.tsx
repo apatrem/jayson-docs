@@ -290,7 +290,11 @@ export function Routes({
         suggestedName: `${basename(docContent.path).replace(/\.ya?ml$/iu, "")}.pdf`,
       });
       await (fileActions.openPath ?? openShellPath)(exportHandoff.path);
-      setStatusMessage("Opened in your browser — use Cmd-P / Ctrl-P to save as PDF.");
+      setStatusMessage(
+        "Opened in your browser — use Cmd-P / Ctrl-P to save as PDF. " +
+          'Turn OFF "Headers and footers" in the print dialog so only the ' +
+          "document's own title and page numbers print (no date or file path).",
+      );
     } catch (error) {
       setActionError(formatErrorMessage(error));
     }

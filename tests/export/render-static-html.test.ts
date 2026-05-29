@@ -65,14 +65,21 @@ describe("renderStaticHtmlForExport", () => {
     vi.restoreAllMocks();
   });
 
-  it("returns a print-ready self-contained HTML shell without script tags", async () => {
+  it("returns a self-contained paginated HTML shell with our own page chrome", async () => {
     const html = await renderStaticHtmlForExport(doc, loadBrand());
 
     expect(html.startsWith("<!doctype html>")).toBe(true);
-    expect(html).toContain("@page { size: A4 portrait; margin: 1.5cm; }");
     expect(html).toContain('data-doc-kind="document"');
+    // Our @page chrome (paged.js): A4 size + page-number footer counter, so the
+    // printed PDF shows the title + page number, not Chrome's date/file path.
+    expect(html).toMatch(/@page\s*\{/u);
+    expect(html).toContain("counter(page)");
+    // User-supplied markup is escaped, never executed...
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
-    expect(html).not.toMatch(/<script\b/i);
+    expect(html).not.toContain("<script>alert(1)");
+    // ...while the trusted vendored paged.js polyfill IS inlined so the
+    // standalone HTML paginates itself with the header/footer.
+    expect(html).toMatch(/<script>[\s\S]+<\/script>/u);
   });
 
   it("inlines image assets as data URIs", async () => {
@@ -400,8 +407,12 @@ function docWithImages(
 }
 
 function decodedSvgDataUris(html: string): string[] {
-  return Array.from(html.matchAll(/data:image\/svg\+xml;base64,([^"]+)/giu), (match) =>
-    base64ToUtf8ForTest(match[1] ?? ""),
+  // Capture only the base64 run (not greedily up to the next quote) so the
+  // inlined paged.js polyfill — which may contain a "data:image/svg+xml;base64,"
+  // substring — can't pull arbitrary JS into the match and break atob.
+  return Array.from(
+    html.matchAll(/data:image\/svg\+xml;base64,([A-Za-z0-9+/=]+)/giu),
+    (match) => base64ToUtf8ForTest(match[1] ?? ""),
   );
 }
 

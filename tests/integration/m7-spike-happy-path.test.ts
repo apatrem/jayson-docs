@@ -84,14 +84,20 @@ describe("M7 spike happy path", () => {
     expect(reopened.openPath).toHaveBeenCalledWith(reopened.getExportedPath());
     const exportedHtml = reopened.getExportedHtml();
     const svgPayloads = decodedSvgPayloads(exportedHtml);
-    expect(exportedHtml).toContain("@page { size: A4 portrait; margin: 1.5cm; }");
+    // Export now carries our own @page chrome (paged.js): A4 size + page-number
+    // footer, so the printed PDF shows the title + page number, not Chrome's
+    // date/file path (ADR-0017).
+    expect(exportedHtml).toMatch(/@page\s*\{/u);
+    expect(exportedHtml).toContain("counter(page)");
     expect(svgPayloads.filter((payload) => payload.includes("<svg")).length).toBeGreaterThanOrEqual(
       2,
     );
     expect(exportedHtml).toContain('src="data:image/jpeg;base64,/9j/"');
     expect(exportedHtml).not.toContain("/docs/assets/");
     expect(exportedHtml).not.toContain("assets/team-meeting.jpg");
-    expect(exportedHtml).not.toMatch(/<script\b/iu);
+    // The trusted paged.js polyfill is inlined (one <script>); user content is
+    // still escaped, never executed.
+    expect(exportedHtml).toMatch(/<script>[\s\S]+<\/script>/u);
     expect(exportedHtml).toContain('data-block-type="callout"');
   });
 

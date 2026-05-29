@@ -229,7 +229,10 @@ describe("M8 happy path", () => {
     });
 
     expect(harness.openPath).toHaveBeenCalledWith(harness.getExportedPath());
-    expect(harness.getExportedHtml()).toContain("@page { size: A4 portrait;");
-    expect(harness.getExportedHtml()).not.toMatch(/<script\b/iu);
+    // Export carries our own @page chrome and inlines the trusted paged.js
+    // polyfill so the standalone HTML paginates itself (ADR-0017).
+    expect(harness.getExportedHtml()).toMatch(/@page\s*\{/u);
+    expect(harness.getExportedHtml()).toContain("counter(page)");
+    expect(harness.getExportedHtml()).toMatch(/<script>[\s\S]+<\/script>/u);
   });
 });
