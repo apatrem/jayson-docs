@@ -19,6 +19,7 @@ import { CommentMark } from "../comments/CommentMark";
 import { BaseBlockAttributes } from "./extensions/BaseBlockAttributes";
 import { BASE_BLOCK_ATTR_NAMES } from "./base-block-attrs";
 import { HeadingNumber } from "./extensions/HeadingNumber";
+import { DragReorder } from "./extensions/DragReorder";
 import {
   resolveNumberingScheme,
   type NumberingScheme,
@@ -221,6 +222,8 @@ export function createEditorExtensions(
     // Live heading outline numbering (decoration plugin). Scheme resolved from
     // brand ⊕ meta at editor creation; defaults to all-decimal when omitted.
     HeadingNumber.configure(numberingScheme ? { scheme: numberingScheme } : {}),
+    // Gutter drag-handle to reorder blocks within/across sections (ADR-0018).
+    DragReorder,
     ...dedupeAuthoredManifests(authoredManifests).map(buildAuthoredTipTapNode),
   ];
 }
