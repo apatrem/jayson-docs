@@ -145,11 +145,21 @@ describe("Divider renderer", () => {
       ),
     );
 
-  it("renders document page break as hr", () => {
+  it("renders a visible rule in documents (no page break — ADR-0018 item 5)", () => {
     const html = renderWithBrand(validDocDivider);
     expect(html).toContain("<hr");
     expect(html).toContain('data-block-type="divider"');
-    expect(html).toContain("page-break-before:always");
+    // Page breaks are now the per-block `breakBefore` attr; the divider no
+    // longer forces one.
+    expect(html).not.toContain("page-break-before");
+    expect(html).not.toContain("break-before");
+  });
+
+  it("shows the label as a centred caption when set", () => {
+    const html = renderWithBrand({ ...validDocDivider, label: "Appendix" });
+    expect(html).toContain("Appendix");
+    // Label is flanked by two rules (line — label — line).
+    expect((html.match(/<hr/gu) ?? []).length).toBe(2);
   });
 
   it("renders deck divider slide with label and brand dark background", () => {

@@ -51,6 +51,57 @@
 .doc-drag-handle:active {
   cursor: grabbing;
 }
+
+/* Block menu opened by clicking the gutter handle (ADR-0018, items 5/7). */
+.doc-block-menu {
+  position: absolute;
+  z-index: 20;
+  min-width: 168px;
+  padding: 4px;
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.16);
+}
+.doc-block-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #1e293b;
+  cursor: pointer;
+}
+.doc-block-menu-item:hover {
+  background: rgba(148, 163, 184, 0.16);
+}
+
+/* "Page break" marker above a block whose breakBefore is set (ADR-0018, item
+   5). The edit surface is continuous, so this is just an indicator that the
+   block starts a new page in the Page view / PDF. Applied via a node
+   decoration class (LayoutMarkers plugin). */
+.doc-break-before {
+  position: relative;
+  margin-top: 1.6em;
+}
+.doc-break-before::before {
+  content: "Page break";
+  position: absolute;
+  top: -1.1em;
+  left: 0;
+  right: 0;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(100, 116, 139, 0.85);
+  border-top: 1px dashed rgba(100, 116, 139, 0.5);
+  padding-top: 2px;
+  pointer-events: none;
+  user-select: none;
+}
 /* Horizontal insertion line shown while dragging, marking the drop position. */
 .doc-drop-indicator {
   position: relative;

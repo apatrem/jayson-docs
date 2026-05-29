@@ -26,8 +26,7 @@
     page-break-inside: avoid;
   }
 
-  .doc-page-break,
-  [data-block-type="divider"][data-render-context="document"] {
+  .doc-page-break {
     break-before: page;
     page-break-before: always;
   }

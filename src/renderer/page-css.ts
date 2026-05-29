@@ -24,8 +24,7 @@ const BREAK_RULES = `
   [data-block-type="team"],
   .doc-keep-together { break-inside: avoid; page-break-inside: avoid; }
   [data-block-type="table"] tr { break-inside: avoid; page-break-inside: avoid; }
-  .doc-page-break,
-  [data-block-type="divider"][data-render-context="document"] {
+  .doc-page-break {
     break-before: page; page-break-before: always;
   }
 `;

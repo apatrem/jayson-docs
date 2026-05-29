@@ -20,6 +20,7 @@ import { BaseBlockAttributes } from "./extensions/BaseBlockAttributes";
 import { BASE_BLOCK_ATTR_NAMES } from "./base-block-attrs";
 import { HeadingNumber } from "./extensions/HeadingNumber";
 import { DragReorder } from "./extensions/DragReorder";
+import { LayoutMarkers } from "./extensions/LayoutMarkers";
 import {
   resolveNumberingScheme,
   type NumberingScheme,
@@ -224,6 +225,9 @@ export function createEditorExtensions(
     HeadingNumber.configure(numberingScheme ? { scheme: numberingScheme } : {}),
     // Gutter drag-handle to reorder blocks within/across sections (ADR-0018).
     DragReorder,
+    // Editor-only layout markers (e.g. a "page break" rule above breakBefore
+    // blocks); the continuous surface has no real pages (ADR-0018, item 5).
+    LayoutMarkers,
     ...dedupeAuthoredManifests(authoredManifests).map(buildAuthoredTipTapNode),
   ];
 }

@@ -4,6 +4,7 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import type { EditorView } from "@tiptap/pm/view";
+import { setBlockAttr } from "../block-commands";
 
 /**
  * Block drag-reorder (ADR-0018, item 3). A gutter handle (widget decoration) on
@@ -222,6 +223,8 @@ class GutterHandleView {
   private readonly mount: HTMLElement;
   private blockStart: number | null = null;
   private dragging = false;
+  private menu: HTMLElement | null = null;
+  private menuBlockStart: number | null = null;
 
   constructor(private readonly view: EditorView) {
     const mount = view.dom.parentElement;
@@ -239,15 +242,101 @@ class GutterHandleView {
     this.handle.style.display = "none";
     this.handle.addEventListener("dragstart", this.onDragStart);
     this.handle.addEventListener("dragend", this.onDragEnd);
+    this.handle.addEventListener("click", this.onClick);
     this.mount.appendChild(this.handle);
 
     view.dom.addEventListener("mousemove", this.onMouseMove);
     view.dom.addEventListener("mouseleave", this.onMouseLeave);
   }
 
-  private readonly onMouseMove = (event: MouseEvent): void => {
-    if (this.dragging || !this.view.editable) {
+  // Clicking the handle (without a drag) opens a small block menu. Layout
+  // toggles (breakBefore now; spaceBefore in item 7) live here, per ADR-0018.
+  private readonly onClick = (event: MouseEvent): void => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.blockStart === null) {
       return;
+    }
+    if (this.menuOpenFor(this.blockStart)) {
+      this.closeMenu();
+    } else {
+      this.openMenu(this.blockStart);
+    }
+  };
+
+  private menuOpenFor(blockStart: number): boolean {
+    return this.menu !== null && this.menuBlockStart === blockStart;
+  }
+
+  private openMenu(blockStart: number): void {
+    this.closeMenu();
+    const node = this.view.state.doc.nodeAt(blockStart);
+    if (node === null) {
+      return;
+    }
+    const menu = document.createElement("div");
+    menu.className = "doc-block-menu";
+    menu.setAttribute("contenteditable", "false");
+    const breakOn = node.attrs.breakBefore === true;
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "doc-block-menu-item";
+    item.textContent = breakOn ? "Remove page break" : "Start on a new page";
+    item.addEventListener("click", (clickEvent) => {
+      clickEvent.preventDefault();
+      this.applyBreakBefore(blockStart, !breakOn);
+    });
+    menu.appendChild(item);
+
+    // Anchor below the handle (which is already positioned in mount coords).
+    menu.style.top = `${parseFloat(this.handle.style.top || "0") + 22}px`;
+    menu.style.left = this.handle.style.left || "0px";
+    this.mount.appendChild(menu);
+    this.menu = menu;
+    this.menuBlockStart = blockStart;
+    document.addEventListener("mousedown", this.onDocMouseDown, true);
+    document.addEventListener("keydown", this.onKeyDown, true);
+  }
+
+  private closeMenu(): void {
+    if (this.menu !== null) {
+      this.menu.remove();
+      this.menu = null;
+      this.menuBlockStart = null;
+      document.removeEventListener("mousedown", this.onDocMouseDown, true);
+      document.removeEventListener("keydown", this.onKeyDown, true);
+    }
+  }
+
+  private applyBreakBefore(blockStart: number, value: boolean): void {
+    const tr = setBlockAttr(this.view.state, blockStart, "breakBefore", value);
+    if (tr !== null) {
+      this.view.dispatch(tr);
+    }
+    this.closeMenu();
+    this.view.focus();
+  }
+
+  private readonly onDocMouseDown = (event: MouseEvent): void => {
+    const target = event.target;
+    if (
+      target instanceof Node &&
+      (this.menu?.contains(target) === true || this.handle.contains(target))
+    ) {
+      return;
+    }
+    this.closeMenu();
+  };
+
+  private readonly onKeyDown = (event: KeyboardEvent): void => {
+    if (event.key === "Escape") {
+      this.closeMenu();
+    }
+  };
+
+  private readonly onMouseMove = (event: MouseEvent): void => {
+    if (this.dragging || this.menu !== null || !this.view.editable) {
+      return; // freeze the handle while a menu is open
     }
     const at = this.view.posAtCoords({ left: event.clientX, top: event.clientY });
     const block = at ? findTopLevelBlock(this.view.state.doc, at.pos) : null;
@@ -269,7 +358,7 @@ class GutterHandleView {
   };
 
   private readonly onMouseLeave = (): void => {
-    if (!this.dragging) {
+    if (!this.dragging && this.menu === null) {
       this.hide();
     }
   };
@@ -299,10 +388,12 @@ class GutterHandleView {
   }
 
   destroy(): void {
+    this.closeMenu();
     this.view.dom.removeEventListener("mousemove", this.onMouseMove);
     this.view.dom.removeEventListener("mouseleave", this.onMouseLeave);
     this.handle.removeEventListener("dragstart", this.onDragStart);
     this.handle.removeEventListener("dragend", this.onDragEnd);
+    this.handle.removeEventListener("click", this.onClick);
     this.handle.remove();
   }
 }

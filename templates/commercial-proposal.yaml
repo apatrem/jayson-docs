@@ -276,10 +276,9 @@ sections:
   - id: "appendix"
     title: "Appendix"
     blocks:
-      - id: "app-divider"
-        type: "divider"
       - id: "app-prose"
         type: "prose"
+        breakBefore: true
         content:
           type: "doc"
           content:

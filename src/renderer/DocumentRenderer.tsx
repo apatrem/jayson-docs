@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { ComponentType, CSSProperties, FC, ReactNode } from "react";
 import { BrandProvider } from "../brand-tokens/BrandProvider";
 import {
@@ -152,16 +153,26 @@ const DocumentSection: FC<{
           {section.title}
         </h2>
       ) : null}
-      {section.blocks.map((block) => (
-        <BlockView
-          key={block.id}
-          block={block}
-          assetContext={assetContext}
-          diagramSvgs={diagramSvgs}
-          chartSvgs={chartSvgs}
-          imageDataUris={imageDataUris}
-        />
-      ))}
+      {section.blocks.map((block) => {
+        const view = (
+          <BlockView
+            block={block}
+            assetContext={assetContext}
+            diagramSvgs={diagramSvgs}
+            chartSvgs={chartSvgs}
+            imageDataUris={imageDataUris}
+          />
+        );
+        // breakBefore (ADR-0018, item 5) → start this block on a new printed
+        // page. The existing `.doc-page-break` rule forces break-before: page.
+        return block.breakBefore === true ? (
+          <div key={block.id} className="doc-page-break">
+            {view}
+          </div>
+        ) : (
+          <Fragment key={block.id}>{view}</Fragment>
+        );
+      })}
     </section>
   );
 };

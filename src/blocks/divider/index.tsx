@@ -282,26 +282,67 @@ export const Divider: FC<DividerProps> = ({ block, context = "document" }) => {
     );
   }
 
-  const breakStyle: CSSProperties = {
-    breakBefore: "page",
-    pageBreakBefore: "always",
+  // Document context: a visible brand-styled horizontal rule (NOT a page break
+  // — page breaks are now the per-block `breakBefore` attr, ADR-0018 item 5).
+  // If a label is set, it shows centred on the rule so the panel field isn't
+  // dead in documents.
+  const lineColor = dividerLineColor(brand);
+  const ruleStyle: CSSProperties = {
+    flex: 1,
     height: 0,
     margin: 0,
     border: "none",
-    padding: 0,
+    borderTop: `1px solid ${lineColor}`,
+  };
+  const containerStyle: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: block.label ? brand.spacing.unit * 2 : 0,
+    margin: `${brand.spacing.unit * 3}px 0`,
+  };
+  const captionStyle: CSSProperties = {
+    flex: "0 0 auto",
+    fontFamily: brand.typography.fonts.body.family,
+    fontSize: brand.typography.scale.bodySm ?? brand.typography.scale.body,
+    letterSpacing: "0.06em",
+    textTransform: "uppercase",
+    color: lineColor,
   };
 
   return (
-    <hr
-      className="doc-page-break"
+    <div
       data-block-id={block.id}
       data-block-type="divider"
       data-render-context="document"
-      style={breakStyle}
-      aria-hidden="true"
-    />
+      style={containerStyle}
+      role="separator"
+    >
+      <hr style={ruleStyle} aria-hidden="true" />
+      {block.label ? (
+        <>
+          <span style={captionStyle}>{block.label}</span>
+          <hr style={ruleStyle} aria-hidden="true" />
+        </>
+      ) : null}
+    </div>
   );
 };
+
+function dividerLineColor(brand: ReturnType<typeof useBrandTokens>): string {
+  const candidates = [
+    "colors.semantic.border",
+    "colors.neutral.300",
+    "colors.neutral.200",
+    "colors.brand.light",
+  ];
+  for (const path of candidates) {
+    const value = lookupBrandPath(brand, path);
+    if (typeof value === "string") {
+      return value;
+    }
+  }
+  return "#CBD5E1";
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Registry manifest (default export)
