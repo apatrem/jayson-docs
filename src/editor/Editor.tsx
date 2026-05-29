@@ -21,6 +21,7 @@ import { BASE_BLOCK_ATTR_NAMES } from "./base-block-attrs";
 import { HeadingNumber } from "./extensions/HeadingNumber";
 import { DragReorder } from "./extensions/DragReorder";
 import { LayoutMarkers } from "./extensions/LayoutMarkers";
+import { resolveBlockGapPx } from "../renderer/block-spacing";
 import {
   resolveNumberingScheme,
   type NumberingScheme,
@@ -343,12 +344,15 @@ export const Editor: FC<EditorProps> = ({
     editor.commands.setContent(editorContent, false);
   }, [deck, editor, editorContent]);
 
-  // The inter-block gap is a single brand-derived value, exposed as a CSS
-  // custom property so editor.css can apply one consistent margin between
-  // top-level blocks (see `.doc-section-content > * + *`).
+  // The inter-block gap is exposed as a CSS custom property so editor.css can
+  // apply one consistent margin between top-level blocks (see
+  // `.doc-section-content > * + *`). Resolved from the brand default ⊕ this
+  // document's `meta.layout.blockSpacing` override (ADR-0018, item 6).
   const surfaceStyle: CSSProperties = { ...styles.surface };
-  (surfaceStyle as Record<string, string>)["--doc-block-gap"] =
-    `${defaultBrand.spacing.unit * 3}px`;
+  (surfaceStyle as Record<string, string>)["--doc-block-gap"] = `${resolveBlockGapPx(
+    defaultBrand,
+    docModel?.kind === "document" ? docModel.meta : undefined,
+  )}px`;
   const editorSurface = <EditorContent editor={editor} style={surfaceStyle} />;
 
   return (
