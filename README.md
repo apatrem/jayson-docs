@@ -1,6 +1,16 @@
-# Document System
+# Jayson Docs
 
-Consultancy document system — DocModel-first proposals and decks, local desktop app (Tauri), closed block library, setup-time AI for brand and custom blocks.
+**Jayson Docs** is a local-first desktop application for producing high-quality consultancy deliverables — proposals, reports, and slide decks — from a single structured source of truth.
+
+Rather than hand-formatting documents, you author a **DocModel**: a validated, schema-backed representation of your content. The DocModel is rendered into polished HTML and PDF through a curated, closed library of layout blocks, so every document stays on-brand and internally consistent without manual styling. Brand tokens and any custom blocks are generated once at setup time with AI assistance, then locked in for repeatable, predictable output.
+
+Key ideas:
+
+- **DocModel-first** — content lives in a structured, validated model (Zod schemas), not in free-form formatting. The model is the source of truth; HTML and PDF are derived artifacts.
+- **Closed block library** — a fixed set of vetted layout primitives keeps output consistent and on-brand, with no arbitrary styling drift.
+- **Setup-time AI** — brand tokens and custom blocks are generated up front with AI, then frozen, so day-to-day authoring stays deterministic.
+- **Local desktop app** — runs as a Tauri shell; your documents and data stay on your machine.
+- **Editing & review** — a TipTap-based editor maps to the DocModel, with a comment-to-AI workflow for iterative revisions.
 
 ## Prerequisites
 
