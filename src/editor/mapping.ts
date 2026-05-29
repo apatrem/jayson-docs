@@ -221,9 +221,7 @@ function proseMirrorToSection(
   return {
     id: String(attrs.sectionId ?? ""),
     title: stringOrUndefined(attrs.title),
-    blocks: (node.content ?? []).map((child) =>
-      proseMirrorToBlock(asProseMirrorNode(child), authored),
-    ),
+    blocks: proseMirrorToBlocks(node.content, authored),
   };
 }
 
@@ -238,9 +236,7 @@ function proseMirrorToSlide(
   return {
     id: String(attrs.slideId ?? ""),
     layout: attrs.layout as Slide["layout"],
-    blocks: (node.content ?? []).map((child) =>
-      proseMirrorToBlock(asProseMirrorNode(child), authored),
-    ),
+    blocks: proseMirrorToBlocks(node.content, authored),
     notes: stringOrUndefined(attrs.notes),
   };
 }
@@ -263,6 +259,31 @@ function blockToProseMirror(
   // authored block that was permanently deleted (the editor-side removed-block
   // placeholder is a deferred follow-up, ADR-0016).
   throw new MappingError(`Unknown block type: ${block.type}`, ["blocks"]);
+}
+
+/**
+ * Map a container's child PM nodes to DocModel blocks, dropping any heading
+ * whose text is empty or whitespace-only.
+ *
+ * The editor's heading node is `content: "text*"`, so ProseMirror happily
+ * accepts a heading the user inserted but never typed into (or emptied out).
+ * `HeadingBlockSchema` requires `text.min(1)`, so serializing an empty heading
+ * would persist a DocModel that throws on the next open (DocModelSchema.parse →
+ * too_small at the heading's text), silently making the document un-openable.
+ * An empty heading carries no content, so it is dropped here at the canonical
+ * editor→DocModel boundary rather than written and later failing to load.
+ */
+function proseMirrorToBlocks(
+  content: unknown[] | undefined,
+  authored: AuthoredResolver,
+): Block[] {
+  return (content ?? [])
+    .map((child) => proseMirrorToBlock(asProseMirrorNode(child), authored))
+    .filter((block) => !isEmptyHeadingBlock(block));
+}
+
+function isEmptyHeadingBlock(block: Block): boolean {
+  return block.type === "heading" && block.text.trim().length === 0;
 }
 
 function proseMirrorToBlock(
