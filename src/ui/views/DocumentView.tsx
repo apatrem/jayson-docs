@@ -153,14 +153,13 @@ function numberingSignature(doc: DocumentModel | null): string {
 }
 
 /**
- * Section structure signature for the editor remount key: changes on
- * reorder/create/delete so the editor re-seeds from the updated DocModel (its
- * content is built once at mount). Titles are deliberately excluded — they're
- * nav-only (ADR-0018 item 2) and not rendered in the editor, so a sidebar
- * rename only re-renders the sidebar and never remounts the editor.
+ * Signature of the section structure (ids + nav titles). The editor onUpdate
+ * compares it to detect structural changes — including undo/redo of a section
+ * reorder/create/delete/rename — and re-renders the sidebar then (but not on
+ * every keystroke).
  */
-function sectionSignature(doc: DocumentModel | null): string {
-  return (doc?.sections ?? []).map((section) => section.id).join("|");
+function sectionStructureSignature(doc: DocumentModel): string {
+  return doc.sections.map((section) => `${section.id}:${section.title ?? ""}`).join("|");
 }
 
 export const DocumentView: FC<DocumentViewProps> = ({
@@ -239,9 +238,8 @@ export const DocumentView: FC<DocumentViewProps> = ({
     },
     [onDocumentChange],
   );
-  // Structural section edits from the sidebar (ADR-0018, item 1). They update
-  // `doc` so the editor re-seeds (its section signature is in the remount key)
-  // and the change is autosaved like any other edit.
+  // Fallback for structural edits before the editor is ready: setDoc remounts
+  // and re-seeds the editor (loses undo history, but only used pre-mount).
   const applyDocChange = useCallback(
     (updated: DocumentModel) => {
       currentDoc.current = updated;
@@ -252,25 +250,53 @@ export const DocumentView: FC<DocumentViewProps> = ({
     },
     [onDocumentChange],
   );
+  // Structural section edits (reorder/create/delete/rename) applied as ONE
+  // undoable ProseMirror transaction on the live editor — this keeps the editor
+  // history intact (no remount) and makes the section change itself undoable
+  // (Cmd+Z). The editor's onUpdate persists it; setDoc re-renders the sidebar
+  // (the editor key has no section signature, so it does not remount).
+  const applySectionStructureChange = useCallback(
+    (updated: DocumentModel) => {
+      const ed = editor;
+      if (ed === null) {
+        applyDocChange(updated);
+        return;
+      }
+      let docNode;
+      try {
+        docNode = ed.state.schema.nodeFromJSON(
+          documentToEditorContent(updated, installedAuthored),
+        );
+      } catch {
+        applyDocChange(updated);
+        return;
+      }
+      ed.view.dispatch(
+        ed.state.tr.replaceWith(0, ed.state.doc.content.size, docNode.content),
+      );
+      setDoc(updated);
+    },
+    [editor, installedAuthored, applyDocChange],
+  );
   const handleReorderSection = useCallback(
     (from: number, to: number) => {
       const cur = currentDoc.current;
-      if (cur !== null) applyDocChange(moveSection(cur, from, to));
+      if (cur !== null) applySectionStructureChange(moveSection(cur, from, to));
     },
-    [applyDocChange],
+    [applySectionStructureChange],
   );
   const handleRenameSection = useCallback(
     (sectionId: string, title: string) => {
       const cur = currentDoc.current;
-      if (cur !== null) applyDocChange(renameSection(cur, sectionId, title));
+      if (cur !== null) applySectionStructureChange(renameSection(cur, sectionId, title));
     },
-    [applyDocChange],
+    [applySectionStructureChange],
   );
   const handleCreateSection = useCallback(
     (afterIndex: number) => {
       const cur = currentDoc.current;
       if (cur !== null) {
-        applyDocChange(
+        applySectionStructureChange(
           createSection(cur, {
             sectionId: crypto.randomUUID(),
             blockId: crypto.randomUUID(),
@@ -279,14 +305,14 @@ export const DocumentView: FC<DocumentViewProps> = ({
         );
       }
     },
-    [applyDocChange],
+    [applySectionStructureChange],
   );
   const handleDeleteSection = useCallback(
     (sectionId: string) => {
       const cur = currentDoc.current;
-      if (cur !== null) applyDocChange(deleteSection(cur, sectionId));
+      if (cur !== null) applySectionStructureChange(deleteSection(cur, sectionId));
     },
-    [applyDocChange],
+    [applySectionStructureChange],
   );
   const handleJumpToSection = useCallback((sectionId: string) => {
     if (typeof document === "undefined") {
@@ -576,7 +602,7 @@ export const DocumentView: FC<DocumentViewProps> = ({
           {/* Re-seed/remount when a different file is opened OR the installed
               authored set changes (the editor schema is built once at mount). */}
           <EditorComponent
-            key={`${path}::${authoredSignature}::${numberingSignature(currentDoc.current ?? doc)}::${sectionSignature(currentDoc.current ?? doc)}`}
+            key={`${path}::${authoredSignature}::${numberingSignature(currentDoc.current ?? doc)}`}
             initialContent={editorSeed}
             editable={true}
             docModel={currentDoc.current ?? doc}
@@ -598,6 +624,11 @@ export const DocumentView: FC<DocumentViewProps> = ({
                   installedAuthored,
                 );
                 currentDoc.current = updated;
+                // Re-render the sidebar only when the section structure changes
+                // (a section op or its undo/redo) — not on every keystroke.
+                if (sectionStructureSignature(updated) !== sectionStructureSignature(previous)) {
+                  setDoc(updated);
+                }
                 setSaveState("saving");
                 onDocumentChange?.(updated);
                 autosave.current?.schedule(updated);

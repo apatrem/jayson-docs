@@ -41,6 +41,8 @@ export const SectionSidebar: FC<SectionSidebarProps> = ({
   // synchronously so onDragOver/onDrop read the right value on the very first
   // event (React state lags a render behind dragstart).
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  // Index the dragged section would drop at — drives the insertion-line preview.
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
   const dragIndexRef = useRef<number | null>(null);
 
   const beginDrag = (index: number, event: DragEvent): void => {
@@ -52,6 +54,7 @@ export const SectionSidebar: FC<SectionSidebarProps> = ({
   const endDrag = (): void => {
     dragIndexRef.current = null;
     setDragIndex(null);
+    setDropIndex(null);
   };
 
   const startEdit = (section: SectionSummary): void => {
@@ -111,6 +114,7 @@ export const SectionSidebar: FC<SectionSidebarProps> = ({
                   if (dragIndexRef.current !== null) {
                     event.preventDefault();
                     event.dataTransfer.dropEffect = "move";
+                    if (dropIndex !== index) setDropIndex(index);
                   }
                 }}
                 onDrop={(event) => onDrop(event, index)}
@@ -119,6 +123,11 @@ export const SectionSidebar: FC<SectionSidebarProps> = ({
                   ...styles.item,
                   ...(isActive ? styles.itemActive : {}),
                   ...(dragIndex === index ? styles.itemDragging : {}),
+                  // Insertion-line preview at the drop target (not the row
+                  // being dragged).
+                  ...(dropIndex === index && dragIndex !== index
+                    ? styles.dropTarget
+                    : {}),
                 }}
               >
                 <span
@@ -229,6 +238,8 @@ const styles: Record<string, CSSProperties> = {
   },
   itemActive: { background: "rgba(37, 99, 235, 0.12)" },
   itemDragging: { opacity: 0.5 },
+  // A 2px blue line at the top of the row, drawn without shifting layout.
+  dropTarget: { boxShadow: "inset 0 2px 0 0 #2563eb" },
   grip: {
     color: "rgba(100, 116, 139, 0.6)",
     cursor: "grab",

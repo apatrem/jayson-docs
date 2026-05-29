@@ -22,6 +22,13 @@
   margin-top: var(--doc-block-gap, 12px);
 }
 
+/* Reset the UA <figure> margin (1em 40px) for the table block so the gap rule
+   above and per-block spaceBefore control its spacing (the more specific gap
+   selector wins for non-first blocks; first/sides/bottom stay 0). */
+.doc-section-content figure {
+  margin: 0;
+}
+
 
 /* Computed heading outline number (ADR-0018). Rendered as a non-editable
    marker before the heading text in the editor (the export renderer emits an

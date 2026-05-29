@@ -153,12 +153,12 @@ export const DocTableTipTapNode = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
+    // No inline margin: an inline style would beat the inter-block gap rule and
+    // the per-block spaceBefore decoration (ADR-0018). The figure's default UA
+    // margin is reset in editor.css instead, leaving margin-top to those rules.
     return [
       "figure",
-      mergeAttributes(HTMLAttributes, {
-        "data-block-type": "table",
-        style: "margin:0;",
-      }),
+      mergeAttributes(HTMLAttributes, { "data-block-type": "table" }),
       0,
     ];
   },
