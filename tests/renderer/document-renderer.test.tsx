@@ -51,7 +51,9 @@ describe("DocumentRenderer (T-51)", () => {
     );
 
     expect(html).toContain('data-doc-kind="document"');
-    expect(html).toContain("Executive summary");
+    // section.title ("Executive summary") is nav-only now (ADR-0018 item 2) —
+    // not rendered; visible headers come from heading blocks.
+    expect(html).not.toContain("Executive summary");
     expect(html).toContain('data-block-type="prose"');
     expect(html).toContain('data-block-type="kpi-cards"');
     expect(html).toContain('data-block-type="callout"');

@@ -48,7 +48,8 @@ function normalizeText(text: string): string {
 }
 
 const parityAnchors = [
-  "Executive summary",
+  // "Executive summary" is a section title — now a nav-only label (ADR-0018
+  // item 2), not rendered into the document/PDF. Body content still parities.
   "Acme Industrial",
   "€42M",
   "-72%",

@@ -355,9 +355,9 @@ describe("DocumentView", () => {
     );
 
     expect(screen.queryByText(/Multi-section documents aren't editable yet/u)).toBeNull();
-    // Section title is now an inline editable input (single WYSIWYG surface),
-    // so it's matched by its value, not as text content.
-    expect(screen.getAllByDisplayValue("Executive summary").length).toBeGreaterThan(0);
+    // Section title is now a nav-only label shown in the section sidebar
+    // (ADR-0018 item 2), matched by its text rather than an input value.
+    expect(screen.getAllByText("Executive summary").length).toBeGreaterThan(0);
     expect(
       screen.getAllByText("Projected annual OPEX by scenario").length,
     ).toBeGreaterThan(0);

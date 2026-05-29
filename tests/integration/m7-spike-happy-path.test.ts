@@ -25,9 +25,9 @@ describe("M7 spike happy path", () => {
       expect(screen.getByLabelText("Document shell")).toBeTruthy();
     });
     expect(harness.readYamlFile).toHaveBeenCalledWith(sampleProposalPath);
-    // Section title is an inline editable input on the single WYSIWYG surface,
-    // matched by value rather than text content.
-    expect(screen.getAllByDisplayValue("Executive summary").length).toBeGreaterThan(0);
+    // Section title is a nav-only label in the section sidebar (ADR-0018 item
+    // 2), matched by its text rather than an input value.
+    expect(screen.getAllByText("Executive summary").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "Insert block" }));
     const calloutButton = await screen.findByRole("button", { name: /Callout/u });
@@ -71,9 +71,9 @@ describe("M7 spike happy path", () => {
     const reopened = renderM7SpikeHarness({ initialYaml: savedYaml });
     fireEvent.click(screen.getByRole("menuitem", { name: "Open" }));
     await waitFor(() => {
-      // Section title is an inline editable input on the single WYSIWYG surface,
-    // matched by value rather than text content.
-    expect(screen.getAllByDisplayValue("Executive summary").length).toBeGreaterThan(0);
+      // Section title is a nav-only label in the section sidebar (ADR-0018
+      // item 2), matched by its text rather than an input value.
+      expect(screen.getAllByText("Executive summary").length).toBeGreaterThan(0);
     });
     expect(countCallouts(reopened.getCurrentYaml())).toBeGreaterThan(baselineCallouts);
 

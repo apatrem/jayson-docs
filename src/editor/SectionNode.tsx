@@ -5,17 +5,17 @@ import {
   ReactNodeViewRenderer,
   type NodeViewProps,
 } from "@tiptap/react";
-import type { CSSProperties, FC } from "react";
+import type { FC } from "react";
 import { useBrandTokens } from "../brand-tokens/useBrandTokens";
-import { resolveBrandToken } from "../brand-tokens/resolve";
 
 /**
  * DocModel section container — preserves section boundaries in the TipTap
  * document so multi-section YAML round-trips without positional corruption.
  *
  * The section title lives in the `title` attr (round-trips to `section.title`)
- * and is edited inline through the node view's header field, so the title
- * behaves like a header while the section container stays intact.
+ * but is NOT rendered in the document or editable here: it is a nav-only label
+ * (ADR-0018, item 2), edited in the section sidebar. Visible on-page headers
+ * come from heading blocks. The node view just renders the section's blocks.
  */
 export const SectionNode = Node.create({
   name: "section",
@@ -60,45 +60,16 @@ export const SectionNode = Node.create({
   },
 });
 
-// The title is a plain-string attr, so it's edited via a controlled input
-// rather than ProseMirror content. The input sits in a contentEditable=false
-// wrapper and stops key/mouse propagation so the editor doesn't hijack the
-// caret or keystrokes; NodeViewContent renders the section's blocks below it.
-const SectionNodeView: FC<NodeViewProps> = ({ node, updateAttributes }) => {
+// The title is a nav-only attr (edited in the sidebar), so the node view simply
+// renders the section's blocks. NodeViewContent holds the section's content.
+const SectionNodeView: FC<NodeViewProps> = ({ node }) => {
   const brand = useBrandTokens();
-  const title = String(node.attrs.title ?? "");
-
-  const titleStyle: CSSProperties = {
-    width: "100%",
-    border: "none",
-    background: "transparent",
-    padding: 0,
-    margin: 0,
-    fontFamily: brand.typography.fonts.heading.family,
-    fontSize: brand.typography.scale.h2,
-    lineHeight: brand.typography.lineHeight.tight,
-    color: resolveBrandToken(brand, "colors.semantic.headingPrimary"),
-    fontWeight: 600,
-  };
-
   return (
     <NodeViewWrapper
       as="section"
       data-section-id={String(node.attrs.sectionId ?? "")}
       style={{ marginBottom: brand.spacing.unit * 4 }}
     >
-      <div contentEditable={false} style={{ marginBottom: brand.spacing.unit * 2 }}>
-        <input
-          type="text"
-          aria-label="Section title"
-          value={title}
-          placeholder="Section title"
-          onChange={(event) => updateAttributes({ title: event.target.value })}
-          onKeyDown={(event) => event.stopPropagation()}
-          onMouseDown={(event) => event.stopPropagation()}
-          style={titleStyle}
-        />
-      </div>
       <NodeViewContent className="doc-section-content" />
     </NodeViewWrapper>
   );

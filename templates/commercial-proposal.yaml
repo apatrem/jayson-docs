@@ -42,6 +42,10 @@ sections:
   - id: "exec-summary"
     title: "Executive summary"
     blocks:
+      - id: "exec-heading"
+        type: "heading"
+        level: 2
+        text: "Executive summary"
       - id: "exec-prose"
         type: "prose"
         content:
@@ -276,9 +280,13 @@ sections:
   - id: "appendix"
     title: "Appendix"
     blocks:
+      - id: "app-heading"
+        type: "heading"
+        level: 2
+        text: "Appendix"
+        breakBefore: true
       - id: "app-prose"
         type: "prose"
-        breakBefore: true
         content:
           type: "doc"
           content:

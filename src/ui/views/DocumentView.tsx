@@ -154,13 +154,13 @@ function numberingSignature(doc: DocumentModel | null): string {
 
 /**
  * Section structure signature for the editor remount key: changes on
- * reorder/create/delete/rename so the editor re-seeds from the updated DocModel
- * (its content is built once at mount). Titles are included so a sidebar rename
- * stays in sync with the in-doc section title (item 1; item 2 drops the in-doc
- * title, after which titles no longer need to force a remount).
+ * reorder/create/delete so the editor re-seeds from the updated DocModel (its
+ * content is built once at mount). Titles are deliberately excluded — they're
+ * nav-only (ADR-0018 item 2) and not rendered in the editor, so a sidebar
+ * rename only re-renders the sidebar and never remounts the editor.
  */
 function sectionSignature(doc: DocumentModel | null): string {
-  return (doc?.sections ?? []).map((section) => `${section.id}:${section.title ?? ""}`).join("|");
+  return (doc?.sections ?? []).map((section) => section.id).join("|");
 }
 
 export const DocumentView: FC<DocumentViewProps> = ({

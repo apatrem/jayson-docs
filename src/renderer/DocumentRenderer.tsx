@@ -140,19 +140,8 @@ const DocumentSection: FC<{
       data-section-id={section.id}
       style={{ marginBottom: brand.spacing.unit * 6 }}
     >
-      {section.title ? (
-        <h2
-          style={{
-            fontFamily: brand.typography.fonts.heading.family,
-            fontSize: brand.typography.scale.h2,
-            lineHeight: brand.typography.lineHeight.tight,
-            color: resolveBrandToken(brand, "colors.semantic.headingPrimary"),
-            margin: `0 0 ${brand.spacing.unit * 2}px 0`,
-          }}
-        >
-          {section.title}
-        </h2>
-      ) : null}
+      {/* section.title is a nav-only label (ADR-0018, item 2) — not rendered.
+          Visible headers come from heading blocks. */}
       {section.blocks.map((block) => {
         const view = (
           <BlockView
