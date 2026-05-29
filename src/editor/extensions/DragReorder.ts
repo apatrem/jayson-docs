@@ -1,8 +1,7 @@
 import { Extension } from "@tiptap/core";
 import type { Node as PMNode } from "@tiptap/pm/model";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Plugin } from "@tiptap/pm/state";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
-import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import type { EditorView } from "@tiptap/pm/view";
 import { setBlockAttr } from "../block-commands";
 
@@ -161,36 +160,6 @@ export function reorderBlocks<T>(
 
 // ── Plugin (floating gutter handle + insertion line + DOM wiring) ───────────
 
-interface DragReorderState {
-  /** Doc position where the dragged block will be inserted, or null. */
-  dropPos: number | null;
-}
-
-const dragReorderKey = new PluginKey<DragReorderState>("dragReorder");
-
-function createDropIndicator(): HTMLElement {
-  const indicator = document.createElement("div");
-  indicator.className = "doc-drop-indicator";
-  indicator.setAttribute("contenteditable", "false");
-  return indicator;
-}
-
-function dropIndicatorDecorations(state: EditorState): DecorationSet {
-  const dropPos = dragReorderKey.getState(state)?.dropPos ?? null;
-  if (dropPos === null) {
-    return DecorationSet.empty;
-  }
-  // The drop position is always a section-level boundary (between blocks), so
-  // the indicator renders as a sibling line — never inside a node view.
-  return DecorationSet.create(state.doc, [
-    Decoration.widget(dropPos, createDropIndicator, {
-      side: -1,
-      key: "drop-indicator",
-      ignoreSelection: true,
-    }),
-  ]);
-}
-
 /** Resolve the drop position for a pointer event over the editor. */
 function dropPosForEvent(view: EditorView, event: DragEvent): number | null {
   const at = view.posAtCoords({ left: event.clientX, top: event.clientY });
@@ -211,22 +180,23 @@ function dropPosForEvent(view: EditorView, event: DragEvent): number | null {
   return sectionContentInsertPos(view.state.doc, at.pos);
 }
 
-function setDropPos(view: EditorView, dropPos: number | null): void {
-  const current = dragReorderKey.getState(view.state)?.dropPos ?? null;
-  if (current === dropPos) {
-    return;
-  }
-  view.dispatch(view.state.tr.setMeta(dragReorderKey, { dropPos }));
-}
-
 /**
  * A single reusable gutter handle that follows the hovered top-level block.
  * One floating element (no per-block DOM, no widget-in-contentDOM conflict) is
  * repositioned on mousemove and carries the hovered block's start position for
  * dragstart.
+ *
+ * The drop-position insertion line is also a floating element owned here. It is
+ * deliberately NOT a ProseMirror widget decoration: a widget sits IN the
+ * document flow, so it occupies layout height and trips the inter-block gap
+ * rule on both itself and the following block — which visibly shoved every
+ * block below the cursor down/up as the indicator moved during a drag. A
+ * body-mounted overlay positioned from `coordsAtPos` has zero layout impact, so
+ * no other block moves until the drop is actually committed.
  */
 class GutterHandleView {
   private readonly handle: HTMLElement;
+  private readonly dropLine: HTMLElement;
   private readonly mount: HTMLElement;
   private blockStart: number | null = null;
   private dragging = false;
@@ -260,8 +230,45 @@ class GutterHandleView {
     this.handle.addEventListener("mouseleave", this.scheduleHide);
     this.mount.appendChild(this.handle);
 
+    // Floating insertion line (overlay, not a flow widget — see class doc).
+    this.dropLine = document.createElement("div");
+    this.dropLine.className = "doc-drop-line";
+    this.dropLine.setAttribute("contenteditable", "false");
+    this.dropLine.style.display = "none";
+    this.mount.appendChild(this.dropLine);
+
     view.dom.addEventListener("mousemove", this.onMouseMove);
     view.dom.addEventListener("mouseleave", this.scheduleHide);
+  }
+
+  /**
+   * Position the floating insertion line at a section-level drop position.
+   * `coordsAtPos` gives the viewport Y of the boundary; the line spans the
+   * editor's content width and uses page coordinates so it stays put as the
+   * document scrolls. A null position hides the line.
+   */
+  showDropLine(dropPos: number | null): void {
+    if (dropPos === null) {
+      this.hideDropLine();
+      return;
+    }
+    let coords: { top: number; bottom: number };
+    try {
+      coords = this.view.coordsAtPos(dropPos);
+    } catch {
+      this.hideDropLine();
+      return;
+    }
+    const editorRect = this.view.dom.getBoundingClientRect();
+    // Center the 2px line on the boundary; page coords track scroll.
+    this.dropLine.style.top = `${coords.top + window.scrollY - 1}px`;
+    this.dropLine.style.left = `${editorRect.left + window.scrollX}px`;
+    this.dropLine.style.width = `${editorRect.width}px`;
+    this.dropLine.style.display = "block";
+  }
+
+  hideDropLine(): void {
+    this.dropLine.style.display = "none";
   }
 
   // Hide is deferred so the pointer can travel from the block into the gutter
@@ -475,7 +482,7 @@ class GutterHandleView {
   private readonly onDragEnd = (): void => {
     this.dragging = false;
     activeBlockDragSource = null;
-    setDropPos(this.view, null);
+    this.hideDropLine();
     this.hide();
   };
 
@@ -496,6 +503,7 @@ class GutterHandleView {
     this.handle.removeEventListener("mouseenter", this.cancelHide);
     this.handle.removeEventListener("mouseleave", this.scheduleHide);
     this.handle.remove();
+    this.dropLine.remove();
   }
 }
 
@@ -514,29 +522,17 @@ export const DragReorder = Extension.create<DragReorderOptions>({
 
   addProseMirrorPlugins() {
     const defaultSpacingMultiple = this.options.defaultSpacingMultiple;
+    // Closure ref to the plugin's view instance so the DOM event handlers can
+    // drive its floating insertion line directly (no plugin state / decoration,
+    // so the line never participates in document layout).
+    let handleView: GutterHandleView | null = null;
     return [
-      new Plugin<DragReorderState>({
-        key: dragReorderKey,
-        state: {
-          init: () => ({ dropPos: null }),
-          apply(tr, value) {
-            const meta = tr.getMeta(dragReorderKey) as DragReorderState | undefined;
-            if (meta !== undefined) {
-              return meta;
-            }
-            // The drop position is a transient pixel-derived value; clear it on
-            // any doc change so a stale indicator never lingers.
-            if (tr.docChanged && value.dropPos !== null) {
-              return { dropPos: null };
-            }
-            return value;
-          },
+      new Plugin({
+        view: (editorView) => {
+          handleView = new GutterHandleView(editorView, defaultSpacingMultiple);
+          return handleView;
         },
-        view: (editorView) => new GutterHandleView(editorView, defaultSpacingMultiple),
         props: {
-          decorations(state) {
-            return dropIndicatorDecorations(state);
-          },
           handleDOMEvents: {
             dragover(view, event) {
               if (activeBlockDragSource === null) {
@@ -547,13 +543,15 @@ export const DragReorder = Extension.create<DragReorderOptions>({
               if (event.dataTransfer) {
                 event.dataTransfer.dropEffect = "move";
               }
-              setDropPos(view, dropPosForEvent(view, event));
+              // Reposition the overlay line every dragover so it tracks the
+              // cursor (and any auto-scroll) without shifting any block.
+              handleView?.showDropLine(dropPosForEvent(view, event));
               return false;
             },
-            dragleave(view, event) {
-              // Clear only when the pointer truly leaves the editor surface.
+            dragleave(_view, event) {
+              // Hide only when the pointer truly leaves the editor surface.
               if (event.relatedTarget === null) {
-                setDropPos(view, null);
+                handleView?.hideDropLine();
               }
               return false;
             },
@@ -564,7 +562,7 @@ export const DragReorder = Extension.create<DragReorderOptions>({
               }
               activeBlockDragSource = null;
               const insertAt = dropPosForEvent(view, event);
-              setDropPos(view, null);
+              handleView?.hideDropLine();
               if (insertAt === null) {
                 return false;
               }
