@@ -22,6 +22,14 @@ _Avoid_: "element", "component", "widget"
 A block as actually stored in a DocModel section/slide: a Standard block (one of the 15, strictly validated) or an Authored block (validated structurally, attrs passed through). The Authored variant's `type` is the `{sender}:{slug}` identity; the strict 15-type union is still "Block".
 _Avoid_: conflating "DocBlock" with "Block" — Block is the 15 Standard types only.
 
+**Section**:
+An ordered, `isolating` container of blocks inside a `document` DocModel — the unit of chaptering, reordering, and AI-prompting context. Presented to the consultant in the section sidebar, not as visible page chrome.
+_Avoid_: "chapter", "group"
+
+**Section title**:
+A section's organizational label, PowerPoint-style: shown in the section sidebar for navigation/reordering and used as prompting context, but **not rendered** into the document or export. Visible on-page headers come from heading blocks, not section titles.
+_Avoid_: "section header" (the visible header is a heading block, a different thing)
+
 ### Block tiers
 
 The block library is closed *at any given moment* but is composed of three tiers, each with a different origin, lifecycle, and trust model.
@@ -120,7 +128,7 @@ These have been discussed but are intentionally not built in v1. Listed here so 
 
 - **Organisation-shared Authored block library** — a place where Authored blocks from across a consultancy collect for colleagues to discover and pull (vs the current email-only sharing). Future improvement. See ADR-0004.
 - **Extended Authored-block capabilities** — promotion of atom-node-with-JSON-payload, custom side panels, or ECharts/Mermaid embeds into the Authored tier (currently restricted to Standard/Brand). Triggered when (a) real usage shows the simple-container subset is too restrictive, and (b) the codegen + lint can vet the additional surface area. See ADR-0007.
-- **Flattening the section container** — reconsidering whether the `Section` concept should exist at all, vs a flat block list where headings alone do the chaptering. Sections currently carry serialization structure, chaptering, and are the unit the setup/prompting pipeline operates on; their `title` also reads as a header, creating a dual heading concept (section title vs heading block). Triggered when that duality proves confusing in practice. Needs its own grilling + ADR before any change — it is a canonical DocModel rewrite.
+- **Flattening the section container** — reconsidering whether the `Section` concept should exist at all, vs a flat block list where headings alone do the chaptering. RESOLVED (partly): sections stay as organizational containers, but their title is now nav-only (see "Section title") so the dual-heading concept is gone — visible headers are heading blocks only. Fully removing the `Section` container remains deferred (it is a canonical DocModel rewrite) and is unnecessary now that sections are the reorder/sidebar unit.
 
 ## Example dialogue
 
