@@ -123,20 +123,24 @@
    decoration class (LayoutMarkers plugin). */
 .doc-break-before {
   position: relative;
-  margin-top: 1.6em;
+  /* Reserve real, in-flow space owned by the block: a dashed rule sits at the
+     block's top edge (in the gap above it) and `padding-top` opens room BELOW
+     the rule for the "Page break" label and above the block's content. Because
+     the label lives in the block's own padding (not an absolute element in the
+     margin), it can never be hidden behind a neighbouring block. */
+  margin-top: 2.2em;
+  padding-top: 1.5em;
+  border-top: 1px dashed rgba(100, 116, 139, 0.5);
 }
 .doc-break-before::before {
   content: "Page break";
   position: absolute;
-  top: -1.1em;
+  top: 0.35em;
   left: 0;
-  right: 0;
   font-size: 10px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: rgba(100, 116, 139, 0.85);
-  border-top: 1px dashed rgba(100, 116, 139, 0.5);
-  padding-top: 2px;
   pointer-events: none;
   user-select: none;
 }

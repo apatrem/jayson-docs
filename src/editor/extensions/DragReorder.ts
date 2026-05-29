@@ -460,10 +460,16 @@ class GutterHandleView {
     activeBlockDragSource = this.blockStart;
     event.dataTransfer.setData(DRAG_DATA_TYPE, String(this.blockStart));
     event.dataTransfer.effectAllowed = "move";
-    const blockDom = this.view.nodeDOM(this.blockStart);
-    if (blockDom instanceof HTMLElement) {
-      event.dataTransfer.setDragImage(blockDom, 0, 0);
-    }
+    // DEACTIVATED (kept intentionally): using the whole block as the drag image
+    // renders a full-size ghost that follows the cursor and obscures the
+    // insertion line, which read as buggy. We now fall back to the browser
+    // default drag image (just the small gutter handle), so only the insertion
+    // line previews the drop. Re-enable this block to bring back the block-ghost
+    // preview.
+    // const blockDom = this.view.nodeDOM(this.blockStart);
+    // if (blockDom instanceof HTMLElement) {
+    //   event.dataTransfer.setDragImage(blockDom, 0, 0);
+    // }
   };
 
   private readonly onDragEnd = (): void => {
