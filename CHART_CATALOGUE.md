@@ -1,20 +1,34 @@
 # Chart Catalogue
 
-Approved chart types for v1, with their JSON shapes (as consumed by the schema and produced by the LLM) and notes on how each is realised at fill time.
+JSON shapes for chart blocks in fill-plans, and how they are realised at fill time.
 
-All charts produced are **native PowerPoint charts** — editable in PowerPoint, never images. See `docs/DECISIONS_LOG.md` D2 / D8.
+All charts produced are **native PowerPoint charts** — editable in PowerPoint, never images.
 
-**v1 route (D21):** charts are produced by **`pptx-automizer` swapping data into a chart pre-authored in the master** — the supported kinds are whatever the master pre-authors, and a chart slot's **type is fixed by the layout** (the LLM supplies *data*, not type). Building charts from scratch via PptxGenJS (for variable types) is **deferred**. The per-type "Pipeline" notes below describe that deferred build route; in v1 read them as "the master pre-authors this type; automizer swaps the data."
+---
+
+## v1 — what is actually supported (D20/D21)
+
+**v1 supports only chart kinds pinned by an implemented layout slot in the master template.** The LLM **does not choose chart type** — it picks a layout and supplies **data**; Zod pins each chart slot's `kind` to a literal.
+
+Today (the report-pptx walking skeleton) that is exactly **one** slot:
+
+| Layout | Slot | Pinned `kind` | Master requirement |
+|--------|------|---------------|-------------------|
+| `kpi-row-chart` | `chart` | `stacked-bar` | `templates/report.master.pptx` must contain a pre-authored **stacked-bar** chart at `slot.chart` |
+
+**Fill route:** `pptx-automizer` swaps the dataset into that pre-authored chart. No PptxGenJS build in v1.
+
+If a fill-plan's chart `kind` does not match the layout slot's pinned literal, validation **rejects** it (D21 corollary). Do not treat the reference kinds below as user-selectable in v1.
 
 ---
 
 ## Universal shape
 
-Every chart block in a brief has the form:
+Every chart block has the form:
 
 ```jsonc
 {
-  "kind": "bar | stacked-bar | line | area | pie | doughnut | scatter | waterfall",
+  "kind": "<pinned by layout slot — not user-selectable in v1>",
   "datasetRef": "tier1_demand_2032",   // OR inline `dataset` below
   "dataset": {                          // optional inline alternative
     "id": "tier1_demand_2032",
@@ -34,21 +48,24 @@ Validation: the dataset must have ≥1 column, ≥1 row; all rows must have the 
 
 ---
 
-## Per-type semantics
+## Reference catalogue — kinds when a layout/master slot pins them (post-v1 seed)
+
+The per-type notes below document **dataset contracts** and **deferred** pipeline routes for when additional layouts and masters pre-author these types. They are **not** all available in v1. In v1, read each "Pipeline" note as: *the master pre-authors this type at a named slot; automizer swaps the data.*
 
 ### `bar`
 
 Vertical or horizontal bar chart.
 
 - Columns: first column = category labels (string); remaining columns = numeric series. Each series becomes one set of bars.
-- Pipeline: if the master's chart placeholder type is `bar`, swap data via pptx-automizer. Otherwise build with PptxGenJS (`pres.addChart(pptx.charts.BAR, ...)`).
+- Pipeline (deferred build route): if the master's placeholder type is `bar`, swap data via pptx-automizer. Otherwise build with PptxGenJS (`pres.addChart(pptx.charts.BAR, ...)`).
 
 ### `stacked-bar`
 
 Stacked bar chart.
 
 - Same shape as `bar`. Series stack from left to right (or bottom to top for horizontal).
-- Pipeline: PptxGenJS uses `barGrouping: 'stacked'`.
+- **v1:** `kpi-row-chart` pins this kind; automizer data-swap only.
+- Pipeline (deferred build route): PptxGenJS uses `barGrouping: 'stacked'`.
 
 ### `line`
 
@@ -96,13 +113,13 @@ Waterfall chart.
     ["Total budget", 200000, "total"]
   ]
   ```
-- Pipeline (v1): waterfall is supported **only if pre-authored in the master** (PowerPoint has a native waterfall); `pptx-automizer` swaps its data. PptxGenJS 4.x has **no** waterfall build API, so the from-scratch route is N/A. Waterfall uses PowerPoint's *extended-chart* (`chartEx`) part — **verify `pptx-automizer` can update `chartEx` data during M3** before relying on it.
+- **Not in the v1 walking skeleton.** Supported only when a layout slot pins `waterfall` **and** the master pre-authors a native waterfall (PowerPoint extended-chart / `chartEx`). PptxGenJS 4.x has **no** waterfall build API. Verify `pptx-automizer` can update `chartEx` data before relying on swap.
 
 ---
 
 ## Implementation notes
 
-- For chart **types matching the template placeholder**: swap data via `pptx-automizer`'s chart-data API. Lowest friction; preserves any styling set in the master.
-- For chart **types not in the template**: build the chart object with PptxGenJS, then inject it via pptx-automizer's slide-modification API. See `pptx-automizer/__tests__/generate-pptxgenjs-charts.test.ts` for the canonical example.
-- Colour palette comes from `src/brand/brand.yaml` (`colors.primary`, `colors.secondary`, `colors.accent`). Do not hard-code chart colours in code.
-- For dataset reuse across slides, prefer `datasetRef` pointing at the top-level `datasets` map in the fill-plan over inlining the dataset on every chart.
+- **v1 (D21):** swap data via `pptx-automizer`'s chart-data API into the chart pre-authored in the master. Preserves styling set in the master.
+- **Deferred:** build chart objects with PptxGenJS and inject via pptx-automizer for types not pre-authored in the master. See `pptx-automizer/__tests__/generate-pptxgenjs-charts.test.ts`.
+- **Chart colours (v1):** the **master chart's styling wins** (D2-2, D21). `brand.yaml` colours apply only to the deferred PptxGenJS route.
+- For dataset reuse across slides, prefer `datasetRef` pointing at the top-level `datasets` map over inlining the dataset on every chart.

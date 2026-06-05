@@ -1,6 +1,6 @@
 # Architecture Decisions Log — Acme jayson-docs
 
-**Date:** 2026-06-04 (updated for D11 — Cowork-as-LLM)
+**Date:** 2026-06-05 (updated through D21 — v1 vertical slice, chart swap route)
 **Why this file:** so the developer and future maintainers understand what was decided, what was rejected, and why. Prevents re-litigating settled questions.
 
 ---
@@ -19,7 +19,7 @@
 **Decided:** PptxGenJS (from-scratch + native charts) used together with pptx-automizer (template-based slide injection).
 **Rejected:** docxtemplater for PPTX.
 
-**Reason:** docxtemplater's chart module is paid; PptxGenJS supports native PowerPoint charts (including waterfall) with no paid module; pptx-automizer integrates with PptxGenJS by design (issue #60; `generate-pptxgenjs-charts.test.ts`). Both libraries are MIT and active.
+**Reason:** docxtemplater's chart module is paid; PptxGenJS supports native PowerPoint charts for the *deferred* from-scratch build route with no paid module; pptx-automizer integrates with PptxGenJS by design (issue #60; `generate-pptxgenjs-charts.test.ts`). Both libraries are MIT and active. **v1 (D21):** charts are automizer data-swaps into pre-authored master charts only — PptxGenJS build is deferred. PptxGenJS 4.x has **no** waterfall build API; waterfall is supportable in v1 only if pre-authored in the master and automizer can swap `chartEx` data.
 
 ### D2-1 — `colors.primary` = `#00C259`, fonts = Futura + Arial
 
@@ -33,12 +33,12 @@ The **master template is the canonical ground truth** for brand (it is what clie
 
 ## D3 — dolanmiu/docx over docxtemplater for DOCX
 
-**Decided:** dolanmiu/docx + `patchDocument` API.
-**Rejected:** docxtemplater for DOCX.
+**Decided:** dolanmiu/docx + `patchDocument` API for DOCX template-fill (text, blocks, placeholders).
+**Rejected:** docxtemplater for DOCX (paid chart module).
 
-**Reason:** same paid-chart-module concern as D2. dolanmiu/docx has native Word chart support and `patchDocument` placeholder replacement — MIT, fully open source.
+**Reason:** MIT, fully open source; `patchDocument` placeholder replacement without a paid module. docxtemplater is the more polished *templater*; dolanmiu/docx is the more polished *generator* for flowing document composition.
 
-**Trade-off:** docxtemplater is the more polished *templater*; dolanmiu/docx is the more polished *generator*. For Acme, where charts matter, dolanmiu/docx wins.
+> **Revised by D21 — DOCX charts:** dolanmiu/docx has **no** native Word chart classes. DOCX is **out of v1** (D20). When DOCX returns, chart options are logged in D21 (PPT copy-paste route or paid docxtemplater chart module). D3 stands for *choosing dolanmiu/docx for DOCX fill* — not for promising in-tree Word chart generation.
 
 ---
 

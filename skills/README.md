@@ -18,6 +18,14 @@ Four **markdown skills** drive this app with **any** agentic LLM (BYO LLM — Co
 
 Each skill points at a specific master template under `templates/` and shares the schemas under `src/schema/`, the chart catalogue in `CHART_CATALOGUE.md`, and the layout library in `docs/SLIDE_LAYOUT_LIBRARY.md`.
 
+## v1 scope (D20)
+
+**Only `report-pptx` is implemented in v1** — and only the **`kpi-row-chart`**
+layout on `templates/report.master.pptx`. The other three skills are markdown
+playbooks for post-v1; each carries a status banner. Charts: data-swap into a
+pre-authored `stacked-bar` at `slot.chart` only (D21) — the LLM does not choose
+chart type.
+
 ## Delivery (BYO LLM; Cowork plugin optional)
 
 The product is this **portable skills folder + the app**, driven by the user's own agentic LLM (D15). A **Cowork plugin is one optional packaging** — to publish it, verify the manifest and SKILL.md frontmatter against the current Cowork plugin spec using the `cowork-plugin-management:create-cowork-plugin` skill.
@@ -39,4 +47,5 @@ During local development from the repo, before the binary is built, use
 - The skill never calls an LLM via an API; the LLM is the **user's own** (BYO LLM, D15) — the app calls none.
 - The skill never lays anything out, picks coordinates, or chooses brand values — only fills typed slots from a closed library.
 - The skill never auto-fixes a fill-plan that fails validation; it surfaces the validation error to the consultant.
-- The skill never invents slot names, chart kinds, or layouts not in the schema.
+- The skill never invents slot names or layouts not in the schema; chart `kind` is
+  pinned per layout slot (D21), not chosen freely.

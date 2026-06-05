@@ -1,3 +1,3 @@
 // Intentionally empty for v1. See src/llm/README.md.
-// Claude-in-Cowork is the LLM; the CLI does not call any LLM directly.
+// BYO LLM (D15) produces the fill-plan; the CLI does not call any LLM directly.
 export {};

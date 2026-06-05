@@ -47,9 +47,9 @@ These are not in this repo and you must wait for them or work around them:
    - `templates/report.master.pptx`
    - `templates/report.master.docx`
 
-   Until they land, you may scaffold pipeline development against a placeholder you author yourself (PptxGenJS for PPTX, dolanmiu/docx for DOCX). Mark any placeholder with the `PLACEHOLDER-` prefix in the filename. Acceptance for each pipeline requires the real master in place.
+   Until it lands, you may author a `PLACEHOLDER-report.master.pptx` for development. **v1 acceptance requires the real master.** DOCX masters and the other three `.pptx`/`.docx` templates are post-v1 (D20).
 
-2. **Layouts and per-skill schemas.** Only the `kpi-row-chart` slide layout is fully spec'd in `src/schema/layouts/`. The other layouts in `docs/SLIDE_LAYOUT_LIBRARY.md`, plus the DOCX section schemas, plus the per-deliverable schemas under each skill, are TBD — design them alongside the master templates.
+2. **Layouts.** Only **`kpi-row-chart`** is in scope for v1 (`src/schema/layouts/kpi-row-chart.ts`). The other five seed layouts in `docs/SLIDE_LAYOUT_LIBRARY.md` and all DOCX section schemas are **post-v1** — do not implement them under the v1 brief.
 
 ---
 

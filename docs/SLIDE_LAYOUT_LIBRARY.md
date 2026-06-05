@@ -91,7 +91,7 @@ The Zod schema enforces this table. The LLM cannot put an `image` block in a `ch
 | `image` / `visual` | `image` (with optional caption) |
 | `section-title` | `section-title` (large divider text, ≤8 words) |
 
-Approved chart types for v1: `bar`, `stacked-bar`, `line`, `area`, `pie`, `doughnut`, `scatter`, `waterfall`. Add others only with deliberate approval.
+**Chart kinds in v1 (D21):** only kinds **pinned by an implemented layout slot** and **pre-authored in the master** count. The v1 walking skeleton pins `stacked-bar` on `kpi-row-chart`'s `chart` slot. The full kind list in `CHART_CATALOGUE.md` is a **reference catalogue** for when additional layouts/masters add more pinned slots — not a user-selectable menu in v1.
 
 ---
 

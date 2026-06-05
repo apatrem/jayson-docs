@@ -14,12 +14,17 @@ description: |
 
 # Skill — report-docx
 
+> **Status: post-v1 (D20).** The DOCX pipeline is **not implemented** in v1. If
+> triggered before M4 lands, tell the consultant and point them to **`report-pptx`**
+> for the v1 walking skeleton. **DOCX charts are post-v1** — dolanmiu/docx has no
+> native Word chart API (D21).
+
 ## 0. Purpose
 
 Produce an **Acme written delivery report / executive memo `.docx`** — the
 text-heavy companion to a presentation deck, or a standalone written
-deliverable. Uses dolanmiu/docx's `patchDocument` API; charts are native Word
-charts.
+deliverable. *When implemented*, uses dolanmiu/docx's `patchDocument` API for
+text and blocks; chart handling is TBD per D21 (not native Word charts in-tree).
 
 ## 1. Hard rules
 
@@ -56,8 +61,8 @@ Build a JSON matching `fillPlanSchema` with `kind: "document"`:
 - Standard `meta.client`, `meta.date`, `meta.language`.
 - `sections[]` — each `{ title, blocks: [...] }`, blocks from the closed
   block-type set (`src/schema/block.ts`: heading, paragraph, bullets, chart,
-  image). Word reflows; you never paginate. The M4 docx pipeline expands the
-  block set.
+  image). Word reflows; you never paginate. The docx pipeline (post-v1) expands
+  the block set.
 
 ### Step C — Temp file
 

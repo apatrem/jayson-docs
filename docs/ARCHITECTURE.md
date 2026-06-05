@@ -77,8 +77,8 @@ Interactive HTML, embedded live models, in-app comment-to-AI, a custom WYSIWYG e
 │   1. read fill-plan from disk                                        │
 │   2. validate with Zod (fillPlanSchema)                              │
 │   3. dispatch on --template extension:                               │
-│        .pptx  →  pptx-automizer + pptxgenjs                          │
-│        .docx  →  docx (dolanmiu) patchDocument + native charts       │
+│        .pptx  →  pptx-automizer (v1: data-swap; pptxgenjs deferred)  │
+│        .docx  →  docx patchDocument (post-v1; charts per D21)        │
 │   4. save output                                                      │
 └───────────────────┬──────────────────────────────────────────────────┘
                     │

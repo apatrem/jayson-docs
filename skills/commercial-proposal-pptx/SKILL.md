@@ -14,11 +14,15 @@ description: |
 
 # Skill — commercial-proposal-pptx
 
+> **Status: post-v1 (D20).** Only **`report-pptx`** + **`kpi-row-chart`** is
+> implemented in v1. If triggered before this skill's pipeline lands, point the
+> consultant to `report-pptx` or explain the post-v1 status.
+
 ## 0. Purpose
 
 Produce an **Acme commercial proposal `.pptx`** by filling a hand-designed master
 template via the CLI. Your own agentic LLM (BYO LLM) is the LLM — you produce the
-fill-plan JSON in context; the CLI does the mechanical fill.
+fill-plan JSON in context; the CLI does the mechanical fill. *Not wired in v1.*
 
 ## 1. Hard rules
 
@@ -27,7 +31,8 @@ fill-plan JSON in context; the CLI does the mechanical fill.
   fill typed slots per the layout's Zod schema.
 - You honour every density cap (word counts, bullet counts, KPI count) — they
   are enforced by Zod and your output will be rejected if you violate them.
-- You never invent chart kinds; pick only from `CHART_CATALOGUE.md`.
+- You never choose chart type — each layout slot pins `kind` (D21). Supply data
+  only; see `CHART_CATALOGUE.md` for the pinned kind per layout when implemented.
 - If you are missing information for a required slot, ask the consultant one
   short question. Never invent client-specific content.
 - If the CLI returns a validation error, surface it to the consultant
@@ -74,11 +79,10 @@ Build a JSON object matching `fillPlanSchema` from `src/schema/index.ts`:
   slide is `{ layoutId, ...slot values }`.
 - `datasets` = top-level keyed datasets referenced by `chart.datasetRef`
 
-Pick layouts deliberately. A standard commercial proposal commonly uses, in
-order: a section-divider, two-column or bullets-and-image for context, a
-chart-full-with-takeaway for the central insight, a kpi-row-chart for headline
-metrics, a quad for comparison matrices, and a section-divider for fees and
-team. Adapt to what the consultant briefed.
+*Post-v1:* pick layouts from the closed enum as they are implemented. A standard
+commercial proposal may use section-divider, two-column, chart-full-with-takeaway,
+kpi-row-chart, quad, etc. — **none of these except `kpi-row-chart` on
+`report.master.pptx` are available in v1** (see `report-pptx`).
 
 ### Step C — Write the fill-plan to a temp file
 
@@ -115,8 +119,8 @@ once. After that, ask the consultant.
   proceed.
 - **Schema validation failure**: read the Zod error, identify the bad slot, fix
   the fill-plan in context, re-run the CLI once. After that, surface to user.
-- **Unknown chart kind**: pick a different kind from `CHART_CATALOGUE.md` that
-  fits the data; if none does, ask the consultant.
+- **Chart kind mismatch**: chart `kind` must match the layout slot's pinned
+  literal (D21); fix the fill-plan or ask the consultant.
 - **Density cap exceeded**: shorten the offending field, redo the CLI call. If
   the consultant explicitly asked for more content, push back — the caps exist
   to protect the layout.

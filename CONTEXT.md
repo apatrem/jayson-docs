@@ -135,7 +135,7 @@ _Avoid_: "permission", "access level", "sensitivity" (unqualified)
 ### Content plan
 
 **Fill-plan**:
-The kind-discriminated structured JSON that Claude-in-Cowork produces and the CLI fills from. **Not canonical** — a throwaway draft input, reconstructible only by re-prompting; the Office file is the deliverable, not a projection of the fill-plan. Its body is always a list of **Sections**; in a deck (`kind: "deck"`) each section holds **Slides**, in a document (`kind: "document"`) each section holds **blocks** directly.
+The kind-discriminated structured JSON that the user's BYO LLM produces and the CLI fills from. **Not canonical** — a throwaway draft input, reconstructible only by re-prompting; the Office file is the deliverable, not a projection of the fill-plan. Its body is always a list of **Sections**; in a deck (`kind: "deck"`) each section holds **Slides**, in a document (`kind: "document"`) each section holds **blocks** directly.
 _Avoid_: "deck-plan" (a misnomer — half the deliverables are documents, not decks), "DocModel" (there is no canonical content model here), "the brief" (that is the human input, a different thing)
 
 **Brief**:

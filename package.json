@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Template-fill CLI for Acme consulting deliverables. LLM work happens in Claude-in-Cowork (see skills/). This package does not call any LLM directly.",
+  "description": "Template-fill CLI for Acme consulting deliverables. Fill-plan generation is BYO LLM via skills/; this package does not call any LLM directly.",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=22.0.0",

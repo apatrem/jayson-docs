@@ -15,13 +15,16 @@ description: |
 
 # Skill — commercial-proposal-docx
 
+> **Status: post-v1 (D20).** The DOCX pipeline is **not implemented** in v1. If
+> triggered before M4 lands, explain that only **`report-pptx`** (`kpi-row-chart`)
+> is available today. **DOCX charts are post-v1** (D21).
+
 ## 0. Purpose
 
 Produce an **Acme written commercial proposal `.docx`** — the document form of the
-pitch (propale). Like the report-docx path, it is **composed** from sections and
-blocks (`kind: "document"`): the consultant's content flows as Word paragraphs,
-bullets, and native charts; Word handles pagination. The DOCX path uses
-dolanmiu/docx's `patchDocument` API; charts are native Word charts.
+pitch (propale). *When implemented*, it is **composed** from sections and blocks
+(`kind: "document"`): Word paragraphs and bullets via dolanmiu/docx
+`patchDocument`; chart handling is TBD per D21.
 
 ## 1. Hard rules
 
@@ -35,7 +38,7 @@ here are format-specific:
 - You still follow a soft **standard structure** (Step A) — nudge toward it,
   then add or remove sections with the consultant. It is a default, not a fixed
   skeleton.
-- Charts are dolanmiu/docx native — see `CHART_CATALOGUE.md`.
+- Charts in DOCX are post-v1 — see `CHART_CATALOGUE.md` and D21.
 
 ## 2. Read first
 
@@ -94,6 +97,8 @@ that the consultant should open it in Word to finalise.
 
 Same as `commercial-proposal-pptx` §4. Additionally:
 
-- **Document block schema still expanding** (M4): if the consultant needs a block
+- **DOCX not implemented in v1** (D20): do not invoke the CLI for `.docx` until
+  the pipeline lands.
+- **Document block schema still expanding** (post-v1): if the consultant needs a block
   type not yet in `src/schema/block.ts` (e.g. table, kpi-cards), say so and ask
   how to proceed. Do not invent a block type the schema does not define.

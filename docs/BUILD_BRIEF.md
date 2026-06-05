@@ -2,7 +2,7 @@
 
 **For:** the implementing developer / Claude Code
 **Companion to:** `docs/ARCHITECTURE.md`, `docs/SLIDE_LAYOUT_LIBRARY.md`, `docs/DECISIONS_LOG.md`
-**Date:** 2026-06-05 (updated through D19 — BYO-LLM delivery, four-skill portable pack)
+**Date:** 2026-06-05 (updated through D21 — v1 vertical slice, chart swap route)
 
 ---
 
@@ -25,7 +25,7 @@ Work milestone by milestone. Do not start a milestone until the previous one's a
   - an LLM client (the LLM is the user's own — BYO LLM),
   - a DOCX / PPTX parser (read-only loading by `pptx-automizer` / `docx` doesn't count),
   - any HTML or PDF renderer,
-  - any chart re-implementation in code (Office-native charts only, via the §2 libraries),
+  - any chart re-implementation in code (v1: data-swap into pre-authored master charts only — D21),
   - free-canvas slide composition.
 - **Demo Office files are setup-time input only.** The master templates are read by the libraries at fill time; nothing else.
 - **When uncertain, stop and ask.** No invented brand values, slot names, chart types, or layouts.
@@ -89,13 +89,19 @@ jayson-docs/
 
 Runtime:
 
-- **Node** 22+ with **TypeScript** (`.nvmrc` pins 24; `package.json` engines require ≥22).
-- **pptx-automizer** — open master, fill named shapes (PPTX).
-- **pptxgenjs** — from-scratch chart objects (PPTX).
-- **docx** (dolanmiu) — DOCX `patchDocument` template-fill + native charts.
+- **Node** 22+ with **TypeScript** (`package.json` engines require ≥22).
 - **zod** — schema definition + fill-plan validation.
 - **yaml** — parse `brand.yaml`.
 - **commander** — CLI argument parsing.
+
+**v1 PPTX path (D20/D21):**
+
+- **pptx-automizer** — open master, fill named shapes, **swap chart data** into pre-authored master charts.
+
+**In `package.json` but not used in v1** (post-v1; do not wire in the walking skeleton):
+
+- **pptxgenjs** — deferred from-scratch / variable-type chart build (D21).
+- **docx** (dolanmiu) — deferred DOCX `patchDocument` fill; **no native Word chart API** (D3 revised by D21).
 
 Dev: vitest, eslint, prettier, tsx.
 
@@ -134,27 +140,28 @@ Build **one layout end-to-end** before widening. Do not start a step until the p
 
 ---
 
-## 4. Per-component "done means"
+## 4. Per-component "done means" — v1 (the report-pptx skeleton)
 
-| Component | Done when |
+| Component | Done when (v1) |
 |---|---|
-| Master templates | Real Acme files in `templates/`; named shapes / placeholders match the schemas |
-| Schema | Closed `layoutId` enum; per-layout slot enum; density caps enforced; valid + invalid fixtures pass `validate` |
-| PPTX pipeline | Brand-identical output; named-shape fills correct; native editable charts (same-type and variable-type) |
-| DOCX pipeline | Brand-identical output; placeholder fills correct; native editable charts |
-| CLI | Dispatches on extension; rejects mismatched `--template` / `--out`; rejects invalid fill-plans with clear errors |
-| Skills | Each SKILL.md instructs the LLM correctly; plugin installs; end-to-end smoke test passes driven by a BYO LLM |
+| Master template | `templates/report.master.pptx` with the `kpi-row-chart` slide; named shapes match the schema (`slot.*` convention) |
+| Schema | `kpi-row-chart` only; **strict** fill-plan validation; chart `kind` pinned per slot (D21); valid + invalid fixtures pass `validate` |
+| PPTX pipeline | Brand-identical output; title / kpi-strip / narrative filled; **one** native editable chart via automizer data-swap |
+| CLI | `fill --template …pptx` wired; rejects invalid fill-plans with clear errors |
+| `report-pptx` skill | Drives a BYO LLM (or human-run CLI) end-to-end on `kpi-row-chart` only |
+
+**Post-v1** (do not treat as v1 done criteria): other layouts, DOCX pipeline, variable-type PptxGenJS charts, the other three skills, Setup, catalogue at scale, signed binary. See §0.5.
 
 ---
 
-## 5. Testing requirements
+## 5. Testing requirements — v1
 
 - **Mandatory automated:**
-  - Zod validation on valid + invalid fixtures (already scaffolded; extend per M1).
-  - Pipeline integration per format: a fixture fill-plan produces a file with the expected named shapes / placeholders filled.
-  - Chart-rendering correctness: chart type, series, and data values survive the round-trip.
-- **Nice-to-have:** visual regression via headless LibreOffice rendering + image diff, per layout.
-- Keep `/fixtures` exhaustive — at least one valid and one invalid fixture per layout / section.
+  - Zod validation on valid + invalid fixtures (extend per M1 — strict schema, `datasetRef` resolution, pinned chart `kind`).
+  - Pipeline integration: the valid `kpi-row-chart` fixture produces a `.pptx` with expected named shapes filled.
+  - Chart round-trip: the pre-authored `stacked-bar` in the master carries the fill-plan's series and values.
+- **Nice-to-have:** visual regression via headless LibreOffice rendering + image diff.
+- Keep `/fixtures` exhaustive for **`kpi-row-chart`** in v1 — at least one valid and one invalid fixture per rule added in M1.
 
 ---
 

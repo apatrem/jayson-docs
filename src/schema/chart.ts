@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
 /**
- * Approved chart types for v1. The JSON shape per kind is documented in
- * CHART_CATALOGUE.md (repo root). Adding a new kind requires:
- *   1. extend this enum,
- *   2. extend the per-kind validation below if it has structural requirements,
- *   3. document the shape in CHART_CATALOGUE.md.
+ * Reference chart kinds (CHART_CATALOGUE.md). In v1 (D21) only kinds **pinned
+ * by an implemented layout slot** are valid — today `stacked-bar` on
+ * `kpi-row-chart`. The LLM does not freely choose from this enum; layout
+ * schemas pin `kind` to a literal. Adding a kind for a new layout requires:
+ *   1. extend this enum if needed,
+ *   2. extend per-kind validation below,
+ *   3. document in CHART_CATALOGUE.md and pre-author in the master.
  */
 export const chartKindSchema = z.enum([
   'bar',
