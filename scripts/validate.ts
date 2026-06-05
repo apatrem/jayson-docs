@@ -1,0 +1,59 @@
+#!/usr/bin/env tsx
+/**
+ * scripts/validate.ts — runs the Zod schema against every fixture under
+ * /fixtures and reports pass/fail. The valid fixture must parse cleanly;
+ * invalid fixtures must fail. Used by `npm run validate`.
+ */
+
+import { readFileSync } from 'node:fs';
+import { resolve, join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { fillPlanSchema } from '../src/schema/index.js';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const root = resolve(here, '..');
+
+function readJson(p: string): unknown {
+  return JSON.parse(readFileSync(join(root, p), 'utf-8')) as unknown;
+}
+
+function check(label: string, body: () => unknown, expectValid: boolean): boolean {
+  try {
+    body();
+    if (expectValid) {
+      process.stdout.write(`PASS  ${label}: valid\n`);
+      return true;
+    }
+    process.stderr.write(`FAIL  ${label}: expected to fail validation, but passed\n`);
+    return false;
+  } catch (e) {
+    if (!expectValid) {
+      process.stdout.write(`PASS  ${label}: failed as expected\n`);
+      return true;
+    }
+    process.stderr.write(`FAIL  ${label}: ${String(e)}\n`);
+    return false;
+  }
+}
+
+const valid: [string, string][] = [['fixtures/valid-fill-plan.json', 'deck fill-plan']];
+
+const invalid: string[] = [
+  'fixtures/invalid/fillplan-title-too-short.json',
+  'fixtures/invalid/fillplan-too-many-kpis.json',
+  'fixtures/invalid/fillplan-unknown-layout.json',
+  'fixtures/invalid/fillplan-unknown-chart-kind.json',
+];
+
+let ok = true;
+for (const [path, label] of valid) {
+  ok = check(`${path} (${label})`, () => fillPlanSchema.parse(readJson(path)), true) && ok;
+}
+for (const path of invalid) {
+  ok = check(path, () => fillPlanSchema.parse(readJson(path)), false) && ok;
+}
+
+if (!ok) {
+  process.exit(1);
+}
+process.stdout.write('\nAll fixture validations behaved as expected.\n');

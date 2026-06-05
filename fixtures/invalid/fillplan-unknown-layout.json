@@ -1,0 +1,21 @@
+{
+  "_violates": "layoutId enum: 'free-canvas' is not in the closed layout library",
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-04",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Findings",
+      "slides": [
+        {
+          "layoutId": "free-canvas",
+          "title": "anything goes here"
+        }
+      ]
+    }
+  ]
+}

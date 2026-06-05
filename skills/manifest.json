@@ -1,0 +1,35 @@
+{
+  "name": "jayson-docs",
+  "version": "0.1.0",
+  "description": "Acme consulting deliverable generators (PPTX + DOCX) via template-fill, with Claude-in-Cowork as the LLM. No API key required.",
+  "author": "Acme Consulting",
+  "license": "proprietary",
+  "skills": [
+    {
+      "name": "commercial-proposal-pptx",
+      "path": "commercial-proposal-pptx/SKILL.md",
+      "description": "Generate an Acme commercial proposal as a PowerPoint deck (.pptx) — sales pitch / mandate-winning."
+    },
+    {
+      "name": "commercial-proposal-docx",
+      "path": "commercial-proposal-docx/SKILL.md",
+      "description": "Generate an Acme commercial proposal as a Word document (.docx) — written proposal (document form of the pitch)."
+    },
+    {
+      "name": "report-pptx",
+      "path": "report-pptx/SKILL.md",
+      "description": "Generate an Acme delivery / steering-committee deck as PowerPoint (.pptx)."
+    },
+    {
+      "name": "report-docx",
+      "path": "report-docx/SKILL.md",
+      "description": "Generate an Acme written report / executive memo as Word (.docx)."
+    }
+  ],
+  "cli": {
+    "binary": "jayson-docs",
+    "install": "npm install --prefix . && npm link",
+    "subcommands": ["fill"]
+  },
+  "_note": "Optional Cowork packaging (D15): the product is a portable skills pack + app driven by any agentic LLM (BYO LLM). If publishing a Cowork plugin, verify this manifest via the cowork-plugin-management:create-cowork-plugin skill."
+}

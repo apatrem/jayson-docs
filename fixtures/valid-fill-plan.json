@@ -1,0 +1,51 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "Transitional Energy Group (TEG)",
+    "date": "2026-06-04",
+    "language": "en"
+  },
+  "datasets": {
+    "tier1_demand_2032": {
+      "id": "tier1_demand_2032",
+      "title": "Tier-1 industries - 2032 demand scenarios (TWh)",
+      "columns": ["industry", "low", "base", "high"],
+      "rows": [
+        ["Industry A", 120, 240, 380],
+        ["Industry B", 90, 200, 310],
+        ["Industry C", 60, 140, 260],
+        ["Ammonia (baseline)", 50, 100, 170]
+      ]
+    }
+  },
+  "sections": [
+    {
+      "title": "Findings",
+      "slides": [
+        {
+          "layoutId": "kpi-row-chart",
+          "title": "Tier-1 candidates score 2x ammonia on bankable long-term demand",
+          "kpi-strip": [
+            { "figure": "2.4x", "label": "demand vs ammonia", "delta": "+140%" },
+            { "figure": "EUR 68/MWh", "label": "LCOE target", "delta": "-12%" },
+            { "figure": "7", "label": "credible offtakers" }
+          ],
+          "chart": {
+            "kind": "stacked-bar",
+            "datasetRef": "tier1_demand_2032",
+            "caption": "2032 demand scenarios per industry (TWh)"
+          },
+          "narrative": {
+            "kind": "bullets",
+            "items": [
+              "Three industries clear the bankability gate in all scenarios.",
+              "Ammonia trails on counterparty diversity, not on LCOE.",
+              "Final selection in Module 2."
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

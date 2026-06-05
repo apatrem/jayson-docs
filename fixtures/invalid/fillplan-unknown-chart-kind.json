@@ -1,0 +1,28 @@
+{
+  "_violates": "chart.kind enum: 'treemap' is not in the approved chart catalogue",
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-04",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Findings",
+      "slides": [
+        {
+          "layoutId": "kpi-row-chart",
+          "title": "Tier-1 candidates score better than ammonia across every demand scenario today",
+          "kpi-strip": [
+            { "figure": "1", "label": "a" },
+            { "figure": "2", "label": "b" },
+            { "figure": "3", "label": "c" }
+          ],
+          "chart": { "kind": "treemap", "datasetRef": "x" },
+          "narrative": { "kind": "text", "body": "short narrative under sixty words." }
+        }
+      ]
+    }
+  ]
+}

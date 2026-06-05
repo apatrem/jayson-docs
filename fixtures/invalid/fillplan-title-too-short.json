@@ -1,0 +1,28 @@
+{
+  "_violates": "title word-count cap (8-15 words) on the kpi-row-chart layout",
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-04",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Findings",
+      "slides": [
+        {
+          "layoutId": "kpi-row-chart",
+          "title": "Tier-1 wins",
+          "kpi-strip": [
+            { "figure": "2.4x", "label": "demand" },
+            { "figure": "EUR 68", "label": "LCOE" },
+            { "figure": "7", "label": "offtakers" }
+          ],
+          "chart": { "kind": "bar", "datasetRef": "x" },
+          "narrative": { "kind": "text", "body": "short narrative under sixty words." }
+        }
+      ]
+    }
+  ]
+}

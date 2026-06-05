@@ -1,0 +1,30 @@
+# Acme brand tokens — canonical source for every renderer in this system.
+# Values reflect the actual .pptx/.docx templates in Acme's '2. Templates/' folder
+# (per DECISIONS_LOG.md). If documentation elsewhere — CLAUDE.md, AGENTS.md, etc. —
+# disagrees with this file, this file wins.
+#
+# Load: src/brand/load.ts (parses YAML, validates with brandTokensSchema).
+
+schemaVersion: '1.0.0'
+lastUpdated: '2026-06-04'
+
+identity:
+  name: 'Acme Consulting'
+  shortName: 'Acme'
+  confidentialityNotice: |
+    Confidential — for the addressee only. Not for distribution.
+
+colors:
+  primary: '#00C259'    # signature green (matches PowerPoint/Word templates)
+  secondary: '#D3F2E1'  # light green, dividers, soft fills
+  text: '#1F2937'       # body text, near-black
+  accent: '#2683C6'     # blue accent for tech/energy slides
+  muted: '#9CA3AF'      # muted text for headers/footers
+
+fonts:
+  heading: 'Futura Medium, Futura, Helvetica Neue, Arial, sans-serif'
+  body: 'Arial, Helvetica, sans-serif'
+
+logo:
+  primary: 'assets/acme-logo.svg'
+  fallback: 'assets/acme-logo.png'

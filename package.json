@@ -1,0 +1,38 @@
+{
+  "name": "jayson-docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Template-fill CLI for Acme consulting deliverables. LLM work happens in Claude-in-Cowork (see skills/). This package does not call any LLM directly.",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write \"src/**/*.ts\" \"*.md\" \"docs/**/*.md\" \"skills/**/*.md\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate": "tsx scripts/validate.ts",
+    "fill": "tsx src/cli/generate.ts"
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "docx": "^9.7.1",
+    "pptx-automizer": "~0.8.1",
+    "pptxgenjs": "^4.0.1",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "prettier": "^3.8.3",
+    "tsx": "^4.22.0",
+    "typescript": "^6.0.0",
+    "typescript-eslint": "^8.60.0",
+    "vitest": "^4.0.0"
+  }
+}
