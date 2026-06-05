@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Acme consulting deliverable generators (PPTX + DOCX) via template-fill, with Claude-in-Cowork as the LLM. No API key required.",
   "author": "Acme Consulting",
-  "license": "proprietary",
+  "license": "Apache-2.0",
   "skills": [
     {
       "name": "commercial-proposal-pptx",

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Template-fill CLI for Acme consulting deliverables. LLM work happens in Claude-in-Cowork (see skills/). This package does not call any LLM directly.",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=22.0.0",
     "npm": ">=10.0.0"
