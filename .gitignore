@@ -12,3 +12,8 @@ coverage/
 *.tsbuildinfo
 tmp/
 out/
+
+# Repo reviews — kept local for review before committing. Remove these two
+# lines (and `git add` the files) when you decide to track them.
+docs/REPO_REVIEW.md
+docs/REPO_REVIEW_2026-06-05.md
