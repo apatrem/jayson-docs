@@ -126,7 +126,6 @@ methodology notes — for the human to edit.
 - **Layout-clustering quality bar** — how many sample decks, and the accept
   threshold before a layout is proposed.
 - **Regeneration** — when the firm later changes their template, does Setup
-  re-run fully or diff against the frozen Install? (Echoes jayson-docs's
-  scaffold-version / regenerate flow.)
+  re-run fully or diff against the frozen Install?
 - **docx section-layouts** — Setup currently proposes slide-layouts (pptx);
   the docx side is flowing blocks + Word styles (see `CONTEXT.md` Deferred).

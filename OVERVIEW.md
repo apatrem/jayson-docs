@@ -16,7 +16,7 @@ points to the detailed docs for everything below.
 A **closed, vetted library of layouts** + a **single source of brand**, so the LLM
 only ever **fills named slots — it never lays anything out, picks coordinates, or
 chooses brand values.** Output variability is zero by construction. This is the
-one idea carried over from the rejected jayson-docs (D1); everything else serves
+project's one non-negotiable idea (D1); everything else serves
 it. The explicit *no*: no canonical DocModel, no in-app editor, no custom renderer.
 
 ## 2. Lifecycle — four phases
@@ -58,7 +58,7 @@ the **Layout catalogue** (D16) — per entry: `usage` ("pick when…"), `regions
 | Axis | Values | Purpose |
 |---|---|---|
 | **Usage tier** | common / less-common / rare | pickability — *prefer common, justify rare* (D16) |
-| **Layout origin** | Built-in / Company-approved / User | provenance & trust (jayson-docs Standard/Brand/Authored) (D17) |
+| **Layout origin** | Built-in / Company-approved / User | provenance & trust (D17) |
 | **Trust tier** | public / internal-citable / confidential / brand-source | confidentiality of Firm-context material |
 | *Layout preferences* | preferred / deprioritized / banned | **per-user, machine-local** re-ranking; soft, never breaks a doc |
 
@@ -127,7 +127,7 @@ tight-pinned) · **pptxgenjs** 4 · **docx** 9 · **zod** 4 · **yaml** · **com
 ## 12. Open dependencies & build order
 
 - **External blocker:** code signing/notarization (Apple + Windows certs) for the
-  non-programmer binary — same wall as jayson-docs's T-108.
+  non-programmer binary (see D14).
 - **Fragility:** `pptx-automizer` is the only `0.x` dep and load-bearing
   (tight-pinned).
 - **Build order:** **report-pptx walking skeleton first** (proves the fill

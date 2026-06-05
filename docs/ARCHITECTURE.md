@@ -3,7 +3,7 @@
 **Audience:** the developer who will build and maintain this system
 **Date:** 2026-06-04 (updated for D11 — Cowork-as-LLM, four-skill plugin)
 **Status:** design proposal, ready for autonomous implementation
-**Supersedes (conceptually):** the bespoke React/TipTap document system previously in `jayson-docs/` — kept for reference, not selected
+**Supersedes (conceptually):** a bespoke React/TipTap document-editor approach — evaluated and rejected (see `DECISIONS_LOG.md` D1)
 
 ---
 

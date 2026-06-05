@@ -2,19 +2,19 @@
 
 The vocabulary the team uses when talking about this codebase. Definitions are kept tight on purpose — when a term needs to be clarified, this is where the resolution lives.
 
-This project is the **minimal successor** to `jayson-docs`. Where terms are inherited from that project they are noted; where they diverge, the divergence is called out so nobody mis-maps the two.
+This project is deliberately **minimal** — a closed, vetted layout library plus a single source of brand, filled mechanically into Office templates, and nothing more. Where a term could be read more broadly, the narrower scope is called out so nobody re-expands it.
 
 ## Language
 
 ### The core principle
 
 **Consistency guarantee**:
-The single property carried over from `jayson-docs`: a *closed, vetted library of layout primitives* plus a *single source of brand*, such that the LLM only ever **fills named slots from that closed library — it never lays anything out, picks coordinates, or chooses brand values.** Output variability is zero by construction. `jayson-docs` enforces this with a canonical DocModel + Renderer; jayson-docs enforces the *same guarantee* with a master Office template + Zod. Same invariant, different mechanism.
+The core property of this project: a *closed, vetted library of layout primitives* plus a *single source of brand*, such that the LLM only ever **fills named slots from that closed library — it never lays anything out, picks coordinates, or chooses brand values.** Output variability is zero by construction. The guarantee is enforced by a master Office template + Zod schema validation.
 _Avoid_: "the consistency principle", "zero-variability" (unqualified)
 
-**Not preserved from jayson-docs**:
-The DocModel-as-canonical layer, the in-app TipTap editor, and the HTML/PDF Renderer are deliberately *absent*. Re-introducing any of them is scope creep back toward jayson-docs, not "minimal". The editor is PowerPoint/Word; there is no canonical content model that survives the deliverable.
-_Avoid_: "DocModel", "Renderer", "editor" (in the in-app sense) — these belong to jayson-docs only.
+**Explicitly out of scope**:
+There is no canonical content model ("DocModel"), no in-app WYSIWYG editor, and no custom HTML/PDF renderer. The editor is PowerPoint/Word itself; nothing survives the deliverable as a separate content model. Re-introducing any of these is scope creep, not "minimal".
+_Avoid_: "DocModel", "Renderer", "editor" (in the in-app sense) — there is no such layer here.
 
 ### Deliverables
 
@@ -35,7 +35,7 @@ A **markdown playbook** that instructs an agentic LLM to gather a Brief, produce
 _Avoid_: "Cowork skill" (not Cowork-specific), "plugin"
 
 **The pack**:
-The portable **skills folder** (the Skills + their instructions) which, together with the standalone **app** (the local binary), is the **primary product**. A firm downloads the pack + the app; their own LLM reads the pack and drives it. A Cowork plugin is one *optional* packaging of the same markdown, not the only path.
+The portable **skills folder** (the Skills + their instructions) which, together with the standalone **app** (the local binary), is the **primary product**. A firm downloads the pack — which **bundles the per-OS app** — and points their own LLM at the folder; the LLM reads the pack and invokes the bundled app by relative path. A Cowork plugin is one *optional* packaging of the same markdown, not the only path.
 _Avoid_: "the plugin" (that is the optional Cowork wrapper), "the SDK"
 
 **BYO LLM**:
@@ -43,7 +43,7 @@ Bring-your-own-LLM: the LLM is the user's, *whatever it is* (Claude Cowork, Clau
 _Avoid_: "the model" (unqualified), assuming Cowork
 
 **Custom skill**:
-A deliverable Skill generated on demand by the **skill creator** (a meta-skill in the pack) for a firm-specific deliverable type beyond the four Built-in skills. It **composes only the frozen closed library** (layouts from the Layout catalogue, block-types, trust tiers, fill-plan schema) — it may set a new structure / tone / trigger / target master, but **never mints layouts/blocks/brand** (a layout-gap routes to Setup). Validated (a sample Fill-plan must pass Zod) + **human-gated**, then lives in the firm's **Install**. The skill-side analogue of a **User layout** (jayson-docs Authored tier).
+A deliverable Skill generated on demand by the **skill creator** (a meta-skill in the pack) for a firm-specific deliverable type beyond the four Built-in skills. It **composes only the frozen closed library** (layouts from the Layout catalogue, block-types, trust tiers, fill-plan schema) — it may set a new structure / tone / trigger / target master, but **never mints layouts/blocks/brand** (a layout-gap routes to Setup). Validated (a sample Fill-plan must pass Zod) + **human-gated**, then lives in the firm's **Install**. The skill-side analogue of a **User layout**.
 _Avoid_: "plugin", "macro"
 
 **Skill package**:
@@ -77,15 +77,15 @@ A layout/block's **commonness** — `common` / `less-common` / `rare` — with a
 _Avoid_: "Trust tier" (a different axis), "priority"
 
 **Layout origin**:
-A layout's provenance (and the matching tier model for minted blocks): **Built-in** (shipped seed), **Company-approved** (minted then **reviewed**, blessed install-wide), or **User** (minted on demand by one consultant; personal, peer-shareable). Parallels jayson-docs's **Standard / Brand / Authored** blocks. A User layout can be **promoted** to Company-approved after review. **Distinct from Usage tier** (commonness) and **Trust tier** (confidentiality) — three orthogonal axes.
+A layout's provenance (and the matching tier model for minted blocks): **Built-in** (shipped seed), **Company-approved** (minted then **reviewed**, blessed install-wide), or **User** (minted on demand by one consultant; personal, peer-shareable). A User layout can be **promoted** to Company-approved after review. **Distinct from Usage tier** (commonness) and **Trust tier** (confidentiality) — three orthogonal axes.
 _Avoid_: "custom layout" (say User or Company-approved), bare "tier"
 
 **Layout package**:
-The unit a consultant emails to a **same-company** colleague to share a minted layout: the named-shape slide fragment + its Zod schema + its Layout-catalogue entry + a manifest (sender, provenance, version). On receipt a **gate** asserts `shapes ≡ slots` and brand fit → install, else **quarantine** (with a reason). **Within-company only** — same brand/master; cross-company needs the deferred brand-theme split. Mirrors jayson-docs's Authored-block transport.
+The unit a consultant emails to a **same-company** colleague to share a minted layout: the named-shape slide fragment + its Zod schema + its Layout-catalogue entry + a manifest (sender, provenance, version). On receipt a **gate** asserts `shapes ≡ slots` and brand fit → install, else **quarantine** (with a reason). **Within-company only** — same brand/master; cross-company needs the deferred brand-theme split.
 _Avoid_: "plugin", "export bundle"
 
 **Layout preferences**:
-A **per-user, machine-local** overlay on the Layout catalogue that re-ranks picking — `preferred` / `deprioritized` / `banned` — kept in a personal `layout-preferences.md`. **Soft and never canonical** (maps to jayson-docs's **Local setting**): it never alters the closed library, the schema, the catalogue, or a deliverable's validity. A `banned` layout drops out of *free* picking but **yields** (and flags) if it is the only valid fit for a required slot/region — preferences steer, they never break a document. Local to one consultant; not in the shared Firm context or the frozen Install.
+A **per-user, machine-local** overlay on the Layout catalogue that re-ranks picking — `preferred` / `deprioritized` / `banned` — kept in a personal `layout-preferences.md`. **Soft and never canonical**: it never alters the closed library, the schema, the catalogue, or a deliverable's validity. A `banned` layout drops out of *free* picking but **yields** (and flags) if it is the only valid fit for a required slot/region — preferences steer, they never break a document. Local to one consultant; not in the shared Firm context or the frozen Install.
 _Avoid_: "config", "rules", conflating with Usage tier (company-wide) or Trust tier (confidentiality)
 
 ### Setup & onboarding
@@ -99,11 +99,11 @@ The Skill that runs Setup (a markdown playbook, BYO LLM): it ingests the firm's 
 _Avoid_: "generator", "wizard", "autonomous setup"
 
 **Setup-time AI**:
-The principle (carried over from jayson-docs) that the Closed layout library and brand are AI-**proposed** once at Setup from the firm's real materials, then **frozen** — never regenerated at deliverable time. Reviewed once, closed. The setup-time counterpart to "Cowork drafts" at deliverable time.
+The principle that the Closed layout library and brand are AI-**proposed** once at Setup from the firm's real materials, then **frozen** — never regenerated at deliverable time. Reviewed once, closed. The setup-time counterpart to "Cowork drafts" at deliverable time.
 _Avoid_: "runtime AI", "live generation"
 
 **Install**:
-The frozen, per-firm output of Setup: the Master template(s) + matching schema + brand, plus the scaffolded Firm context (`firm.md` + folders). Closed after Setup; deliverable skills consume it and never mutate it. (jayson-docs uses "install" the same way — "closed for that install".) The CLI runs against an Install **locally** (D14).
+The frozen, per-firm output of Setup: the Master template(s) + matching schema + brand, plus the scaffolded Firm context (`firm.md` + folders). Closed after Setup; deliverable skills consume it and never mutate it. The CLI runs against an Install **locally** (D14).
 _Avoid_: "build", "package" (that's the binary), "deployment"
 
 **Brand reconciliation**:
@@ -135,16 +135,16 @@ _Avoid_: "permission", "access level", "sensitivity" (unqualified)
 ### Content plan
 
 **Fill-plan**:
-The kind-discriminated structured JSON that Claude-in-Cowork produces and the CLI fills from. **Not canonical** — a throwaway draft input, reconstructible only by re-prompting; the Office file is the deliverable, not a projection of the fill-plan. Its body is always a list of **Sections**; in a deck (`kind: "deck"`) each section holds **Slides**, in a document (`kind: "document"`) each section holds **blocks** directly. The minimal, *non-canonical* analogue of jayson-docs's `DocModel` (which is canonical — do not equate them).
-_Avoid_: "deck-plan" (a misnomer — half the deliverables are documents, not decks), "DocModel" (canonical there, not here), "the brief" (that is the human input, a different thing)
+The kind-discriminated structured JSON that Claude-in-Cowork produces and the CLI fills from. **Not canonical** — a throwaway draft input, reconstructible only by re-prompting; the Office file is the deliverable, not a projection of the fill-plan. Its body is always a list of **Sections**; in a deck (`kind: "deck"`) each section holds **Slides**, in a document (`kind: "document"`) each section holds **blocks** directly.
+_Avoid_: "deck-plan" (a misnomer — half the deliverables are documents, not decks), "DocModel" (there is no canonical content model here), "the brief" (that is the human input, a different thing)
 
 **Brief**:
 The consultant's **conversational** input, gathered by a skill inside Cowork (goal, audience, key data, outline) one short question at a time. It lives only in the Cowork chat: it **never enters the codebase**, is never schema-validated here, and is *not* the Fill-plan (the Fill-plan is the structured JSON Claude produces *from* the brief). "What a good brief contains" lives in each SKILL.md Step A.
 _Avoid_: "brief input" / `briefInput` (the removed dead schema), conflating with Fill-plan
 
 **Section**:
-The **universal grouping unit** — an LLM-authored chapter/part present in *every* deliverable. Soft, not fixed: the LLM assembles sections following a Standard structure it may depart from. A Section sits *above* the layout-bearing unit — in a deck it groups one-or-more **Slides** (and feeds the `tracker` breadcrumb + numbering); in a document it groups **blocks** directly. Mirrors jayson-docs's Section (the chaptering unit) but is **not canonical**.
-_Avoid_: "fixed section" (there are none — see Standard structure), "slide" (a section *groups* slides, it is not one), equating with jayson-docs's *canonical* Section
+The **universal grouping unit** — an LLM-authored chapter/part present in *every* deliverable. Soft, not fixed: the LLM assembles sections following a Standard structure it may depart from. A Section sits *above* the layout-bearing unit — in a deck it groups one-or-more **Slides** (and feeds the `tracker` breadcrumb + numbering); in a document it groups **blocks** directly. It is **not canonical** — an authoring-time grouping, not a persisted model.
+_Avoid_: "fixed section" (there are none — see Standard structure), "slide" (a section *groups* slides, it is not one)
 
 **Slide**:
 The **layout-bearing unit** in a deck, sitting *under* a Section: picks one `layoutId` from the closed slide-layout library and fills that layout's named slots, subject to density caps. A Section may hold several slides. **The LLM authors every slide explicitly — the pipeline never paginates**: if content won't fit, the LLM splits it into another slide at authoring time (a semantic op), never the system distributing blocks across slides (a spatial op — see D8 / D12). PPTX only; docx has no slide level.
@@ -186,4 +186,6 @@ Discussed but intentionally not built in v1. Listed so contributors don't re-inv
 - **docx section-layouts** — letting a docx Section pick from a closed set of arrangements (two-column, text-with-sidebar, figure-beside-text) instead of pure block flow. Not needed for v1 — Word reflow + block flow + brand styles suffice; add only if real documents need structured multi-column sections.
 - **Flexgrid slide composition** — replacing the closed set of fixed slide-layouts with a runtime grid: promote the invisible 12×8 design grid (SLIDE_LAYOUT_LIBRARY) to a placement system where blocks declare row/col spans and slides are *composed* rather than *chosen*. **Pros:** far more expressive (many arrangements from few primitives); fewer pre-designed layouts to author. **Cons:** reintroduces spatial reasoning (D8 — the LLM degrades past a coarse grid, or the pipeline becomes a layout engine, against D6); trades compile-time density guarantees for runtime fit; weakens brand QA (infinite arrangements drift). Chosen against for v1 (DECISIONS_LOG D12); revisit only if the fixed-template library proves too rigid in real use.
 - **Fixed-skeleton / contract deliverables (lettre de mission)** — a rigid, lawyer-shaped document where the LLM fills field *values* into a fixed clause skeleton and composes nothing (clause order/presence is legal, not stylistic). Explicitly out of scope: all v1 deliverables are composed from sections/blocks with soft defaults. If a true contract is ever needed it requires the fixed-skeleton model (likely `docx` `patchDocument` placeholders), not the composed one — do not bolt it onto the composed path.
-- **Brand-theme ⊥ block-library split** — factoring the brand (fonts, colours, logo) out of the master into a swappable Office **Theme part**, so one *brand-agnostic* block/slide library can be re-skinned per consultancy instead of maintaining one fully-branded master per brand. Would replace "the brand is the template" with "the brand is the theme" and make `brand.yaml` the genuine single source. Deferred as an optional roadmap feature; v1 keeps the brand fused into each master. (The minimal analogue of jayson-docs's **Brand tokens** + brand-agnostic **Standard blocks**.)
+- **Brand-theme ⊥ block-library split** — factoring the brand (fonts, colours, logo) out of the master into a swappable Office **Theme part**, so one *brand-agnostic* block/slide library can be re-skinned per consultancy instead of maintaining one fully-branded master per brand. Would replace "the brand is the template" with "the brand is the theme" and make `brand.yaml` the genuine single source. Deferred as an optional roadmap feature; v1 keeps the brand fused into each master.
+- **Interactive (no-args) app launch** — giving the standalone **app** a double-click / no-args mode that opens native file-pickers (choose template · fill-plan · output) instead of printing CLI help. v1 keeps the app **flags-only and agent-invoked** — the LLM runs it by relative path from inside the pack (see `SETUP_GUIDE.md`); the non-programmer audience is assumed to have a tool-capable LLM, and the "human runs it by hand" fallback (D15) targets technical users. A file-picker stays clear of the rejected in-app editor/canvas (D1) — it picks files, it doesn't lay out — so it can be added later without touching D11. Build only if real non-programmers end up running the binary directly.
+- **Agent-fetched binary to sidestep code-signing** — having a local tool-capable agent `curl`/package-manager-fetch the app at setup (command-line downloads carry no quarantine bit, so Gatekeeper / SmartScreen never fire) instead of a browser download. Considered as a way to dodge the signing/notarisation dependency (D14) and rejected for v1: signing is **provenance/trust** for a confidentiality-first product (firm IT-security sign-off), not merely a Gatekeeper prompt; the dodge serves only the local-agent audience (not the download-page or plain-chat paths) and is fragile across OS versions (macOS propagates quarantine into extracted archives). Signing stays a committed v1 dependency regardless; revisit this optimisation only after signing ships.

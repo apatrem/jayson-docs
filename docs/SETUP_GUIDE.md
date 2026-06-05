@@ -1,7 +1,7 @@
 # Setting up jayson-docs — a guide for non-programmers
 
 This guide gets your firm from "nothing installed" to "generating on-brand
-proposals and reports" in four steps. No coding, no command line. Allow about
+proposals and reports" in three steps. No coding, no command line. Allow about
 **30–45 minutes**, most of which is you reviewing what the app proposes.
 
 > **What the app does, in one sentence:** you describe a deliverable in a chat,
@@ -25,30 +25,28 @@ uploaded.
 
 ---
 
-## Step 1 — Install the app
+## Step 1 — Get the pack
 
-1. Download the app for your computer:
-   - **macOS:** `jayson-docs-mac` 
-   - **Windows:** `jayson-docs-win.exe`
-2. Double-click to install. It's a single file — nothing else to set up.
+1. Download the **jayson-docs pack for your computer** from the download page:
+   - **macOS:** `jayson-docs-mac.zip`
+   - **Windows:** `jayson-docs-win.zip`
 
-> If your computer shows a security warning the first time, see
-> **"If something looks off"** at the bottom.
-
-## Step 2 — Get the skills
-
-1. Download the **jayson-docs skills pack** (a small folder of instructions) from
-   the download page.
-2. Point your AI assistant at it — whichever you use:
+   The pack is a small folder of instructions with the jayson-docs program
+   already **inside it** — there's nothing to install and nothing for you to open.
+2. Unzip it somewhere you'll remember (e.g. your Documents folder).
+3. Point your AI assistant at the folder — whichever you use:
    - **Claude Cowork, Claude Code, or Cursor** (recommended, especially for setup):
      tell it to read the pack folder and follow it.
    - **A plain chat (e.g. ChatGPT):** you can still make documents, but the one-time
      *firm setup* below needs an assistant that can read your files.
 
+   Your assistant runs the program **for** you, from inside the pack — you never
+   launch it yourself.
+
    *(If your firm is on Cowork, there's also an optional one-click plugin — the
    same skills, easier to install.)*
 
-## Step 3 — Set up your firm (you only do this once)
+## Step 2 — Set up your firm (you only do this once)
 
 This is where your assistant learns *your* brand, *your* layouts, and *your*
 background — so every later document sounds and looks like your firm.
@@ -78,9 +76,9 @@ client names are always hidden. Your files never leave your computer.
 
 > **Heads-up:** this one-time setup *reads your documents*, so it needs an
 > assistant that can open files (Claude Cowork, Claude Code, Cursor). Day-to-day
-> document-making (Step 4) works with a plain chat too.
+> document-making (Step 3) works with a plain chat too.
 
-## Step 4 — Make your first deliverable
+## Step 3 — Make your first deliverable
 
 1. Tell your assistant what you need, e.g. **"draft a proposal deck for [prospect]."**
 2. Answer a few short questions (client, goal, key numbers).
@@ -88,7 +86,7 @@ client names are always hidden. Your files never leave your computer.
    **PowerPoint or Word file**, on-brand, and tells you where it saved it.
 4. Open it in PowerPoint/Word and finish it the way you always do.
 
-That's it. Repeat Step 4 whenever you need a deliverable; Steps 1–3 are one-time.
+That's it. Repeat Step 3 whenever you need a deliverable; Steps 1–2 are one-time.
 
 ---
 
@@ -102,10 +100,10 @@ That's it. Repeat Step 4 whenever you need a deliverable; Steps 1–3 are one-ti
 
 ## If something looks off
 
-- **"App can't be opened" (macOS) / "Windows protected your PC":** this happens
-  with apps the operating system hasn't seen before. If the app is properly
-  signed you won't see this; if you do, follow your IT team's guidance for
-  approving an internal app, or contact whoever sent you the download.
+- **"App can't be opened" (macOS) / "Windows protected your PC":** your assistant
+  runs the jayson-docs program for you, and a properly signed pack won't trigger
+  this. If it does appear, follow your IT team's guidance for approving an
+  internal program, or contact whoever sent you the download.
 - **A layout looks wrong:** re-run "set up my firm" and adjust the proposed
   layouts — setup can be redone any time.
 - **The app refuses a document:** it's protecting your layout (e.g. too much text

@@ -136,7 +136,7 @@ The "one engine renders HTML and prints PDF" principle (which ruled out Typst an
 **Decided:** a per-firm **Setup** phase, run by a Cowork **Setup skill**, ingests the firm's existing template + a few sample decks and *proposes* — in lock-step — a named-shape Master template and the matching Zod layout schema. A mechanical step writes the `slot.*` names into the `.pptx`; a human reviews once; a validator asserts master-shapes ≡ schema-slots; then the closed library is **frozen**.
 **Rejected:** (a) hand-designing every master by hand (the prior assumption in `SLIDE_LAYOUT_LIBRARY.md` — too slow per firm, doesn't scale to many firms); (b) fully **autonomous** master generation (the consistency guarantee cannot tolerate a silent master/schema mismatch).
 
-**Reason:** re-introduces jayson-docs's "setup-time AI" (generate from demo materials, then freeze), retargeted at `.pptx` + Zod. Real firm decks are messy (the Acme template carries 22 layouts, Google-imported shapes, and a live `#1BB071`-vs-`#00C259` brand conflict), so the LLM must *propose*, not decide. Brushes against D8 (LLMs are bad at spatial reasoning) — mitigated by splitting **generative** (propose the taxonomy, slot names, and schema) from **mechanical** (a script writes the names into OOXML; no freehand LLM layout).
+**Reason:** uses the **setup-time AI** principle (generate from demo materials, then freeze), retargeted at `.pptx` + Zod. Real firm decks are messy (the Acme template carries 22 layouts, Google-imported shapes, and a live `#1BB071`-vs-`#00C259` brand conflict), so the LLM must *propose*, not decide. Brushes against D8 (LLMs are bad at spatial reasoning) — mitigated by splitting **generative** (propose the taxonomy, slot names, and schema) from **mechanical** (a script writes the names into OOXML; no freehand LLM layout).
 
 ---
 
@@ -146,7 +146,8 @@ The "one engine renders HTML and prints PDF" principle (which ruled out Typst an
 **Rejected:** running the CLI in Cowork's cloud sandbox (would require uploading the firm's confidential past proposals / project deliverables to render a deck).
 
 **Reason:** the Trust tier model makes confidentiality first-class — uploading `confidential/` materials to a cloud sandbox is the exact leak we designed against. Local execution keeps them on the machine; a standalone binary (not `npx`) removes the Node/npm install a non-programmer cannot do.
-**Known dependency:** a non-programmer-friendly binary requires **code signing + notarization** (macOS Gatekeeper, Windows SmartScreen) — the same blocker jayson-docs flagged (T-108). Needs an Apple Developer account + a Windows Authenticode cert; until then, users hit OS security warnings.
+**Known dependency:** a non-programmer-friendly binary requires **code signing + notarization** (macOS Gatekeeper, Windows SmartScreen). Needs an Apple Developer account + a Windows Authenticode cert; until then, users hit OS security warnings.
+**See also:** the app is **flags-only and agent-invoked** (no double-click / interactive launch in v1); both an interactive file-picker and an agent-fetch path that would sidestep this signing dependency are deferred — see `CONTEXT.md` → Deferred concepts.
 
 ---
 
@@ -159,6 +160,7 @@ The "one engine renders HTML and prints PDF" principle (which ruled out Typst an
 **Reason:** the skills are already plain markdown — the only Cowork-specific parts were `manifest.json` and plugin packaging. Decoupling removes the Cowork lock-in, matches the proven portable pattern in the firm's own `kDrive/99. Acme` (`AGENTS.md` + `SKILLS.md` + `skills/` that any LLM reads), and is *more* faithful to D11's principle that the LLM is the user's.
 
 **Trade-off accepted:** outside Cowork there is no automatic skill-triggering or one-click install — the user tells their LLM to read the pack, and quality varies by LLM. The Fill-plan JSON remains the clean human/LLM ↔ app handoff, so the model **degrades gracefully** to a no-tools chat + a manual app run.
+**See also:** the bundled app is **flags-only**, invoked by the LLM by relative path from inside the pack; an interactive (no-args) launch mode is deferred — see `CONTEXT.md` → Deferred concepts.
 
 ---
 
@@ -178,7 +180,7 @@ The "one engine renders HTML and prints PDF" principle (which ruled out Typst an
 **Decided:** layouts (and minted blocks) carry an **origin** — **Built-in** (shipped), **Company-approved** (minted + reviewed, install-wide canonical), or **User** (minted on demand by one consultant). Minting reuses Setup's `shapes ≡ slots` gate, scoped to one layout. A User layout can be **promoted** to Company-approved after review. Sharing is **peer-to-peer email of a Layout package** (slide fragment + schema + catalogue entry + manifest); a **receive-time gate** asserts `shapes ≡ slots` + brand fit → install, else **quarantine** with a reason. **Within-company only** (same brand/master).
 **Rejected:** (a) cross-company sharing in v1 (clashing brands — needs the deferred brand-theme split); (b) a lighter minting path that skips the `shapes ≡ slots` gate.
 
-**Reason:** directly reuses jayson-docs's proven **Standard / Brand / Authored** tiers and its Authored-block transport (manifest → receive-gate → quarantine). Within-company scope keeps the brand identical, so a shared layout installs cleanly; the consistency guarantee holds because both minting and receiving run the `shapes ≡ slots` validator. This also gives the **skill creator** (D-skill) its tier vocabulary: Built-in vs Custom skills mirror Built-in vs User layouts.
+**Reason:** uses a proven three-tier origin model (**Built-in / Company-approved / User**) plus peer-to-peer transport (manifest → receive-gate → quarantine). Within-company scope keeps the brand identical, so a shared layout installs cleanly; the consistency guarantee holds because both minting and receiving run the `shapes ≡ slots` validator. This also gives the **skill creator** (D-skill) its tier vocabulary: Built-in vs Custom skills mirror Built-in vs User layouts.
 
 ---
 
@@ -187,7 +189,7 @@ The "one engine renders HTML and prints PDF" principle (which ruled out Typst an
 **Decided:** a **skill creator** meta-skill (in the pack) generates **Custom skills** — new deliverable types beyond the four Built-in skills — that **compose only the frozen closed library** (layouts from the Layout catalogue, block-types, trust tiers, fill-plan schema). A Custom skill may set a new structure / tone / trigger / target master, but **never mints layouts, blocks, or brand**; a layout-gap **routes to Setup** (D13), the only minting path. Each Custom skill is **validated** (a sample fill-plan must pass Zod) and **human-gated**, then lives in the firm's **Install**. Sharing is a **self-contained Skill package** emailed within-company (bundles any User-layout dependencies; receive-gate vets + installs), mirroring D17.
 **Rejected:** (a) a skill creator that can mint layouts (folds it into Setup, loses the cheap-playbook property and risks `shapes ≡ slots`); (b) declare-and-require transport (worse than self-contained for the "email a file, it works" bar).
 
-**Reason:** a deliverable skill is just a markdown playbook that *composes* primitives, so generating one is cheap and safe **as long as it cannot expand the closed library** — that boundary preserves the consistency guarantee. Mirrors jayson-docs's tiers: Built-in skills ≈ Standard, Custom skills ≈ Authored; layout-minting stays Setup / Company-approved. Reuses the D17 transport + receive-gate.
+**Reason:** a deliverable skill is just a markdown playbook that *composes* primitives, so generating one is cheap and safe **as long as it cannot expand the closed library** — that boundary preserves the consistency guarantee. Built-in skills and Custom skills mirror the Built-in and User layout tiers; layout-minting stays Setup / Company-approved. Reuses the D17 transport + receive-gate.
 
 Every skill (Built-in and Custom) inherits a shared **Standard opener** — a *modifiable* default question block (language · client · context · objectives · timeline-if-appropriate) plus skill-specific follow-ups; the skill creator seeds it but the author may adapt it (a direction, not mandatory).
 

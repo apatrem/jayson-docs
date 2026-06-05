@@ -15,7 +15,7 @@ deliverable. It **composes the frozen closed library** — it never mints layout
 blocks, or brand (those are Setup, D13). A skill is followable by *any* agentic
 LLM; the app it calls contains no LLM (D11).
 
-**Two tiers** (mirroring jayson-docs Standard/Authored):
+**Two tiers**:
 
 - **Built-in skills** — the four shipped in the pack (`commercial-proposal-*`,
   `report-*`).
