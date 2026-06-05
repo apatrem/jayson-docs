@@ -1,9 +1,18 @@
 # Acme jayson-docs — Architecture
 
 **Audience:** the developer who will build and maintain this system
-**Date:** 2026-06-05 (updated through D19 — BYO-LLM delivery, signed binary, geometry-canonical layouts)
+**Date:** 2026-06-05 (updated through D21 — v1 vertical slice, chart swap route)
 **Status:** design proposal, ready for autonomous implementation
 **Supersedes (conceptually):** a bespoke React/TipTap document-editor approach — evaluated and rejected (see `DECISIONS_LOG.md` D1)
+
+> **v1 implementation scope (D20/D21).** This memo describes the **target
+> architecture** (four skills, DOCX + PPTX, Setup, catalogue at scale). **What
+> v1 actually builds** is narrower: **`report-pptx`** + **`kpi-row-chart`** on
+> `templates/report.master.pptx`, charts via **automizer data-swap** into a
+> pre-authored `stacked-bar` (kind pinned per slot — the LLM supplies data only).
+> Everything else in this file is **designed, deferred** until the walking skeleton
+> passes. For milestones and acceptance, **`docs/BUILD_BRIEF.md` wins over this
+> memo** when they differ on v1 scope.
 
 ---
 
@@ -16,7 +25,7 @@ Let strategy consultants at Acme produce four kinds of client deliverables:
 - **report — PPTX** (delivery deck shown during or at the end of an engagement)
 - **report — DOCX** (written report / memo form of a delivery)
 
-…that are visually consistent and anchored on Acme's hand-designed Office templates, partly drafted by Claude-in-Cowork from a structured brief, and editable per the existing consulting workflow (PowerPoint and Word with track-changes, comments, team co-authoring, think-cell, Excel-linked charts).
+…that are visually consistent and anchored on Acme's hand-designed Office templates, partly drafted by the user's **BYO LLM** from a structured brief, and editable per the existing consulting workflow (PowerPoint and Word with track-changes, comments, team co-authoring, think-cell, Excel-linked charts).
 
 This memo captures the architecture chosen after evaluating a bespoke React/TipTap document system (rejected — see `DECISIONS_LOG.md` D1). The selected approach is a **template-fill app driven by a portable skills pack**, with the user's **own** agentic LLM (BYO LLM — Cowork, Claude Code, Cursor, …; see D15) supplying the LLM step and the app doing pure mechanical fill.
 
@@ -31,17 +40,18 @@ This memo captures the architecture chosen after evaluating a bespoke React/TipT
 - A small Node CLI opens the template, fills named shapes / placeholders, and saves a native Office file. **No LLM call in this codebase.**
 - The consultant opens the file in PowerPoint or Word and finalises it through the existing workflow.
 
-Output variability is zero by construction (the template is the brand). Consultants do not learn a new editor (it is PowerPoint or Word). Claude is used only for what it does well (draft structured content). Clients receive native, editable Office files. No API key, no per-token charge — the user's existing Cowork subscription is the substrate.
+Output variability is zero by construction (the template is the brand). Consultants do not learn a new editor (it is PowerPoint or Word). The LLM is used only for what it does well (draft structured content). Clients receive native, editable Office files. No API key in this codebase — the LLM runs in the user's own agentic session (BYO LLM, D15).
 
 ---
 
 ## 3. Scope
 
-- **v1 — four skills**: commercial-proposal-pptx, commercial-proposal-docx, report-pptx, report-docx.
+- **v1 (implemented — D20):** **`report-pptx`** walking skeleton — `report.master.pptx` + **`kpi-row-chart`** only; charts via automizer data-swap (D21). The other three skills ship as markdown playbooks but are not implemented in v1.
+- **Target (post-v1):** all four skills end-to-end — commercial-proposal-pptx, commercial-proposal-docx, report-pptx, report-docx.
 - **v2 — additional templates** as Acme defines them (steering committee deck, executive memo, etc.).
 - **v3 (optional) — MinerU upstream** for source-material ingestion (parse client PDFs / prior decks into LLM context).
 
-Interactive HTML, embedded live models, in-app comment-to-AI, a custom WYSIWYG editor, **and any standalone (non-Cowork) LLM path** are not built. If a non-Cowork batch or scheduled-generation path is later needed, an `@anthropic-ai/sdk` route can be added behind a flag — additively, not as a replacement.
+Interactive HTML, embedded live models, in-app comment-to-AI, and a custom WYSIWYG editor are not built. An **in-codebase LLM client** (`@anthropic-ai/sdk`, API key) is not built in v1; if batch / scheduled generation is later needed, that route can be added behind a flag — additively, not as a replacement (D11/D15).
 
 ---
 
@@ -117,11 +127,11 @@ For v3 source-material ingestion: **MinerU** (OpenDataLab, open source) — pars
 
 | Constraint | How it is satisfied |
 |---|---|
-| Anchor the template — zero output variability | Master `.pptx` / `.docx` is the brand. Claude never lays anything out; it only fills slots. |
-| Easy for an LLM to generate | Claude emits a flat JSON keyed by slot name, constrained by Zod. No structure to invent. |
+| Anchor the template — zero output variability | Master `.pptx` / `.docx` is the brand. The LLM never lays anything out; it only fills slots. |
+| Easy for an LLM to generate | The LLM emits a flat JSON keyed by slot name, constrained by Zod. No structure to invent. |
 | Easy to point at specific text / item for LLM edits | Every editable thing has a stable name. Edit one slot, regenerate. |
-| Native DOCX / PPTX export | Produced by the pipeline — native, editable, not images. |
-| Open-source only, no separate vendor cost | The CLI uses only OSS libraries; the LLM is the user's existing Cowork subscription. |
+| Native DOCX / PPTX export | Produced by the pipeline — native, editable, not images. *(v1: PPTX only.)* |
+| Open-source only, no separate vendor cost | The CLI uses only OSS libraries; the LLM is the user's own (BYO LLM — no in-codebase API call). |
 | Strategy consulting workflow | Editing happens in PowerPoint and Word; the system does not replace it. |
 
 ---
@@ -129,7 +139,7 @@ For v3 source-material ingestion: **MinerU** (OpenDataLab, open source) — pars
 ## 7. Explicit trade-offs accepted
 
 - **No in-codebase LLM in v1.** The CLI needs a fill-plan from a **BYO LLM** (any agentic LLM — Cowork, Claude Code, Cursor, …; D15); it is not useful alone. A standalone in-codebase LLM path (API key) is explicitly deferred (v3).
-- **Cowork session quota / rate limits apply** to every generation, since the LLM call counts against the user's session — no separate per-token bill, but no separate quota either.
+- **Session quota may apply** when the user runs a hosted LLM (e.g. Cowork) — no separate per-token bill from this CLI, but the user's LLM runtime limits still bind.
 - **No interactive HTML deliverables, no embedded live models.** Out of scope.
 - **No PDF as a first-class output.** PDF is whatever PowerPoint / Word exports.
 - **No round-trip from edited Office back into the system.** The fill-plan is the draft source; the Office file is the deliverable.
@@ -139,7 +149,7 @@ For v3 source-material ingestion: **MinerU** (OpenDataLab, open source) — pars
 
 ## 8. Roadmap
 
-1. **v1 — four skills**: each end-to-end (brief → fill-plan → CLI → file → opens in Office). 2–4 weeks of build. The brand is fused into each master template ("the brand is the template", §2).
+1. **v1 — report-pptx skeleton (D20):** one layout (`kpi-row-chart`), one master, automizer chart data-swap (D21) — proves brief → fill-plan → CLI → `.pptx` → Office. Then widen. The brand is fused into each master template ("the brand is the template", §2).
 2. **v2** — additional templates, additional layouts inside existing templates.
 3. **v3 (optional)** — MinerU upstream ingestion; a standalone CLI path with API key for batch / scheduled / non-Cowork use, added behind a flag.
 4. **Optional / deferred — brand-theme ⊥ block-library split**: factor the brand (fonts, colours, logo) out of the master into a swappable Office **Theme part**, so one brand-neutral block/slide library can be re-skinned per consultancy instead of one fully-branded master per brand. Would revise §2 from "the brand is the template" to "the brand is the *theme*" and make `brand.yaml` the genuine single source. **Not in v1** — v1 keeps the brand fused into each master.
