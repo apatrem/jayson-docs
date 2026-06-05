@@ -2,7 +2,7 @@
 
 **For:** the implementing developer / Claude Code
 **Companion to:** `docs/ARCHITECTURE.md`, `docs/SLIDE_LAYOUT_LIBRARY.md`, `docs/DECISIONS_LOG.md`
-**Date:** 2026-06-04 (updated for D11 — Cowork-as-LLM)
+**Date:** 2026-06-05 (updated through D19 — BYO-LLM delivery, four-skill portable pack)
 
 ---
 
@@ -17,12 +17,12 @@ Work milestone by milestone. Do not start a milestone until the previous one's a
 ## 0. Guardrails (non-negotiable)
 
 - **Greenfield.** No code imported from prior prototypes.
-- **No LLM call in this codebase.** Claude-in-Cowork is the LLM via the user's session (see `docs/DECISIONS_LOG.md` D11). The CLI accepts a *fill-plan JSON*; it does not generate one. No `@anthropic-ai/sdk`, no API key, no environment variables for LLM auth.
+- **No LLM call in this codebase.** The LLM is the user's own agentic LLM (BYO LLM, D15; Cowork is one option) via their session — no LLM call lives here (D11). The CLI accepts a *fill-plan JSON*; it does not generate one. No `@anthropic-ai/sdk`, no API key, no environment variables for LLM auth.
 - **Open-source only.** Use only the components in `package.json` §2. Any other runtime dependency requires explicit approval.
 - **No DocModel-as-canonical layer.** The master `.pptx` / `.docx` is the source of brand; the fill-plan JSON is the source of content per-deliverable.
 - **Do not build:**
   - a WYSIWYG editor (the editor is PowerPoint / Word),
-  - an LLM client (Cowork is the LLM),
+  - an LLM client (the LLM is the user's own — BYO LLM),
   - a DOCX / PPTX parser (read-only loading by `pptx-automizer` / `docx` doesn't count),
   - any HTML or PDF renderer,
   - any chart re-implementation in code (Office-native charts only, via the §2 libraries),
@@ -70,7 +70,7 @@ jayson-docs/
         save-output.ts
     /cli/generate.ts                  # `fill` subcommand; dispatch on file extension
     /llm/README.md                    # intentionally empty
-  /fixtures/                          # sample brief, sample fill-plan, invalid cases
+  /fixtures/                          # sample fill-plan, invalid cases
   /scripts/validate.ts                # Zod schema-check on fixtures
   /tests/
 ```
@@ -81,7 +81,7 @@ jayson-docs/
 
 Runtime:
 
-- **Node** 20.11+ with **TypeScript**.
+- **Node** 22+ with **TypeScript** (`.nvmrc` pins 24; `package.json` engines require ≥22).
 - **pptx-automizer** — open master, fill named shapes (PPTX).
 - **pptxgenjs** — from-scratch chart objects (PPTX).
 - **docx** (dolanmiu) — DOCX `patchDocument` template-fill + native charts.
@@ -143,7 +143,7 @@ npm scripts: `build`, `test`, `lint`, `format`, `validate`, `fill`.
 | PPTX pipeline | Brand-identical output; named-shape fills correct; native editable charts (same-type and variable-type) |
 | DOCX pipeline | Brand-identical output; placeholder fills correct; native editable charts |
 | CLI | Dispatches on extension; rejects mismatched `--template` / `--out`; rejects invalid fill-plans with clear errors |
-| Skills | Each SKILL.md instructs Claude correctly; plugin installs; end-to-end smoke test passes in Cowork |
+| Skills | Each SKILL.md instructs the LLM correctly; plugin installs; end-to-end smoke test passes driven by a BYO LLM |
 
 ---
 
@@ -161,7 +161,7 @@ npm scripts: `build`, `test`, `lint`, `format`, `validate`, `fill`.
 ## 6. Definition of done — v1
 
 - M0–M5 acceptance criteria all pass.
-- Each of the four skills produces a final deliverable in its target format, brand-correct, with native editable charts, from a representative brief in a Cowork session.
+- Each of the four skills produces a final deliverable in its target format, brand-correct, with native editable charts, from a representative brief, driven by a BYO LLM (Cowork is one option; verify with ≥2 per M5).
 - No `@anthropic-ai/sdk` dependency; no API key handling; no LLM call from this codebase.
 - `npm run build`, `npm run lint`, `npm run test`, `npm run validate` all green.
 - The repo is small, dependencies are exactly those in `package.json`, and docs are accurate.

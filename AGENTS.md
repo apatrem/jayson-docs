@@ -22,7 +22,7 @@ Then read the scaffolded source files in `src/` to understand the contracts alre
 
 ## 2. The one principle
 
-The source of brand consistency is the master `.pptx` / `.docx` in `templates/`. The source of content is the fill-plan JSON produced **by Claude-in-Cowork** (not by this codebase). The CLI under `src/cli/` and the pipeline under `src/pipeline/` do pure template-fill — they read a fill-plan JSON, fill named shapes / placeholders, and save a native Office file. **No LLM call lives in this codebase.**
+The source of brand consistency is the master `.pptx` / `.docx` in `templates/`. The source of content is the fill-plan JSON produced **by the user's own agentic LLM** (BYO LLM, D15; not by this codebase). The CLI under `src/cli/` and the pipeline under `src/pipeline/` do pure template-fill — they read a fill-plan JSON, fill named shapes / placeholders, and save a native Office file. **No LLM call lives in this codebase.**
 
 You are building the CLI and the pipeline. You are **not** building an editor, a renderer, an Office parser, an LLM client, or anything else. See `docs/DECISIONS_LOG.md` for the full list of things not to build.
 
@@ -55,7 +55,7 @@ These are not in this repo and you must wait for them or work around them:
 
 ## 5. Hard rules — violating these breaks the architecture
 
-- **No LLM call from inside this codebase.** The LLM is Claude-in-Cowork via the user's session. The CLI accepts a *fill-plan JSON*; it does not generate one.
+- **No LLM call from inside this codebase.** The LLM is the user's own agentic LLM (BYO LLM, D15) via their session. The CLI accepts a *fill-plan JSON*; it does not generate one.
 - **No `@anthropic-ai/sdk`, no API key, no environment variables for LLM auth.** See `docs/DECISIONS_LOG.md` D11.
 - **Do not parse or generate DOCX/PPTX outside the stack libraries.** `pptx-automizer` + `pptxgenjs` for PPTX; `docx` (dolanmiu) for DOCX. No other tool touches OOXML.
 - **Do not let the LLM choose coordinates, grid cells, sizes, fonts, or colours.** The skills tell Claude to pick a `layoutId` and fill typed slots, full stop. The CLI enforces this via Zod.
@@ -74,7 +74,7 @@ The product is a **portable `skills/` folder of markdown playbooks** plus the st
 - `report-pptx`
 - `report-docx`
 
-Each skill instructs the LLM to gather the brief, produce a schema-valid fill-plan, write it to a project-relative temp file (or pipe it via `--plan -`), then invoke `npx jayson-docs fill --template … --plan … --out …` — or, if the LLM has no tools, hand the fill-plan to the human to run. **The app is the dumb mortar between the LLM and the `.pptx` / `.docx`.**
+Each skill instructs the LLM to gather the brief, produce a schema-valid fill-plan, write it to a project-relative temp file (or pipe it via `--plan -`), then invoke the bundled `./jayson-docs fill --template … --plan … --out …` app (during local dev from the repo, use `npx jayson-docs fill …`) — or, if the LLM has no tools, hand the fill-plan to the human to run. **The app is the dumb mortar between the LLM and the `.pptx` / `.docx`.**
 
 A **Cowork plugin is one optional packaging** of these same markdown skills (auto-trigger + one-click install for firms already on Cowork). To publish it, verify the manifest and SKILL.md formats with the `cowork-plugin-management:create-cowork-plugin` skill.
 
@@ -92,7 +92,7 @@ All of:
 
 - All milestone acceptance criteria pass (see `docs/BUILD_BRIEF.md` §3).
 - Given a fill-plan JSON and the appropriate master template, the CLI produces a final `.pptx` or `.docx` that opens cleanly in PowerPoint / Word with the Acme brand applied and native editable charts.
-- The four skills under `skills/` each work end-to-end inside Cowork: the user describes a deliverable, Claude produces a schema-valid fill-plan, the skill invokes the CLI, the file appears.
+- The four skills under `skills/` each work end-to-end driven by a **BYO LLM** (D15; verify with ≥2, e.g. Claude Code + Cowork, and with a human running the fill-plan): the user describes a deliverable, the LLM produces a schema-valid fill-plan, the skill invokes the app, the file appears.
 - `npm run build`, `npm run lint`, `npm run test`, `npm run validate` all green.
 - The repo is small, dependencies are exactly those in `package.json` (no `@anthropic-ai/sdk`), and the docs are accurate.
 

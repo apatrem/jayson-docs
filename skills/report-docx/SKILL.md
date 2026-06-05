@@ -66,7 +66,7 @@ Save to `tmp/jayson-docs-fillplan-<timestamp>.json`.
 ### Step D — Invoke the CLI
 
 ```bash
-npx jayson-docs fill \
+./jayson-docs fill \
   --template templates/report.master.docx \
   --plan tmp/jayson-docs-fillplan-<timestamp>.json \
   --out out/<client-shortname>-report.docx

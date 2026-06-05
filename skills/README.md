@@ -29,6 +29,11 @@ Skills write the fill-plan to a **project-relative** temp path (e.g.
 resolve identically on macOS and Windows. The CLI also accepts `--plan -` to read
 the fill-plan from **stdin**, avoiding a temp file altogether.
 
+**Invoking the app.** Skills call the bundled `./jayson-docs` binary that ships
+**inside the pack** (invoked by relative path — no global install; D14/D15).
+During local development from the repo, before the binary is built, use
+`npx jayson-docs fill …` instead.
+
 ## Hard rules (mirror `AGENTS.md` §5)
 
 - The skill never calls an LLM via an API; the LLM is the **user's own** (BYO LLM, D15) — the app calls none.

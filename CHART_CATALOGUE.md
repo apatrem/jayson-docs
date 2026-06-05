@@ -26,7 +26,7 @@ Every chart block in a brief has the form:
 }
 ```
 
-Either `datasetRef` (resolving to a key in the brief's `data` block) or an inline `dataset` is required.
+Either `datasetRef` (resolving to a key in the fill-plan's `data` block) or an inline `dataset` is required.
 
 Validation: the dataset must have ≥1 column, ≥1 row; all rows must have the same arity as `columns`.
 
@@ -103,4 +103,4 @@ Waterfall chart.
 - For chart **types matching the template placeholder**: swap data via `pptx-automizer`'s chart-data API. Lowest friction; preserves any styling set in the master.
 - For chart **types not in the template**: build the chart object with PptxGenJS, then inject it via pptx-automizer's slide-modification API. See `pptx-automizer/__tests__/generate-pptxgenjs-charts.test.ts` for the canonical example.
 - Colour palette comes from `src/brand/brand.yaml` (`colors.primary`, `colors.secondary`, `colors.accent`). Do not hard-code chart colours in code.
-- For dataset reuse across slides, prefer `datasetRef` pointing at a top-level `data` block in the brief over inlining the dataset on every chart.
+- For dataset reuse across slides, prefer `datasetRef` pointing at a top-level `data` block in the fill-plan over inlining the dataset on every chart.

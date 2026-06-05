@@ -139,7 +139,7 @@ The kind-discriminated structured JSON that Claude-in-Cowork produces and the CL
 _Avoid_: "deck-plan" (a misnomer — half the deliverables are documents, not decks), "DocModel" (there is no canonical content model here), "the brief" (that is the human input, a different thing)
 
 **Brief**:
-The consultant's **conversational** input, gathered by a skill inside Cowork (goal, audience, key data, outline) one short question at a time. It lives only in the Cowork chat: it **never enters the codebase**, is never schema-validated here, and is *not* the Fill-plan (the Fill-plan is the structured JSON Claude produces *from* the brief). "What a good brief contains" lives in each SKILL.md Step A.
+The consultant's **conversational** input, gathered by a skill inside the LLM session (goal, audience, key data, outline) one short question at a time. It lives only in the LLM chat: it **never enters the codebase**, is never schema-validated here, and is *not* the Fill-plan (the Fill-plan is the structured JSON the LLM produces *from* the brief). "What a good brief contains" lives in each SKILL.md Step A.
 _Avoid_: "brief input" / `briefInput` (the removed dead schema), conflating with Fill-plan
 
 **Section**:

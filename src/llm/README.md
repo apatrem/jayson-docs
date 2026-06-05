@@ -2,7 +2,7 @@
 
 This directory is intentionally empty for v1.
 
-**Claude-in-Cowork is the LLM** for this project. Fill-plan generation happens in a Cowork chat using the user's existing subscription, not in this codebase. The CLI under `src/cli/` and the pipeline under `src/pipeline/` do pure template-fill against a fill-plan JSON the skill writes to a temp file.
+The LLM is the user's **own agentic LLM** (BYO LLM, D15) — Cowork, Claude Code, Cursor, etc. Fill-plan generation happens in the user's LLM session, not in this codebase. The CLI under `src/cli/` and the pipeline under `src/pipeline/` do pure template-fill against a fill-plan JSON the skill writes to a temp file.
 
 See:
 

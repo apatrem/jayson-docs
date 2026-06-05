@@ -152,7 +152,7 @@ The Zod schema mirrors these names exactly. The LLM emits keys matching the sche
 2. Name every fillable shape per the convention above.
 3. Add a new entry to the `layoutId` enum in the Zod schema.
 4. Add per-slot type definitions and density caps.
-5. Add a fixture brief that uses the new layout; verify the pipeline output in PowerPoint.
+5. Add a fixture fill-plan that uses the new layout; verify the pipeline output in PowerPoint.
 
 **This is design + schema work, ~30 minutes per layout.** It is *not* a runtime LLM capability — the LLM cannot invent a layout that does not exist in the enum.
 
@@ -170,4 +170,4 @@ To prevent the LLM overfilling slots and visually breaking layouts:
 - `body-text` paragraph — ≤80 words
 - general `bullets` — ≤7 items
 
-Briefs that exceed these caps are rejected (whether they came from the LLM or a human), regardless of how plausibly the model phrased the content.
+Fill-plans that exceed these caps are rejected (whether the LLM or a human produced them), regardless of how plausibly the model phrased the content.

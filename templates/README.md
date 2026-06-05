@@ -1,8 +1,13 @@
 # templates/
 
-Drop the Acme master `.pptx` here, named **`proposal.master.pptx`**.
+Drop the four Acme master files here, named exactly:
 
-The master defines:
+- `commercial-proposal.master.pptx`
+- `commercial-proposal.master.docx`
+- `report.master.pptx`
+- `report.master.docx`
+
+Each master defines:
 
 - The Acme brand (colours, fonts, logo, spacing) — must match `src/brand/brand.yaml`.
 - The closed library of slide layouts per `docs/SLIDE_LAYOUT_LIBRARY.md`.

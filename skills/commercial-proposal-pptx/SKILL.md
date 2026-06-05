@@ -90,7 +90,7 @@ Save the JSON to `tmp/jayson-docs-fillplan-<timestamp>.json`. Use `Bash` or
 Run, from the project root:
 
 ```bash
-npx jayson-docs fill \
+./jayson-docs fill \
   --template templates/commercial-proposal.master.pptx \
   --plan tmp/jayson-docs-fillplan-<timestamp>.json \
   --out out/<client-shortname>-proposal.pptx

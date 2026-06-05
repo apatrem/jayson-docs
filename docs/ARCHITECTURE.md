@@ -1,7 +1,7 @@
 # Acme jayson-docs — Architecture
 
 **Audience:** the developer who will build and maintain this system
-**Date:** 2026-06-04 (updated for D11 — Cowork-as-LLM, four-skill plugin)
+**Date:** 2026-06-05 (updated through D19 — BYO-LLM delivery, signed binary, geometry-canonical layouts)
 **Status:** design proposal, ready for autonomous implementation
 **Supersedes (conceptually):** a bespoke React/TipTap document-editor approach — evaluated and rejected (see `DECISIONS_LOG.md` D1)
 
@@ -70,10 +70,10 @@ Interactive HTML, embedded live models, in-app comment-to-AI, a custom WYSIWYG e
 │   produces the fill-plan JSON in its own context, using the user's   │
 │   Cowork subscription. No external API call, no API key.             │
 └───────────────────┬──────────────────────────────────────────────────┘
-                    │  (fill-plan JSON written to /tmp/...)
+                    │  (fill-plan JSON written to project-relative tmp/...)
                     ▼
 ┌──────────────────────────────────────────────────────────────────────┐
-│ CLI: `npx jayson-docs fill --template ... --plan ... --out ...`       │
+│ CLI: `./jayson-docs fill --template ... --plan ... --out ...`         │
 │   1. read fill-plan from disk                                        │
 │   2. validate with Zod (fillPlanSchema)                              │
 │   3. dispatch on --template extension:                               │

@@ -8,7 +8,7 @@ Single rule: **fail loudly, fail fast, name the cause.** Never silently "fix" an
 
 ### `llm` — LLM output fails schema validation
 
-- **What:** Claude returned JSON that does not parse, or parses but fails `fillPlanSchema.parse(...)`.
+- **What:** the LLM returned JSON that does not parse, or parses but fails `fillPlanSchema.parse(...)`.
 - **Do:** abort the run; throw an error whose message **names the failing path** (e.g. `sections[1].slides[0]['kpi-strip'][0].figure: expected string, got null`) and **includes the raw LLM output** for debugging.
 - **Do not:** retry silently. Do not auto-truncate over-long fields. Do not substitute defaults.
 - **Optional:** a single bounded retry with a "you violated this constraint, fix it" instruction added to the user prompt — at most once. Then fail.
