@@ -1,7 +1,7 @@
 {
   "name": "jayson-docs",
   "version": "0.1.0",
-  "description": "Acme consulting deliverable generators (PPTX + DOCX) via template-fill, with Claude-in-Cowork as the LLM. No API key required.",
+  "description": "Acme consulting deliverable generators (PPTX + DOCX) via template-fill, driven by the user's own agentic LLM (BYO LLM). No API key required.",
   "author": "Acme Consulting",
   "license": "Apache-2.0",
   "skills": [

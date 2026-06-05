@@ -24,9 +24,9 @@ This memo captures the architecture chosen after evaluating a bespoke React/TipT
 
 ## 2. The one principle
 
-**Cowork drafts, templates anchor, Office edits.** Three stages, each doing what it is best at.
+**Your LLM drafts, templates anchor, Office edits.** Three stages, each doing what it is best at. *(Cowork is the running example throughout §§3–6; any agentic LLM applies — BYO LLM, D15.)*
 
-- **Claude-in-Cowork** produces structured content (a schema-valid fill-plan JSON) in its own context. The user's Cowork subscription is the LLM. No layout, no coordinates — Claude picks a `layoutId` from a closed library and fills typed slots.
+- **Your LLM** (Cowork in this running example) produces structured content (a schema-valid fill-plan JSON) in its own context, on the user's own subscription/runtime. No layout, no coordinates — it picks a `layoutId` from a closed library and fills typed slots.
 - A hand-designed `.pptx` / `.docx` master template defines the visual identity. The brand *is* the template.
 - A small Node CLI opens the template, fills named shapes / placeholders, and saves a native Office file. **No LLM call in this codebase.**
 - The consultant opens the file in PowerPoint or Word and finalises it through the existing workflow.
@@ -128,7 +128,7 @@ For v3 source-material ingestion: **MinerU** (OpenDataLab, open source) — pars
 
 ## 7. Explicit trade-offs accepted
 
-- **No standalone (non-Cowork) usage in v1.** The tool requires Claude-in-Cowork to produce the fill-plan; the CLI alone is not useful without a fill-plan JSON. Acceptable because the target audience already has Cowork.
+- **No in-codebase LLM in v1.** The CLI needs a fill-plan from a **BYO LLM** (any agentic LLM — Cowork, Claude Code, Cursor, …; D15); it is not useful alone. A standalone in-codebase LLM path (API key) is explicitly deferred (v3).
 - **Cowork session quota / rate limits apply** to every generation, since the LLM call counts against the user's session — no separate per-token bill, but no separate quota either.
 - **No interactive HTML deliverables, no embedded live models.** Out of scope.
 - **No PDF as a first-class output.** PDF is whatever PowerPoint / Word exports.

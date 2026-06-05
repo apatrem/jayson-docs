@@ -17,7 +17,7 @@ description: |
 
 ## 0. Purpose
 
-Produce a **Acme written commercial proposal `.docx`** — the document form of the
+Produce an **Acme written commercial proposal `.docx`** — the document form of the
 pitch (propale). Like the report-docx path, it is **composed** from sections and
 blocks (`kind: "document"`): the consultant's content flows as Word paragraphs,
 bullets, and native charts; Word handles pagination. The DOCX path uses

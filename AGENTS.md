@@ -41,7 +41,7 @@ You are building the CLI and the pipeline. You are **not** building an editor, a
 
 These are not in this repo and you must wait for them or work around them:
 
-1. **Four master templates** (Acme will provide):
+1. **Master templates** (Acme will provide). **v1 needs only `report.master.pptx`** (D20); the other three are post-v1:
    - `templates/commercial-proposal.master.pptx`
    - `templates/commercial-proposal.master.docx`
    - `templates/report.master.pptx`
@@ -61,7 +61,7 @@ These are not in this repo and you must wait for them or work around them:
 - **Do not let the LLM choose coordinates, grid cells, sizes, fonts, or colours.** The skills tell Claude to pick a `layoutId` and fill typed slots, full stop. The CLI enforces this via Zod.
 - **Do not auto-truncate, auto-shorten, or "fix" fill-plans that fail schema validation.** Reject with a clear error. See `ERROR_HANDLING.md`.
 - **Do not use Tiptap, React, Vite, Playwright, or any HTML/PDF renderer.** Outputs are `.pptx` and `.docx` only.
-- **Brand values come from `src/brand/brand.yaml`** — the canonical source. If you find conflicting values elsewhere, the YAML wins. See `docs/DECISIONS_LOG.md` D2-2.
+- **Brand tokens come from `src/brand/brand.yaml`** — the validated mirror of the master template. Precedence: **master template > `brand.yaml` > prose docs** (D2-2); the YAML beats narrative docs, never the template it mirrors. In v1, charts data-swap into pre-authored master charts (D21), so the **master chart's styling wins** for charts.
 
 ---
 
@@ -92,7 +92,7 @@ All of:
 
 - All milestone acceptance criteria pass (see `docs/BUILD_BRIEF.md` §3).
 - Given a fill-plan JSON and the appropriate master template, the CLI produces a final `.pptx` or `.docx` that opens cleanly in PowerPoint / Word with the Acme brand applied and native editable charts.
-- The four skills under `skills/` each work end-to-end driven by a **BYO LLM** (D15; verify with ≥2, e.g. Claude Code + Cowork, and with a human running the fill-plan): the user describes a deliverable, the LLM produces a schema-valid fill-plan, the skill invokes the app, the file appears.
+- The **`report-pptx`** skill works end-to-end driven by a **BYO LLM** (D15; verify with ≥1 LLM plus a human-run fill-plan): the user describes a deliverable, the LLM produces a schema-valid fill-plan, the skill invokes the app, the file appears. *(v1 implements only report-pptx — D20.)*
 - `npm run build`, `npm run lint`, `npm run test`, `npm run validate` all green.
 - The repo is small, dependencies are exactly those in `package.json` (no `@anthropic-ai/sdk`), and the docs are accurate.
 

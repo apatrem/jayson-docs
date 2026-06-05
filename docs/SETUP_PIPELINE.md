@@ -6,6 +6,9 @@ and **D14** (local signed binary; confidential materials stay local).
 **Glossary:** see `CONTEXT.md` → *Setup, Setup skill, Setup-time AI, Install,
 Firm context, firm.md, Trust tier, Brand reconciliation*.
 
+> **Status: post-v1 (D20).** Setup / Ingestion is designed but **not implemented in v1** (v1 is the report-pptx skeleton).
+> **Confidentiality:** the *app* runs locally and uploads nothing, but Ingestion has the **BYO LLM read the firm's materials** — if that LLM is **hosted**, the content goes to its provider under their data policy. Trust tiers are **prompt instructions to the LLM, not enforced controls** (use a local model for strict confidentiality). Throughout this doc, distinguish *local deterministic app behaviour* from *hosted-LLM behaviour*.
+
 ---
 
 ## 0. What Setup produces

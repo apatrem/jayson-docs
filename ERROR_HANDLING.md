@@ -2,6 +2,13 @@
 
 Single rule: **fail loudly, fail fast, name the cause.** Never silently "fix" an error by truncating, inventing a value, or substituting a default. The architecture's consistency guarantee depends on errors surfacing rather than being papered over.
 
+**Schema is strict at the LLM boundary (D21).** Fill-plan objects use Zod `.strict()` — unknown keys are **rejected**, not silently stripped — plus cross-field checks: a chart's `datasetRef` must resolve in `datasets`; pie/doughnut rows ≤ 8; a chart's `kind` must equal its layout slot's pinned kind. (Silent stripping is itself a silent "fix" this policy forbids.)
+
+**Three layers of guarantee — do not conflate them:**
+- **App-owned** — what the CLI actually enforces locally: schema validation, `--template`/`--out` extension match, and writing the output file only after validation passes.
+- **LLM/skill guidance** — what the skills *instruct* the BYO LLM to do; the app **cannot** enforce it (e.g. it cannot stop a hosted LLM from writing a draft fill-plan before the CLI ever sees it).
+- **Security-sensitive logging** — error messages that echo raw fill-plan content can disclose client data; redact/limit them. The `llm` class below errs toward debuggability — tighten it before real client data flows.
+
 ---
 
 ## Error classes & required behaviour
@@ -52,7 +59,7 @@ Single rule: **fail loudly, fail fast, name the cause.** Never silently "fix" an
 
 ## What never happens
 
-- The LLM's output is never written to disk before schema validation passes.
+- The CLI never writes an **output Office file** before the fill-plan passes validation. (The fill-plan JSON itself is written to a temp file by the skill/LLM *before* the CLI reads and validates it — that is the handoff, an LLM/skill step, not an app guarantee.)
 - The pipeline never produces a partial `.pptx` (the save step is the last step and is atomic from the consultant's view — either the file is written cleanly or it is not written at all).
 - A failing validation never produces output with a "best effort" filling-in.
 - A missing named shape in the master is never silently skipped.

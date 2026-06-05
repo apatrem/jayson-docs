@@ -25,9 +25,9 @@
 
 Brand source-of-truth resolved to the values in the actual PowerPoint / Word templates (per `src/brand/brand.yaml`), not the documented values in `CLAUDE.md` / `AGENTS.md`. The templates are what clients see.
 
-### D2-2 — `src/brand/brand.yaml` is the canonical brand source
+### D2-2 — Brand precedence: master template > `brand.yaml` (derived mirror) > prose docs
 
-If documentation elsewhere disagrees, this file wins. Renderers read it; the Zod schema validates it.
+The **master template is the canonical ground truth** for brand (it is what clients see). **`src/brand/brand.yaml` is a derived, validated mirror** of those values, for code paths that need tokens (the footer confidentiality notice, fonts, and chart colours for the *deferred* from-scratch build route). Precedence: **template > `brand.yaml` > prose docs** — "brand.yaml wins" means it beats narrative docs (CLAUDE.md / AGENTS prose), never the template, which `brand.yaml` itself mirrors. A loader (`src/brand/load.ts`) parses + Zod-validates it. **Charts:** since v1 swaps data into pre-authored master charts (D21), the **master chart's own styling is authoritative in v1**; `brand.yaml` chart colours apply only to the deferred PptxGenJS route.
 
 ---
 
@@ -202,6 +202,32 @@ Every skill (Built-in and Custom) inherits a shared **Standard opener** — a *m
 **Retained:** the 12×8 grid as the concept for the **deferred flexgrid** (D12) only — a runtime placement system, not a v1 design constraint.
 
 **Reason:** real consulting templates rarely align to a clean grid; snapping them would distort the firm's own design — exactly what "the brand IS the template" exists to prevent. **Trade-off accepted:** we give up the grid's cross-layout *alignment* guarantee — but alignment was the firm designer's job in the first place, and fidelity to their canonical template matters more. The `regions` map preserves the only thing the grid gave the LLM (positional awareness) without imposing geometry.
+
+---
+
+## D20 — v1 is fenced to the report-pptx walking skeleton; everything else is post-v1
+
+**Decided:** v1 implements exactly **one** path end-to-end — `templates/report.master.pptx` + the **`kpi-row-chart`** layout, filled mechanically (BYO LLM → fill-plan JSON → CLI → native `.pptx`). The other three skills ship as markdown playbooks, but only **report-pptx** is implemented and accepted in v1.
+**Explicitly out of v1** (designed, deferred — do **not** build under the v1 brief): the other five PPTX layouts; the whole **DOCX** pipeline (M4); `waterfall` and any chart kind the approved libraries cannot natively produce (see D21); **Setup / Ingestion** (D13) and firm-context confidentiality handling; the at-scale **Layout catalogue** (D16) as a generated artifact; layout **sharing** (D17); the **skill creator** (D18); and **signed-binary packaging / distribution** (D14).
+**Rejected:** the broad "four implemented skills + Setup + sharing + binary" v1 brief — the scope sprawl flagged by the 2026-06-05 repo reviews.
+
+**Reason:** a single working report-pptx slice proves the entire thesis (LLM drafts → template anchors → Office edits) with the least surface area, gates the riskiest work (PPTX + charts) first, and stops an autonomous agent wandering into Setup/D16–D18/packaging. It realises the **walking-skeleton-first** intent already stated in OVERVIEW §12 and the open questions below. **Scope, not architecture:** D11/D15 (BYO LLM), D2/D3 (libraries), and D14 (eventual signed binary) all still stand — D20 only bounds what is *implemented and accepted* in v1.
+
+---
+
+## D21 — v1 charts are `pptx-automizer` data-swaps into pre-authored master charts; dynamic build and DOCX charts deferred
+
+**Decided:** in v1 every chart is produced by **`pptx-automizer` swapping the dataset into a chart that already exists in the master `.pptx`** (same-type data swap). The set of supported chart kinds is therefore **whatever we pre-author into the master template** — we will create the matching template charts for the kinds we want. The fill-plan supplies **data only**, never chart geometry or a from-scratch chart type. (Because PowerPoint natively supports waterfall, treemap, etc., a pre-authored chart of those kinds is swappable too — the v1 set is bounded by the master, not by a library's build API.)
+
+**Corollary — v1 chart-type selection is master-fixed per slot:** each chart-bearing slot in a layout is pre-authored as **one** chart type, and the layout schema **pins that slot's `kind` to a literal** (e.g. `kpi-row-chart`'s `slot.chart` = `stacked-bar`); Zod rejects a fill-plan whose chart `kind` mismatches. The LLM **picks a layout and supplies data — it does not choose chart type or geometry** (consistent with D8). Multi-kind slots (master holds one pre-authored chart per kind; pipeline selects the match) arrive **with** the deferred PptxGenJS route, not in v1. Schema impact: the chart-slot `kind` becomes a per-layout literal rather than a free fill-plan field, and the `kpi-row-chart` sample's `kind` is slot-determined.
+
+**Deferred (post-v1, logged so they are not re-invented):**
+- **PptxGenJS injection** — constructing charts from scratch (incl. variable-type, or kinds not pre-authored in the master) and injecting via `pptx-automizer`. This is the route for dynamic chart types; not in v1.
+- **DOCX charts** — DOCX is out of v1 (D20); the chosen `docx`/dolanmiu lib has **no** native chart classes. When DOCX returns, two logged options: **(a) the PPT route** — generate the chart in the `.pptx` and have the user **copy-paste** it into a placeholder in the Word document; **(b) the paid docxtemplater chart module** — integrate docxtemplater's (paid) basic Word charts. Option (b) partially reopens **D3** (which rejected docxtemplater partly *because* its chart module is paid) — acceptable to revisit for DOCX, since dolanmiu/docx offers no charts at all.
+
+**Rejected (for v1):** promising chart kinds the pipeline can't yet produce. Earlier docs claimed `pptx.charts.WATERFALL` in PptxGenJS — **false** (PptxGenJS 4.0.1's `CHART_NAME` has no waterfall). Under the swap-only route, waterfall is supportable **only if pre-authored in the master** and only if `pptx-automizer` can update PowerPoint's extended-chart (`chartEx`) data — **verify during M3**; classic types (bar/stacked-bar/line/area/pie/doughnut/scatter) are known-good for data swap.
+
+**Reason:** the same-type-swap route promises exactly what the master can hold, preserves the styling authored there, and removes the dependency on a chart-build library's limited native types — the lowest-risk way to ship brand-correct charts in the v1 walking skeleton. Dynamic construction and DOCX charts carry real unknowns (extended-chart support, a paid module, a manual copy-paste UX) and are correctly pushed past v1.
 
 ---
 

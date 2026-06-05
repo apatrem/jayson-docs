@@ -17,7 +17,7 @@ description: |
 
 ## 0. Purpose
 
-Produce a **Acme project-delivery `.pptx`** — slides shown to the client during
+Produce an **Acme project-delivery `.pptx`** — slides shown to the client during
 or at the end of an engagement (steering committees, milestone reviews,
 final readouts). Same template-fill pipeline as `commercial-proposal-pptx`; the
 master template is different and the layout mix tilts toward findings, data

@@ -1,14 +1,14 @@
 # jayson-docs
 
-Template-fill CLI for consulting-firm deliverables — driven by Claude-in-Cowork. Acme is the reference firm; a per-firm **Setup** onboards others (see `docs/SETUP_PIPELINE.md`).
+Template-fill CLI for consulting-firm deliverables — driven by your **own** agentic LLM (BYO LLM: Cowork, Claude Code, Cursor, …). Acme is the reference firm; per-firm **Setup** is **post-v1** (see `docs/SETUP_PIPELINE.md`).
 
-- **v1 deliverables:** four — commercial proposal (`.pptx` + `.docx`) and report (`.pptx` + `.docx`).
+- **Deliverables (target):** four — commercial proposal (`.pptx` + `.docx`) and report (`.pptx` + `.docx`). **v1 implements `report-pptx` first** as a walking skeleton (DECISIONS_LOG D20).
 - The CLI is pure mechanical fill: master template + fill-plan JSON → output file. **No LLM call in this codebase.**
-- Claude-in-Cowork supplies the fill-plan, via the four skills under `skills/`. The user's Cowork subscription is the LLM substrate; no API key is required.
+- Your own agentic LLM supplies the fill-plan, via the skills under `skills/` (BYO LLM, D15); no API key is required.
 
 ## Start here
 
-**New here? Read [`OVERVIEW.md`](OVERVIEW.md) first** — the canonical foundations (the one principle, the four-phase lifecycle, the decision index D1–D18, the consolidated roadmap) and a map to every other doc. Then, for implementation:
+**New here? Read [`OVERVIEW.md`](OVERVIEW.md) first** — the canonical foundations (the one principle, the four-phase lifecycle, the decision index D1–D21, the consolidated roadmap) and a map to every other doc. Then, for implementation:
 
 1. Read `AGENTS.md` at the repo root — handoff for the implementing coding agent.
 2. Read the four design docs in `docs/`:
@@ -46,7 +46,7 @@ The product is a portable `skills/` folder of markdown playbooks + the standalon
 
 ## Stack
 
-Open-source only. The LLM is Claude-in-Cowork (via the user's existing subscription). See `docs/ARCHITECTURE.md` §5.
+Open-source only. The LLM is your own agentic LLM (BYO LLM, D15). See `docs/ARCHITECTURE.md` §5.
 
 - `pptx-automizer` + `pptxgenjs` — PPTX template-fill + dynamic chart objects
 - `docx` (dolanmiu) — DOCX template-fill via `patchDocument`

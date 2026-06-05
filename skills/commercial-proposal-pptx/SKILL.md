@@ -16,8 +16,8 @@ description: |
 
 ## 0. Purpose
 
-Produce a **Acme commercial proposal `.pptx`** by filling a hand-designed master
-template via the CLI. The user's Cowork session is the LLM — you produce the
+Produce an **Acme commercial proposal `.pptx`** by filling a hand-designed master
+template via the CLI. Your own agentic LLM (BYO LLM) is the LLM — you produce the
 fill-plan JSON in context; the CLI does the mechanical fill.
 
 ## 1. Hard rules
@@ -83,7 +83,7 @@ team. Adapt to what the consultant briefed.
 ### Step C — Write the fill-plan to a temp file
 
 Save the JSON to `tmp/jayson-docs-fillplan-<timestamp>.json`. Use `Bash` or
-`Write` per the Cowork environment.
+`Write` per your LLM environment.
 
 ### Step D — Invoke the CLI
 

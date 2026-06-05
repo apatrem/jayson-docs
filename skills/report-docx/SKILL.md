@@ -16,7 +16,7 @@ description: |
 
 ## 0. Purpose
 
-Produce a **Acme written delivery report / executive memo `.docx`** — the
+Produce an **Acme written delivery report / executive memo `.docx`** — the
 text-heavy companion to a presentation deck, or a standalone written
 deliverable. Uses dolanmiu/docx's `patchDocument` API; charts are native Word
 charts.

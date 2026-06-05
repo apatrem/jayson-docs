@@ -85,7 +85,7 @@ the **Layout catalogue** (D16) — per entry: `usage` ("pick when…"), `regions
 - **Local execution** — confidential materials never leave the machine; the LLM
   only orchestrates. (D14)
 
-## 9. Decision index (D1–D18)
+## 9. Decision index (D1–D21)
 
 | # | Decision |
 |---|---|
@@ -141,7 +141,7 @@ tight-pinned) · **pptxgenjs** 4 · **docx** 9 · **zod** 4 · **yaml** · **com
 | **This overview** | `OVERVIEW.md` |
 | Glossary (canonical terms) | `CONTEXT.md` |
 | Why + diagram + roadmap | `docs/ARCHITECTURE.md` |
-| Decisions D1–D18 | `docs/DECISIONS_LOG.md` |
+| Decisions D1–D21 | `docs/DECISIONS_LOG.md` |
 | Milestones | `docs/BUILD_BRIEF.md` |
 | Slide layouts + catalogue | `docs/SLIDE_LAYOUT_LIBRARY.md` |
 | Chart shapes · error policy | `CHART_CATALOGUE.md` · `ERROR_HANDLING.md` |

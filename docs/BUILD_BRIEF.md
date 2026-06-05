@@ -32,6 +32,14 @@ Work milestone by milestone. Do not start a milestone until the previous one's a
 
 ---
 
+## 0.5 Scope fence — what v1 *is* (D20)
+
+**v1 = one PPTX walking skeleton, end-to-end:** `templates/report.master.pptx` + the **`kpi-row-chart`** layout, filled mechanically (BYO LLM → fill-plan JSON → CLI → native `.pptx`). Charts are `pptx-automizer` **data-swaps into pre-authored master charts** (D21); a chart slot's type is fixed by the layout, not chosen by the LLM.
+
+**Explicitly out of v1 — do not build under this brief** (designed, deferred): the other five PPTX layouts; the entire **DOCX** pipeline; chart kinds the master does not pre-author; **Setup / Ingestion** (D13) and firm-context handling; the at-scale **Layout catalogue** (D16) as a generated artifact; layout **sharing** (D17); the **skill creator** (D18); **signed-binary packaging / distribution** (D14). The other three skills ship as markdown playbooks but are not implemented in v1.
+
+---
+
 ## 1. Repository layout
 
 ```
@@ -95,42 +103,34 @@ npm scripts: `build`, `test`, `lint`, `format`, `validate`, `fill`.
 
 ---
 
-## 3. Milestones
+## 3. Milestones — v1 is a vertical slice (D20)
 
-### M0 — Project scaffold
-- [ ] Verify `npm install` succeeds; `npm run build`, `npm run lint`, `npm run test`, `npm run validate` all pass with the scaffolded files.
-- **Acceptance:** clean install on a fresh machine; CI / lint green; the fixture-validation script reports every fixture as expected.
+Build **one layout end-to-end** before widening. Do not start a step until the previous one's acceptance criteria pass.
 
-### M1 — Schema extension
-- [ ] Author the five remaining slide-layout schemas from `docs/SLIDE_LAYOUT_LIBRARY.md` following the pattern in `src/schema/layouts/kpi-row-chart.ts`.
-- [ ] Author the DOCX section schemas (TBD layouts — design alongside the master templates).
-- [ ] Wire all layouts into the discriminated union in `src/schema/slide.ts` (and equivalent for DOCX sections).
-- [ ] Extend fixtures to cover every layout / section.
-- **Acceptance:** every layout / section has at least one valid fixture and one invalid fixture, all detected correctly by `npm run validate`.
+### M0 — Project scaffold ✅
+- Verify `npm install`, `npm run build`, `lint`, `test`, `validate` all pass with the scaffolded files.
+- **Acceptance:** clean install on a fresh machine; the fixture-validation script reports every fixture as expected. *(Done.)*
 
-### M2 — PPTX pipeline (text & images)
-- [ ] `load-master.ts`, `fill-slide.ts`, `save-output.ts` implemented.
-- [ ] Wired through the CLI `fill --template ...pptx --plan ... --out ...pptx` path.
-- [ ] No LLM call; the CLI reads the fill-plan from disk.
-- **Acceptance:** a fixture fill-plan + the master `.pptx` produces an output `.pptx` opening cleanly in PowerPoint, with text and image slots correctly filled and brand visually identical to the master.
+### M1 — Strict schema + `kpi-row-chart` (no master needed)
+- [ ] Make the fill-plan schema **strict** at the LLM boundary: `.strict()` on section/slide/block/chart objects; `superRefine` so each chart `datasetRef` resolves in `datasets`; pie/doughnut rows ≤ 8; a chart's `kind` must equal its layout slot's pinned literal (D21 corollary).
+- [ ] Implement `src/brand/load.ts` (parse + Zod-validate `brand.yaml`).
+- [ ] Add invalid fixtures + tests for each new rule (unknown-key, bad `datasetRef`, pie>8, kind-mismatch). TDD.
+- **Acceptance:** `npm run validate` / `test` cover every rule; **no master required** for this step.
 
-### M3 — PPTX charts
-- [ ] Same-type chart data swap via pptx-automizer.
-- [ ] Variable-type chart construction via PptxGenJS, injected via pptx-automizer.
-- [ ] All charts are **native PowerPoint charts** (editable, not images).
-- **Acceptance:** a fixture fill-plan containing same-type and variable-type charts produces native editable charts in the output `.pptx`.
+### M2 — `report.master.pptx` + text/image/kpi fill
+- [ ] Obtain `templates/report.master.pptx` with the `kpi-row-chart` slide + named shapes (real, or `PLACEHOLDER-` per §0.5 / AGENTS §4).
+- [ ] `load-master.ts`, `fill-slide.ts` (title / kpi-strip / narrative / image), `save-output.ts`; wire the CLI `fill --template ...pptx` path.
+- **Acceptance:** a fixture fill-plan + the master produces a `.pptx` opening cleanly in PowerPoint, brand-identical, with text/kpi/image slots filled.
 
-### M4 — DOCX pipeline
-- [ ] `src/pipeline/docx/load-template.ts`, `fill-document.ts`, `save-output.ts` implemented.
-- [ ] CLI `fill --template ...docx --plan ... --out ...docx` path.
-- [ ] Charts use dolanmiu/docx's native Chart classes — no images.
-- **Acceptance:** a fixture fill-plan + the master `.docx` produces an output `.docx` opening cleanly in Word, with placeholders filled, native editable charts, and brand visually identical to the master.
+### M3 — the `kpi-row-chart` chart (automizer data-swap)
+- [ ] `pptx-automizer` swaps the dataset into the chart **pre-authored in the master** for that slot (D21). No PptxGenJS build in v1.
+- **Acceptance:** the chart in the output `.pptx` is a native, editable PowerPoint chart carrying the fill-plan's data.
 
-### M5 — Skills pack (portable; Cowork plugin optional)
-- [ ] Each of the four SKILL.md files under `skills/` references the right master template, the right schema, and the right CLI invocation, and is followable by any agentic LLM (BYO LLM, D15).
-- [ ] Smoke-test the pack with at least two LLMs (e.g. Claude Code + Cowork): brief → fill-plan → CLI → file. Confirm it also works when the **human** runs the CLI on the LLM's fill-plan.
-- [ ] *(Optional)* Package as a Cowork plugin — verify the manifest + SKILL.md formats with the `cowork-plugin-management:create-cowork-plugin` skill.
-- **Acceptance:** all four skills work end-to-end driven by a BYO LLM, producing the expected output file from a representative brief.
+### M4 — `report-pptx` skill end-to-end
+- [ ] The `report-pptx` SKILL drives a BYO LLM: brief → schema-valid fill-plan → CLI → file; also works when a **human** runs the CLI on the fill-plan.
+- **Acceptance:** end-to-end on `kpi-row-chart`, driven by ≥1 BYO LLM, producing the expected `.pptx`.
+
+**Then widen (post-skeleton):** add layouts one at a time (each = schema + valid/invalid fixtures + a master slide). **DOCX, the other three skills, and everything in §0.5 are post-v1.**
 
 ---
 
@@ -158,12 +158,13 @@ npm scripts: `build`, `test`, `lint`, `format`, `validate`, `fill`.
 
 ---
 
-## 6. Definition of done — v1
+## 6. Definition of done — v1 (the report-pptx skeleton)
 
-- M0–M5 acceptance criteria all pass.
-- Each of the four skills produces a final deliverable in its target format, brand-correct, with native editable charts, from a representative brief, driven by a BYO LLM (Cowork is one option; verify with ≥2 per M5).
+- M0–M4 acceptance criteria all pass.
+- The **`report-pptx`** skill produces a final `.pptx` for the `kpi-row-chart` layout — brand-correct, with a native editable chart — from a representative brief, driven by a **BYO LLM** (Cowork is one option; also verify a human-run fill-plan).
+- The fill-plan schema is **strict** and cross-validating (M1).
 - No `@anthropic-ai/sdk` dependency; no API key handling; no LLM call from this codebase.
 - `npm run build`, `npm run lint`, `npm run test`, `npm run validate` all green.
 - The repo is small, dependencies are exactly those in `package.json`, and docs are accurate.
 
-Then stop. v2 (more layouts, MinerU upstream ingestion, standalone CLI with API key for batch / scheduled runs) waits for explicit go-ahead.
+Then stop. Everything in §0.5 (more layouts, DOCX, Setup, sharing, skill creator, signed binary, MinerU upstream) waits for explicit go-ahead.

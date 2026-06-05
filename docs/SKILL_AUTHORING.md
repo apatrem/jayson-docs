@@ -29,7 +29,7 @@ LLM; the app it calls contains no LLM (D11).
 2. **Hard rules** — never lay out / pick coordinates / choose brand; only pick a
    `layoutId` from the catalogue and fill typed slots; honour density caps;
    never invent chart kinds/layouts; surface validation errors verbatim.
-3. **Read first** — the Layout catalogue, `CHART_CATALOGUE.md`, the schema, the
+3. **Read first** — `SLIDE_LAYOUT_LIBRARY.md` (the layout spec), `CHART_CATALOGUE.md`, the schema, the
    brand.
 4. **Workflow** — **A.** ask the Standard opener (§3) + skill-specific
    follow-ups → **B.** produce a schema-valid Fill-plan (`kind`, sections,
@@ -71,7 +71,7 @@ description of a deliverable type. It:
 1. Drafts the `SKILL.md` (frontmatter, hard rules, read-first, workflow) with the
    **Standard opener** pre-filled (editable) plus proposed skill-specific
    follow-ups and a default standard structure (a sequence of sections + suggested
-   layouts from the Layout catalogue).
+   layouts from `SLIDE_LAYOUT_LIBRARY.md`).
 2. **Stays inside the closed library** — references only existing layouts /
    block-types / trust tiers / the fill-plan schema. **If the deliverable needs a
    layout that doesn't exist, it routes to Setup** (D13, the only minting path) —

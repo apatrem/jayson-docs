@@ -4,6 +4,8 @@ Approved chart types for v1, with their JSON shapes (as consumed by the schema a
 
 All charts produced are **native PowerPoint charts** — editable in PowerPoint, never images. See `docs/DECISIONS_LOG.md` D2 / D8.
 
+**v1 route (D21):** charts are produced by **`pptx-automizer` swapping data into a chart pre-authored in the master** — the supported kinds are whatever the master pre-authors, and a chart slot's **type is fixed by the layout** (the LLM supplies *data*, not type). Building charts from scratch via PptxGenJS (for variable types) is **deferred**. The per-type "Pipeline" notes below describe that deferred build route; in v1 read them as "the master pre-authors this type; automizer swaps the data."
+
 ---
 
 ## Universal shape
@@ -26,7 +28,7 @@ Every chart block in a brief has the form:
 }
 ```
 
-Either `datasetRef` (resolving to a key in the fill-plan's `data` block) or an inline `dataset` is required.
+Either `datasetRef` (resolving to a key in the fill-plan's `datasets` map) or an inline `dataset` is required.
 
 Validation: the dataset must have ≥1 column, ≥1 row; all rows must have the same arity as `columns`.
 
@@ -94,7 +96,7 @@ Waterfall chart.
     ["Total budget", 200000, "total"]
   ]
   ```
-- Pipeline: PptxGenJS supports waterfall natively (`pptx.charts.WATERFALL`). The master almost certainly does not contain a placeholder waterfall — build with PptxGenJS and inject via pptx-automizer.
+- Pipeline (v1): waterfall is supported **only if pre-authored in the master** (PowerPoint has a native waterfall); `pptx-automizer` swaps its data. PptxGenJS 4.x has **no** waterfall build API, so the from-scratch route is N/A. Waterfall uses PowerPoint's *extended-chart* (`chartEx`) part — **verify `pptx-automizer` can update `chartEx` data during M3** before relying on it.
 
 ---
 
@@ -103,4 +105,4 @@ Waterfall chart.
 - For chart **types matching the template placeholder**: swap data via `pptx-automizer`'s chart-data API. Lowest friction; preserves any styling set in the master.
 - For chart **types not in the template**: build the chart object with PptxGenJS, then inject it via pptx-automizer's slide-modification API. See `pptx-automizer/__tests__/generate-pptxgenjs-charts.test.ts` for the canonical example.
 - Colour palette comes from `src/brand/brand.yaml` (`colors.primary`, `colors.secondary`, `colors.accent`). Do not hard-code chart colours in code.
-- For dataset reuse across slides, prefer `datasetRef` pointing at a top-level `data` block in the fill-plan over inlining the dataset on every chart.
+- For dataset reuse across slides, prefer `datasetRef` pointing at the top-level `datasets` map in the fill-plan over inlining the dataset on every chart.

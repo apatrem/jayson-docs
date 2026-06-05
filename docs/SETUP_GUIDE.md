@@ -1,5 +1,9 @@
 # Setting up jayson-docs — a guide for non-programmers
 
+> **Status: post-v1 (D20).** Setup is designed but **not implemented in v1** (v1 is the report-pptx skeleton) — this describes the planned onboarding.
+>
+> **Confidentiality — read this:** the *app* runs locally and uploads nothing. But the *AI assistant* you choose (Cowork, ChatGPT, Cursor, …) reads what you give it; if it is a **hosted** assistant, that content goes to its provider under their data policy. Trust tiers are **instructions to the assistant, not technical controls** — for strict confidentiality use a local model or keep sensitive material out of the assistant's view.
+
 This guide gets your firm from "nothing installed" to "generating on-brand
 proposals and reports" in three steps. No coding, no command line. Allow about
 **30–45 minutes**, most of which is you reviewing what the app proposes.
@@ -72,7 +76,7 @@ background — so every later document sounds and looks like your firm.
 
 Each drawer has a short note on what goes in it and how it's treated — for
 example, anything in `confidential/` is used for *style and method only*, and
-client names are always hidden. Your files never leave your computer.
+client names are always hidden. The **app** never uploads your files — though a *hosted* assistant still reads what you point it at (see the confidentiality note at the top).
 
 > **Heads-up:** this one-time setup *reads your documents*, so it needs an
 > assistant that can open files (Claude Cowork, Claude Code, Cursor). Day-to-day
