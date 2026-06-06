@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { stackedBarChartBlockSchema } from '../chart.js';
+import { chartBlock } from '../chart.js';
 
 /**
  * Worked example layout — `kpi-row-chart`.
@@ -73,7 +73,7 @@ export const kpiRowChartLayoutSchema = z
     layoutId: z.literal('kpi-row-chart'),
     title: titleString,
     'kpi-strip': z.array(kpiCardSchema).min(3).max(5),
-    chart: stackedBarChartBlockSchema,
+    chart: chartBlock({ kind: 'stacked-bar' }),
     narrative: narrativeSchema,
   })
   .strict();

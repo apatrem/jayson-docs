@@ -74,24 +74,30 @@ function validateChartBlock(chart: ChartBlockInput, ctx: z.RefinementCtx): void 
   }
 }
 
-export const chartBlockSchema = z
-  .object({
-    kind: chartKindSchema,
-    datasetRef: z.string().min(1).optional(),
-    dataset: datasetSchema.optional(),
-    caption: z.string().max(120).optional(),
-  })
-  .strict()
-  .superRefine(validateChartBlock);
+/**
+ * Build a chart-block schema.
+ *
+ * v1 layout slots pin `kind` to a single catalogue literal (D21 corollary — the
+ * master pre-authors that chart type and `pptx-automizer` swaps its data, so the
+ * LLM supplies data, never the type); omit `kind` for the free enum (document
+ * chart blocks, or unit tests). Either way the block is `.strict()` (unknown
+ * keys rejected — Q6), must carry a `datasetRef` (resolved against the
+ * fill-plan's `datasets` in index.ts) or an inline `dataset`, and gets the
+ * inline pie/doughnut row cap via `validateChartBlock`.
+ */
+export function chartBlock(opts?: { kind?: ChartKind }) {
+  const kindSchema = opts?.kind ? z.literal(opts.kind) : chartKindSchema;
+  return z
+    .object({
+      kind: kindSchema,
+      datasetRef: z.string().min(1).optional(),
+      dataset: datasetSchema.optional(),
+      caption: z.string().max(120).optional(),
+    })
+    .strict()
+    .superRefine(validateChartBlock);
+}
 
-export const stackedBarChartBlockSchema = z
-  .object({
-    kind: z.literal('stacked-bar'),
-    datasetRef: z.string().min(1).optional(),
-    dataset: datasetSchema.optional(),
-    caption: z.string().max(120).optional(),
-  })
-  .strict()
-  .superRefine(validateChartBlock);
+export const chartBlockSchema = chartBlock();
 
 export type ChartBlock = z.infer<typeof chartBlockSchema>;
