@@ -4,6 +4,36 @@ You are the autonomous coding agent (Claude Code, or equivalent) building this s
 
 ---
 
+## 0. Multi-agent workflow — read before you commit
+
+This repo is worked by **several agents in parallel** (Claude, Cursor, Codex, …), each in its **own git worktree on its own branch**. `main` is **integration-only**.
+
+```
+~/Documents/jayson-docs           # main — integration only; the human merges here
+~/Documents/jayson-docs-claude    # branch: claude
+~/Documents/jayson-docs-cursor    # branch: cursor
+~/Documents/jayson-docs-codex     # branch: codex
+```
+
+**Rules:**
+1. **Never commit to `main` directly.** Work in your worktree, on your branch.
+2. **Rebase before you start and before you push:** `git fetch origin && git rebase origin/main`. Keep commits small and narrowly scoped — less surface, fewer collisions.
+3. **Ship via PR.** Open a pull request to `main`; another agent reviews it (this is the "challenge each other" step); the human merges. CI must be green.
+4. **CI gates everything** (`.github/workflows/ci.yml` — build + lint + test + validate). A clean `git` merge is **not** proof of correctness; CI is. Two agents editing nearby lines can merge "cleanly" into broken or duplicated content — CI and review catch that.
+5. **`docs/DECISIONS_LOG.md` is the shared source of intent.** Read it first; record any cross-cutting decision there *before* diverging, so parallel agents converge instead of collide.
+6. **Don't duplicate another agent's task.** One agent implements a milestone; others review. Partition by area.
+
+First-time worktree setup (run once, from the main folder):
+
+```bash
+git worktree add ../jayson-docs-claude -b claude
+git worktree add ../jayson-docs-cursor -b cursor
+git worktree add ../jayson-docs-codex  -b codex
+# then in each new worktree: npm install
+```
+
+---
+
 ## 1. Read first, code second
 
 Before writing any code, read these files in this order:
