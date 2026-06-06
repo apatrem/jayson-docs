@@ -1,0 +1,34 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "Transitional Energy Group (TEG)",
+    "date": "2026-06-04",
+    "language": "en"
+  },
+  "datasets": {
+    "tier1_demand_2032": {
+      "id": "tier1_demand_2032",
+      "columns": ["industry", "low", "base", "high"],
+      "rows": [["Industry A", 120, 240, 380]]
+    }
+  },
+  "sections": [
+    {
+      "title": "Findings",
+      "slides": [
+        {
+          "layoutId": "kpi-row-chart",
+          "title": "Tier-1 candidates score 2x ammonia on bankable long-term demand",
+          "kpi-strip": [
+            { "figure": "2.4x", "label": "demand vs ammonia" },
+            { "figure": "EUR 68/MWh", "label": "LCOE target" },
+            { "figure": "7", "label": "credible offtakers" }
+          ],
+          "chart": { "kind": "stacked-bar", "datasetRef": "does_not_exist" },
+          "narrative": { "kind": "bullets", "items": ["Three industries clear the gate."] }
+        }
+      ]
+    }
+  ]
+}
