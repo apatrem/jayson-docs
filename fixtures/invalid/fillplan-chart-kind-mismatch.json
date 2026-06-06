@@ -1,0 +1,38 @@
+{
+  "_violates": "chart.kind must equal the layout slot pinned literal (kpi-row-chart → stacked-bar)",
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-04",
+    "language": "en"
+  },
+  "datasets": {
+    "tier1_demand_2032": {
+      "id": "tier1_demand_2032",
+      "columns": ["industry", "low", "base", "high"],
+      "rows": [["Industry A", 120, 240, 380]]
+    }
+  },
+  "sections": [
+    {
+      "title": "Findings",
+      "slides": [
+        {
+          "layoutId": "kpi-row-chart",
+          "title": "Tier-1 candidates score better than ammonia across every demand scenario today",
+          "kpi-strip": [
+            { "figure": "1", "label": "a" },
+            { "figure": "2", "label": "b" },
+            { "figure": "3", "label": "c" }
+          ],
+          "chart": {
+            "kind": "bar",
+            "datasetRef": "tier1_demand_2032"
+          },
+          "narrative": { "kind": "text", "body": "short narrative under sixty words." }
+        }
+      ]
+    }
+  ]
+}

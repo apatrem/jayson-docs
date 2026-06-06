@@ -17,8 +17,42 @@ describe('fillPlanSchema', () => {
     'fixtures/invalid/fillplan-too-many-kpis.json',
     'fixtures/invalid/fillplan-unknown-layout.json',
     'fixtures/invalid/fillplan-unknown-chart-kind.json',
+    'fixtures/invalid/fillplan-unknown-key.json',
+    'fixtures/invalid/fillplan-bad-dataset-ref.json',
+    'fixtures/invalid/fillplan-chart-kind-mismatch.json',
+    'fixtures/invalid/fillplan-pie-too-many-rows.json',
   ])('rejects %s', (path) => {
     expect(fillPlanSchema.safeParse(read(path)).success).toBe(false);
+  });
+
+  it('rejects unknown keys on section objects (strict)', () => {
+    const plan = read('fixtures/valid-fill-plan.json') as Record<string, unknown>;
+    const sections = (plan.sections as Record<string, unknown>[]).map((s) => ({
+      ...s,
+      rogueKey: true,
+    }));
+    expect(fillPlanSchema.safeParse({ ...plan, sections }).success).toBe(false);
+  });
+
+  it('rejects datasetRef that does not resolve in datasets', () => {
+    const plan = read('fixtures/valid-fill-plan.json') as {
+      kind: string;
+      meta: unknown;
+      sections: { slides: Record<string, unknown>[] }[];
+      datasets?: Record<string, unknown>;
+    };
+    const slide = plan.sections[0]?.slides[0] ?? {};
+    const chart = { ...(slide.chart as Record<string, unknown>), datasetRef: 'ghost_key' };
+    const sections = [
+      {
+        ...plan.sections[0],
+        slides: [{ ...slide, chart }],
+      },
+    ];
+    expect(
+      fillPlanSchema.safeParse({ kind: plan.kind, meta: plan.meta, sections, datasets: plan.datasets })
+        .success,
+    ).toBe(false);
   });
 
   it('rejects an unknown kind (closed discriminator)', () => {

@@ -1,0 +1,38 @@
+{
+  "_violates": "datasetRef must resolve to a key in datasets",
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-04",
+    "language": "en"
+  },
+  "datasets": {
+    "tier1_demand_2032": {
+      "id": "tier1_demand_2032",
+      "columns": ["industry", "low", "base", "high"],
+      "rows": [["Industry A", 120, 240, 380]]
+    }
+  },
+  "sections": [
+    {
+      "title": "Findings",
+      "slides": [
+        {
+          "layoutId": "kpi-row-chart",
+          "title": "Tier-1 candidates score better than ammonia across every demand scenario today",
+          "kpi-strip": [
+            { "figure": "1", "label": "a" },
+            { "figure": "2", "label": "b" },
+            { "figure": "3", "label": "c" }
+          ],
+          "chart": {
+            "kind": "stacked-bar",
+            "datasetRef": "missing_dataset_key"
+          },
+          "narrative": { "kind": "text", "body": "short narrative under sixty words." }
+        }
+      ]
+    }
+  ]
+}

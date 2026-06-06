@@ -1,0 +1,38 @@
+{
+  "_violates": "pie/doughnut datasets must have at most 8 rows",
+  "kind": "document",
+  "meta": {
+    "templateId": "report.master.docx",
+    "client": "ACME",
+    "date": "2026-06-04",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Appendix",
+      "blocks": [
+        {
+          "type": "chart",
+          "chart": {
+            "kind": "pie",
+            "dataset": {
+              "id": "slice_overflow",
+              "columns": ["label", "value"],
+              "rows": [
+                ["A", 10],
+                ["B", 10],
+                ["C", 10],
+                ["D", 10],
+                ["E", 10],
+                ["F", 10],
+                ["G", 10],
+                ["H", 10],
+                ["I", 10]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
