@@ -7,29 +7,39 @@ import { z } from 'zod';
  */
 const hex6 = z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'must be a 6-digit hex colour like #RRGGBB');
 
-export const brandTokensSchema = z.object({
-  schemaVersion: z.string(),
-  lastUpdated: z.string(),
-  identity: z.object({
-    name: z.string().min(1),
-    shortName: z.string().min(1),
-    confidentialityNotice: z.string().min(1),
-  }),
-  colors: z.object({
-    primary: hex6,
-    secondary: hex6,
-    text: hex6,
-    accent: hex6.optional(),
-    muted: hex6.optional(),
-  }),
-  fonts: z.object({
-    heading: z.string().min(1),
-    body: z.string().min(1),
-  }),
-  logo: z.object({
-    primary: z.string().min(1),
-    fallback: z.string().optional(),
-  }),
-});
+export const brandTokensSchema = z
+  .object({
+    schemaVersion: z.string(),
+    lastUpdated: z.string(),
+    identity: z
+      .object({
+        name: z.string().min(1),
+        shortName: z.string().min(1),
+        confidentialityNotice: z.string().min(1),
+      })
+      .strict(),
+    colors: z
+      .object({
+        primary: hex6,
+        secondary: hex6,
+        text: hex6,
+        accent: hex6.optional(),
+        muted: hex6.optional(),
+      })
+      .strict(),
+    fonts: z
+      .object({
+        heading: z.string().min(1),
+        body: z.string().min(1),
+      })
+      .strict(),
+    logo: z
+      .object({
+        primary: z.string().min(1),
+        fallback: z.string().optional(),
+      })
+      .strict(),
+  })
+  .strict();
 
 export type BrandTokens = z.infer<typeof brandTokensSchema>;

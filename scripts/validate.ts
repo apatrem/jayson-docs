@@ -43,6 +43,10 @@ const invalid: string[] = [
   'fixtures/invalid/fillplan-too-many-kpis.json',
   'fixtures/invalid/fillplan-unknown-layout.json',
   'fixtures/invalid/fillplan-unknown-chart-kind.json',
+  'fixtures/invalid/fillplan-unknown-key.json',
+  'fixtures/invalid/fillplan-bad-dataset-ref.json',
+  'fixtures/invalid/fillplan-pie-too-many-rows.json',
+  'fixtures/invalid/fillplan-chart-kind-mismatch.json',
 ];
 
 let ok = true;

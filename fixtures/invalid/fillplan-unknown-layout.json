@@ -1,5 +1,4 @@
 {
-  "_violates": "layoutId enum: 'free-canvas' is not in the closed layout library",
   "kind": "deck",
   "meta": {
     "templateId": "report.master.pptx",
