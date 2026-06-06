@@ -9,7 +9,7 @@
  */
 
 export function loadDocxTemplate(_templatePath: string): Buffer {
-  // TODO M4: implement.
+  // Post-v1 (D20): implement when DOCX is scoped.
   //   return readFileSync(templatePath);
-  throw new Error('M4 not implemented');
+  throw new Error('DOCX pipeline is post-v1 (D20)');
 }

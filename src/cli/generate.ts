@@ -57,8 +57,8 @@ program
       process.stderr.write('PPTX fill — implementation pending M2/M3.\n');
       process.exit(2);
     } else {
-      // TODO M4: wire docx pipeline (dolanmiu/docx).
-      process.stderr.write('DOCX fill — implementation pending M4 (docx pipeline).\n');
+      // Post-v1 (D20): DOCX pipeline (dolanmiu/docx) is out of v1.
+      process.stderr.write('DOCX fill — post-v1 (D20).\n');
       process.exit(2);
     }
   });

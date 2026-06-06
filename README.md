@@ -29,16 +29,16 @@ npm run validate           # schema-checks the fixtures
 npm run test               # runs the test suite
 ```
 
-## Fill (once M2–M4 are implemented)
+## Fill (once the pipeline lands — M2/M3)
 
 ```bash
 npm run fill -- \
-  --template templates/commercial-proposal.master.pptx \
+  --template templates/report.master.pptx \
   --plan tmp/plan.json \
-  --out      out/proposal-acme.pptx
+  --out      out/report-acme.pptx
 ```
 
-The CLI dispatches on the `--template` extension. Use `.pptx` for the PPTX pipeline (M2/M3) and `.docx` for the DOCX pipeline (M4).
+The CLI dispatches on the `--template` extension. **v1 is the `report-pptx` PPTX path** (M2/M3; DECISIONS_LOG D20). The `.docx` pipeline is **post-v1**.
 
 ## Delivery — portable skills pack + app (BYO LLM)
 

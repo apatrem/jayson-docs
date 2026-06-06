@@ -27,7 +27,7 @@ const deckSectionSchema = z.object({
 });
 
 // A document section groups blocks directly — no slide layer, no `layoutId`
-// (Word reflows; see Q6 / D12). The block set expands in M4.
+// (Word reflows; see Q6 / D12). The block set expands post-v1.
 const documentSectionSchema = z.object({
   title: z.string().min(1),
   blocks: z.array(blockSchema).min(1),

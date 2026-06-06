@@ -10,8 +10,8 @@ import { chartBlockSchema } from './chart.js';
  * (no slide-layout, no slots — Word reflows). The pptx path fills these same
  * primitives into named slots inside a slide-layout instead.
  *
- * v1 covers the core blocks; M4 expands the set (table, kpi-cards, callout) as
- * the docx pipeline lands. Do not add a block type here without a renderer for it.
+ * v1 covers the core blocks; the set expands **post-v1** (table, kpi-cards,
+ * callout) as the docx pipeline lands. Do not add a block type here without a renderer for it.
  */
 
 const headingBlock = z.object({

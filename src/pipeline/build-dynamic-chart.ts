@@ -1,28 +1,22 @@
-// NOTE: `import PptxGenJS from 'pptxgenjs'` is added back in M3 when this is
-// implemented; omitted now to keep the build free of unused-import errors.
+// DEFERRED — post-v1 (DECISIONS_LOG D21). v1 does NOT build charts from scratch.
+// (`import PptxGenJS from 'pptxgenjs'` would be added here if/when this lands.)
 import type { ChartBlock } from '@schema/chart.js';
 
 /**
- * Builds a from-scratch chart object using PptxGenJS for cases where the
- * chart's `kind` does not match the master's placeholder (e.g. a `waterfall`
- * when the placeholder is a `bar`). The returned object is then injected
- * into the slide via pptx-automizer.
+ * DEFERRED (post-v1, D21). The from-scratch PptxGenJS chart-build route, for
+ * variable chart types or kinds the master does not pre-author.
  *
- * Canonical reference for the integration pattern:
- *   pptx-automizer/__tests__/generate-pptxgenjs-charts.test.ts
+ * v1 does NOT use this: charts are produced by `pptx-automizer` swapping data
+ * into a chart **pre-authored in the master**, and a slot's chart type is fixed
+ * by its layout (D21 corollary) — so `kind` never differs from the placeholder.
  *
- * Per-kind JSON contract: CHART_CATALOGUE.md.
+ * If ever built: integration pattern in
+ *   pptx-automizer/__tests__/generate-pptxgenjs-charts.test.ts;
+ * per-kind contract in CHART_CATALOGUE.md. NB: PptxGenJS 4.x has **no** waterfall
+ * build API — waterfall, if needed, must be pre-authored in the master.
  */
 export function buildDynamicChart(_chart: ChartBlock): unknown {
-  // TODO M3: implement.
-  //
-  // Pattern (sketch):
-  //   const pres = new PptxGenJS();
-  //   const slide = pres.addSlide();
-  //   switch (chart.kind) {
-  //     case 'waterfall': slide.addChart(pres.charts.WATERFALL, mapWaterfall(chart), opts); break;
-  //     ...
-  //   }
-  //   return slide.getChart('chart-name'); // pass to pptx-automizer
-  throw new Error('M3 not implemented');
+  // Deferred post-v1 (D21). v1 uses pptx-automizer data-swap into pre-authored
+  // master charts; building charts from scratch is not on the v1 path.
+  throw new Error('dynamic chart build is post-v1 (D21)');
 }
