@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { chartBlockSchema } from '../chart.js';
+import { stackedBarChartBlockSchema } from '../chart.js';
 
 /**
  * Worked example layout — `kpi-row-chart`.
@@ -19,19 +19,24 @@ const wordCount = (s: string): number => s.split(/\s+/).filter(Boolean).length;
 const titleString = z
   .string()
   .min(1)
-  .refine((s) => {
-    const n = wordCount(s);
-    return n >= 8 && n <= 15;
-  }, { message: 'title must be 8–15 words' });
+  .refine(
+    (s) => {
+      const n = wordCount(s);
+      return n >= 8 && n <= 15;
+    },
+    { message: 'title must be 8–15 words' },
+  );
 
 // ─────────────────────────────────────────────────────────────────────────
 // Block: kpi card
 // ─────────────────────────────────────────────────────────────────────────
-const kpiCardSchema = z.object({
-  figure: z.string().min(1).max(15),
-  label: z.string().min(1).max(40),
-  delta: z.string().max(15).nullable().optional(),
-});
+const kpiCardSchema = z
+  .object({
+    figure: z.string().min(1).max(15),
+    label: z.string().min(1).max(40),
+    delta: z.string().max(15).nullable().optional(),
+  })
+  .strict();
 
 // ─────────────────────────────────────────────────────────────────────────
 // Block: narrative (bullets | text)
@@ -41,17 +46,20 @@ const bulletsBlockSchema = z
     kind: z.literal('bullets'),
     items: z.array(z.string().min(1).max(120)).min(1).max(5),
   })
+  .strict()
   .refine((d) => wordCount(d.items.join(' ')) <= 60, {
     message: 'bullets exceed 60-word total cap',
   });
 
-const textBlockSchema = z.object({
-  kind: z.literal('text'),
-  body: z
-    .string()
-    .min(1)
-    .refine((s) => wordCount(s) <= 60, { message: 'text exceeds 60-word cap' }),
-});
+const textBlockSchema = z
+  .object({
+    kind: z.literal('text'),
+    body: z
+      .string()
+      .min(1)
+      .refine((s) => wordCount(s) <= 60, { message: 'text exceeds 60-word cap' }),
+  })
+  .strict();
 
 // `z.union`, not `z.discriminatedUnion`: `bulletsBlockSchema` is `.refine()`d
 // (a ZodEffects), which Zod cannot use as a discriminated-union member.
@@ -60,12 +68,14 @@ const narrativeSchema = z.union([bulletsBlockSchema, textBlockSchema]);
 // ─────────────────────────────────────────────────────────────────────────
 // Layout: kpi-row-chart
 // ─────────────────────────────────────────────────────────────────────────
-export const kpiRowChartLayoutSchema = z.object({
-  layoutId: z.literal('kpi-row-chart'),
-  title: titleString,
-  'kpi-strip': z.array(kpiCardSchema).min(3).max(5),
-  chart: chartBlockSchema,
-  narrative: narrativeSchema,
-});
+export const kpiRowChartLayoutSchema = z
+  .object({
+    layoutId: z.literal('kpi-row-chart'),
+    title: titleString,
+    'kpi-strip': z.array(kpiCardSchema).min(3).max(5),
+    chart: stackedBarChartBlockSchema,
+    narrative: narrativeSchema,
+  })
+  .strict();
 
 export type KpiRowChartLayout = z.infer<typeof kpiRowChartLayoutSchema>;

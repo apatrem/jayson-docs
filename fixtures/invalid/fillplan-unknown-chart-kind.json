@@ -1,11 +1,17 @@
 {
-  "_violates": "chart.kind enum: 'treemap' is not in the approved chart catalogue",
   "kind": "deck",
   "meta": {
     "templateId": "report.master.pptx",
     "client": "ACME",
     "date": "2026-06-04",
     "language": "en"
+  },
+  "datasets": {
+    "x": {
+      "id": "x",
+      "columns": ["industry", "low", "base", "high"],
+      "rows": [["A", 1, 2, 3]]
+    }
   },
   "sections": [
     {

@@ -7,10 +7,10 @@
     "language": "en"
   },
   "datasets": {
-    "x": {
-      "id": "x",
+    "tier1_demand_2032": {
+      "id": "tier1_demand_2032",
       "columns": ["industry", "low", "base", "high"],
-      "rows": [["A", 1, 2, 3]]
+      "rows": [["Industry A", 120, 240, 380]]
     }
   },
   "sections": [
@@ -19,16 +19,13 @@
       "slides": [
         {
           "layoutId": "kpi-row-chart",
-          "title": "Tier-1 candidates score better than ammonia across every demand scenario today",
+          "title": "Tier-1 candidates score better than ammonia across demand scenarios",
           "kpi-strip": [
-            { "figure": "1", "label": "a" },
-            { "figure": "2", "label": "b" },
-            { "figure": "3", "label": "c" },
-            { "figure": "4", "label": "d" },
-            { "figure": "5", "label": "e" },
-            { "figure": "6", "label": "f" }
+            { "figure": "2.4x", "label": "demand" },
+            { "figure": "EUR 68", "label": "LCOE" },
+            { "figure": "7", "label": "offtakers" }
           ],
-          "chart": { "kind": "stacked-bar", "datasetRef": "x" },
+          "chart": { "kind": "bar", "datasetRef": "tier1_demand_2032" },
           "narrative": { "kind": "text", "body": "short narrative under sixty words." }
         }
       ]

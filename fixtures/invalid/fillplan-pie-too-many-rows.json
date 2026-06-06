@@ -1,0 +1,37 @@
+{
+  "kind": "document",
+  "meta": {
+    "templateId": "report.master.docx",
+    "client": "ACME",
+    "date": "2026-06-04",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Findings",
+      "blocks": [
+        {
+          "type": "chart",
+          "chart": {
+            "kind": "pie",
+            "dataset": {
+              "id": "market_share",
+              "columns": ["segment", "value"],
+              "rows": [
+                ["A", 12],
+                ["B", 11],
+                ["C", 10],
+                ["D", 9],
+                ["E", 8],
+                ["F", 7],
+                ["G", 6],
+                ["H", 5],
+                ["I", 4]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
