@@ -19,7 +19,7 @@ A layout is defined by the **named shapes in the master template, at their actua
 
 For the LLM's benefit, each layout carries a **`regions` map** in the Layout catalogue (D16) — a *descriptive* account of where each slot sits ("title top; chart left; narrative right"), derived from the master geometry — so the LLM fills content that fits its neighbours. That is positional **awareness**, not grid coordinates, and never spatial control (D8).
 
-> The **12×8 grid** survives **only** as the concept behind the **deferred flexgrid** roadmap option (D12), where it *would* become a runtime placement system — it is **not** a v1 layout-design discipline. The grid-like ASCII in the seed-layout sketches below is purely *illustrative* of the six v1 seeds; the canonical definition is always the master's named shapes.
+> The **12×8 grid** survives **only** as the concept behind the **deferred flexgrid** roadmap option (D12), where it *would* become a runtime placement system — it is **not** a v1 layout-design discipline. The seed-layout sketches below describe slot *roles* and rough neighbourhood only; exact geometry lives in the master's named shapes.
 
 ---
 
@@ -27,48 +27,60 @@ For the LLM's benefit, each layout carries a **`regions` map** in the Layout cat
 
 These six are the **v1 walking-skeleton seed**. A mature install holds **~50–100** layouts covering most slide types, each annotated in the **Layout catalogue** — `tier` (Usage tier `common`/`less-common`/`rare`), a `usage` note ("pick when…"), a `regions` spatial map, and density `caps` — so the LLM can **pick** among them (*prefer common, justify rare*) and **fill** them coherently. Add layouts by repeating this pattern *and* adding a catalogue entry. See `DECISIONS_LOG.md` D16.
 
+Each seed layout lists its slots top-to-bottom. Horizontal splits are noted where relevant. Exact positions and proportions come from the master template — not from this sketch.
+
 ### 1. `kpi-row-chart` — KPI strip above, chart with narrative side
 
-```
-"tk tk tk tk tk tk tk tk tk tk tk tk"   row 1 — tracker
-"tl tl tl tl tl tl tl tl tl tl tl tl"   row 2 — title
-"kp kp kp kp kp kp kp kp kp kp kp kp"   row 3 — kpi-strip
-"kp kp kp kp kp kp kp kp kp kp kp kp"   row 4 — kpi-strip
-"ch ch ch ch ch ch ch ch nr nr nr nr"   row 5 — chart | narrative
-"ch ch ch ch ch ch ch ch nr nr nr nr"   row 6
-"ch ch ch ch ch ch ch ch nr nr nr nr"   row 7
-"ft ft ft ft ft ft ft ft ft ft ft ft"   row 8 — footer
-```
+- `tracker` (full width, top; optional)
+- `title` (full width)
+- `kpi-strip` (full width band)
+- `chart` (left) | `narrative` (right)
+- `footer` (auto)
 
 Slots: `title`, `kpi-strip`, `chart`, `narrative`, `footer` (auto).
 
-### 2. `two-column` — body split 6 / 6
+### 2. `two-column` — body split left / right
 
-Rows 3–7, cols 1–6 = `body-left`; rows 3–7, cols 7–12 = `body-right`. Both kind: `content`.
+- `tracker` (full width, top; optional)
+- `title` (full width)
+- `body-left` (left) | `body-right` (right) — both kind: `content`
+- `footer` (auto)
 
 Slots: `title`, `body-left`, `body-right`, `footer` (auto).
 
 ### 3. `chart-full-with-takeaway` — punchline above a wide chart
 
-Row 3, cols 1–12 = `takeaway` (single-line callout). Rows 4–7, cols 1–12 = `chart-full`.
+- `tracker` (full width, top; optional)
+- `title` (full width)
+- `takeaway` (full width; single-line callout)
+- `chart-full` (full width)
+- `footer` (auto)
 
 Slots: `title`, `takeaway`, `chart-full`, `footer` (auto).
 
 ### 4. `bullets-and-image` — text left, supporting visual right
 
-Rows 3–7, cols 1–7 = `body-text`. Cols 8–12 = `visual`.
+- `tracker` (full width, top; optional)
+- `title` (full width)
+- `body-text` (left) | `visual` (right)
+- `footer` (auto)
 
 Slots: `title`, `body-text`, `visual`, `footer` (auto).
 
 ### 5. `quad` — four quadrants for matrix / comparison
 
-Rows 3–5, cols 1–6 = `q-tl`. Rows 3–5, cols 7–12 = `q-tr`. Rows 6–7, cols 1–6 = `q-bl`. Rows 6–7, cols 7–12 = `q-br`.
+- `tracker` (full width, top; optional)
+- `title` (full width)
+- `q-tl` (top-left) | `q-tr` (top-right)
+- `q-bl` (bottom-left) | `q-br` (bottom-right)
+- `footer` (auto)
 
 Slots: `title`, `q-tl`, `q-tr`, `q-bl`, `q-br`, `footer` (auto).
 
 ### 6. `section-divider` — chapter break
 
-Rows 3–6, cols 1–12 = `section-title` (large centred text). No tracker, no standard title row, no footer (or large brand variant).
+- `section-title` (large centred text; dominates the slide)
+- No tracker, no standard title row, no footer (or large brand variant)
 
 Slots: `section-title`.
 
