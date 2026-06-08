@@ -4,7 +4,10 @@ import { fileURLToPath } from 'node:url';
 import type { LayoutSpec } from './types.js';
 import {
   collectSlideShapes,
+  extractShapesFromXml,
   findShapeBySlotName,
+  getSlideLayoutPath,
+  LEGACY_SHAPE_NAME,
   loadPptxZip,
   readChartKind,
 } from './pptx-shape-utils.js';
@@ -69,6 +72,40 @@ export async function validateMasterShapes(
       if (!specSlots.has(shape.name)) {
         errors.push(
           `slide ${slideIndex}: orphan slot shape "${shape.name}" not in layout-spec`,
+        );
+      }
+    }
+  }
+
+  for (const layout of spec.layouts) {
+    const slideIndex = layout.sourceSlideIndex;
+    const slidePath = `ppt/slides/slide${slideIndex}.xml`;
+    const slideFile = zip.file(slidePath);
+    if (slideFile === null) {
+      continue;
+    }
+    const parts = [slidePath];
+    const layoutPath = await getSlideLayoutPath(zip, slideIndex);
+    if (layoutPath !== undefined) {
+      parts.push(layoutPath);
+    }
+
+    for (const part of parts) {
+      const partFile = zip.file(part);
+      if (partFile === null) {
+        continue;
+      }
+      const shapes = extractShapesFromXml(await partFile.async('string'), part);
+      for (const shape of shapes) {
+        if (!LEGACY_SHAPE_NAME.test(shape.name)) {
+          continue;
+        }
+        if (shape.placeholderType === undefined && shape.placeholderIdx === undefined) {
+          continue;
+        }
+        errors.push(
+          `slide ${slideIndex} (${layout.layoutId}): legacy placeholder name "${shape.name}" ` +
+            `still present in ${part}`,
         );
       }
     }

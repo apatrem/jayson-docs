@@ -1148,7 +1148,7 @@
           "slotName": "slot.footer-page",
           "regionKind": "footer",
           "match": {
-            "currentShapeName": "Espace réservé du numéro de diapositive 5",
+            "currentShapeName": "Espace réservé du numéro de diapositive 6",
             "placeholder": "sldNum",
             "masterText": "‹N°›",
             "geometry": {
@@ -1163,7 +1163,7 @@
           "slotName": "slot.source",
           "regionKind": "source",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 6",
+            "currentShapeName": "Espace réservé du contenu 7",
             "placeholder": "idx:18",
             "masterText": "Source: 1.",
             "geometry": {
@@ -1288,7 +1288,7 @@
           "slotName": "slot.footer-page",
           "regionKind": "footer",
           "match": {
-            "currentShapeName": "Espace réservé du numéro de diapositive 5",
+            "currentShapeName": "Espace réservé du numéro de diapositive 6",
             "placeholder": "sldNum",
             "masterText": "‹N°›",
             "geometry": {
@@ -1303,7 +1303,7 @@
           "slotName": "slot.source",
           "regionKind": "source",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 6",
+            "currentShapeName": "Espace réservé du contenu 7",
             "placeholder": "idx:18",
             "masterText": "Source: 1.",
             "geometry": {
@@ -1383,7 +1383,7 @@
           "slotName": "slot.subtitle-2",
           "regionKind": "subtitle",
           "match": {
-            "currentShapeName": "Espace réservé du texte 4",
+            "currentShapeName": "Espace réservé du texte 3",
             "placeholder": "body",
             "masterText": "Click to edit subtitle",
             "geometry": {
@@ -1398,7 +1398,7 @@
           "slotName": "slot.body",
           "regionKind": "content",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 5",
+            "currentShapeName": "Espace réservé du contenu 4",
             "placeholder": "idx:4",
             "masterText": "Click to edit Master text styles Second",
             "geometry": {
@@ -1583,7 +1583,7 @@
           "slotName": "slot.footer-page",
           "regionKind": "footer",
           "match": {
-            "currentShapeName": "Espace réservé du numéro de diapositive 5",
+            "currentShapeName": "Espace réservé du numéro de diapositive 8",
             "placeholder": "sldNum",
             "masterText": "‹N°›",
             "geometry": {
@@ -1598,7 +1598,7 @@
           "slotName": "slot.source",
           "regionKind": "source",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 6",
+            "currentShapeName": "Espace réservé du contenu 9",
             "placeholder": "idx:18",
             "masterText": "Source: 1.",
             "geometry": {
@@ -1757,7 +1757,7 @@
           "slotName": "slot.footer-page",
           "regionKind": "footer",
           "match": {
-            "currentShapeName": "Espace réservé du numéro de diapositive 5",
+            "currentShapeName": "Espace réservé du numéro de diapositive 6",
             "placeholder": "sldNum",
             "masterText": "‹N°›",
             "geometry": {
@@ -1772,7 +1772,7 @@
           "slotName": "slot.source",
           "regionKind": "source",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 6",
+            "currentShapeName": "Espace réservé du contenu 7",
             "placeholder": "idx:18",
             "masterText": "Source: 1.",
             "geometry": {
@@ -2073,7 +2073,7 @@
           "slotName": "slot.subtitle-2",
           "regionKind": "subtitle",
           "match": {
-            "currentShapeName": "Espace réservé du texte 4",
+            "currentShapeName": "Espace réservé du texte 3",
             "placeholder": "body",
             "masterText": "Click to edit subtitle",
             "geometry": {
@@ -2088,7 +2088,7 @@
           "slotName": "slot.body",
           "regionKind": "content",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 5",
+            "currentShapeName": "Espace réservé du contenu 4",
             "placeholder": "idx:4",
             "masterText": "Click to edit Master text styles Second",
             "geometry": {
@@ -2243,7 +2243,7 @@
           "slotName": "slot.footer-page",
           "regionKind": "footer",
           "match": {
-            "currentShapeName": "Espace réservé du numéro de diapositive 5",
+            "currentShapeName": "Espace réservé du numéro de diapositive 6",
             "placeholder": "sldNum",
             "masterText": "‹N°›",
             "geometry": {
@@ -2258,7 +2258,7 @@
           "slotName": "slot.source",
           "regionKind": "source",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 6",
+            "currentShapeName": "Espace réservé du contenu 7",
             "placeholder": "idx:18",
             "masterText": "Source: 1.",
             "geometry": {
@@ -2383,7 +2383,7 @@
           "slotName": "slot.footer-page",
           "regionKind": "footer",
           "match": {
-            "currentShapeName": "Espace réservé du numéro de diapositive 5",
+            "currentShapeName": "Espace réservé du numéro de diapositive 6",
             "placeholder": "sldNum",
             "masterText": "‹N°›",
             "geometry": {
@@ -2398,7 +2398,7 @@
           "slotName": "slot.source",
           "regionKind": "source",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 6",
+            "currentShapeName": "Espace réservé du contenu 7",
             "placeholder": "idx:18",
             "masterText": "Source: 1.",
             "geometry": {
@@ -2478,7 +2478,7 @@
           "slotName": "slot.subtitle-2",
           "regionKind": "subtitle",
           "match": {
-            "currentShapeName": "Espace réservé du texte 4",
+            "currentShapeName": "Espace réservé du texte 3",
             "placeholder": "body",
             "masterText": "Click to edit subtitle",
             "geometry": {
@@ -2493,7 +2493,7 @@
           "slotName": "slot.body",
           "regionKind": "content",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 5",
+            "currentShapeName": "Espace réservé du contenu 4",
             "placeholder": "idx:4",
             "masterText": "Click to edit Master text styles Second",
             "geometry": {
@@ -2603,7 +2603,7 @@
           "slotName": "slot.subtitle-2",
           "regionKind": "subtitle",
           "match": {
-            "currentShapeName": "Espace réservé du texte 4",
+            "currentShapeName": "Espace réservé du texte 3",
             "placeholder": "body",
             "masterText": "Click to edit subtitle",
             "geometry": {
@@ -2618,7 +2618,7 @@
           "slotName": "slot.body",
           "regionKind": "content",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 5",
+            "currentShapeName": "Espace réservé du contenu 4",
             "placeholder": "idx:4",
             "masterText": "Click to edit Master text styles Second",
             "geometry": {
@@ -2688,6 +2688,16 @@
           }
         }
       ]
+    }
+  ],
+  "deletions": [
+    {
+      "sourceSlideIndex": 6,
+      "match": {
+        "currentShapeName": "Espace réservé du contenu 5",
+        "masterText": "qsdf"
+      },
+      "reason": "Stray free text box (txBox) — duplicate artifact, not a layout placeholder"
     }
   ]
 }

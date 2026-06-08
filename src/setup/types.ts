@@ -46,7 +46,14 @@ export interface LayoutSpecEntry {
   slots: LayoutSlot[];
 }
 
+export interface ShapeDeletion {
+  sourceSlideIndex: number;
+  match: ShapeMatch;
+  reason?: string | undefined;
+}
+
 export interface LayoutSpec {
   templateId: 'report.master.pptx';
   layouts: LayoutSpecEntry[];
+  deletions?: ShapeDeletion[] | undefined;
 }

@@ -66,7 +66,7 @@ function shapeBlocks(xml: string): string[] {
   ].map((m) => m[0]);
 }
 
-function extractShapesFromXml(xml: string, sourcePart: string): ExtractedShape[] {
+export function extractShapesFromXml(xml: string, sourcePart: string): ExtractedShape[] {
   const shapes: ExtractedShape[] = [];
   for (const block of shapeBlocks(xml)) {
     const nameMatch = /<p:cNvPr[^>]*name="([^"]*)"/.exec(block);
@@ -90,6 +90,16 @@ function extractShapesFromXml(xml: string, sourcePart: string): ExtractedShape[]
     });
   }
   return shapes;
+}
+
+export function placeholderKey(
+  placeholderType: string | undefined,
+  placeholderIdx: string | undefined,
+): string | undefined {
+  if (placeholderType === undefined && placeholderIdx === undefined) {
+    return undefined;
+  }
+  return `${placeholderType ?? ''}#${placeholderIdx ?? ''}`;
 }
 
 function normalizePlaceholder(placeholder: string | undefined): {
@@ -165,8 +175,21 @@ export function matchShape(
   const { type: expectedType, idx: expectedIdx } = normalizePlaceholder(criteria.placeholder);
   const candidates = shapes.filter((s) => !alreadyUsed.has(s));
 
+  const placeholderOnly = candidates.filter((s) =>
+    placeholderMatches(s, expectedType, expectedIdx),
+  );
+  if (
+    (expectedType !== undefined || expectedIdx !== undefined) &&
+    placeholderOnly.length === 1
+  ) {
+    return placeholderOnly[0];
+  }
+
   const score = (shape: ExtractedShape): number => {
     let points = 0;
+    if (shape.sourcePart.includes('/slides/')) {
+      points += 50;
+    }
     if (shape.name === criteria.currentShapeName) {
       points += 40;
     }
@@ -184,7 +207,7 @@ export function matchShape(
 
   const ranked = candidates
     .map((s) => ({ shape: s, points: score(s) }))
-    .filter((r) => r.points >= 50)
+    .filter((r) => r.points >= 30)
     .sort((a, b) => b.points - a.points);
 
   if (ranked.length === 1) {
@@ -195,7 +218,7 @@ export function matchShape(
     return undefined;
   }
 
-  if (ranked.length >= 1 && (ranked[0]?.points ?? 0) >= 60) {
+  if (ranked.length >= 1 && (ranked[0]?.points ?? 0) >= 50) {
     return ranked[0]?.shape;
   }
 
@@ -238,11 +261,17 @@ export async function collectSlideShapes(
     if (layoutFile !== null) {
       const layoutXml = await layoutFile.async('string');
       const layoutShapes = extractShapesFromXml(layoutXml, layoutPath);
-      const slideNames = new Set(shapes.map((s) => s.name));
+      const slidePlaceholderKeys = new Set(
+        shapes
+          .map((s) => placeholderKey(s.placeholderType, s.placeholderIdx))
+          .filter((k): k is string => k !== undefined),
+      );
       for (const ls of layoutShapes) {
-        if (!slideNames.has(ls.name)) {
-          shapes.push(ls);
+        const key = placeholderKey(ls.placeholderType, ls.placeholderIdx);
+        if (key !== undefined && slidePlaceholderKeys.has(key)) {
+          continue;
         }
+        shapes.push(ls);
       }
     }
   }
@@ -315,6 +344,18 @@ export function replaceShapeBlockInXml(
   }
   return xml.slice(0, index) + newBlock + xml.slice(index + oldBlock.length);
 }
+
+export function removeShapeBlockFromXml(xml: string, block: string): string {
+  const index = xml.indexOf(block);
+  if (index === -1) {
+    throw new Error('shape block not found in OOXML part');
+  }
+  return xml.slice(0, index) + xml.slice(index + block.length);
+}
+
+/** French PowerPoint default names that must not survive after naming. */
+export const LEGACY_SHAPE_NAME =
+  /^(Espace réservé|Titre |Sous-titre |ZoneTexte )/;
 
 export async function listAllSlotShapes(zip: JSZip): Promise<Map<number, ExtractedShape[]>> {
   const result = new Map<number, ExtractedShape[]>();

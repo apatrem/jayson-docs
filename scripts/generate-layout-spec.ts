@@ -6,7 +6,14 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { LayoutSpec, LayoutSpecEntry, LayoutSlot, RegionKind, UsageTier } from '../src/setup/types.js';
+import type {
+  LayoutSpec,
+  LayoutSpecEntry,
+  LayoutSlot,
+  RegionKind,
+  ShapeDeletion,
+  UsageTier,
+} from '../src/setup/types.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
@@ -131,7 +138,41 @@ function parseNamingTable(md: string): LayoutSpec {
   return { templateId: 'report.master.pptx', layouts };
 }
 
+function parseDeletions(md: string): ShapeDeletion[] {
+  const section = md.split('## Deletions')[1];
+  if (section === undefined) {
+    return [];
+  }
+  const body = section.split('\n---\n')[0] ?? '';
+  const deletions: ShapeDeletion[] = [];
+  let inTable = false;
+  for (const row of body.split('\n').filter((line) => line.startsWith('|'))) {
+    const cols = row
+      .split('|')
+      .slice(1, -1)
+      .map((c) => c.trim());
+    if (cols[0] === 'Slide') {
+      inTable = true;
+      continue;
+    }
+    if (!inTable || cols.length < 4 || cols[0]?.includes('---')) {
+      continue;
+    }
+    const slideIndex = Number(cols[0]);
+    const currentShapeName = cols[1] ?? '';
+    const masterText = cols[2] === '—' ? undefined : cols[2];
+    const reason = cols[3] ?? '';
+    deletions.push({
+      sourceSlideIndex: slideIndex,
+      match: { currentShapeName, masterText },
+      reason,
+    });
+  }
+  return deletions;
+}
+
 const md = readFileSync(namingTablePath, 'utf-8');
 const spec = parseNamingTable(md);
+spec.deletions = parseDeletions(md);
 writeFileSync(outputPath, `${JSON.stringify(spec, null, 2)}\n`);
 process.stdout.write(`wrote ${outputPath} (${spec.layouts.length} layouts)\n`);
