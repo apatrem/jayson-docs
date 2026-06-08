@@ -1,6 +1,6 @@
 # Architecture Decisions Log — Acme jayson-docs
 
-**Date:** 2026-06-05 (updated through D21 — v1 vertical slice, chart swap route)
+**Date:** 2026-06-08 (updated through D22 — real template, 26-layout library, Setup Phase 1)
 **Why this file:** so the developer and future maintainers understand what was decided, what was rejected, and why. Prevents re-litigating settled questions.
 
 ---
@@ -231,8 +231,19 @@ Every skill (Built-in and Custom) inherits a shared **Standard opener** — a *m
 
 ---
 
+## D22 — Adopt the firm's real sanitized template; build the 26-layout library + Layout catalogue via one-time manual Setup
+
+**Decided:** adopt the firm's **real sanitized** `report.master.pptx` (26 slides → 26 layouts) as the canonical master via a **one-time manual Setup** (Phase 1: analysis + docs; Phase 2: human review of the AI-proposed naming table; Phase 3+: mechanical OOXML rename, Zod schemas, catalogue, pipeline). **Deliberate layout variations are preserved, not merged** — Cover / Cover-white, Section / Section-white, Agenda / Agenda-white, Contrast 1–4, High contrast 1–4 remain distinct `layoutId`s. **Usage tier** is seeded from the deck's two PowerPoint sections (slides 1–16 = `common`, 17–26 = `less-common`); thereafter the **Layout catalogue owns tier** (D16). **Charts** stay D21 data-swaps into four pre-authored masters: `stacked-bar`, `clustered-column`, `line`, `bubble`. Introduce a new **`subtitle` region kind** (short `text` / `callout` blocks under titles or above columns). **Naming workflow:** AI proposes `docs/setup/naming-table.md` → human reviews → mechanical OOXML write of `slot.*` names → `shapes ≡ slots` validator. **Full replacement** of the walking-skeleton `kpi-row-chart` layout and `PLACEHOLDER-report.master.pptx` (pipeline code stays layout-agnostic; retirement is a later phase). **Layout catalogue** is built now (machine-readable, LLM-facing); density **caps live in both Zod (enforce) and the catalogue (LLM-facing)**, kept in sync by a **drift test** — not single-source codegen.
+
+**Rejected:** building the general Setup skill (D13) in this epic — deferred until after the naming table is human-approved; **curating/merging** the 26 deliberate variations into fewer layouts; **single-source schema+catalogue generation** (caps duplicated with a drift test instead).
+
+**Reason:** the sanitized firm template is the real brand + geometry source (D2-2, D19). A one-time manual Setup path ships the full ~26-layout library without waiting on the general Setup skill, while preserving the human gate that prevents silent master/schema mismatch (D13). Preserving deliberate variants honours the firm's own layout taxonomy. Dual caps + drift test keeps Zod enforcement and LLM-facing catalogue intelligence without fragile codegen coupling.
+
+---
+
 ## Open questions still to resolve
 
 - **Doc-heavy vs deck-heavy volume mix** — RESOLVED: deck-heavy. The first end-to-end slice is **report-pptx** (the delivery deck), built as a walking skeleton before the other three skills.
 - **First-template scope** — RESOLVED: design **`report.master.pptx`** first — it gates the report-pptx slice. The other three masters follow once the skeleton proves the pipeline.
+- **Real master template for report-pptx** — RESOLVED (D22): the firm's sanitized template is in-repo at `templates/report.master.pptx` (26 layouts). AI-proposed naming table at `docs/setup/naming-table.md` awaits human review before mechanical naming.
 - **Volume of generations per consultant per day.** Still open. If high, Cowork session quota becomes a real constraint and v3's standalone-API path moves up the roadmap.
