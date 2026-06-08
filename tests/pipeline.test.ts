@@ -10,6 +10,7 @@ import { loadMaster } from '../src/pipeline/load-master.js';
 import { fillSlide } from '../src/pipeline/fill-slide.js';
 import { saveOutput } from '../src/pipeline/save-output.js';
 import { readPptxShapeTexts, countPresentationSlides } from './helpers/pptx-shapes.js';
+import { readPptxChartData } from './helpers/pptx-chart.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const masterPath = join(root, 'templates/PLACEHOLDER-report.master.pptx');
@@ -39,7 +40,7 @@ describe('PPTX fill pipeline (M2)', () => {
     const outputPath = join(outputDir, 'filled.pptx');
 
     const automizer = loadMaster(masterPath);
-    fillSlide(automizer, slide);
+    fillSlide(automizer, slide, parsed.datasets);
     await saveOutput(automizer, outputPath);
 
     expect(await countPresentationSlides(outputPath)).toBe(1);
@@ -61,6 +62,46 @@ describe('PPTX fill pipeline (M2)', () => {
     expect(narrativeText).toContain('Three industries clear the bankability gate in all scenarios.');
     expect(narrativeText).toContain('Ammonia trails on counterparty diversity, not on LCOE.');
     expect(narrativeText).toContain('Final selection in Module 2.');
+  });
+
+  it('swaps chart data from the fill-plan dataset into slot.chart (M3)', async () => {
+    const parsed = fillPlanSchema.parse(JSON.parse(readFileSync(fixturePath, 'utf-8')));
+    if (parsed.kind !== 'deck') {
+      throw new Error('expected deck fill-plan fixture');
+    }
+
+    const slide = parsed.sections[0]?.slides[0];
+    if (slide?.layoutId !== 'kpi-row-chart') {
+      throw new Error('expected kpi-row-chart slide in fixture');
+    }
+
+    const dataset = parsed.datasets?.tier1_demand_2032;
+    expect(dataset).toBeDefined();
+    if (dataset === undefined) {
+      throw new Error('expected tier1_demand_2032 dataset in fixture');
+    }
+
+    const outputDir = mkdtempSync(join(tmpdir(), 'jayson-docs-m3-'));
+    const outputPath = join(outputDir, 'filled.pptx');
+
+    const automizer = loadMaster(masterPath);
+    fillSlide(automizer, slide, parsed.datasets);
+    await saveOutput(automizer, outputPath);
+
+    const chartData = await readPptxChartData(outputPath);
+
+    expect(chartData.series).toEqual(['low', 'base', 'high']);
+    expect(chartData.categories).toEqual([
+      'Industry A',
+      'Industry B',
+      'Industry C',
+      'Ammonia (baseline)',
+    ]);
+
+    const expectedValues = dataset.rows.map((row) =>
+      row.slice(1).map((value) => (typeof value === 'number' ? value : Number(value))),
+    );
+    expect(chartData.values).toEqual(expectedValues);
   });
 
   it('CLI fill subcommand produces a pptx under tsx (CJS interop regression)', () => {

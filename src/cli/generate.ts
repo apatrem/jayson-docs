@@ -66,7 +66,7 @@ program
 
         for (const section of parsed.data.sections) {
           for (const slide of section.slides) {
-            fillSlide(automizer, slide);
+            fillSlide(automizer, slide, parsed.data.datasets);
           }
         }
 
