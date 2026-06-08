@@ -1,0 +1,2703 @@
+{
+  "templateId": "report.master.pptx",
+  "layouts": [
+    {
+      "layoutId": "cover",
+      "tier": "common",
+      "sourceSlideIndex": 1,
+      "slots": [
+        {
+          "slotName": "slot.image",
+          "regionKind": "image",
+          "match": {
+            "currentShapeName": "Espace réservé pour une image  1",
+            "placeholder": "pic",
+            "masterText": "Client logo",
+            "geometry": {
+              "x": 10.923,
+              "y": 0.083,
+              "w": 2.123,
+              "h": 1.068
+            }
+          }
+        },
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 2",
+            "placeholder": "ctrTitle",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.6,
+              "y": 1.497,
+              "w": 8.114,
+              "h": 1.353
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Sous-titre 3",
+            "placeholder": "subTitle",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.943,
+              "w": 8.114,
+              "h": 0.571
+            }
+          }
+        },
+        {
+          "slotName": "slot.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 4",
+            "placeholder": "body",
+            "masterText": "Edit date or title/role",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.855,
+              "w": 4.389,
+              "h": 0.446
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "section",
+      "tier": "common",
+      "sourceSlideIndex": 2,
+      "slots": [
+        {
+          "slotName": "slot.section-title",
+          "regionKind": "section-title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "ctrTitle",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.225,
+              "w": 7.953,
+              "h": 2.611
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Sous-titre 2",
+            "placeholder": "subTitle",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.602,
+              "y": 3.929,
+              "w": 7.953,
+              "h": 0.571
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "agenda",
+      "tier": "common",
+      "sourceSlideIndex": 3,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Contents/Agenda – click to edit",
+            "geometry": {
+              "x": 0.608,
+              "y": 0.365,
+              "w": 12.123,
+              "h": 0.708
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 2",
+            "placeholder": "idx:2",
+            "masterText": "Click to edit agenda Level 2 Level 3 Lev",
+            "geometry": {
+              "x": 0.602,
+              "y": 2.175,
+              "w": 9.057,
+              "h": 4.686
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 3",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 11",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "title",
+      "tier": "common",
+      "sourceSlideIndex": 4,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.381,
+              "w": 12.128,
+              "h": 0.692
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 2",
+            "placeholder": "idx:1",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.231,
+              "w": 12.128,
+              "h": 5.59
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 3",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 4",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 7",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "title-only",
+      "tier": "common",
+      "sourceSlideIndex": 5,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 4",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style"
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 3",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 4",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "title-and-subtitle",
+      "tier": "common",
+      "sourceSlideIndex": 6,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 4",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.382,
+              "w": 12.167,
+              "h": 0.691
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "placeholder": "idx:1",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.655,
+              "w": 12.128,
+              "h": 5.166
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Sous-titre 7",
+            "placeholder": "subTitle",
+            "masterText": "Click to edit master subtitle style",
+            "geometry": {
+              "x": 0.617,
+              "y": 1.239,
+              "w": 12.164,
+              "h": 0.228
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 3",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 6",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 5",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "chart-stacked-bar",
+      "tier": "common",
+      "sourceSlideIndex": 7,
+      "pinnedChartKind": "stacked-bar",
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 10",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.381,
+              "w": 12.128,
+              "h": 0.692
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 3",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 11",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-right",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "masterText": "Comment",
+            "geometry": {
+              "x": 7.527,
+              "y": 1.775,
+              "w": 5.254,
+              "h": 4.865
+            }
+          }
+        },
+        {
+          "slotName": "slot.chart-title",
+          "regionKind": "chart-title",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "masterText": "Chart name , unit",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.318,
+              "w": 6.164,
+              "h": 0.301
+            }
+          }
+        },
+        {
+          "slotName": "slot.chart",
+          "regionKind": "chart",
+          "chartKind": "stacked-bar",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 1",
+            "placeholder": "chart",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.775,
+              "w": 6.472,
+              "h": 5.047
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 7",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "chart-clustered-column",
+      "tier": "common",
+      "sourceSlideIndex": 8,
+      "pinnedChartKind": "clustered-column",
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 10",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.381,
+              "w": 12.128,
+              "h": 0.692
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 3",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 11",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-right",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "masterText": "Comment",
+            "geometry": {
+              "x": 7.527,
+              "y": 1.775,
+              "w": 5.254,
+              "h": 4.865
+            }
+          }
+        },
+        {
+          "slotName": "slot.chart-title",
+          "regionKind": "chart-title",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "masterText": "Chart name , unit",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.318,
+              "w": 6.164,
+              "h": 0.301
+            }
+          }
+        },
+        {
+          "slotName": "slot.chart",
+          "regionKind": "chart",
+          "chartKind": "clustered-column",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 1",
+            "placeholder": "chart",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.775,
+              "w": 6.491,
+              "h": 5.047
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 7",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "chart-line",
+      "tier": "common",
+      "sourceSlideIndex": 9,
+      "pinnedChartKind": "line",
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 10",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.381,
+              "w": 12.128,
+              "h": 0.692
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 3",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 11",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-right",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "masterText": "Comment",
+            "geometry": {
+              "x": 7.527,
+              "y": 1.775,
+              "w": 5.254,
+              "h": 4.865
+            }
+          }
+        },
+        {
+          "slotName": "slot.chart-title",
+          "regionKind": "chart-title",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "masterText": "Chart name , unit",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.318,
+              "w": 6.164,
+              "h": 0.301
+            }
+          }
+        },
+        {
+          "slotName": "slot.chart",
+          "regionKind": "chart",
+          "chartKind": "line",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 1",
+            "placeholder": "chart",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.775,
+              "w": 6.248,
+              "h": 5.047
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 7",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "chart-bubble",
+      "tier": "common",
+      "sourceSlideIndex": 10,
+      "pinnedChartKind": "bubble",
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 10",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.381,
+              "w": 12.128,
+              "h": 0.692
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 3",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 11",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-right",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "masterText": "Comment",
+            "geometry": {
+              "x": 7.527,
+              "y": 1.775,
+              "w": 5.254,
+              "h": 4.865
+            }
+          }
+        },
+        {
+          "slotName": "slot.chart-title",
+          "regionKind": "chart-title",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "masterText": "Chart name , unit",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.318,
+              "w": 6.164,
+              "h": 0.301
+            }
+          }
+        },
+        {
+          "slotName": "slot.chart",
+          "regionKind": "chart",
+          "chartKind": "bubble",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 1",
+            "placeholder": "chart",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.775,
+              "w": 6.192,
+              "h": 5.047
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 7",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "two-columns",
+      "tier": "common",
+      "sourceSlideIndex": 11,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 5",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style"
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 6",
+            "placeholder": "idx:1",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.231,
+              "w": 5.906,
+              "h": 5.592
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 7",
+            "placeholder": "idx:2",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 6.825,
+              "y": 1.231,
+              "w": 5.906,
+              "h": 5.592
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 3",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 8",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 6",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "narrative-with-sidebar",
+      "tier": "common",
+      "sourceSlideIndex": 12,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.382,
+              "w": 9.052,
+              "h": 0.691
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-left",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.249,
+              "w": 9.057,
+              "h": 0.218
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 3",
+            "placeholder": "idx:2",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.746,
+              "w": 9.057,
+              "h": 5.075
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-right",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 4",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 10.053,
+              "y": 1.249,
+              "w": 2.678,
+              "h": 0.225
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-right",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "placeholder": "idx:4",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 10.053,
+              "y": 1.746,
+              "w": 2.678,
+              "h": 5.075
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 6",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 7",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 8.304,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 8",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "two-column-with-subheads",
+      "tier": "common",
+      "sourceSlideIndex": 13,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.382,
+              "w": 5.901,
+              "h": 0.691
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-left",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.237,
+              "w": 5.906,
+              "h": 0.23
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 3",
+            "placeholder": "idx:2",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.735,
+              "w": 5.906,
+              "h": 5.086
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-center",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 4",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 6.825,
+              "y": 1.239,
+              "w": 5.906,
+              "h": 0.228
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-right",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "placeholder": "idx:4",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 6.825,
+              "y": 1.735,
+              "w": 5.906,
+              "h": 5.086
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 6",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 7",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 5.153,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 7",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "sidebar-callout",
+      "tier": "common",
+      "sourceSlideIndex": 14,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.608,
+              "y": 2.886,
+              "w": 2.673,
+              "h": 0.991
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-1",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.602,
+              "y": 4.163,
+              "w": 2.673,
+              "h": 0.374
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-2",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 3",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 3.888,
+              "y": 0.994,
+              "w": 8.843,
+              "h": 0.237
+            }
+          }
+        },
+        {
+          "slotName": "slot.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 4",
+            "placeholder": "idx:4",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 3.888,
+              "y": 1.467,
+              "w": 8.853,
+              "h": 5.354
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 5",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 6",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 3.878,
+              "y": 7.185,
+              "w": 6.884,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 8",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "three-columns-and-subtitles",
+      "tier": "common",
+      "sourceSlideIndex": 15,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.381,
+              "w": 12.128,
+              "h": 0.692
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-left",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit master text styles",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.231,
+              "w": 3.78,
+              "h": 0.236
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 3",
+            "placeholder": "idx:2",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.663,
+              "w": 3.78,
+              "h": 5.158
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-right",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 4",
+            "placeholder": "body",
+            "masterText": "Click to edit master text styles",
+            "geometry": {
+              "x": 8.95,
+              "y": 1.231,
+              "w": 3.781,
+              "h": 0.231
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-right",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "placeholder": "idx:4",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 8.95,
+              "y": 1.663,
+              "w": 3.781,
+              "h": 5.158
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-middle",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit master text styles",
+            "geometry": {
+              "x": 4.737,
+              "y": 1.231,
+              "w": 3.859,
+              "h": 0.236
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-center",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 3",
+            "placeholder": "idx:20",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 4.737,
+              "y": 1.663,
+              "w": 3.859,
+              "h": 5.158
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 8",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 9",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 8",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "title-and-content",
+      "tier": "common",
+      "sourceSlideIndex": 16,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style"
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 2",
+            "placeholder": "idx:1",
+            "masterText": "Click to edit Master text styles Second"
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 3",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›"
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "two-columns-and-subtitles",
+      "tier": "less-common",
+      "sourceSlideIndex": 17,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit Master title style",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.382,
+              "w": 12.128,
+              "h": 0.691
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-left",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit master text styles",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.231,
+              "w": 5.906,
+              "h": 0.236
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 3",
+            "placeholder": "idx:2",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.663,
+              "w": 5.906,
+              "h": 5.158
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-center",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 4",
+            "placeholder": "body",
+            "masterText": "Click to edit master text styles",
+            "geometry": {
+              "x": 6.824,
+              "y": 1.231,
+              "w": 5.906,
+              "h": 0.236
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-right",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "placeholder": "idx:4",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 6.825,
+              "y": 1.663,
+              "w": 5.906,
+              "h": 5.158
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 6",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 7",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 8",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "blank",
+      "tier": "less-common",
+      "sourceSlideIndex": 18,
+      "slots": [
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 1",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 2",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "cover-white",
+      "tier": "less-common",
+      "sourceSlideIndex": 19,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "ctrTitle",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.6,
+              "y": 1.497,
+              "w": 9.601,
+              "h": 1.353
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Sous-titre 2",
+            "placeholder": "subTitle",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.943,
+              "w": 9.601,
+              "h": 0.571
+            }
+          }
+        },
+        {
+          "slotName": "slot.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 3",
+            "placeholder": "body",
+            "masterText": "Edit date or title/role",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.855,
+              "w": 4.389,
+              "h": 0.446
+            }
+          }
+        },
+        {
+          "slotName": "slot.image",
+          "regionKind": "image",
+          "match": {
+            "currentShapeName": "Espace réservé pour une image  4",
+            "placeholder": "pic",
+            "masterText": "Client logo",
+            "geometry": {
+              "x": 10.923,
+              "y": 0.083,
+              "w": 2.123,
+              "h": 1.068
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "section-white",
+      "tier": "less-common",
+      "sourceSlideIndex": 20,
+      "slots": [
+        {
+          "slotName": "slot.section-title",
+          "regionKind": "section-title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "ctrTitle",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.251,
+              "w": 7.953,
+              "h": 2.611
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Sous-titre 2",
+            "placeholder": "subTitle",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.602,
+              "y": 3.954,
+              "w": 7.953,
+              "h": 0.571
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "agenda-white",
+      "tier": "less-common",
+      "sourceSlideIndex": 21,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Contents/Agenda – click to edit",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.382,
+              "w": 12.123,
+              "h": 0.691
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 2",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 3",
+            "placeholder": "idx:2",
+            "masterText": "Click to edit agenda",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.86,
+              "w": 9.057,
+              "h": 4.944
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 7",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "sidebar-callout-inverse",
+      "tier": "less-common",
+      "sourceSlideIndex": 22,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.608,
+              "y": 2.886,
+              "w": 2.673,
+              "h": 0.991
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-1",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.602,
+              "y": 4.163,
+              "w": 2.673,
+              "h": 0.374
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-2",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 3",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 3.888,
+              "y": 0.994,
+              "w": 8.843,
+              "h": 0.237
+            }
+          }
+        },
+        {
+          "slotName": "slot.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 4",
+            "placeholder": "idx:4",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 3.888,
+              "y": 1.467,
+              "w": 8.853,
+              "h": 5.354
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 5",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 6",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 3.878,
+              "y": 7.185,
+              "w": 6.884,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 6",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "narrative-with-sidebar-hc",
+      "tier": "less-common",
+      "sourceSlideIndex": 23,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.382,
+              "w": 9.052,
+              "h": 0.691
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-left",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.231,
+              "w": 9.057,
+              "h": 0.243
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 3",
+            "placeholder": "idx:2",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.703,
+              "w": 9.057,
+              "h": 5.139
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-right",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 4",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 10.053,
+              "y": 1.231,
+              "w": 2.678,
+              "h": 0.243
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-right",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "placeholder": "idx:4",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 10.053,
+              "y": 1.703,
+              "w": 2.678,
+              "h": 5.139
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 6",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 7",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 8.304,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 13",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "two-column-with-subheads-hc",
+      "tier": "less-common",
+      "sourceSlideIndex": 24,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.602,
+              "y": 0.382,
+              "w": 5.901,
+              "h": 0.708
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-left",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.231,
+              "w": 5.906,
+              "h": 0.236
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-left",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 3",
+            "placeholder": "idx:2",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 0.602,
+              "y": 1.703,
+              "w": 5.906,
+              "h": 5.119
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-center",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 4",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 6.825,
+              "y": 1.236,
+              "w": 5.906,
+              "h": 0.275
+            }
+          }
+        },
+        {
+          "slotName": "slot.body-right",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 5",
+            "placeholder": "idx:4",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 6.825,
+              "y": 1.703,
+              "w": 5.906,
+              "h": 5.138
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 6",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 7",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 5.153,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 11",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "sidebar-callout-hc",
+      "tier": "less-common",
+      "sourceSlideIndex": 25,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.608,
+              "y": 2.886,
+              "w": 2.673,
+              "h": 0.991
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-1",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.602,
+              "y": 4.163,
+              "w": 2.673,
+              "h": 0.374
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-2",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 3",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 3.888,
+              "y": 0.994,
+              "w": 8.843,
+              "h": 0.232
+            }
+          }
+        },
+        {
+          "slotName": "slot.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 4",
+            "placeholder": "idx:4",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 3.888,
+              "y": 1.467,
+              "w": 8.843,
+              "h": 5.354
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 5",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 6",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 3.878,
+              "y": 7.185,
+              "w": 6.884,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 8",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 0.591,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "sidebar-callout-hc-inverse",
+      "tier": "less-common",
+      "sourceSlideIndex": 26,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "Titre 1",
+            "placeholder": "title",
+            "masterText": "Click to edit title",
+            "geometry": {
+              "x": 0.608,
+              "y": 2.886,
+              "w": 2.673,
+              "h": 0.991
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-1",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 2",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 0.602,
+              "y": 4.163,
+              "w": 2.673,
+              "h": 0.374
+            }
+          }
+        },
+        {
+          "slotName": "slot.subtitle-2",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "Espace réservé du texte 3",
+            "placeholder": "body",
+            "masterText": "Click to edit subtitle",
+            "geometry": {
+              "x": 3.888,
+              "y": 0.994,
+              "w": 8.843,
+              "h": 0.237
+            }
+          }
+        },
+        {
+          "slotName": "slot.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 4",
+            "placeholder": "idx:4",
+            "masterText": "Click to edit Master text styles Second",
+            "geometry": {
+              "x": 3.888,
+              "y": 1.467,
+              "w": 8.843,
+              "h": 5.354
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "Espace réservé du numéro de diapositive 5",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "Espace réservé du contenu 6",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 4.619,
+              "y": 7.185,
+              "w": 6.142,
+              "h": 0.276
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-copyright",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 30",
+            "masterText": "©Year Acme",
+            "geometry": {
+              "x": 10.84,
+              "y": 7.185,
+              "w": 1.35,
+              "h": 0.135
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-logo",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "ZoneTexte 4",
+            "masterText": "ACME_logo",
+            "geometry": {
+              "x": 3.877,
+              "y": 7.165,
+              "w": 0.667,
+              "h": 0.31
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "deletions": [
+    {
+      "sourceSlideIndex": 6,
+      "match": {
+        "currentShapeName": "Espace réservé du contenu 5",
+        "masterText": "qsdf"
+      },
+      "reason": "Stray free text box (txBox) — duplicate artifact, not a layout placeholder"
+    }
+  ]
+}
