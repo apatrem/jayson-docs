@@ -104,7 +104,20 @@ describe('PPTX fill pipeline (M2)', () => {
     expect(chartData.values).toEqual(expectedValues);
   });
 
-  it('CLI fill subcommand produces a pptx under tsx (CJS interop regression)', () => {
+  it('CLI fill subcommand end-to-end: shapes filled + chart round-trip (M4)', async () => {
+    const parsed = fillPlanSchema.parse(JSON.parse(readFileSync(fixturePath, 'utf-8')));
+    if (parsed.kind !== 'deck') {
+      throw new Error('expected deck fill-plan fixture');
+    }
+
+    const slide = parsed.sections[0]?.slides[0];
+    if (slide?.layoutId !== 'kpi-row-chart') {
+      throw new Error('expected kpi-row-chart slide in fixture');
+    }
+
+    const dataset = parsed.datasets?.tier1_demand_2032;
+    expect(dataset).toBeDefined();
+
     const outputDir = mkdtempSync(join(tmpdir(), 'jayson-docs-cli-'));
     const outputPath = join(outputDir, 'filled.pptx');
 
@@ -125,5 +138,41 @@ describe('PPTX fill pipeline (M2)', () => {
     );
 
     expect(existsSync(outputPath)).toBe(true);
+    expect(await countPresentationSlides(outputPath)).toBe(1);
+
+    const shapeTexts = await readPptxShapeTexts(outputPath);
+
+    expect(shapeTexts.get('slot.title')).toBe(slide.title);
+    expect(shapeTexts.get('slot.kpi-strip.card1.figure')).toBe('2.4x');
+    expect(shapeTexts.get('slot.kpi-strip.card1.label')).toBe('demand vs ammonia');
+    expect(shapeTexts.get('slot.kpi-strip.card1.delta')).toBe('+140%');
+    expect(shapeTexts.get('slot.kpi-strip.card2.figure')).toBe('EUR 68/MWh');
+    expect(shapeTexts.get('slot.kpi-strip.card2.label')).toBe('LCOE target');
+    expect(shapeTexts.get('slot.kpi-strip.card2.delta')).toBe('-12%');
+    expect(shapeTexts.get('slot.kpi-strip.card3.figure')).toBe('7');
+    expect(shapeTexts.get('slot.kpi-strip.card3.label')).toBe('credible offtakers');
+
+    const narrativeText = shapeTexts.get('slot.narrative') ?? '';
+    expect(narrativeText).toContain('Three industries clear the bankability gate in all scenarios.');
+    expect(narrativeText).toContain('Ammonia trails on counterparty diversity, not on LCOE.');
+    expect(narrativeText).toContain('Final selection in Module 2.');
+
+    const chartData = await readPptxChartData(outputPath);
+    expect(chartData.series).toEqual(['low', 'base', 'high']);
+    expect(chartData.categories).toEqual([
+      'Industry A',
+      'Industry B',
+      'Industry C',
+      'Ammonia (baseline)',
+    ]);
+
+    if (dataset === undefined) {
+      throw new Error('expected tier1_demand_2032 dataset in fixture');
+    }
+
+    const expectedValues = dataset.rows.map((row) =>
+      row.slice(1).map((value) => (typeof value === 'number' ? value : Number(value))),
+    );
+    expect(chartData.values).toEqual(expectedValues);
   });
 });
