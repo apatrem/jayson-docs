@@ -51,9 +51,21 @@ cards.forEach((card, i) => {
 
 // slot.chart — pre-authored native STACKED-BAR (pipeline swaps the data — D21)
 const chartData = [
-  { name: 'low', labels: ['Industry A', 'Industry B', 'Industry C', 'Ammonia'], values: [120, 90, 60, 50] },
-  { name: 'base', labels: ['Industry A', 'Industry B', 'Industry C', 'Ammonia'], values: [240, 200, 140, 100] },
-  { name: 'high', labels: ['Industry A', 'Industry B', 'Industry C', 'Ammonia'], values: [380, 310, 260, 170] },
+  {
+    name: 'low',
+    labels: ['Industry A', 'Industry B', 'Industry C', 'Ammonia (baseline)'],
+    values: [120, 90, 60, 50],
+  },
+  {
+    name: 'base',
+    labels: ['Industry A', 'Industry B', 'Industry C', 'Ammonia (baseline)'],
+    values: [240, 200, 140, 100],
+  },
+  {
+    name: 'high',
+    labels: ['Industry A', 'Industry B', 'Industry C', 'Ammonia (baseline)'],
+    values: [380, 310, 260, 170],
+  },
 ];
 s.addChart(pptx.ChartType.bar, chartData, {
   objectName: 'slot.chart', x: 0.5, y: 2.95, w: 7.7, h: 3.9,

@@ -1,6 +1,8 @@
 import { modify, type Automizer } from 'pptx-automizer';
 import type { Slide } from '@schema/slide.js';
+import type { Dataset } from '@schema/chart.js';
 import type { KpiRowChartLayout } from '@schema/layouts/kpi-row-chart.js';
+import { datasetToChartData, resolveChartDataset } from './chart-data.js';
 import { MASTER_TEMPLATE_ALIAS } from './load-master.js';
 
 /** Slide index in the master for each v1 layout (1-based). */
@@ -19,12 +21,20 @@ const LAYOUT_MASTER_SLIDE: Record<KpiRowChartLayout['layoutId'], number> = {
  * Shape naming convention: docs/SLIDE_LAYOUT_LIBRARY.md ("Shape naming
  * convention"). Errors: ERROR_HANDLING.md ("shape-name").
  */
-export function fillSlide(automizer: Automizer, slide: Slide): void {
+export function fillSlide(
+  automizer: Automizer,
+  slide: Slide,
+  datasets?: Record<string, Dataset>,
+): void {
   // v1: slideSchema is only `kpi-row-chart`; add cases when layouts land.
-  fillKpiRowChart(automizer, slide);
+  fillKpiRowChart(automizer, slide, datasets);
 }
 
-function fillKpiRowChart(automizer: Automizer, slide: KpiRowChartLayout): void {
+function fillKpiRowChart(
+  automizer: Automizer,
+  slide: KpiRowChartLayout,
+  datasets?: Record<string, Dataset>,
+): void {
   const sourceSlide = LAYOUT_MASTER_SLIDE[slide.layoutId];
 
   automizer.addSlide(MASTER_TEMPLATE_ALIAS, sourceSlide, (targetSlide) => {
@@ -60,6 +70,8 @@ function fillKpiRowChart(automizer: Automizer, slide: KpiRowChartLayout): void {
       targetSlide.modifyElement('slot.narrative', modify.setText(slide.narrative.body));
     }
 
-    // Chart data-swap is M3 — leave slot.chart unchanged for now.
+    const chartDataset = resolveChartDataset(slide.chart, datasets);
+    const chartData = datasetToChartData(chartDataset);
+    targetSlide.modifyElement('slot.chart', [modify.setChartData(chartData)]);
   });
 }
