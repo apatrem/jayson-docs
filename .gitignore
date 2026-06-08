@@ -17,3 +17,7 @@ out/
 # lines (and `git add` the files) when you decide to track them.
 docs/REPO_REVIEW.md
 docs/REPO_REVIEW_2026-06-05.md
+
+# Composio orchestrator local config (untracked during evaluation; track it
+# later if you adopt Composio repo-wide).
+agent-orchestrator.yaml

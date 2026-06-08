@@ -127,3 +127,13 @@ All of:
 - The repo is small, dependencies are exactly those in `package.json` (no `@anthropic-ai/sdk`), and the docs are accurate.
 
 Then stop. v2 (additional layouts, additional templates, MinerU upstream) waits for explicit go-ahead.
+
+---
+
+## 9. Working agreements (PR hygiene)
+
+- **Gate (one command):** `npm run build && npm run lint && npm run test && npm run validate`. The green gate is the bar; a clean merge is not. `main` is **protected** — PR + green CI required to merge.
+- **Small PRs.** Routine work < 300 changed lines; split or stack anything larger. Separate a mechanical change from a behaviour change.
+- **Ephemeral per-task branches** `agent/<tool>/<task-id>`, deleted after merge (these supersede the long-lived per-tool branches sketched in §0).
+- **Sparse review.** Ask a reviewer (Codex/Claude) for **blockers only** — correctness, security, missing tests, broken boundaries; ≤10 findings, ranked by severity. Lint/format handles style.
+- **Lessons → guardrails.** Every recurring agent mistake becomes a test, a lint rule, or a line in this file — never just a mental note.
