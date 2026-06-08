@@ -1,0 +1,31 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "datasets": {
+    "demand_by_sector": {
+      "id": "demand_by_sector",
+      "columns": ["sector", "low", "base", "high"],
+      "rows": [["Steel", 40, 80, 120]]
+    }
+  },
+  "sections": [
+    {
+      "title": "Analysis",
+      "slides": [
+        {
+          "layoutId": "chart-stacked-bar",
+          "title": "Industrial demand scenarios show widening spread by sector",
+          "chart-title": "2032 demand by sector (TWh)",
+          "chart": { "kind": "line", "datasetRef": "demand_by_sector" },
+          "body-right": { "kind": "text", "body": "Steel leads under all scenarios." },
+          "source": "Source: ACME market model, June 2026."
+        }
+      ]
+    }
+  ]
+}

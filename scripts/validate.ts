@@ -5,7 +5,7 @@
  * invalid fixtures must fail. Used by `npm run validate`.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fillPlanSchema } from '../src/schema/index.js';
@@ -37,7 +37,12 @@ function check(label: string, body: () => unknown, expectValid: boolean): boolea
   }
 }
 
-const valid: [string, string][] = [['fixtures/valid-fill-plan.json', 'deck fill-plan']];
+const valid: [string, string][] = [
+  ['fixtures/valid-fill-plan.json', 'deck fill-plan (kpi-row-chart)'],
+  ...readdirSync(join(root, 'fixtures/layouts'))
+    .filter((f) => f.startsWith('valid-') && f.endsWith('.json'))
+    .map((f): [string, string] => [`fixtures/layouts/${f}`, `real layout ${f}`]),
+];
 
 const invalid: string[] = [
   'fixtures/invalid/fillplan-title-too-short.json',
@@ -48,6 +53,13 @@ const invalid: string[] = [
   'fixtures/invalid/fillplan-bad-dataset-ref.json',
   'fixtures/invalid/fillplan-pie-too-many-rows.json',
   'fixtures/invalid/fillplan-chart-kind-mismatch.json',
+  'fixtures/invalid/fillplan-real-layout-unknown-key.json',
+  'fixtures/invalid/fillplan-real-chart-bad-dataset-ref.json',
+  'fixtures/invalid/fillplan-real-chart-kind-mismatch.json',
+  'fixtures/invalid/fillplan-bubble-shape-on-categorical-dataset.json',
+  'fixtures/invalid/fillplan-real-title-too-short.json',
+  'fixtures/invalid/fillplan-section-title-cap-violation.json',
+  'fixtures/invalid/fillplan-subtitle-cap-violation.json',
 ];
 
 let ok = true;

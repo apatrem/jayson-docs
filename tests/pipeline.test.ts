@@ -31,9 +31,11 @@ describe('PPTX fill pipeline (M2)', () => {
     }
 
     const slide = parsed.sections[0]?.slides[0];
-    expect(slide?.layoutId).toBe('kpi-row-chart');
     if (slide === undefined) {
       throw new Error('expected at least one slide in fixture');
+    }
+    if (slide.layoutId !== 'kpi-row-chart') {
+      throw new Error('expected kpi-row-chart slide in fixture');
     }
 
     const outputDir = mkdtempSync(join(tmpdir(), 'jayson-docs-m2-'));

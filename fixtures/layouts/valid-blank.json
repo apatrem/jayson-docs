@@ -1,0 +1,20 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Appendix",
+      "slides": [
+        {
+          "layoutId": "blank",
+          "source": "Source: ACME internal model, 2026."
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { slideSchema } from './slide.js';
+import { slideSchema, type Slide } from './slide.js';
 import { blockSchema } from './block.js';
 import { datasetSchema, validateChartDataset, type ChartBlock } from './chart.js';
 
@@ -44,6 +44,77 @@ interface ChartReference {
   path: (string | number)[];
 }
 
+function isChartBlock(value: unknown): value is ChartBlock {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const record = value as Record<string, unknown>;
+  return typeof record.kind === 'string' && ('datasetRef' in record || 'dataset' in record);
+}
+
+function isContentChartWrapper(value: unknown): value is { kind: 'chart'; chart: ChartBlock } {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const record = value as Record<string, unknown>;
+  return record.kind === 'chart' && isChartBlock(record.chart);
+}
+
+function walkSlideForCharts(
+  slide: Slide,
+  pathPrefix: (string | number)[],
+  charts: ChartReference[],
+): void {
+  for (const [key, value] of Object.entries(slide)) {
+    if (key === 'layoutId') {
+      continue;
+    }
+
+    const path = [...pathPrefix, key];
+
+    if (isChartBlock(value)) {
+      charts.push({ chart: value, path });
+      continue;
+    }
+
+    if (isContentChartWrapper(value)) {
+      charts.push({ chart: value.chart, path: [...path, 'chart'] });
+    }
+  }
+}
+
+function collectChartReferences(plan: z.infer<typeof fillPlanBaseSchema>): ChartReference[] {
+  const charts: ChartReference[] = [];
+
+  if (plan.kind === 'deck') {
+    plan.sections.forEach((section, sectionIndex) => {
+      section.slides.forEach((slide, slideIndex) => {
+        walkSlideForCharts(slide, [
+          'sections',
+          sectionIndex,
+          'slides',
+          slideIndex,
+        ], charts);
+      });
+    });
+
+    return charts;
+  }
+
+  plan.sections.forEach((section, sectionIndex) => {
+    section.blocks.forEach((block, blockIndex) => {
+      if (block.type === 'chart') {
+        charts.push({
+          chart: block.chart,
+          path: ['sections', sectionIndex, 'blocks', blockIndex, 'chart'],
+        });
+      }
+    });
+  });
+
+  return charts;
+}
+
 /**
  * `fillPlanSchema` — the LLM output the CLI fills from. **Not canonical**: a
  * throwaway draft input; the Office file is the deliverable. Discriminated on
@@ -68,43 +139,14 @@ const fillPlanBaseSchema = z.discriminatedUnion('kind', [
     .strict(),
 ]);
 
-function collectChartReferences(plan: z.infer<typeof fillPlanBaseSchema>): ChartReference[] {
-  const charts: ChartReference[] = [];
-
-  if (plan.kind === 'deck') {
-    plan.sections.forEach((section, sectionIndex) => {
-      section.slides.forEach((slide, slideIndex) => {
-        if (slide.layoutId === 'kpi-row-chart') {
-          charts.push({
-            chart: slide.chart,
-            path: ['sections', sectionIndex, 'slides', slideIndex, 'chart'],
-          });
-        }
-      });
-    });
-
-    return charts;
-  }
-
-  plan.sections.forEach((section, sectionIndex) => {
-    section.blocks.forEach((block, blockIndex) => {
-      if (block.type === 'chart') {
-        charts.push({
-          chart: block.chart,
-          path: ['sections', sectionIndex, 'blocks', blockIndex, 'chart'],
-        });
-      }
-    });
-  });
-
-  return charts;
-}
-
 export const fillPlanSchema = fillPlanBaseSchema.superRefine((plan, ctx) => {
   const datasets = plan.datasets ?? {};
 
   for (const { chart, path } of collectChartReferences(plan)) {
     if (chart.datasetRef === undefined) {
+      if (chart.dataset !== undefined) {
+        validateChartDataset(chart.kind, chart.dataset, ctx, [...path, 'dataset']);
+      }
       continue;
     }
 

@@ -1,0 +1,31 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "datasets": {
+    "wrong_shape": {
+      "id": "wrong_shape",
+      "columns": ["sector", "low", "base", "high"],
+      "rows": [["Steel", 40, 80, 120]]
+    }
+  },
+  "sections": [
+    {
+      "title": "Analysis",
+      "slides": [
+        {
+          "layoutId": "chart-bubble",
+          "title": "Portfolio positioning maps growth against relative market share",
+          "chart-title": "Growth vs share (index)",
+          "chart": { "kind": "bubble", "datasetRef": "wrong_shape" },
+          "body-right": { "kind": "text", "body": "Bubble size reflects market volume." },
+          "source": "Source: ACME benchmark survey, 2026."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "datasets": {
+    "market_bubble": {
+      "id": "market_bubble",
+      "columns": ["x", "y", "size"],
+      "rows": [
+        [10, 20, 5],
+        [15, 35, 12],
+        [22, 28, 8]
+      ]
+    }
+  },
+  "sections": [
+    {
+      "title": "Analysis",
+      "slides": [
+        {
+          "layoutId": "chart-bubble",
+          "title": "Portfolio positioning maps growth against relative market share",
+          "chart-title": "Growth vs share (index)",
+          "chart": { "kind": "bubble", "datasetRef": "market_bubble" },
+          "body-right": {
+            "kind": "text",
+            "body": "Bubble size reflects addressable market volume in each segment."
+          },
+          "source": "Source: ACME benchmark survey, 2026."
+        }
+      ]
+    }
+  ]
+}

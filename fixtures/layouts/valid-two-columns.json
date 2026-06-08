@@ -1,0 +1,29 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Comparison",
+      "slides": [
+        {
+          "layoutId": "two-columns",
+          "title": "Two pathways differ on cost profile and delivery risk",
+          "body-left": {
+            "kind": "bullets",
+            "items": ["Lower capex", "Faster permitting", "Higher opex"]
+          },
+          "body-right": {
+            "kind": "bullets",
+            "items": ["Higher upfront cost", "Longer build", "Lower opex"]
+          },
+          "source": "Source: ACME project database."
+        }
+      ]
+    }
+  ]
+}

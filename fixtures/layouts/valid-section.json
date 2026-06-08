@@ -1,0 +1,21 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Part one",
+      "slides": [
+        {
+          "layoutId": "section",
+          "section-title": "Demand fundamentals",
+          "subtitle": { "kind": "callout", "body": "Module 1 findings" }
+        }
+      ]
+    }
+  ]
+}
