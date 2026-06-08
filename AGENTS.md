@@ -6,30 +6,30 @@ You are the autonomous coding agent (Claude Code, or equivalent) building this s
 
 ## 0. Multi-agent workflow — read before you commit
 
-This repo is worked by **several agents in parallel** (Claude, Cursor, Codex, …), each in its **own git worktree on its own branch**. `main` is **integration-only**.
+This repo is worked by **several agents in parallel** (Claude, Cursor, Codex, …). `main` is **integration-only** — protected; PR + green CI required; a human merges. The model is **long-lived worktree folders, ephemeral per-task branches**: a fresh branch per task, cut from `origin/main` and deleted after merge. (The Composio engine manages its own worktrees the same way.)
 
 ```
-~/Documents/jayson-docs           # main — integration only; the human merges here
-~/Documents/jayson-docs-claude    # branch: claude
-~/Documents/jayson-docs-cursor    # branch: cursor
-~/Documents/jayson-docs-codex     # branch: codex
+~/Documents/jayson-docs           # main — integration only; a human merges here
+~/Documents/jayson-docs-claude    # Claude's worktree folder (long-lived)
+~/Documents/jayson-docs-cursor    # Cursor's worktree folder
+~/Documents/jayson-docs-codex     # Codex's worktree folder
+# inside any worktree, per task:  git checkout -b agent/<tool>/<task-id> origin/main
 ```
 
 **Rules:**
-1. **Never commit to `main` directly.** Work in your worktree, on your branch.
+1. **Never commit to `main` directly.** Work in your worktree, on a fresh `agent/<tool>/<task-id>` branch cut from `origin/main`; delete it after merge.
 2. **Rebase before you start and before you push:** `git fetch origin && git rebase origin/main`. Keep commits small and narrowly scoped — less surface, fewer collisions.
 3. **Ship via PR.** Open a pull request to `main`; another agent reviews it (this is the "challenge each other" step); the human merges. CI must be green.
 4. **CI gates everything** (`.github/workflows/ci.yml` — build + lint + test + validate). A clean `git` merge is **not** proof of correctness; CI is. Two agents editing nearby lines can merge "cleanly" into broken or duplicated content — CI and review catch that.
 5. **`docs/DECISIONS_LOG.md` is the shared source of intent.** Read it first; record any cross-cutting decision there *before* diverging, so parallel agents converge instead of collide.
-6. **Don't duplicate another agent's task.** One agent implements a milestone; others review. Partition by area.
+6. **Default solo / partition; competitive best-of-N is opt-in.** Usually one agent owns a task and others review (partition by area). For hard / ambiguous / risky tasks, fan the *same* task to several agents and pick the best — reserve it (~10%; it costs N×). See `docs/DECISIONS_LOG.md`.
 
-First-time worktree setup (run once, from the main folder):
+Starting a task (from your worktree folder):
 
 ```bash
-git worktree add ../jayson-docs-claude -b claude
-git worktree add ../jayson-docs-cursor -b cursor
-git worktree add ../jayson-docs-codex  -b codex
-# then in each new worktree: npm install
+git fetch origin
+git checkout -b agent/<tool>/<task-id> origin/main   # fresh per-task branch
+# …work, commit small, run the gate… then push and open a PR to main; delete the branch after merge
 ```
 
 ---
@@ -134,6 +134,6 @@ Then stop. v2 (additional layouts, additional templates, MinerU upstream) waits 
 
 - **Gate (one command):** `npm run build && npm run lint && npm run test && npm run validate`. The green gate is the bar; a clean merge is not. `main` is **protected** — PR + green CI required to merge.
 - **Small PRs.** Routine work < 300 changed lines; split or stack anything larger. Separate a mechanical change from a behaviour change.
-- **Ephemeral per-task branches** `agent/<tool>/<task-id>`, deleted after merge (these supersede the long-lived per-tool branches sketched in §0).
+- **Branching** — see §0: long-lived worktree folders, ephemeral per-task branches (`agent/<tool>/<task-id>`, deleted after merge).
 - **Sparse review.** Ask a reviewer (Codex/Claude) for **blockers only** — correctness, security, missing tests, broken boundaries; ≤10 findings, ranked by severity. Lint/format handles style.
 - **Lessons → guardrails.** Every recurring agent mistake becomes a test, a lint rule, or a line in this file — never just a mental note.
