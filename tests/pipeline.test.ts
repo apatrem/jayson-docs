@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdtempSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -60,5 +61,28 @@ describe('PPTX fill pipeline (M2)', () => {
     expect(narrativeText).toContain('Three industries clear the bankability gate in all scenarios.');
     expect(narrativeText).toContain('Ammonia trails on counterparty diversity, not on LCOE.');
     expect(narrativeText).toContain('Final selection in Module 2.');
+  });
+
+  it('CLI fill subcommand produces a pptx under tsx (CJS interop regression)', () => {
+    const outputDir = mkdtempSync(join(tmpdir(), 'jayson-docs-cli-'));
+    const outputPath = join(outputDir, 'filled.pptx');
+
+    execFileSync(
+      process.execPath,
+      [
+        join(root, 'node_modules/tsx/dist/cli.mjs'),
+        join(root, 'src/cli/generate.ts'),
+        'fill',
+        '--template',
+        masterPath,
+        '--plan',
+        fixturePath,
+        '--out',
+        outputPath,
+      ],
+      { cwd: root, stdio: 'pipe' },
+    );
+
+    expect(existsSync(outputPath)).toBe(true);
   });
 });

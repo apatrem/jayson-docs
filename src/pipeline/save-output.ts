@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { rename, unlink } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
-import type Automizer from 'pptx-automizer';
+import type { Automizer } from 'pptx-automizer';
 import { SaveError } from './errors.js';
 
 /**

@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { basename, extname, resolve } from 'node:path';
-import Automizer from 'pptx-automizer';
+import { Automizer } from 'pptx-automizer';
 import { MasterError } from './errors.js';
 
 /** Alias used when registering the master for `addSlide` copy operations. */
