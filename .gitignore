@@ -21,3 +21,11 @@ docs/REPO_REVIEW_2026-06-05.md
 # Composio orchestrator local config (untracked during evaluation; track it
 # later if you adopt Composio repo-wide).
 agent-orchestrator.yaml
+
+# Real firm master templates are CONFIDENTIAL — never commit them to this PUBLIC
+# repo (their theme/metadata/embedded media leak the firm). Only synthetic
+# PLACEHOLDER- masters (no real brand, no PII) may be committed.
+templates/*.master.pptx
+templates/*.master.docx
+!templates/PLACEHOLDER-*.pptx
+!templates/PLACEHOLDER-*.docx
