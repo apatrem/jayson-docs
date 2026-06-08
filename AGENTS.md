@@ -22,7 +22,8 @@ This repo is worked by **several agents in parallel** (Claude, Cursor, Codex, �
 3. **Ship via PR.** Open a pull request to `main`; another agent reviews it (this is the "challenge each other" step); the human merges. CI must be green.
 4. **CI gates everything** (`.github/workflows/ci.yml` — build + lint + test + validate). A clean `git` merge is **not** proof of correctness; CI is. Two agents editing nearby lines can merge "cleanly" into broken or duplicated content — CI and review catch that.
 5. **`docs/DECISIONS_LOG.md` is the shared source of intent.** Read it first; record any cross-cutting decision there *before* diverging, so parallel agents converge instead of collide.
-6. **Default solo / partition; competitive best-of-N is opt-in.** Usually one agent owns a task and others review (partition by area). For hard / ambiguous / risky tasks, fan the *same* task to several agents and pick the best — reserve it (~10%; it costs N×). See `docs/DECISIONS_LOG.md`.
+6. **Default solo implementer; competitive best-of-N is opt-in.** The routine ~90% path runs one implementer — **Cursor Composer** by default (`worker.agent: cursor` in `agent-orchestrator.yaml`; the orchestrator role stays `claude-code` — `docs/adr/0002-buy-engine-build-conventions.md`). Usually one agent owns a task and others review (partition by area). For hard / ambiguous / risky tasks, fan the *same* task to several agents and pick the best — reserve it (~10%; it costs N×). Agent biases: `ROLES.md`. Effort dial: `docs/adr/0004-effort-solo-default.md`.
+7. **Process model:** one page in `docs/WORKFLOW.md`; workflow ADRs in `docs/adr/`.
 
 Starting a task (from your worktree folder):
 
@@ -135,5 +136,5 @@ Then stop. v2 (additional layouts, additional templates, MinerU upstream) waits 
 - **Gate (one command):** `npm run build && npm run lint && npm run test && npm run validate`. The green gate is the bar; a clean merge is not. `main` is **protected** — PR + green CI required to merge.
 - **Small PRs.** Routine work < 300 changed lines; split or stack anything larger. Separate a mechanical change from a behaviour change.
 - **Branching** — see §0: long-lived worktree folders, ephemeral per-task branches (`agent/<tool>/<task-id>`, deleted after merge).
-- **Sparse review.** Ask a reviewer (Codex/Claude) for **blockers only** — correctness, security, missing tests, broken boundaries; ≤10 findings, ranked by severity. Lint/format handles style.
+- **Sparse review.** Ask a reviewer (Codex/Claude) for **blockers only** — correctness, security, missing tests, broken boundaries; ≤10 findings, ranked by severity. Lint/format handles style. Competitive best-of-N biases: `ROLES.md`.
 - **Lessons → guardrails.** Every recurring agent mistake becomes a test, a lint rule, or a line in this file — never just a mental note.
