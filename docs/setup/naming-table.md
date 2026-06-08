@@ -1,6 +1,6 @@
 # Proposed naming table — `report.master.pptx` (26 layouts)
 
-> **STATUS: AI-PROPOSED — awaiting human review.**
+> **STATUS: APPROVED — Phase 2 applies `slot.*` names mechanically from this table.**
 > No `slot.*` names have been written into the `.pptx` yet. Phase 2 (human-gated) reviews this table, then a mechanical OOXML write renames shapes and a `shapes ≡ slots` validator runs.
 
 Source: `templates/report.master.pptx` (sanitized firm template, 26 slides).
@@ -50,7 +50,7 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | Two-column | `two-columns` | `slot.title`, `slot.body-left`, `slot.body-right` |
 | Two-column + subheads | `two-columns-and-subtitles`, `two-column-with-subheads( -hc)` | Adds `slot.subtitle-left`, `slot.subtitle-right` |
 | Three-column + subheads | `three-columns-and-subtitles` | `slot.subtitle-left`, `slot.subtitle-middle`, `slot.subtitle-right` + three body columns |
-| Sidebar callout | `sidebar-callout` (14, 22), `sidebar-callout-hc` (25, 26) | `slot.title`, `slot.subtitle-1`, `slot.subtitle-2`, `slot.body` |
+| Sidebar callout | `sidebar-callout`, `sidebar-callout-inverse`, `sidebar-callout-hc`, `sidebar-callout-hc-inverse` | Identical `slot.*` set on all four — differ only in background brand fill (distinct master slides per D19). |
 | Narrative + sidebar | `narrative-with-sidebar( -hc)` | `slot.title`, `slot.subtitle-left`, `slot.body-left`, `slot.subtitle-right`, `slot.body-right` |
 
 ---
@@ -431,13 +431,13 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | ZoneTexte 30 | — | ©Year Acme | x=10.840 y=7.185 w=1.350 h=0.135 | slot.footer-copyright | footer | Copyright line — deterministic from brand/master |
 | ZoneTexte 7 | — | ACME_logo | x=0.591 y=7.165 w=0.667 h=0.310 | slot.footer-logo | footer | Acme logo — deterministic from brand/master |
 
-### Slide 22 — `sidebar-callout`
+### Slide 22 — `sidebar-callout-inverse`
 
 | Field | Value |
 |-------|-------|
 | Firm layout name | Contrast 3 |
-| Proposed `layoutId` | `sidebar-callout` |
-| Naming rationale | Same geometry as Contrast 4 — shares slot vocabulary. |
+| Proposed `layoutId` | `sidebar-callout-inverse` |
+| Naming rationale | Same geometry and slot vocabulary as Contrast 4 — inverted brand fill (white / light-green). |
 | Usage tier | `less-common` |
 
 | Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
@@ -513,13 +513,13 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | ZoneTexte 30 | — | ©Year Acme | x=10.840 y=7.185 w=1.350 h=0.135 | slot.footer-copyright | footer | Copyright line — deterministic from brand/master |
 | ZoneTexte 8 | — | ACME_logo | x=0.591 y=7.165 w=0.667 h=0.310 | slot.footer-logo | footer | Acme logo — deterministic from brand/master |
 
-### Slide 26 — `sidebar-callout-hc`
+### Slide 26 — `sidebar-callout-hc-inverse`
 
 | Field | Value |
 |-------|-------|
 | Firm layout name | High contrast 4 |
-| Proposed `layoutId` | `sidebar-callout-hc` |
-| Naming rationale | Same geometry as High contrast 3. |
+| Proposed `layoutId` | `sidebar-callout-hc-inverse` |
+| Naming rationale | Same geometry and slot vocabulary as High contrast 3 — inverted brand fill (white / green). |
 | Usage tier | `less-common` |
 
 | Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |

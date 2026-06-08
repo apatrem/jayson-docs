@@ -5,10 +5,11 @@
  * invalid fixtures must fail. Used by `npm run validate`.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fillPlanSchema } from '../src/schema/index.js';
+import { validateMasterShapes, defaultPaths } from '../src/setup/validate-master.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
@@ -55,6 +56,23 @@ for (const [path, label] of valid) {
 }
 for (const path of invalid) {
   ok = check(path, () => fillPlanSchema.parse(readJson(path)), false) && ok;
+}
+
+const { masterPath, specPath } = defaultPaths();
+if (existsSync(masterPath) && existsSync(specPath)) {
+  const masterResult = await validateMasterShapes(masterPath, specPath);
+  if (masterResult.ok) {
+    process.stdout.write('PASS  master shapes ≡ slots\n');
+  } else {
+    for (const err of masterResult.errors) {
+      process.stderr.write(`FAIL  master: ${err}\n`);
+    }
+    ok = false;
+  }
+} else {
+  process.stderr.write(
+    'SKIP  master shapes ≡ slots (templates/report.master.pptx or layout-spec.json missing)\n',
+  );
 }
 
 if (!ok) {
