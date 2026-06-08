@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
-import { extname } from 'node:path';
+import { extname, resolve } from 'node:path';
 import { fillPlanSchema } from '@schema/index.js';
+import { loadMaster } from '../pipeline/load-master.js';
+import { fillSlide } from '../pipeline/fill-slide.js';
+import { saveOutput } from '../pipeline/save-output.js';
+import { isPipelineError } from '../pipeline/errors.js';
 
 const program = new Command();
 
@@ -17,7 +21,6 @@ program
   .requiredOption('--template <path>', 'path to the master .pptx or .docx (in templates/)')
   .requiredOption('--plan <path>', 'path to a schema-valid fill-plan JSON file, or "-" to read it from stdin')
   .requiredOption('--out <path>', 'output file path; extension determines format and must match --template')
-  // eslint-disable-next-line @typescript-eslint/require-await -- async action; awaits the pipeline once M2/M3/M4 wire it
   .action(async (opts: { template: string; plan: string; out: string }) => {
     const templateExt = extname(opts.template).toLowerCase();
     const outExt = extname(opts.out).toLowerCase();
@@ -53,9 +56,31 @@ program
 
     // Dispatch on extension.
     if (templateExt === '.pptx') {
-      // TODO M2/M3: wire load-master, fill-slide × N, save-output.
-      process.stderr.write('PPTX fill — implementation pending M2/M3.\n');
-      process.exit(2);
+      try {
+        const automizer = loadMaster(resolve(opts.template));
+
+        if (parsed.data.kind !== 'deck') {
+          process.stderr.write('PPTX fill requires a deck fill-plan (kind: "deck").\n');
+          process.exit(2);
+        }
+
+        for (const section of parsed.data.sections) {
+          for (const slide of section.slides) {
+            fillSlide(automizer, slide);
+          }
+        }
+
+        await saveOutput(automizer, resolve(opts.out));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`${message}\n`);
+
+        if (isPipelineError(error)) {
+          process.exit(error.code === 'save' ? 4 : 2);
+        }
+
+        process.exit(1);
+      }
     } else {
       // Post-v1 (D20): DOCX pipeline (dolanmiu/docx) is out of v1.
       process.stderr.write('DOCX fill — post-v1 (D20).\n');
