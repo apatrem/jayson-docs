@@ -2,7 +2,7 @@
 
 **For:** the implementing developer / Claude Code
 **Companion to:** `docs/ARCHITECTURE.md`, `docs/SLIDE_LAYOUT_LIBRARY.md`, `docs/DECISIONS_LOG.md`
-**Date:** 2026-06-05 (updated through D21 — v1 vertical slice, chart swap route)
+**Date:** 2026-06-05 (updated through D23 — v1 vertical slice; D22 real 26-layout master + Phase 5 widening; D23 two-tier density caps)
 
 ---
 
@@ -36,7 +36,9 @@ Work milestone by milestone. Do not start a milestone until the previous one's a
 
 **v1 = one PPTX walking skeleton, end-to-end:** `templates/report.master.pptx` + the **`kpi-row-chart`** layout, filled mechanically (BYO LLM → fill-plan JSON → CLI → native `.pptx`). Charts are `pptx-automizer` **data-swaps into pre-authored master charts** (D21); a chart slot's type is fixed by the layout, not chosen by the LLM.
 
-**Explicitly out of v1 — do not build under this brief** (designed, deferred): the other five PPTX layouts; the entire **DOCX** pipeline; chart kinds the master does not pre-author; **Setup / Ingestion** (D13) and firm-context handling; the at-scale **Layout catalogue** (D16) as a generated artifact; layout **sharing** (D17); the **skill creator** (D18); **signed-binary packaging / distribution** (D14). The other three skills ship as markdown playbooks but are not implemented in v1.
+**Explicitly out of v1 — do not build under this brief** (designed, deferred): the PPTX layouts beyond `kpi-row-chart` (now the **26 real layouts** of the D22 master, not the original five seed layouts — superseded); the entire **DOCX** pipeline; chart kinds the master does not pre-author; firm-context handling; layout **sharing** (D17); the **skill creator** (D18); **signed-binary packaging / distribution** (D14). The other three skills ship as markdown playbooks but are not implemented in v1.
+
+**Since superseded by D22 (already landed, no longer "deferred"):** the one-time manual **Setup** ran (Phases 1–3) — the firm's real sanitized `templates/report.master.pptx` (26 layouts) is in-repo with `slot.*` names applied, `src/setup/layout-spec.json` generated, Zod schemas for all 26 layouts + 4 chart kinds, and the LLM-facing **Layout catalogue** built. Density caps are **two-tier** per D23 (optimal → CLI warning; max → Zod reject). Making those 26 layouts *fillable* is **Phase 5** (`tasks/T-101…T-105`), which also retires the walking-skeleton `kpi-row-chart` layout and `PLACEHOLDER-report.master.pptx` (D22).
 
 ---
 
@@ -136,7 +138,7 @@ Build **one layout end-to-end** before widening. Do not start a step until the p
 - [ ] The `report-pptx` SKILL drives a BYO LLM: brief → schema-valid fill-plan → CLI → file; also works when a **human** runs the CLI on the fill-plan.
 - **Acceptance:** end-to-end on `kpi-row-chart`, driven by ≥1 BYO LLM, producing the expected `.pptx`.
 
-**Then widen (post-skeleton):** add layouts one at a time (each = schema + valid/invalid fixtures + a master slide). **DOCX, the other three skills, and everything in §0.5 are post-v1.**
+**Then widen (post-skeleton) — Phase 5 (D22):** wire the **26 real layouts** of `templates/report.master.pptx` into the fill pipeline via a generic, `layout-spec.json`-driven engine (`tasks/T-101…T-105`). The original "one layout at a time" widening was superseded by D22: the per-layout work (schema + fixtures + named master slide) already landed in Setup Phases 1–3, so Phase 5 widens by **slot kind** (text → content blocks → chart data-swap), not by layout. The kpi-row-chart path must stay green until its planned retirement (D22). **DOCX, the other three skills, and the rest of §0.5 remain post-v1.**
 
 ---
 
@@ -150,7 +152,7 @@ Build **one layout end-to-end** before widening. Do not start a step until the p
 | CLI | `fill --template …pptx` wired; rejects invalid fill-plans with clear errors |
 | `report-pptx` skill | Drives a BYO LLM (or human-run CLI) end-to-end on `kpi-row-chart` only |
 
-**Post-v1** (do not treat as v1 done criteria): other layouts, DOCX pipeline, variable-type PptxGenJS charts, the other three skills, Setup, catalogue at scale, signed binary. See §0.5.
+**Post-v1** (do not treat as v1 done criteria): the 26 real layouts (Phase 5, D22 — schemas/setup landed, fill pending), DOCX pipeline, variable-type PptxGenJS charts, the other three skills, signed binary. See §0.5.
 
 ---
 
@@ -174,4 +176,4 @@ Build **one layout end-to-end** before widening. Do not start a step until the p
 - `pnpm run build`, `pnpm run lint`, `pnpm run test`, `pnpm run validate` all green.
 - The repo is small, dependencies are exactly those in `package.json`, and docs are accurate.
 
-Then stop. Everything in §0.5 (more layouts, DOCX, Setup, sharing, skill creator, signed binary, MinerU upstream) waits for explicit go-ahead.
+Then stop. Everything in §0.5 (Phase 5's 26 layouts, DOCX, sharing, skill creator, signed binary, MinerU upstream) waits for explicit go-ahead. *(Phase 5 has that go-ahead: D22 + the committed `tasks/T-101…T-105` plan.)*
