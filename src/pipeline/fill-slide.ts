@@ -3,9 +3,10 @@ import type { Slide } from '@schema/slide.js';
 import type { Dataset } from '@schema/chart.js';
 import type { KpiRowChartLayout } from '@schema/layouts/kpi-row-chart.js';
 import { datasetToChartData, resolveChartDataset } from './chart-data.js';
+import { fillRealLayout } from './fill-real-layout.js';
 import { MASTER_TEMPLATE_ALIAS } from './load-master.js';
 
-/** Slide index in the master for each v1 layout (1-based). */
+/** Slide index in the PLACEHOLDER master for the transitional v1 layout (1-based). */
 const LAYOUT_MASTER_SLIDE: Record<KpiRowChartLayout['layoutId'], number> = {
   'kpi-row-chart': 1,
 };
@@ -18,6 +19,10 @@ const LAYOUT_MASTER_SLIDE: Record<KpiRowChartLayout['layoutId'], number> = {
  *      (a slot's chart type is fixed by its layout — D21). The from-scratch
  *      `build-dynamic-chart.ts` route is deferred post-v1.
  *
+ * The 26 real D22 layouts go through the layout-spec-driven engine
+ * (`fill-real-layout.ts`); `kpi-row-chart` keeps its transitional v1 path
+ * against the PLACEHOLDER master until Phase 5 retires it (D22).
+ *
  * Shape naming convention: docs/SLIDE_LAYOUT_LIBRARY.md ("Shape naming
  * convention"). Errors: ERROR_HANDLING.md ("shape-name").
  */
@@ -26,12 +31,11 @@ export function fillSlide(
   slide: Slide,
   datasets?: Record<string, Dataset>,
 ): void {
-  if (slide.layoutId !== 'kpi-row-chart') {
-    throw new Error(
-      `fill pipeline does not yet support layout "${slide.layoutId}" — schema-only in Phase 3`,
-    );
+  if (slide.layoutId === 'kpi-row-chart') {
+    fillKpiRowChart(automizer, slide, datasets);
+    return;
   }
-  fillKpiRowChart(automizer, slide, datasets);
+  fillRealLayout(automizer, slide, datasets);
 }
 
 function fillKpiRowChart(
