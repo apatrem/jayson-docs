@@ -25,6 +25,11 @@ function countSlotOccurrences(
   return shapes.filter((s) => s.name === slotName).length;
 }
 
+/**
+ * Asserts each spec slot exists once on the master and matches by placeholder
+ * type+idx and geometry. masterText in layout-spec is a naming hint only — not
+ * checked here (see shapeMatchesSlotCriteria in pptx-shape-utils.ts).
+ */
 export async function validateMasterShapes(
   masterPath: string,
   specPath: string,

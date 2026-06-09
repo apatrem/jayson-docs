@@ -7,6 +7,8 @@ Source: `templates/report.master.pptx` (sanitized firm template, 26 slides).
 Extraction: OOXML from `ppt/slides/slideN.xml` + slide layout geometry/text fallback + chart part inspection.
 **Disambiguation rule:** placeholder default text ("Click to edit title", "Click to edit subtitle", "Chart name, unit", "Source: 1.") takes precedence over raw PowerPoint placeholder types (`body` vs `subTitle`).
 
+**Shape identity contract:** a master shape is matched and validated by **placeholder type+idx** and **geometry** (±0.05 in). The **Master placeholder text** column is a naming-time disambiguation hint only — not a validation invariant; do not enforce brittle boilerplate text after `slot.*` names are applied.
+
 ## Usage tiers (seeded from deck sections)
 
 | Tier | Slides | Deck section |

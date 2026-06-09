@@ -131,6 +131,13 @@ function geometryMatches(a: ShapeGeometry | undefined, b: ShapeGeometry | undefi
   );
 }
 
+/**
+ * Master-shape match contract: identity is placeholder type+idx AND geometry.
+ * masterText is a naming-time disambiguation hint only — not a validation
+ * invariant. By default (strict=false) empty or mismatched boilerplate text
+ * does not fail a match; callers may opt into strictMasterText for rename-time
+ * scoring, never for post-naming validation.
+ */
 function masterTextMatches(
   shapeText: string,
   expected: string | undefined,
@@ -203,7 +210,7 @@ function shapeMatchesCriteria(
   return true;
 }
 
-/** Verify a named shape still matches spec placeholder/geometry (ignores legacy currentShapeName). */
+/** Post-naming validation: placeholder type+idx and geometry must match; masterText is ignored. */
 export function shapeMatchesSlotCriteria(
   shape: ExtractedShape,
   match: ShapeMatch,

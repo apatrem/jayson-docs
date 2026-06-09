@@ -16,18 +16,22 @@ description: |
 # Skill — report-pptx
 
 > **v1 scope (D20):** this is the **only implemented skill** in v1. The
-> **transitional walking skeleton** uses layout **`kpi-row-chart` only** on the
-> placeholder master — other layouts in `SLIDE_LAYOUT_LIBRARY.md` are post-v1
-> for that skeleton. The canonical `report.master.pptx` (26 layouts, D22) pins
-> four chart kinds (`stacked-column`, `clustered-column`, `line`, `bubble`) on
-> dedicated chart layouts; see `CHART_CATALOGUE.md`. Charts: **data-swap only**
-> (D21) — do not choose chart type.
+> **v1 fill route** is layout **`kpi-row-chart` only** against
+> **`templates/PLACEHOLDER-report.master.pptx`** (carries kpi-strip/chart slot
+> shapes). Other layouts in `SLIDE_LAYOUT_LIBRARY.md` are post-v1. The canonical
+> **`templates/report.master.pptx`** (26 real layouts, schema/setup-complete) is
+> **not yet fillable** — the pipeline implements `kpi-row-chart` only; wiring
+> the 26-layout master is **Phase 5**. Do **not** run fill against the canonical
+> master (e.g. `--template templates/report.master.pptx` with
+> `fixtures/valid-fill-plan.json` fails: missing `slot.kpi-strip.card1.figure`).
+> Charts: **data-swap only** (D21) — do not choose chart type.
 
 ## 0. Purpose
 
 Produce an **Acme project-delivery `.pptx`** — slides shown to the client during
-or at the end of an engagement. In v1 the CLI fills **`report.master.pptx`** via
-the **`kpi-row-chart`** layout only.
+or at the end of an engagement. In v1 the CLI fills the **`kpi-row-chart`**
+layout only, using **`templates/PLACEHOLDER-report.master.pptx`** on disk (logical
+template id in the fill-plan remains `"report.master.pptx"`).
 
 ## 1. Hard rules
 
@@ -96,8 +100,8 @@ For a delivery deck, ask for:
 Build a JSON matching `fillPlanSchema`:
 
 - `kind` = `"deck"`
-- `meta.templateId` = `"report.master.pptx"` (logical id — always this string,
-  even when the on-disk template is the development placeholder; see Step D).
+- `meta.templateId` = `"report.master.pptx"` (logical id — always this string;
+  the on-disk file for v1 fill is the placeholder; see Step D).
 - `meta.client`, `meta.date`, `meta.language` as standard.
 - `sections[]` — each `{ title, slides: [...] }`. In v1 each section's slides use
   **`kpi-row-chart` only** (multiple sections/slides are fine; same layout).
@@ -129,19 +133,21 @@ Save to `tmp/jayson-docs-fillplan-<timestamp>.json` (project-relative — **neve
 
 ### Step D — Invoke the CLI
 
-**Production** (when Acme has delivered the real master):
+**v1 fill** — always point `--template` at the placeholder (the only master with
+`kpi-row-chart` slot shapes today). Do **not** use `templates/report.master.pptx`
+for fill until Phase 5 implements the 26-layout pipeline.
 
 ```bash
-./jayson-docs fill \
-  --template templates/report.master.pptx \
+npx jayson-docs fill \
+  --template templates/PLACEHOLDER-report.master.pptx \
   --plan tmp/jayson-docs-fillplan-<timestamp>.json \
   --out out/<client-shortname>-deck.pptx
 ```
 
-**Development / CI** (until the real master lands — use the committed placeholder):
+**Production packaging** (when the skills pack ships the binary):
 
 ```bash
-npx jayson-docs fill \
+./jayson-docs fill \
   --template templates/PLACEHOLDER-report.master.pptx \
   --plan tmp/jayson-docs-fillplan-<timestamp>.json \
   --out out/<client-shortname>-deck.pptx
@@ -204,8 +210,9 @@ Other CLI exits (see `ERROR_HANDLING.md`):
 
 ## 7. Failure modes
 
-- **Master template missing** (`templates/report.master.pptx` or the placeholder):
-  tell the consultant; do not proceed.
+- **Master template missing** (`templates/PLACEHOLDER-report.master.pptx` for v1
+  fill): tell the consultant; do not proceed. Canonical
+  `templates/report.master.pptx` is for setup/validation only until Phase 5.
 - **Schema validation failure**: surface the Zod error verbatim; fix once, re-run;
   then ask.
 - **Chart kind mismatch**: each layout's `chart.kind` must match its pinned
