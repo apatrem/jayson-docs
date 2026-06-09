@@ -203,6 +203,16 @@ function shapeMatchesCriteria(
   return true;
 }
 
+/** Verify a named shape still matches spec placeholder/geometry (ignores legacy currentShapeName). */
+export function shapeMatchesSlotCriteria(
+  shape: ExtractedShape,
+  match: ShapeMatch,
+  options?: { strictMasterText?: boolean },
+): boolean {
+  const criteria: ShapeMatch = { ...match, currentShapeName: '' };
+  return shapeMatchesCriteria(shape, criteria, options?.strictMasterText ?? false);
+}
+
 export function matchShape(
   shapes: ExtractedShape[],
   slotName: string,
@@ -213,7 +223,10 @@ export function matchShape(
   const strictMasterText = options?.strictMasterText ?? false;
   const alreadyNamed = shapes.find((s) => s.name === slotName && !alreadyUsed.has(s));
   if (alreadyNamed !== undefined) {
-    return alreadyNamed;
+    if (shapeMatchesSlotCriteria(alreadyNamed, criteria, { strictMasterText })) {
+      return alreadyNamed;
+    }
+    return undefined;
   }
 
   if (!criteriaSupplied(criteria)) {
@@ -293,10 +306,17 @@ function chartKindFromXml(chartXml: string): string | undefined {
     return 'line';
   }
   if (chartXml.includes('barChart')) {
-    if (chartXml.includes('grouping val="stacked"')) {
+    const isStacked = chartXml.includes('grouping val="stacked"');
+    const barDirBar = chartXml.includes('barDir val="bar"');
+    const barDirCol = chartXml.includes('barDir val="col"') || !barDirBar;
+
+    if (isStacked && barDirCol) {
       return 'stacked-column';
     }
-    if (chartXml.includes('barDir val="col"') || !chartXml.includes('barDir val="bar"')) {
+    if (isStacked && barDirBar) {
+      return 'stacked-bar';
+    }
+    if (barDirCol) {
       return 'clustered-column';
     }
     return 'bar';

@@ -10,6 +10,7 @@ import {
   LEGACY_SHAPE_NAME,
   loadPptxZip,
   readChartKindFromShape,
+  shapeMatchesSlotCriteria,
 } from './pptx-shape-utils.js';
 
 export interface MasterValidationResult {
@@ -66,6 +67,14 @@ export async function validateMasterShapes(
 
       const found = findShapeBySlotName(shapes, slot.slotName);
       if (found === undefined) {
+        continue;
+      }
+
+      if (!shapeMatchesSlotCriteria(found, slot.match)) {
+        errors.push(
+          `slide ${slideIndex} (${layout.layoutId}): slot "${slot.slotName}" ` +
+            `placeholder/geometry does not match layout-spec`,
+        );
         continue;
       }
 

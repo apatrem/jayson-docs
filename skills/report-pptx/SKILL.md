@@ -15,10 +15,13 @@ description: |
 
 # Skill — report-pptx
 
-> **v1 scope (D20):** this is the **only implemented skill** in v1. Use layout
-> **`kpi-row-chart` only** — other layouts in `SLIDE_LAYOUT_LIBRARY.md` are
-> post-v1. Charts: **data-swap only** into the pre-authored `stacked-bar` at
-> `slot.chart` (D21) — do not choose chart type.
+> **v1 scope (D20):** this is the **only implemented skill** in v1. The
+> **transitional walking skeleton** uses layout **`kpi-row-chart` only** on the
+> placeholder master — other layouts in `SLIDE_LAYOUT_LIBRARY.md` are post-v1
+> for that skeleton. The canonical `report.master.pptx` (26 layouts, D22) pins
+> four chart kinds (`stacked-column`, `clustered-column`, `line`, `bubble`) on
+> dedicated chart layouts; see `CHART_CATALOGUE.md`. Charts: **data-swap only**
+> (D21) — do not choose chart type.
 
 ## 0. Purpose
 
@@ -32,8 +35,11 @@ the **`kpi-row-chart`** layout only.
 - In v1 you use **`layoutId: "kpi-row-chart"` only** — do not pick other layouts
   (`two-column`, `quad`, etc.) until they are implemented post-v1.
 - You honour every density cap — enforced by Zod; violations are rejected.
-- **Chart type is not your choice.** `kpi-row-chart`'s `chart` slot is pinned to
-  `kind: "stacked-bar"`. Supply **data** (`datasetRef` or inline `dataset`) only.
+- **Chart type is not your choice.** Each layout pins its `chart` slot to one
+  literal `kind` (D21). On the **transitional** `kpi-row-chart` layout that is
+  `kind: "stacked-bar"`; on the canonical master use the layout's pinned kind
+  (e.g. `chart-stacked-column` → `"stacked-column"`). Supply **data**
+  (`datasetRef` or inline `dataset`) only.
 - If you are missing information for a required slot, ask one short question.
   Never invent client-specific content.
 - If the CLI returns a validation error, surface it **verbatim** — do not silently
@@ -42,7 +48,9 @@ the **`kpi-row-chart`** layout only.
 ## 2. Read first
 
 1. `docs/SLIDE_LAYOUT_LIBRARY.md` — `kpi-row-chart` slots and density caps.
-2. `CHART_CATALOGUE.md` — v1 pinned chart (`stacked-bar`) and dataset shape.
+2. `CHART_CATALOGUE.md` — pinned chart kinds per layout (`stacked-column` on the
+   canonical master; `stacked-bar` on the transitional `kpi-row-chart` only) and
+   dataset shape.
 3. `src/schema/layouts/kpi-row-chart.ts` — the Zod source of truth for v1.
 4. `src/schema/index.ts` — `fillPlanSchema` envelope.
 5. `src/brand/brand.yaml` — brand tokens (do not override layout or chart type).
@@ -77,7 +85,8 @@ For a delivery deck, ask for:
 - **Headline finding / recommendation** — the one-sentence punchline (8–15 words
   for the action title).
 - **Key metrics & chart data** — figures for the KPI strip (3–5 cards) and the
-  stacked-bar dataset (category column + numeric series columns).
+  chart dataset for the layout's pinned kind (category column + numeric series
+  columns for bar/column charts).
 - **Narrative bullets** — supporting points for the slide (≤5 bullets, ≤60 words
   total).
 - **Audience** and **date of the meeting**.
@@ -100,7 +109,7 @@ Build a JSON matching `fillPlanSchema`:
 
 ```jsonc
 {
-  "kind": "stacked-bar",           // pinned — must match exactly
+  "kind": "stacked-bar",           // transitional kpi-row-chart only — must match layout literal
   "datasetRef": "my_dataset_key",  // OR inline "dataset": { ... }
   "caption": "optional ≤ 120 chars"
 }
@@ -108,8 +117,8 @@ Build a JSON matching `fillPlanSchema`:
 
 - Use **`datasetRef`** when the dataset is shared across slides, or an inline
   **`dataset`** object when it is slide-local. At least one is required.
-- The pipeline swaps values into the **pre-authored stacked-bar** at `slot.chart`
-  in the master — it does not build a new chart or change chart type.
+- The pipeline swaps values into the **pre-authored chart** at `slot.chart` in
+  the master — it does not build a new chart or change chart type.
 - Dataset shape: `columns` (first = category labels; rest = series names) and
   `rows` (each row's length must equal `columns.length`). See `CHART_CATALOGUE.md`.
 
@@ -199,8 +208,9 @@ Other CLI exits (see `ERROR_HANDLING.md`):
   tell the consultant; do not proceed.
 - **Schema validation failure**: surface the Zod error verbatim; fix once, re-run;
   then ask.
-- **Chart kind mismatch**: `kpi-row-chart` requires `kind: "stacked-bar"` — you
-  cannot substitute another chart type in v1.
+- **Chart kind mismatch**: each layout's `chart.kind` must match its pinned
+  literal exactly (`kpi-row-chart` → `"stacked-bar"`; `chart-stacked-column` →
+  `"stacked-column"`, etc.) — you cannot substitute another chart type.
 - **Bad `datasetRef`**: must resolve to a key in the fill-plan's `datasets` map.
 - **Unknown layout**: only `kpi-row-chart` is valid in v1.
 - **Unknown keys**: fill-plan objects are `.strict()` — extra keys are rejected.

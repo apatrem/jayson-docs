@@ -81,6 +81,116 @@ describe('shapes ≡ slots validator (Phase 3.6)', () => {
     expect(result.errors.some((e) => e.includes('duplicate slot names'))).toBe(true);
   });
 
+  it('rejects body-left/body-right name swap on slide 11 (geometry-bound slots)', async () => {
+    const zip = await loadPptxZip(masterPath);
+    const slideIndex = 11;
+    const shapes = await collectSlideShapes(zip, slideIndex);
+    const bodyLeft = shapes.find((s) => s.name === 'slot.body-left');
+    const bodyRight = shapes.find((s) => s.name === 'slot.body-right');
+    expect(bodyLeft).toBeDefined();
+    expect(bodyRight).toBeDefined();
+
+    const slidePath = `ppt/slides/slide${slideIndex}.xml`;
+    const slideFile = zip.file(slidePath);
+    let slideXml = await slideFile!.async('string');
+    slideXml = replaceShapeBlockInXml(
+      slideXml,
+      bodyLeft!.shapeBlock,
+      renameShapeBlock(bodyLeft!.shapeBlock, 'slot.body-right'),
+    );
+    slideXml = replaceShapeBlockInXml(
+      slideXml,
+      bodyRight!.shapeBlock,
+      renameShapeBlock(bodyRight!.shapeBlock, 'slot.body-left'),
+    );
+    zip.file(slidePath, slideXml);
+
+    const tmpMaster = join(mkdtempSync(join(tmpdir(), 'jd-master-')), 'mutated.pptx');
+    writeFileSync(
+      tmpMaster,
+      await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }),
+    );
+
+    const result = await validateMasterShapes(tmpMaster, specPath);
+    expect(result.ok).toBe(false);
+    expect(
+      result.errors.some(
+        (e) =>
+          e.includes('two-columns') &&
+          (e.includes('slot.body-left') || e.includes('slot.body-right')) &&
+          e.includes('placeholder/geometry'),
+      ),
+    ).toBe(true);
+  });
+
+  it('rejects duplicate master shapes sharing one slot name', async () => {
+    const zip = await loadPptxZip(masterPath);
+    const slideIndex = 11;
+    const shapes = await collectSlideShapes(zip, slideIndex);
+    const bodyLeft = shapes.find((s) => s.name === 'slot.body-left');
+    expect(bodyLeft).toBeDefined();
+
+    const slidePath = `ppt/slides/slide${slideIndex}.xml`;
+    const slideFile = zip.file(slidePath);
+    let slideXml = await slideFile!.async('string');
+    const duplicate = renameShapeBlock(bodyLeft!.shapeBlock, 'slot.body-left');
+    slideXml = slideXml.replace('</p:spTree>', `${duplicate}</p:spTree>`);
+    zip.file(slidePath, slideXml);
+
+    const tmpMaster = join(mkdtempSync(join(tmpdir(), 'jd-master-')), 'mutated.pptx');
+    writeFileSync(
+      tmpMaster,
+      await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }),
+    );
+
+    const result = await validateMasterShapes(tmpMaster, specPath);
+    expect(result.ok).toBe(false);
+    expect(
+      result.errors.some(
+        (e) => e.includes('slot.body-left') && e.includes('duplicate master shapes'),
+      ),
+    ).toBe(true);
+  });
+
+  it('rejects horizontal stacked-bar chart on stacked-column spec (slide 7)', async () => {
+    const zip = await loadPptxZip(masterPath);
+    const slideIndex = 7;
+    const shapes = await collectSlideShapes(zip, slideIndex);
+    const chart = shapes.find((s) => s.name === 'slot.chart');
+    expect(chart).toBeDefined();
+
+    const chartRId = /<c:chart[^>]*r:id="([^"]+)"/.exec(chart!.shapeBlock)?.[1];
+    expect(chartRId).toBeDefined();
+
+    const relsPath = `ppt/slides/_rels/slide${slideIndex}.xml.rels`;
+    const relsXml = await zip.file(relsPath)!.async('string');
+    const chartTarget = new RegExp(`Id="${chartRId}"[^>]*Target="([^"]+)"`).exec(relsXml)?.[1];
+    expect(chartTarget).toBeDefined();
+
+    const chartPath = `ppt/${chartTarget!.replace(/^\.\.\//, '')}`;
+    const chartFile = zip.file(chartPath);
+    let chartXml = await chartFile!.async('string');
+    chartXml = chartXml.replace(/<c:barDir val="col"\/>/, '<c:barDir val="bar"/>');
+    zip.file(chartPath, chartXml);
+
+    const tmpMaster = join(mkdtempSync(join(tmpdir(), 'jd-master-')), 'mutated.pptx');
+    writeFileSync(
+      tmpMaster,
+      await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }),
+    );
+
+    const result = await validateMasterShapes(tmpMaster, specPath);
+    expect(result.ok).toBe(false);
+    expect(
+      result.errors.some(
+        (e) =>
+          e.includes('slot.chart') &&
+          e.includes('stacked-column') &&
+          e.includes('stacked-bar'),
+      ),
+    ).toBe(true);
+  });
+
   it('rejects chart/name swap on slide 7 (chart disassociated from slot.chart)', async () => {
     const zip = await loadPptxZip(masterPath);
     const slideIndex = 7;
