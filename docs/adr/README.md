@@ -12,5 +12,6 @@ The durable decision record for agentic workflow in this repo (from the [agentic
 | [0006](0006-fail-to-human-not-main.md) | Fail to human, never to `main`; sandboxed workers |
 | [0007](0007-exportable-plugin.md) | Packaging: a plugin with a central engine; per-repo is decisions + config only |
 | [0008](0008-advanced-auto-merge-tier.md) | Advanced tier (optional, **off by default**): the autonomous auto-merge engine |
+| [0009](0009-package-manager-pnpm.md) | Package manager: pnpm via Corepack — default for new repos, optional for existing |
 
-**0001–0007 are the baseline** every repo adopts. **0008 is the optional advanced tier** you graduate into per-repo (see 0003).
+**0001–0007 + 0009 are the baseline** every repo adopts. **0008 is the optional advanced tier** you graduate into per-repo (see 0003).

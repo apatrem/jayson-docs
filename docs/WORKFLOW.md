@@ -6,7 +6,7 @@
 Product/architecture decisions live in `docs/DECISIONS_LOG.md`. Process/orchestration ADRs live in `docs/adr/`.
 
 ## The loop
-idea → **/grill-me** → `tasks/T-xxx.md` (acceptance = tests; `mode: low|medium|hard`) → implement in an isolated worktree → gate green → small PR → review per tier (blockers only; `medium`/`hard` add the dual review) → **human merges** → recurring mistake → a test/lint/rule.
+idea → **`/agentic-workflow:architect`** (grill-with-docs → ADRs + `CONTEXT.md`; human signs each ADR) → **`/agentic-workflow:plan`** (`tasks/T-xxx.md` + frozen red tests; human sign-off) → *(codegraph maps blast radius)* → **`/agentic-workflow:run`** (implement in an isolated worktree) → gate green → small PR → review per tier (blockers only; `medium`/`hard` add the dual review) → **human merges** → recurring mistake → a test/lint/rule.
 
 ## Effort/review dial — `mode: low | medium | hard` (default `low`; prefer low, justify higher)
 One dial, two axes (authoring depth × review rigor); set per task, default `low` (ADR-0004).
@@ -20,15 +20,15 @@ One dial, two axes (authoring depth × review rigor); set per task, default `low
 `npm run build && npm run lint && npm run test && npm run validate` — the bar; CI runs exactly this.
 
 ## Tiers — add complexity only when a trigger fires
-- **Baseline (always):** AGENTS.md, thin CLAUDE.md/.cursor rules, task template, the gate + CI required check + protected main, pre-commit, the rituals below. *Recommended:* codegraph + code-review-graph (navigation, **not proof**).
+- **Baseline (always):** AGENTS.md, thin CLAUDE.md/.cursor rules, task template, the gate + CI required check + protected main, pre-commit, **pnpm via Corepack for new Node repos (ADR-0009; this repo stays on npm)**, the rituals below. *Recommended:* codegraph + code-review-graph (navigation, **not proof**).
 - **Deferred (add when…):** Semgrep/CodeQL (security/scale) · ast-grep (codemods) · stacked PRs (large changes) · SonarQube/CodeRabbit (team).
 - **Advanced (earned, opt-in per repo):** autonomous auto-merge — only after real CI required-checks + a Narrow→Widen rollout. Until then, **humans merge.**
 
 ## Engine
-Orchestration (worktree sessions, run agents, review diffs) = **Superset** — an interactive macOS manager driving your subscription CLIs (ADR-0002 Update). The [agentic-workflow](https://github.com/apatrem/agentic-workflow) plugin ships the conventions; it does not implement an engine. **You drive the loop; a human merges.** `hard`'s best-of-N runs as N parallel sessions; `medium`/`hard`'s dual review runs the reviewer CLIs (pinned models — see `/agentic-workflow:review`). The engine is a *pluggable slot* — swap Superset for another interactive manager (e.g. Claude Squad) in one line.
+Orchestration (worktree sessions, run agents, review diffs) = **Superset** (ADR-0002 Update) — a macOS app *and* a headless **CLI / SDK / MCP server** driving your subscription CLIs (bundled at `~/.superset/bin/superset`). The [agentic-workflow](https://github.com/apatrem/agentic-workflow) plugin ships the conventions; it does not implement an engine. Spawn workers interactively (GUI) **or** programmatically — `superset workspaces create … --agent <lineage> --prompt <task>` puts each worker with the right model in its own worktree (see `/agentic-workflow:run`; re-check `superset --help` on upgrade); use `superset agents create --workspace …` to run agents in an *existing* workspace (e.g. PR reviewers). **A human merges** by default. `hard`'s best-of-N = N spawned agents across lineages; `medium`/`hard`'s dual review spawns the reviewer CLIs (pinned models — see `/agentic-workflow:review`). The engine is a *pluggable slot* — swap in another manager (e.g. Claude Squad) in one line.
 
 ## Rituals
-1. **Grill before code** — ambiguity dies in /grill-me, not in the PR.
+1. **Grill before code** — ambiguity dies in Phase 1 (`/agentic-workflow:architect`), not in the PR.
 2. **Deterministic gate before any AI review** — don't pay tokens to review red code.
 3. **Small-PR budget** — routine < 300 lines; split/stack larger; separate mechanical from behavioural.
 4. **Sparse review** — blockers only, ≤10 findings, ranked. AI review is an assistant, not a merge authority (it catches ~15–31% of issues).
