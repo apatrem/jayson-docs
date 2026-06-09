@@ -1,0 +1,23 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Opening",
+      "slides": [
+        {
+          "layoutId": "cover",
+          "title": "Short title",
+          "subtitle": { "kind": "text", "body": "Annual strategy review briefing" },
+          "body": "June 2026 · Partner presentation",
+          "image": { "ref": "assets/client-logo.png" }
+        }
+      ]
+    }
+  ]
+}

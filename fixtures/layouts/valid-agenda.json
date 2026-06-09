@@ -1,0 +1,28 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Overview",
+      "slides": [
+        {
+          "layoutId": "agenda",
+          "title": "Contents and agenda for today strategy review session",
+          "body-left": {
+            "kind": "bullets",
+            "items": [
+              "Executive summary and key messages",
+              "Market sizing and demand outlook",
+              "Recommendations and next steps"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

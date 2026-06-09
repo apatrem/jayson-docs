@@ -26,7 +26,11 @@ export function fillSlide(
   slide: Slide,
   datasets?: Record<string, Dataset>,
 ): void {
-  // v1: slideSchema is only `kpi-row-chart`; add cases when layouts land.
+  if (slide.layoutId !== 'kpi-row-chart') {
+    throw new Error(
+      `fill pipeline does not yet support layout "${slide.layoutId}" — schema-only in Phase 3`,
+    );
+  }
   fillKpiRowChart(automizer, slide, datasets);
 }
 

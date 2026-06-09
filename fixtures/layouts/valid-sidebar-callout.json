@@ -1,0 +1,27 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Highlight",
+      "slides": [
+        {
+          "layoutId": "sidebar-callout",
+          "title": "Key takeaway on bankability thresholds for offtake contracts",
+          "subtitle-1": { "kind": "text", "body": "Sidebar headline" },
+          "subtitle-2": { "kind": "text", "body": "Supporting context line" },
+          "body": {
+            "kind": "text",
+            "body": "Three counterparties meet the bankability gate under base-case assumptions."
+          },
+          "source": "Source: ACME counterparty review."
+        }
+      ]
+    }
+  ]
+}

@@ -1,24 +1,16 @@
 import { z } from 'zod';
 import { kpiRowChartLayoutSchema } from './layouts/kpi-row-chart.js';
+import { realLayoutSchemas } from './layouts/real-layouts.js';
 
 /**
  * The closed union of all approved slide layouts.
  *
- * As you add the remaining layouts from docs/SLIDE_LAYOUT_LIBRARY.md
- * (two-column, chart-full-with-takeaway, bullets-and-image, quad,
- * section-divider), append their schemas here and import them above.
- *
- * The LLM cannot produce a slide whose layoutId is not in this union —
- * Zod will reject it. This is the load-bearing constraint that closes
- * the layout library.
+ * Includes the 26 real master layouts (D22) plus `kpi-row-chart` transitionally
+ * until Phase 5 retires the PLACEHOLDER walking skeleton.
  */
 export const slideSchema = z.discriminatedUnion('layoutId', [
   kpiRowChartLayoutSchema,
-  // TODO: add `twoColumnLayoutSchema`
-  // TODO: add `chartFullWithTakeawayLayoutSchema`
-  // TODO: add `bulletsAndImageLayoutSchema`
-  // TODO: add `quadLayoutSchema`
-  // TODO: add `sectionDividerLayoutSchema`
+  ...realLayoutSchemas,
 ]);
 
 export type Slide = z.infer<typeof slideSchema>;

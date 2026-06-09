@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { chartBlockSchema } from './chart.js';
+import { pinnedChartBlockUnion } from './chart.js';
 
 /**
  * The Closed block-type set (CONTEXT.md) — the universal vocabulary of content
@@ -39,7 +39,7 @@ const bulletsBlock = z
 const chartBlock = z
   .object({
     type: z.literal('chart'),
-    chart: chartBlockSchema,
+    chart: pinnedChartBlockUnion(),
   })
   .strict();
 

@@ -2,24 +2,35 @@ import { z } from 'zod';
 
 /**
  * Reference chart kinds (CHART_CATALOGUE.md). In v1 (D21) only kinds **pinned
- * by an implemented layout slot** are valid — today `stacked-bar` on
- * `kpi-row-chart`. The LLM does not freely choose from this enum; layout
- * schemas pin `kind` to a literal. Adding a kind for a new layout requires:
- *   1. extend this enum if needed,
- *   2. extend per-kind validation below,
- *   3. document in CHART_CATALOGUE.md and pre-author in the master.
+ * by an implemented layout slot** are valid. The LLM does not freely choose
+ * from this enum; layout schemas pin `kind` to a literal.
  */
 export const chartKindSchema = z.enum([
   'bar',
   'stacked-bar',
+  'clustered-column',
   'line',
   'area',
   'pie',
   'doughnut',
   'scatter',
+  'bubble',
   'waterfall',
 ]);
 export type ChartKind = z.infer<typeof chartKindSchema>;
+
+/** Categorical chart kinds — first column categories, remaining columns numeric series. */
+export const categoricalChartKinds = [
+  'bar',
+  'stacked-bar',
+  'clustered-column',
+  'line',
+  'area',
+] as const satisfies readonly ChartKind[];
+
+export type CategoricalChartKind = (typeof categoricalChartKinds)[number];
+
+export const bubbleChartKind = 'bubble' as const satisfies ChartKind;
 
 const datasetRowSchema = z.array(z.union([z.string(), z.number(), z.null()]));
 
@@ -37,6 +48,77 @@ export const datasetSchema = z
 
 export type Dataset = z.infer<typeof datasetSchema>;
 
+function isCategoricalKind(kind: ChartKind): kind is CategoricalChartKind {
+  return (categoricalChartKinds as readonly string[]).includes(kind);
+}
+
+function validateCategoricalDataset(dataset: Dataset, ctx: z.RefinementCtx, path: (string | number)[]): void {
+  if (dataset.columns.length < 2) {
+    ctx.addIssue({
+      code: 'custom',
+      path: [...path, 'columns'],
+      message: 'categorical chart datasets need ≥2 columns (category + ≥1 series)',
+    });
+    return;
+  }
+
+  for (const [rowIndex, row] of dataset.rows.entries()) {
+    const category = row[0];
+    if (category !== null && typeof category !== 'string') {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, 'rows', rowIndex, 0],
+        message: 'first column must be category labels (string)',
+      });
+    }
+
+    for (let col = 1; col < row.length; col++) {
+      const value = row[col];
+      if (value !== null && typeof value !== 'number') {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'rows', rowIndex, col],
+          message: 'series columns must be numeric',
+        });
+      }
+    }
+  }
+}
+
+function validateBubbleDataset(dataset: Dataset, ctx: z.RefinementCtx, path: (string | number)[]): void {
+  const cols = dataset.columns.map((c) => c.toLowerCase());
+  const hasSeries = cols.includes('series');
+  const required = hasSeries ? ['series', 'x', 'y', 'size'] : ['x', 'y', 'size'];
+
+  for (const name of required) {
+    if (!cols.includes(name)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, 'columns'],
+        message: `bubble chart datasets require columns: ${required.join(', ')}`,
+      });
+      return;
+    }
+  }
+
+  const xIdx = cols.indexOf('x');
+  const yIdx = cols.indexOf('y');
+  const sizeIdx = cols.indexOf('size');
+
+  for (const [rowIndex, row] of dataset.rows.entries()) {
+    for (const idx of [xIdx, yIdx, sizeIdx]) {
+      const value = row[idx];
+      if (value !== null && typeof value !== 'number') {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'rows', rowIndex, idx],
+          message: 'bubble x, y, and size values must be numeric',
+        });
+      }
+    }
+  }
+}
+
 export function validateChartDataset(
   kind: ChartKind,
   dataset: Dataset,
@@ -49,6 +131,15 @@ export function validateChartDataset(
       path,
       message: 'pie and doughnut charts support at most 8 rows',
     });
+  }
+
+  if (kind === bubbleChartKind) {
+    validateBubbleDataset(dataset, ctx, path);
+    return;
+  }
+
+  if (isCategoricalKind(kind)) {
+    validateCategoricalDataset(dataset, ctx, path);
   }
 }
 
@@ -68,28 +159,28 @@ function validateChartBlock(chart: ChartBlockInput, ctx: z.RefinementCtx): void 
         'chart must reference a dataset (datasetRef) or include one inline (dataset). See CHART_CATALOGUE.md',
     });
   }
-
-  if (chart.dataset !== undefined) {
-    validateChartDataset(chart.kind, chart.dataset, ctx, ['dataset', 'rows']);
-  }
 }
+
+/** Chart kinds pinned by implemented layout slots (D21). */
+export const pinnedChartKinds = [
+  'stacked-bar',
+  'clustered-column',
+  'line',
+  'bubble',
+] as const satisfies readonly ChartKind[];
+
+export type PinnedChartKind = (typeof pinnedChartKinds)[number];
 
 /**
  * Build a chart-block schema.
  *
- * v1 layout slots pin `kind` to a single catalogue literal (D21 corollary — the
- * master pre-authors that chart type and `pptx-automizer` swaps its data, so the
- * LLM supplies data, never the type); omit `kind` for the free enum (document
- * chart blocks, or unit tests). Either way the block is `.strict()` (unknown
- * keys rejected — Q6), must carry a `datasetRef` (resolved against the
- * fill-plan's `datasets` in index.ts) or an inline `dataset`, and gets the
- * inline pie/doughnut row cap via `validateChartBlock`.
+ * v1 layout slots pin `kind` to a single catalogue literal (D21).
+ * Inline dataset shape is validated once at fill-plan level (fillPlanSchema).
  */
-export function chartBlock(opts?: { kind?: ChartKind }) {
-  const kindSchema = opts?.kind ? z.literal(opts.kind) : chartKindSchema;
+export function chartBlock(opts: { kind: ChartKind }) {
   return z
     .object({
-      kind: kindSchema,
+      kind: z.literal(opts.kind),
       datasetRef: z.string().min(1).optional(),
       dataset: datasetSchema.optional(),
       caption: z.string().max(120).optional(),
@@ -98,6 +189,14 @@ export function chartBlock(opts?: { kind?: ChartKind }) {
     .superRefine(validateChartBlock);
 }
 
-export const chartBlockSchema = chartBlock();
+/** Union of layout-pinned chart blocks — the only constructible chart surface at runtime. */
+export function pinnedChartBlockUnion() {
+  return z.union([
+    chartBlock({ kind: 'stacked-bar' }),
+    chartBlock({ kind: 'clustered-column' }),
+    chartBlock({ kind: 'line' }),
+    chartBlock({ kind: 'bubble' }),
+  ]);
+}
 
-export type ChartBlock = z.infer<typeof chartBlockSchema>;
+export type ChartBlock = z.infer<ReturnType<typeof pinnedChartBlockUnion>>;
