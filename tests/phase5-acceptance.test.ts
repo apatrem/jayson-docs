@@ -6,7 +6,9 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { fillPlanSchema } from '../src/schema/index.js';
 import { REGION_CAPS } from '../src/schema/caps.js';
+import type { Slide } from '../src/schema/slide.js';
 import type { LayoutSpec } from '../src/setup/types.js';
+import { MasterError } from '../src/pipeline/errors.js';
 import { loadMaster } from '../src/pipeline/load-master.js';
 import { fillSlide } from '../src/pipeline/fill-slide.js';
 import { saveOutput } from '../src/pipeline/save-output.js';
@@ -87,6 +89,21 @@ describe('T-101 — generic fill engine + first real layout (section)', () => {
     expect(slides[0]?.get('slot.section-title')).toBe(
       fixtureSlide('fixtures/layouts/valid-section.json')['section-title'],
     );
+    expect(slides[0]?.get('slot.subtitle')).toBe('Short subtitle for column');
+  });
+
+  it('throws the explicit not-yet-supported error for slot kinds later tasks land', () => {
+    const parsed = fillPlanSchema.parse(readJson('fixtures/layouts/valid-cover.json'));
+    const cover = parsed.kind === 'deck' ? parsed.sections[0]?.slides[0] : undefined;
+    if (cover === undefined) {
+      throw new Error('expected a cover slide');
+    }
+    expect(() => fillSlide(loadMaster(realMaster), cover)).toThrow(/not yet supported in T-101/);
+  });
+
+  it('classifies an unknown layoutId as a MasterError', () => {
+    const slide = { layoutId: 'no-such-layout' } as unknown as Slide;
+    expect(() => fillSlide(loadMaster(realMaster), slide)).toThrow(MasterError);
   });
 });
 

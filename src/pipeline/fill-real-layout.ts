@@ -57,10 +57,18 @@ function fillSlot(
       fillChartSlot(targetSlide, layoutId, slot, value, datasets);
       return;
     case 'footer':
-      // Footer band is auto-filled, not LLM-supplied (D22) — handling lands
-      // with the wider text/content tasks; explicit until then.
+      // Master-owned, auto-filled per D22 — intentionally untouched; supplied values fail loudly.
+      if (value === undefined) {
+        return;
+      }
       throw new Error(
-        `footer slot "${slot.slotName}" on layout "${layoutId}" is not yet supported in T-101`,
+        `footer slot "${slot.slotName}" on layout "${layoutId}" is master-owned and auto-filled (D22) — remove its value from the fill-plan`,
+      );
+    default:
+      // layout-spec.json is parsed via an unchecked cast, so a regenerated
+      // spec can carry region kinds the type system never saw — guard here.
+      throw new MasterError(
+        `slot "${slot.slotName}" on layout "${layoutId}" has unknown regionKind "${String(slot.regionKind)}" — regenerate src/setup/layout-spec.json from the master (never hand-edit)`,
       );
   }
 }
@@ -84,6 +92,7 @@ export function fillRealLayout(
     );
   }
 
+  // Only spec-listed slot names are ever read, so non-slot keys like `layoutId` are ignored.
   const values: Record<string, unknown> = { ...slide };
 
   automizer.addSlide(MASTER_TEMPLATE_ALIAS, layout.sourceSlideIndex, (targetSlide) => {

@@ -43,7 +43,7 @@ export function fillTextSlot(
     case 'section-title': {
       if (typeof value !== 'string') {
         throw new Error(
-          `slot "${slot.slotName}" on layout "${layoutId}" expects a string value in the fill-plan — layout-spec/schema drift`,
+          `internal invariant violation: slot "${slot.slotName}" on layout "${layoutId}" expects a string value, but the schema-validated fill-plan supplied something else`,
         );
       }
       setSlotText(targetSlide, slot.slotName, value);
@@ -52,7 +52,7 @@ export function fillTextSlot(
     case 'subtitle': {
       if (!isBodyBlock(value)) {
         throw new Error(
-          `slot "${slot.slotName}" on layout "${layoutId}" expects a subtitle block ({ kind, body }) in the fill-plan — layout-spec/schema drift`,
+          `internal invariant violation: slot "${slot.slotName}" on layout "${layoutId}" expects a subtitle block ({ kind, body }), but the schema-validated fill-plan supplied something else`,
         );
       }
       setSlotText(targetSlide, slot.slotName, value.body);
