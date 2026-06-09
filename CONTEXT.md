@@ -175,7 +175,7 @@ _Avoid_: "template structure", "fixed outline", "required sections"
 - Skills renamed `deck-*` → `report-*` (+ `report.master.*`); `commercial-proposal-docx` reframed as a composed written proposal (no contract).
 - Fixtures restructured to two-level (`fixtures/valid-fill-plan.json`, `fixtures/invalid/fillplan-*.json`); brief fixtures deleted.
 - `ERROR_HANDLING.md` realigned to the fill-plan and D11 (dropped the brief error class; fixed the `env`/API-key note).
-- `npm run build / lint / validate / test` all green (7 schema tests).
+- `pnpm run build / lint / validate / test` all green (7 schema tests).
 
 **"the brand IS the template"** — RESOLVED. v1 keeps the brand fused into each Master template (ARCHITECTURE.md §2 / DECISIONS_LOG D2-2 stand). Factoring the brand out into a swappable theme is a deferred roadmap option, not the v1 model (see Deferred concepts).
 

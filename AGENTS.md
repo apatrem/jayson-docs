@@ -124,7 +124,7 @@ All of:
 - All milestone acceptance criteria pass (see `docs/BUILD_BRIEF.md` §3).
 - Given a fill-plan JSON and the appropriate master template, the CLI produces a final `.pptx` or `.docx` that opens cleanly in PowerPoint / Word with the Acme brand applied and native editable charts.
 - The **`report-pptx`** skill works end-to-end driven by a **BYO LLM** (D15; verify with ≥1 LLM plus a human-run fill-plan): the user describes a deliverable, the LLM produces a schema-valid fill-plan, the skill invokes the app, the file appears. *(v1 implements only report-pptx — D20.)*
-- `npm run build`, `npm run lint`, `npm run test`, `npm run validate` all green.
+- `pnpm run build`, `pnpm run lint`, `pnpm run test`, `pnpm run validate` all green.
 - The repo is small, dependencies are exactly those in `package.json` (no `@anthropic-ai/sdk`), and the docs are accurate.
 
 Then stop. v2 (additional layouts, additional templates, MinerU upstream) waits for explicit go-ahead.
@@ -133,7 +133,7 @@ Then stop. v2 (additional layouts, additional templates, MinerU upstream) waits 
 
 ## 9. Working agreements (PR hygiene)
 
-- **Gate (one command):** `npm run build && npm run lint && npm run test && npm run validate`. The green gate is the bar; a clean merge is not. `main` is **protected** — PR + green CI required to merge.
+- **Gate (one command):** `pnpm run build && pnpm run lint && pnpm run test && pnpm run validate`. The green gate is the bar; a clean merge is not. `main` is **protected** — PR + green CI required to merge.
 - **Small PRs.** Routine work < 300 changed lines; split or stack anything larger. Separate a mechanical change from a behaviour change.
 - **Branching** — see §0: long-lived worktree folders, ephemeral per-task branches (`agent/<tool>/<task-id>`, deleted after merge).
 - **Sparse review.** Ask a reviewer (Codex/Claude) for **blockers only** — correctness, security, missing tests, broken boundaries; ≤10 findings, ranked by severity. Lint/format handles style. `hard`-tier best-of-N biases: `ROLES.md`.

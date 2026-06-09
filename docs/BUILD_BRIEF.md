@@ -105,7 +105,7 @@ Runtime:
 
 Dev: vitest, eslint, prettier, tsx.
 
-npm scripts: `build`, `test`, `lint`, `format`, `validate`, `fill`.
+package scripts: `build`, `test`, `lint`, `format`, `validate`, `fill`.
 
 ---
 
@@ -114,14 +114,14 @@ npm scripts: `build`, `test`, `lint`, `format`, `validate`, `fill`.
 Build **one layout end-to-end** before widening. Do not start a step until the previous one's acceptance criteria pass.
 
 ### M0 — Project scaffold ✅
-- Verify `npm install`, `npm run build`, `lint`, `test`, `validate` all pass with the scaffolded files.
+- Verify `pnpm install --frozen-lockfile`, `pnpm run build`, `lint`, `test`, `validate` all pass with the scaffolded files.
 - **Acceptance:** clean install on a fresh machine; the fixture-validation script reports every fixture as expected. *(Done.)*
 
 ### M1 — Strict schema + `kpi-row-chart` (no master needed)
 - [ ] Make the fill-plan schema **strict** at the LLM boundary: `.strict()` on section/slide/block/chart objects; `superRefine` so each chart `datasetRef` resolves in `datasets`; pie/doughnut rows ≤ 8; a chart's `kind` must equal its layout slot's pinned literal (D21 corollary).
 - [ ] Implement `src/brand/load.ts` (parse + Zod-validate `brand.yaml`).
 - [ ] Add invalid fixtures + tests for each new rule (unknown-key, bad `datasetRef`, pie>8, kind-mismatch). TDD.
-- **Acceptance:** `npm run validate` / `test` cover every rule; **no master required** for this step.
+- **Acceptance:** `pnpm run validate` / `test` cover every rule; **no master required** for this step.
 
 ### M2 — `report.master.pptx` + text/image/kpi fill
 - [ ] Obtain `templates/report.master.pptx` with the `kpi-row-chart` slide + named shapes (real, or `PLACEHOLDER-` per §0.5 / AGENTS §4).
@@ -171,7 +171,7 @@ Build **one layout end-to-end** before widening. Do not start a step until the p
 - The **`report-pptx`** skill produces a final `.pptx` for the `kpi-row-chart` layout — brand-correct, with a native editable chart — from a representative brief, driven by a **BYO LLM** (Cowork is one option; also verify a human-run fill-plan).
 - The fill-plan schema is **strict** and cross-validating (M1).
 - No `@anthropic-ai/sdk` dependency; no API key handling; no LLM call from this codebase.
-- `npm run build`, `npm run lint`, `npm run test`, `npm run validate` all green.
+- `pnpm run build`, `pnpm run lint`, `pnpm run test`, `pnpm run validate` all green.
 - The repo is small, dependencies are exactly those in `package.json`, and docs are accurate.
 
 Then stop. Everything in §0.5 (more layouts, DOCX, Setup, sharing, skill creator, signed binary, MinerU upstream) waits for explicit go-ahead.

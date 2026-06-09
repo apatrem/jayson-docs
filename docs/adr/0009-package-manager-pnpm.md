@@ -24,9 +24,10 @@ leaving "is pnpm a mandate?" ambiguous.
     setup).
   - **Existing repos:** **optional.** The cost only bites with concurrency, so migrate a repo only when you
     will **routinely run parallel worktrees** there; otherwise keep its current PM and point the
-    per-worktree bootstrap at its existing install command. (**This repo, jayson-docs, stays on npm** — it
-    isn't run with routine parallel worktrees, so the concurrency cost doesn't apply; the gate is the npm
-    command in `AGENTS.md`/`CLAUDE.md`.)
+    per-worktree bootstrap at its existing install command. (**This repo, jayson-docs, MIGRATED to pnpm on
+    2026-06-09** — it now routinely runs many parallel worktrees, the existing-repo concurrency trigger named
+    above, so the per-worktree disk/install cost now applies; the gate is the pnpm command in
+    `AGENTS.md`/`CLAUDE.md`.)
   - **Non-Node repos:** pnpm is N/A; apply the same *principle* — a cheap, reproducible per-worktree
     dependency bootstrap — with that toolchain.
 

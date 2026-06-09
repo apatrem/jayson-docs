@@ -6,6 +6,6 @@ alwaysApply: true
 Read **AGENTS.md** — it governs this repo (workflow, hard rules, the gate, DoD).
 
 - Work in your own worktree; **never commit to `main`** (protected — PR + green CI).
-- Before claiming success, run: `npm run build && npm run lint && npm run test && npm run validate`. Do not invent passing results.
+- Before claiming success, run: `pnpm run build && pnpm run lint && pnpm run test && pnpm run validate`. Do not invent passing results.
 - Smallest correct change; keep diffs small. No new dependencies without asking.
 - Reject invalid fill-plans; never auto-"fix" them.

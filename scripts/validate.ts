@@ -2,7 +2,7 @@
 /**
  * scripts/validate.ts — runs the Zod schema against every fixture under
  * /fixtures and reports pass/fail. The valid fixture must parse cleanly;
- * invalid fixtures must fail. Used by `npm run validate`.
+ * invalid fixtures must fail. Used by `pnpm run validate`.
  */
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';

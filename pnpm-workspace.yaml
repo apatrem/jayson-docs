@@ -1,0 +1,7 @@
+# pnpm settings (pnpm 11 reads build-script approvals from here, not package.json).
+# esbuild ships a postinstall that links its platform-native binary; it is pulled
+# in transitively by tsx and vitest/vite (both declared devDependencies). pnpm is
+# secure-by-default and refuses to run a dependency's build script unless it is
+# allow-listed, failing `pnpm install` in CI otherwise — so approve esbuild here.
+allowBuilds:
+  esbuild: true
