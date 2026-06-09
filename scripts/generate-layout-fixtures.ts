@@ -21,17 +21,26 @@ const datasets = {
   cat: {
     id: 'cat',
     columns: ['category', 'series_a'],
-    rows: [['A', 10], ['B', 20]],
+    rows: [
+      ['A', 10],
+      ['B', 20],
+    ],
   },
   line: {
     id: 'line',
     columns: ['year', 'value'],
-    rows: [[2024, 10], [2025, 20]],
+    rows: [
+      [2024, 10],
+      [2025, 20],
+    ],
   },
   bubble: {
     id: 'bubble',
     columns: ['x', 'y', 'size'],
-    rows: [[1, 2, 3], [4, 5, 6]],
+    rows: [
+      [1, 2, 3],
+      [4, 5, 6],
+    ],
   },
 };
 
@@ -41,7 +50,7 @@ const slides: Record<string, Record<string, unknown>> = {
     title,
     subtitle,
     body: 'June 2026 · Partner presentation',
-    image: { ref: 'assets/logo.png' },
+    image: { ref: 'fixtures/assets/test-logo.svg' },
   },
   section: {
     layoutId: 'section',
@@ -150,7 +159,7 @@ const slides: Record<string, Record<string, unknown>> = {
     title,
     subtitle,
     body: 'June 2026 · Partner presentation',
-    image: { ref: 'assets/logo.png' },
+    image: { ref: 'fixtures/assets/test-logo.svg' },
   },
   'section-white': {
     layoutId: 'section-white',
