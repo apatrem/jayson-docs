@@ -40,7 +40,7 @@ The brief above maps to `fixtures/valid-fill-plan.json`. Key constraints:
 From the repo root, with dependencies installed:
 
 ```bash
-npm run fill -- fill \
+pnpm run fill -- fill \
   --template templates/PLACEHOLDER-report.master.pptx \
   --plan fixtures/valid-fill-plan.json \
   --out out/teg-steering-deck.pptx

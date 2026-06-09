@@ -28,7 +28,7 @@
   ],
   "cli": {
     "binary": "jayson-docs",
-    "install": "npm install --prefix . && npm link",
+    "install": "pnpm install --frozen-lockfile && pnpm link --global",
     "subcommands": ["fill"]
   },
   "_note": "Optional Cowork packaging (D15): the product is a portable skills pack + app driven by any agentic LLM (BYO LLM). If publishing a Cowork plugin, verify this manifest via the cowork-plugin-management:create-cowork-plugin skill."

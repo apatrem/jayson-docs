@@ -24,15 +24,15 @@ Template-fill CLI for consulting-firm deliverables — driven by your **own** ag
 ## Setup
 
 ```bash
-npm install
-npm run validate           # schema-checks the fixtures
-npm run test               # runs the test suite
+pnpm install --frozen-lockfile
+pnpm run validate           # schema-checks the fixtures
+pnpm run test               # runs the test suite
 ```
 
 ## Fill (once the pipeline lands — M2/M3)
 
 ```bash
-npm run fill -- \
+pnpm run fill -- \
   --template templates/report.master.pptx \
   --plan tmp/plan.json \
   --out      out/report-acme.pptx

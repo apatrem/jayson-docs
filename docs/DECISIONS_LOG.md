@@ -145,7 +145,7 @@ The "one engine renders HTML and prints PDF" principle (which ruled out Typst an
 **Decided:** the CLI executes **on the user's machine** as a **standalone, code-signed, per-OS binary** (macOS + Windows; the pure-JS dependency stack makes single-executable packaging clean — Node SEA / `bun --compile`). The Firm context (including `confidential/`) stays local; Claude-in-Cowork only orchestrates (gathers the brief, drafts the fill-plan, runs skills).
 **Rejected:** running the CLI in Cowork's cloud sandbox (would require uploading the firm's confidential past proposals / project deliverables to render a deck).
 
-**Reason:** the Trust tier model makes confidentiality first-class — uploading `confidential/` materials to a cloud sandbox is the exact leak we designed against. Local execution keeps them on the machine; a standalone binary (not `npx`) removes the Node/npm install a non-programmer cannot do.
+**Reason:** the Trust tier model makes confidentiality first-class — uploading `confidential/` materials to a cloud sandbox is the exact leak we designed against. Local execution keeps them on the machine; a standalone binary (not `npx`) removes the Node/pnpm install a non-programmer cannot do.
 **Known dependency:** a non-programmer-friendly binary requires **code signing + notarization** (macOS Gatekeeper, Windows SmartScreen). Needs an Apple Developer account + a Windows Authenticode cert; until then, users hit OS security warnings.
 **See also:** the app is **flags-only and agent-invoked** (no double-click / interactive launch in v1); both an interactive file-picker and an agent-fetch path that would sidestep this signing dependency are deferred — see `CONTEXT.md` → Deferred concepts.
 

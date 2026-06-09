@@ -7,7 +7,7 @@
 
 ## Acceptance criteria  (must be machine-checkable)
 - [ ] <criterion> → covered by `tests/<file>`
-- [ ] gate green: `npm run build && npm run lint && npm run test && npm run validate`
+- [ ] gate green: `pnpm run build && pnpm run lint && pnpm run test && pnpm run validate`
 
 ## Files likely involved
 - <path>

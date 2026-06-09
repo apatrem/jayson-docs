@@ -153,8 +153,8 @@ npx jayson-docs fill \
   --out out/<client-shortname>-deck.pptx
 ```
 
-During local dev from the repo, use `npm run fill -- fill …` (note the `fill`
-subcommand twice — once for npm, once for the CLI) or `npx tsx src/cli/generate.ts
+During local dev from the repo, use `pnpm run fill -- fill …` (note the `fill`
+subcommand twice — once for pnpm, once for the CLI) or `npx tsx src/cli/generate.ts
 fill …` instead of `./jayson-docs` (the binary ships inside the skills pack at
 distribution time — D14/D15).
 
@@ -180,7 +180,7 @@ When the fill-plan already exists (hand-authored, exported, or from
 `fixtures/valid-fill-plan.json`):
 
 ```bash
-npm run fill -- fill \
+pnpm run fill -- fill \
   --template templates/PLACEHOLDER-report.master.pptx \
   --plan fixtures/valid-fill-plan.json \
   --out out/teg-steering-deck.pptx
