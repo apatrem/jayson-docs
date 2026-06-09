@@ -170,16 +170,23 @@ The Zod schema mirrors these names exactly. The LLM emits keys matching the sche
 
 ---
 
-## Density caps (enforced by Zod)
+## Density caps — two tiers (optimal warned, max enforced)
 
-To prevent the LLM overfilling slots and visually breaking layouts:
+Each text region carries **two** bounds (`src/schema/caps.ts` is the single source, mirrored by the LLM-facing catalogue per D22's drift test): an **optimal** range that the CLI soft-warns when exceeded (exits 0, stderr note) and an **absolute max** that Zod **rejects**. Aim for optimal; the max is the hard ceiling that keeps the master geometry from breaking (D19, D23).
 
-- `title` — 8–15 words
-- `section-title` — ≤8 words
-- `kpi-strip` — 3–5 cards
-- `narrative` / `body-text` bullets — ≤5 items, ≤60 words total
-- `callout` / `takeaway` — ≤25 words
-- `body-text` paragraph — ≤80 words
-- general `bullets` — ≤7 items
+| Region | Optimal (CLI-warned) | Max (Zod-enforced) |
+|--------|----------------------|--------------------|
+| `title` | 8–15 words | 20 words |
+| `section-title` | ≤8 words | 12 words |
+| `subtitle` | ≤25 words | 40 words |
+| `chart-title` | ≤15 words | 25 words |
+| `source` | ≤40 words | 80 words |
+| cover `body` | ≤25 words | 40 words |
+| `narrative` / content bullets | ≤5 items, ≤60 words | ≤8 items, ≤100 words |
+| content `text` | ≤60 words | 100 words |
+| `callout` / `takeaway` | ≤25 words | 40 words |
+| `caption` (image / chart) | ≤120 chars | 200 chars |
 
-Fill-plans that exceed these caps are rejected (whether the LLM or a human produced them), regardless of how plausibly the model phrased the content.
+Structural hard limits (single bound): general `bullets` block ≤7 items; pie/doughnut chart rows ≤8; `kpi-strip` holds 3–5 cards.
+
+Over **optimal** → soft warning (CLI exits 0). Over **max** → rejected with a clear error, whether the LLM or a human produced it — never auto-truncated or "fixed" (`ERROR_HANDLING.md`).

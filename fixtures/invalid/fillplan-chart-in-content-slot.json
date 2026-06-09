@@ -1,0 +1,33 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "datasets": {
+    "cat": {
+      "id": "cat",
+      "columns": ["category", "value"],
+      "rows": [["A", 10]]
+    }
+  },
+  "sections": [
+    {
+      "title": "Comparison",
+      "slides": [
+        {
+          "layoutId": "two-columns",
+          "title": "Eight word minimum title for every layout fixture test",
+          "body-left": {
+            "kind": "bubble",
+            "datasetRef": "cat"
+          },
+          "body-right": { "kind": "bullets", "items": ["column two"] },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "section-white",
+          "section-title": "Section One",
+          "subtitle": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          }
+        }
+      ]
+    }
+  ]
+}

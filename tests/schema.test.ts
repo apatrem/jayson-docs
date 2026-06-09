@@ -113,7 +113,7 @@ describe('fillPlanSchema', () => {
     }
   });
 
-  it('rejects unpinned chart kinds in document chart blocks', () => {
+  it('rejects deferred document chart blocks (D21 — no docx chart route)', () => {
     const result = fillPlanSchema.safeParse(
       read('fixtures/invalid/fillplan-pie-too-many-rows.json'),
     );
@@ -123,7 +123,7 @@ describe('fillPlanSchema', () => {
       expect(
         result.error.issues.some(
           (issue) =>
-            issuePath(issue.path) === 'sections.0.blocks.0.chart' &&
+            issuePath(issue.path) === 'sections.0.blocks.0.type' &&
             issue.code === 'invalid_union',
         ),
       ).toBe(true);

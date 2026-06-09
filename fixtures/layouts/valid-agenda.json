@@ -8,17 +8,16 @@
   },
   "sections": [
     {
-      "title": "Overview",
+      "title": "Fixture",
       "slides": [
         {
           "layoutId": "agenda",
-          "title": "Contents and agenda for today strategy review session",
+          "title": "Eight word minimum title for every layout fixture test",
           "body-left": {
             "kind": "bullets",
             "items": [
-              "Executive summary and key messages",
-              "Market sizing and demand outlook",
-              "Recommendations and next steps"
+              "Point one",
+              "Point two"
             ]
           }
         }

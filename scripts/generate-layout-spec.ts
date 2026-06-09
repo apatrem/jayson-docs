@@ -171,8 +171,35 @@ function parseDeletions(md: string): ShapeDeletion[] {
   return deletions;
 }
 
-const md = readFileSync(namingTablePath, 'utf-8');
-const spec = parseNamingTable(md);
-spec.deletions = parseDeletions(md);
-writeFileSync(outputPath, `${JSON.stringify(spec, null, 2)}\n`);
-process.stdout.write(`wrote ${outputPath} (${spec.layouts.length} layouts)\n`);
+export function generateLayoutSpecFromNamingTable(md: string): LayoutSpec {
+  const spec = parseNamingTable(md);
+  spec.deletions = parseDeletions(md);
+  return spec;
+}
+
+const isMain =
+  process.argv[1] !== undefined &&
+  fileURLToPath(import.meta.url) === process.argv[1];
+
+if (isMain) {
+  const checkMode = process.argv.includes('--check');
+  const md = readFileSync(namingTablePath, 'utf-8');
+  const spec = generateLayoutSpecFromNamingTable(md);
+  const serialized = `${JSON.stringify(spec, null, 2)}\n`;
+
+  if (checkMode) {
+    const committed = readFileSync(outputPath, 'utf-8');
+    if (committed !== serialized) {
+      process.stderr.write(
+        'FAIL  layout-spec.json drift: regenerate with npx tsx scripts/generate-layout-spec.ts\n',
+      );
+      process.exit(1);
+    }
+    process.stdout.write(
+      `PASS  layout-spec.json matches naming table (${spec.layouts.length} layouts)\n`,
+    );
+  } else {
+    writeFileSync(outputPath, serialized);
+    process.stdout.write(`wrote ${outputPath} (${spec.layouts.length} layouts)\n`);
+  }
+}

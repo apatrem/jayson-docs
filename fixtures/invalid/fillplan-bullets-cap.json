@@ -1,0 +1,34 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Content",
+      "slides": [
+        {
+          "layoutId": "title-and-content",
+          "title": "Eight word minimum title for every layout fixture test",
+          "body-left": {
+            "kind": "bullets",
+            "items": [
+              "item one",
+              "item two",
+              "item three",
+              "item four",
+              "item five",
+              "item six",
+              "item seven",
+              "item eight",
+              "item nine"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -7,6 +7,8 @@ Source: `templates/report.master.pptx` (sanitized firm template, 26 slides).
 Extraction: OOXML from `ppt/slides/slideN.xml` + slide layout geometry/text fallback + chart part inspection.
 **Disambiguation rule:** placeholder default text ("Click to edit title", "Click to edit subtitle", "Chart name, unit", "Source: 1.") takes precedence over raw PowerPoint placeholder types (`body` vs `subTitle`).
 
+**Shape identity contract:** a master shape is matched and validated by **placeholder type+idx** and **geometry** (±0.05 in). The **Master placeholder text** column is a naming-time disambiguation hint only — not a validation invariant; do not enforce brittle boilerplate text after `slot.*` names are applied.
+
 ## Usage tiers (seeded from deck sections)
 
 | Tier | Slides | Deck section |
@@ -152,15 +154,15 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | ZoneTexte 30 | — | ©Year Acme | x=10.840 y=7.185 w=1.350 h=0.135 | slot.footer-copyright | footer | Copyright line — deterministic from brand/master |
 | ZoneTexte 5 | — | ACME_logo | x=0.591 y=7.165 w=0.667 h=0.310 | slot.footer-logo | footer | Acme logo — deterministic from brand/master |
 
-### Slide 7 — `chart-stacked-bar`
+### Slide 7 — `chart-stacked-column`
 
 | Field | Value |
 |-------|-------|
 | Firm layout name | Title |
-| Proposed `layoutId` | `chart-stacked-bar` |
-| Naming rationale | Disambiguated by pre-authored stacked-bar chart (slide 7). |
+| Proposed `layoutId` | `chart-stacked-column` |
+| Naming rationale | Disambiguated by pre-authored stacked-column chart (slide 7). |
 | Usage tier | `common` |
-| Pinned chart kind | `stacked-bar` |
+| Pinned chart kind | `stacked-column` |
 
 | Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
 |----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
@@ -169,7 +171,7 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | Espace réservé du contenu 11 | idx:18 | Source: 1. | x=1.350 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations (hyperlinks when available) — LLM-filled |
 | Espace réservé du contenu 5 | — | Comment | x=7.527 y=1.775 w=5.254 h=4.865 | slot.body-right | content | Narrative beside chart |
 | Espace réservé du contenu 5 | — | Chart name , unit | x=0.602 y=1.318 w=6.164 h=0.301 | slot.chart-title | chart-title | Chart title / unit line above chart (not slide subtitle) |
-| Espace réservé du contenu 1 | chart | — | x=0.602 y=1.775 w=6.472 h=5.047 | slot.chart | chart | chart kind: stacked-bar |
+| Espace réservé du contenu 1 | idx:1 | — | x=0.602 y=1.775 w=6.472 h=5.047 | slot.chart | chart | chart kind: stacked-column |
 | ZoneTexte 30 | — | ©Year Acme | x=10.840 y=7.185 w=1.350 h=0.135 | slot.footer-copyright | footer | Copyright line — deterministic from brand/master |
 | ZoneTexte 7 | — | ACME_logo | x=0.591 y=7.165 w=0.667 h=0.310 | slot.footer-logo | footer | Acme logo — deterministic from brand/master |
 
@@ -190,7 +192,7 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | Espace réservé du contenu 11 | idx:18 | Source: 1. | x=1.350 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations (hyperlinks when available) — LLM-filled |
 | Espace réservé du contenu 5 | — | Comment | x=7.527 y=1.775 w=5.254 h=4.865 | slot.body-right | content | Narrative beside chart |
 | Espace réservé du contenu 5 | — | Chart name , unit | x=0.602 y=1.318 w=6.164 h=0.301 | slot.chart-title | chart-title | Chart title / unit line above chart (not slide subtitle) |
-| Espace réservé du contenu 1 | chart | — | x=0.602 y=1.775 w=6.491 h=5.047 | slot.chart | chart | chart kind: clustered-column |
+| Espace réservé du contenu 1 | idx:1 | — | x=0.602 y=1.775 w=6.491 h=5.047 | slot.chart | chart | chart kind: clustered-column |
 | ZoneTexte 30 | — | ©Year Acme | x=10.840 y=7.185 w=1.350 h=0.135 | slot.footer-copyright | footer | Copyright line — deterministic from brand/master |
 | ZoneTexte 7 | — | ACME_logo | x=0.591 y=7.165 w=0.667 h=0.310 | slot.footer-logo | footer | Acme logo — deterministic from brand/master |
 
@@ -211,7 +213,7 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | Espace réservé du contenu 11 | idx:18 | Source: 1. | x=1.350 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations (hyperlinks when available) — LLM-filled |
 | Espace réservé du contenu 5 | — | Comment | x=7.527 y=1.775 w=5.254 h=4.865 | slot.body-right | content | Narrative beside chart |
 | Espace réservé du contenu 5 | — | Chart name , unit | x=0.602 y=1.318 w=6.164 h=0.301 | slot.chart-title | chart-title | Chart title / unit line above chart (not slide subtitle) |
-| Espace réservé du contenu 1 | chart | — | x=0.602 y=1.775 w=6.248 h=5.047 | slot.chart | chart | chart kind: line |
+| Espace réservé du contenu 1 | idx:1 | — | x=0.602 y=1.775 w=6.248 h=5.047 | slot.chart | chart | chart kind: line |
 | ZoneTexte 30 | — | ©Year Acme | x=10.840 y=7.185 w=1.350 h=0.135 | slot.footer-copyright | footer | Copyright line — deterministic from brand/master |
 | ZoneTexte 7 | — | ACME_logo | x=0.591 y=7.165 w=0.667 h=0.310 | slot.footer-logo | footer | Acme logo — deterministic from brand/master |
 
@@ -232,7 +234,7 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | Espace réservé du contenu 11 | idx:18 | Source: 1. | x=1.350 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations (hyperlinks when available) — LLM-filled |
 | Espace réservé du contenu 5 | — | Comment | x=7.527 y=1.775 w=5.254 h=4.865 | slot.body-right | content | Narrative beside chart |
 | Espace réservé du contenu 5 | — | Chart name , unit | x=0.602 y=1.318 w=6.164 h=0.301 | slot.chart-title | chart-title | Chart title / unit line above chart (not slide subtitle) |
-| Espace réservé du contenu 1 | chart | — | x=0.602 y=1.775 w=6.192 h=5.047 | slot.chart | chart | chart kind: bubble |
+| Espace réservé du contenu 1 | idx:1 | — | x=0.602 y=1.775 w=6.192 h=5.047 | slot.chart | chart | chart kind: bubble |
 | ZoneTexte 30 | — | ©Year Acme | x=10.840 y=7.185 w=1.350 h=0.135 | slot.footer-copyright | footer | Copyright line — deterministic from brand/master |
 | ZoneTexte 7 | — | ACME_logo | x=0.591 y=7.165 w=0.667 h=0.310 | slot.footer-logo | footer | Acme logo — deterministic from brand/master |
 
@@ -248,7 +250,7 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 |----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
 | Titre 5 | title | Click to edit Master title style | — | slot.title | title | — |
 | Espace réservé du contenu 6 | idx:1 | Click to edit Master text styles Second  | x=0.602 y=1.231 w=5.906 h=5.592 | slot.body-left | content | — |
-| Espace réservé du contenu 7 | idx:2 | Click to edit Master text styles Second  | x=6.825 y=1.231 w=5.906 h=5.592 | slot.body-left | content | — |
+| Espace réservé du contenu 7 | idx:2 | Click to edit Master text styles Second  | x=6.825 y=1.231 w=5.906 h=5.592 | slot.body-right | content | — |
 | Espace réservé du numéro de diapositive 3 | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.120 | slot.footer-page | footer | Pagination — pipeline auto-applies |
 | Espace réservé du contenu 8 | idx:18 | Source: 1. | x=1.350 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations (hyperlinks when available) — LLM-filled |
 | ZoneTexte 30 | — | ©Year Acme | x=10.840 y=7.185 w=1.350 h=0.135 | slot.footer-copyright | footer | Copyright line — deterministic from brand/master |
@@ -289,7 +291,7 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | Titre 1 | title | Click to edit title | x=0.602 y=0.382 w=5.901 h=0.691 | slot.title | title | — |
 | Espace réservé du texte 2 | body | Click to edit subtitle | x=0.602 y=1.237 w=5.906 h=0.230 | slot.subtitle-left | subtitle | — |
 | Espace réservé du contenu 3 | idx:2 | Click to edit Master text styles Second  | x=0.602 y=1.735 w=5.906 h=5.086 | slot.body-left | content | — |
-| Espace réservé du texte 4 | body | Click to edit subtitle | x=6.825 y=1.239 w=5.906 h=0.228 | slot.subtitle-center | subtitle | — |
+| Espace réservé du texte 4 | body | Click to edit subtitle | x=6.825 y=1.239 w=5.906 h=0.228 | slot.subtitle-right | subtitle | — |
 | Espace réservé du contenu 5 | idx:4 | Click to edit Master text styles Second  | x=6.825 y=1.735 w=5.906 h=5.086 | slot.body-right | content | — |
 | Espace réservé du numéro de diapositive 6 | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.120 | slot.footer-page | footer | Pagination — slide instance (idx 12) |
 | Espace réservé du contenu 7 | idx:18 | Source: 1. | x=1.350 y=7.185 w=5.153 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
@@ -331,8 +333,8 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | Espace réservé du contenu 3 | idx:2 | Click to edit Master text styles Second  | x=0.602 y=1.663 w=3.780 h=5.158 | slot.body-left | content | — |
 | Espace réservé du texte 4 | body | Click to edit master text styles | x=8.950 y=1.231 w=3.781 h=0.231 | slot.subtitle-right | subtitle | — |
 | Espace réservé du contenu 5 | idx:4 | Click to edit Master text styles Second  | x=8.950 y=1.663 w=3.781 h=5.158 | slot.body-right | content | — |
-| Espace réservé du texte 2 | body | Click to edit master text styles | x=4.737 y=1.231 w=3.859 h=0.236 | slot.subtitle-middle | subtitle | — |
-| Espace réservé du contenu 3 | idx:20 | Click to edit Master text styles Second  | x=4.737 y=1.663 w=3.859 h=5.158 | slot.body-center | content | — |
+| Espace réservé du texte 6 | body | Click to edit master text styles | x=4.737 y=1.231 w=3.859 h=0.236 | slot.subtitle-middle | subtitle | — |
+| Espace réservé du contenu 7 | idx:20 | Click to edit Master text styles Second  | x=4.737 y=1.663 w=3.859 h=5.158 | slot.body-center | content | — |
 | Espace réservé du numéro de diapositive 8 | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.120 | slot.footer-page | footer | Pagination — slide instance (idx 12) |
 | Espace réservé du contenu 9 | idx:18 | Source: 1. | x=1.350 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
 | ZoneTexte 30 | — | ©Year Acme | x=10.840 y=7.185 w=1.350 h=0.135 | slot.footer-copyright | footer | Copyright line — deterministic from brand/master |
@@ -367,7 +369,7 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | Titre 1 | title | Click to edit Master title style | x=0.602 y=0.382 w=12.128 h=0.691 | slot.title | title | — |
 | Espace réservé du texte 2 | body | Click to edit master text styles | x=0.602 y=1.231 w=5.906 h=0.236 | slot.subtitle-left | subtitle | — |
 | Espace réservé du contenu 3 | idx:2 | Click to edit Master text styles Second  | x=0.602 y=1.663 w=5.906 h=5.158 | slot.body-left | content | — |
-| Espace réservé du texte 4 | body | Click to edit master text styles | x=6.824 y=1.231 w=5.906 h=0.236 | slot.subtitle-center | subtitle | — |
+| Espace réservé du texte 4 | body | Click to edit master text styles | x=6.824 y=1.231 w=5.906 h=0.236 | slot.subtitle-right | subtitle | — |
 | Espace réservé du contenu 5 | idx:4 | Click to edit Master text styles Second  | x=6.825 y=1.663 w=5.906 h=5.158 | slot.body-right | content | — |
 | Espace réservé du numéro de diapositive 6 | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.120 | slot.footer-page | footer | Pagination — slide instance (idx 12) |
 | Espace réservé du contenu 7 | idx:18 | Source: 1. | x=1.350 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
@@ -486,7 +488,7 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | Titre 1 | title | Click to edit title | x=0.602 y=0.382 w=5.901 h=0.708 | slot.title | title | — |
 | Espace réservé du texte 2 | body | Click to edit subtitle | x=0.602 y=1.231 w=5.906 h=0.236 | slot.subtitle-left | subtitle | — |
 | Espace réservé du contenu 3 | idx:2 | Click to edit Master text styles Second  | x=0.602 y=1.703 w=5.906 h=5.119 | slot.body-left | content | — |
-| Espace réservé du texte 4 | body | Click to edit subtitle | x=6.825 y=1.236 w=5.906 h=0.275 | slot.subtitle-center | subtitle | — |
+| Espace réservé du texte 4 | body | Click to edit subtitle | x=6.825 y=1.236 w=5.906 h=0.275 | slot.subtitle-right | subtitle | — |
 | Espace réservé du contenu 5 | idx:4 | Click to edit Master text styles Second  | x=6.825 y=1.703 w=5.906 h=5.138 | slot.body-right | content | — |
 | Espace réservé du numéro de diapositive 6 | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.120 | slot.footer-page | footer | Pagination — slide instance (idx 12) |
 | Espace réservé du contenu 7 | idx:18 | Source: 1. | x=1.350 y=7.185 w=5.153 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |

@@ -108,4 +108,28 @@ describe('two-tier density caps (Phase 3.5)', () => {
     expect(result.status).toBe(2);
     expect(result.stderr).toContain('fill-plan validation failed');
   });
+
+  it('emits a soft warning for an over-optimal subtitle on a real subtitle slot', () => {
+    // Regression guard: the warning walker must fire for the real subtitle slot
+    // keys used by the 26 layouts (subtitle / subtitle-left / -middle / -right).
+    const plan = read('fixtures/layouts/valid-two-columns-and-subtitles.json') as {
+      sections: { slides: Record<string, unknown>[] }[];
+    };
+    const slide = plan.sections[0]?.slides[0];
+    expect(slide).toBeDefined();
+    if (!slide) return;
+    // 30 words: over the 25-word optimal, under the 40-word max -> warn, not reject.
+    slide['subtitle-left'] = {
+      kind: 'text',
+      body: 'w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 w30',
+    };
+    const result = fillPlanSchema.safeParse(plan);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      const warnings = collectDensityWarnings(result.data);
+      expect(warnings).toContain(
+        `warning: subtitle-left is 30 words (optimal ≤${REGION_CAPS.subtitle.optimal.max}, max ${REGION_CAPS.subtitle.max})`,
+      );
+    }
+  });
 });

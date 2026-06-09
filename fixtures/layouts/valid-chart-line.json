@@ -1,0 +1,86 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "datasets": {
+    "cat": {
+      "id": "cat",
+      "columns": [
+        "category",
+        "series_a"
+      ],
+      "rows": [
+        [
+          "A",
+          10
+        ],
+        [
+          "B",
+          20
+        ]
+      ]
+    },
+    "line": {
+      "id": "line",
+      "columns": [
+        "year",
+        "value"
+      ],
+      "rows": [
+        [
+          2024,
+          10
+        ],
+        [
+          2025,
+          20
+        ]
+      ]
+    },
+    "bubble": {
+      "id": "bubble",
+      "columns": [
+        "x",
+        "y",
+        "size"
+      ],
+      "rows": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          4,
+          5,
+          6
+        ]
+      ]
+    }
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "chart-line",
+          "title": "Eight word minimum title for every layout fixture test",
+          "chart-title": "Trend over time",
+          "chart": {
+            "kind": "line",
+            "datasetRef": "line"
+          },
+          "body-right": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

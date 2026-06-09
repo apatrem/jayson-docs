@@ -8,11 +8,11 @@
   },
   "sections": [
     {
-      "title": "Appendix",
+      "title": "Fixture",
       "slides": [
         {
           "layoutId": "blank",
-          "source": "Source: ACME internal model, 2026."
+          "source": "Source: ACME analysis, June 2026."
         }
       ]
     }

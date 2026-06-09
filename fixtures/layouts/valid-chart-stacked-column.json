@@ -1,0 +1,89 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "datasets": {
+    "cat": {
+      "id": "cat",
+      "columns": [
+        "category",
+        "series_a"
+      ],
+      "rows": [
+        [
+          "A",
+          10
+        ],
+        [
+          "B",
+          20
+        ]
+      ]
+    },
+    "line": {
+      "id": "line",
+      "columns": [
+        "year",
+        "value"
+      ],
+      "rows": [
+        [
+          2024,
+          10
+        ],
+        [
+          2025,
+          20
+        ]
+      ]
+    },
+    "bubble": {
+      "id": "bubble",
+      "columns": [
+        "x",
+        "y",
+        "size"
+      ],
+      "rows": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          4,
+          5,
+          6
+        ]
+      ]
+    }
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "chart-stacked-column",
+          "title": "Eight word minimum title for every layout fixture test",
+          "chart-title": "Units by category",
+          "chart": {
+            "kind": "stacked-column",
+            "datasetRef": "cat"
+          },
+          "body-right": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

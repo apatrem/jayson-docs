@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { REGION_CAPS, wordCount } from '../caps.js';
-import { chartBlock, pinnedChartBlockUnion, type PinnedChartKind } from '../chart.js';
+import { chartBlock, type PinnedChartKind } from '../chart.js';
 
 export { wordCount } from '../caps.js';
 
@@ -119,22 +119,12 @@ export const imageBlockSchema = z
   })
   .strict();
 
-function contentChartBlock(kind?: PinnedChartKind) {
-  return z
-    .object({
-      kind: z.literal('chart'),
-      chart: kind !== undefined ? chartBlock({ kind }) : pinnedChartBlockUnion(),
-    })
-    .strict();
-}
-
-/** Content region — bullets, text, callout, image, or chart. */
+/** Content region — bullets, text, callout, or image (no charts; D21 pins charts to chart slots only). */
 export const contentBlockSchema = z.union([
   contentBulletsSchema,
   contentTextSchema,
   contentCalloutSchema,
   imageBlockSchema,
-  contentChartBlock(),
 ]);
 
 /** Chart narrative column (body-right) — bullets or text, same caps as kpi-row-chart narrative. */

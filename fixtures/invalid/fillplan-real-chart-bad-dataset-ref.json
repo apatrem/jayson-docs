@@ -18,10 +18,10 @@
       "title": "Analysis",
       "slides": [
         {
-          "layoutId": "chart-stacked-bar",
+          "layoutId": "chart-stacked-column",
           "title": "Industrial demand scenarios show widening spread by sector",
           "chart-title": "2032 demand by sector (TWh)",
-          "chart": { "kind": "stacked-bar", "datasetRef": "missing_dataset" },
+          "chart": { "kind": "stacked-column", "datasetRef": "missing_dataset" },
           "body-right": { "kind": "text", "body": "Steel leads under all scenarios." },
           "source": "Source: ACME market model, June 2026."
         }

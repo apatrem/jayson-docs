@@ -131,14 +131,28 @@ function geometryMatches(a: ShapeGeometry | undefined, b: ShapeGeometry | undefi
   );
 }
 
-function masterTextMatches(shapeText: string, expected: string | undefined): boolean {
+/**
+ * Master-shape match contract: identity is placeholder type+idx AND geometry.
+ * masterText is a naming-time disambiguation hint only — not a validation
+ * invariant. By default (strict=false) empty or mismatched boilerplate text
+ * does not fail a match; callers may opt into strictMasterText for rename-time
+ * scoring, never for post-naming validation.
+ */
+function masterTextMatches(
+  shapeText: string,
+  expected: string | undefined,
+  strict: boolean,
+): boolean {
   if (expected === undefined || expected === '—' || expected.trim() === '') {
     return true;
   }
   const norm = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase();
   const shapeNorm = norm(shapeText);
   const expectedNorm = norm(expected);
-  if (shapeNorm === '' && expectedNorm !== '') {
+  if (shapeNorm === '') {
+    return !strict;
+  }
+  if (!strict) {
     return true;
   }
   return shapeNorm.startsWith(expectedNorm) || expectedNorm.startsWith(shapeNorm);
@@ -161,65 +175,77 @@ function placeholderMatches(
   return true;
 }
 
+function criteriaSupplied(criteria: ShapeMatch): boolean {
+  const { type, idx } = normalizePlaceholder(criteria.placeholder);
+  return (
+    criteria.currentShapeName !== '' ||
+    type !== undefined ||
+    idx !== undefined ||
+    (criteria.masterText !== undefined &&
+      criteria.masterText !== '—' &&
+      criteria.masterText.trim() !== '') ||
+    criteria.geometry !== undefined
+  );
+}
+
+function shapeMatchesCriteria(
+  shape: ExtractedShape,
+  criteria: ShapeMatch,
+  strictMasterText: boolean,
+): boolean {
+  const { type: expectedType, idx: expectedIdx } = normalizePlaceholder(criteria.placeholder);
+
+  if (criteria.currentShapeName !== '' && shape.name !== criteria.currentShapeName) {
+    return false;
+  }
+  if (!placeholderMatches(shape, expectedType, expectedIdx)) {
+    return false;
+  }
+  if (!masterTextMatches(shape.masterText, criteria.masterText, strictMasterText)) {
+    return false;
+  }
+  if (!geometryMatches(shape.geometry, criteria.geometry)) {
+    return false;
+  }
+  return true;
+}
+
+/** Post-naming validation: placeholder type+idx and geometry must match; masterText is ignored. */
+export function shapeMatchesSlotCriteria(
+  shape: ExtractedShape,
+  match: ShapeMatch,
+  options?: { strictMasterText?: boolean },
+): boolean {
+  const criteria: ShapeMatch = { ...match, currentShapeName: '' };
+  return shapeMatchesCriteria(shape, criteria, options?.strictMasterText ?? false);
+}
+
 export function matchShape(
   shapes: ExtractedShape[],
   slotName: string,
   criteria: ShapeMatch,
   alreadyUsed: Set<ExtractedShape>,
+  options?: { strictMasterText?: boolean },
 ): ExtractedShape | undefined {
-  const alreadyNamed = shapes.find((s) => s.name === slotName);
+  const strictMasterText = options?.strictMasterText ?? false;
+  const alreadyNamed = shapes.find((s) => s.name === slotName && !alreadyUsed.has(s));
   if (alreadyNamed !== undefined) {
-    return alreadyNamed;
-  }
-
-  const { type: expectedType, idx: expectedIdx } = normalizePlaceholder(criteria.placeholder);
-  const candidates = shapes.filter((s) => !alreadyUsed.has(s));
-
-  const placeholderOnly = candidates.filter((s) =>
-    placeholderMatches(s, expectedType, expectedIdx),
-  );
-  if (
-    (expectedType !== undefined || expectedIdx !== undefined) &&
-    placeholderOnly.length === 1
-  ) {
-    return placeholderOnly[0];
-  }
-
-  const score = (shape: ExtractedShape): number => {
-    let points = 0;
-    if (shape.sourcePart.includes('/slides/')) {
-      points += 50;
+    if (shapeMatchesSlotCriteria(alreadyNamed, criteria, { strictMasterText })) {
+      return alreadyNamed;
     }
-    if (shape.name === criteria.currentShapeName) {
-      points += 40;
-    }
-    if (placeholderMatches(shape, expectedType, expectedIdx)) {
-      points += 30;
-    }
-    if (masterTextMatches(shape.masterText, criteria.masterText)) {
-      points += 20;
-    }
-    if (geometryMatches(shape.geometry, criteria.geometry)) {
-      points += 10;
-    }
-    return points;
-  };
-
-  const ranked = candidates
-    .map((s) => ({ shape: s, points: score(s) }))
-    .filter((r) => r.points >= 30)
-    .sort((a, b) => b.points - a.points);
-
-  if (ranked.length === 1) {
-    return ranked[0]?.shape;
-  }
-
-  if (ranked.length > 1 && ranked[0]?.points === ranked[1]?.points) {
     return undefined;
   }
 
-  if (ranked.length >= 1 && (ranked[0]?.points ?? 0) >= 50) {
-    return ranked[0]?.shape;
+  if (!criteriaSupplied(criteria)) {
+    return undefined;
+  }
+
+  const candidates = shapes.filter(
+    (s) => !alreadyUsed.has(s) && shapeMatchesCriteria(s, criteria, strictMasterText),
+  );
+
+  if (candidates.length === 1) {
+    return candidates[0];
   }
 
   return undefined;
@@ -279,6 +305,80 @@ export async function collectSlideShapes(
   return shapes;
 }
 
+function chartKindFromXml(chartXml: string): string | undefined {
+  if (chartXml.includes('bubbleChart')) {
+    return 'bubble';
+  }
+  if (chartXml.includes('lineChart')) {
+    return 'line';
+  }
+  if (chartXml.includes('barChart')) {
+    const isStacked = chartXml.includes('grouping val="stacked"');
+    const barDirBar = chartXml.includes('barDir val="bar"');
+    const barDirCol = chartXml.includes('barDir val="col"') || !barDirBar;
+
+    if (isStacked && barDirCol) {
+      return 'stacked-column';
+    }
+    if (isStacked && barDirBar) {
+      return 'stacked-bar';
+    }
+    if (barDirCol) {
+      return 'clustered-column';
+    }
+    return 'bar';
+  }
+  return undefined;
+}
+
+/** Resolve the pinned chart kind from a specific chart-bearing shape block. */
+export async function readChartKindFromShape(
+  zip: JSZip,
+  shape: ExtractedShape,
+): Promise<string | undefined> {
+  if (!shape.isChart) {
+    return undefined;
+  }
+
+  const chartRId = /<c:chart[^>]*r:id="([^"]+)"/.exec(shape.shapeBlock)?.[1];
+  if (chartRId === undefined) {
+    return undefined;
+  }
+
+  const slideRels = /^ppt\/slides\/(slide\d+)\.xml$/.exec(shape.sourcePart);
+  const layoutRels = /^ppt\/slideLayouts\/(slideLayout\d+)\.xml$/.exec(shape.sourcePart);
+  const relsPath =
+    slideRels !== null
+      ? `ppt/slides/_rels/${slideRels[1]}.xml.rels`
+      : layoutRels !== null
+        ? `ppt/slideLayouts/_rels/${layoutRels[1]}.xml.rels`
+        : undefined;
+  if (relsPath === undefined) {
+    return undefined;
+  }
+
+  const relsFile = zip.file(relsPath);
+  if (relsFile === null) {
+    return undefined;
+  }
+
+  const relsXml = await relsFile.async('string');
+  const target = new RegExp(`Id="${escapeRegex(chartRId)}"[^>]*Target="([^"]+)"`).exec(
+    relsXml,
+  )?.[1];
+  if (target === undefined) {
+    return undefined;
+  }
+
+  const chartPath = `ppt/${target.replace(/^\.\.\//, '')}`;
+  const chartFile = zip.file(chartPath);
+  if (chartFile === null) {
+    return undefined;
+  }
+
+  return chartKindFromXml(await chartFile.async('string'));
+}
+
 export async function readChartKind(
   zip: JSZip,
   slideIndex: number,
@@ -307,23 +407,7 @@ export async function readChartKind(
   if (chartFile === null) {
     return undefined;
   }
-  const chartXml = await chartFile.async('string');
-  if (chartXml.includes('bubbleChart')) {
-    return 'bubble';
-  }
-  if (chartXml.includes('lineChart')) {
-    return 'line';
-  }
-  if (chartXml.includes('barChart')) {
-    if (chartXml.includes('grouping val="stacked"')) {
-      return 'stacked-bar';
-    }
-    if (chartXml.includes('barDir val="col"') || !chartXml.includes('barDir val="bar"')) {
-      return 'clustered-column';
-    }
-    return 'bar';
-  }
-  return undefined;
+  return chartKindFromXml(await chartFile.async('string'));
 }
 
 export function renameShapeBlock(shapeBlock: string, newName: string): string {

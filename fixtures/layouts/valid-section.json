@@ -8,12 +8,15 @@
   },
   "sections": [
     {
-      "title": "Part one",
+      "title": "Fixture",
       "slides": [
         {
           "layoutId": "section",
-          "section-title": "Demand fundamentals",
-          "subtitle": { "kind": "callout", "body": "Module 1 findings" }
+          "section-title": "Section One",
+          "subtitle": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          }
         }
       ]
     }

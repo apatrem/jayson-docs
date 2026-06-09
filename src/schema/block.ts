@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { REGION_CAPS } from './caps.js';
-import { pinnedChartBlockUnion } from './chart.js';
 
 const captionMax = REGION_CAPS.caption.max;
 
@@ -39,13 +38,6 @@ const bulletsBlock = z
   })
   .strict();
 
-const chartBlock = z
-  .object({
-    type: z.literal('chart'),
-    chart: pinnedChartBlockUnion(),
-  })
-  .strict();
-
 const imageBlock = z
   .object({
     type: z.literal('image'),
@@ -58,7 +50,6 @@ export const blockSchema = z.discriminatedUnion('type', [
   headingBlock,
   paragraphBlock,
   bulletsBlock,
-  chartBlock,
   imageBlock,
 ]);
 
