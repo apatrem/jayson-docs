@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { chartBlock, type ChartKind } from '../chart.js';
+import { chartBlock, pinnedChartBlockUnion, type PinnedChartKind } from '../chart.js';
 
 /** Word-count helper — mirrors kpi-row-chart.ts. */
 export const wordCount = (s: string): number => s.split(/\s+/).filter(Boolean).length;
@@ -97,11 +97,11 @@ export const imageBlockSchema = z
   })
   .strict();
 
-function contentChartBlock(kind?: ChartKind) {
+function contentChartBlock(kind?: PinnedChartKind) {
   return z
     .object({
       kind: z.literal('chart'),
-      chart: chartBlock(kind !== undefined ? { kind } : undefined),
+      chart: kind !== undefined ? chartBlock({ kind }) : pinnedChartBlockUnion(),
     })
     .strict();
 }
@@ -127,6 +127,6 @@ export const coverImageSchema = z
   .strict();
 
 /** Build a pinned chart slot block for chart-bearing layouts (D21). */
-export function pinnedChartSlot(kind: ChartKind) {
+export function pinnedChartSlot(kind: PinnedChartKind) {
   return chartBlock({ kind });
 }

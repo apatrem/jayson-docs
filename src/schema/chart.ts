@@ -159,22 +159,28 @@ function validateChartBlock(chart: ChartBlockInput, ctx: z.RefinementCtx): void 
         'chart must reference a dataset (datasetRef) or include one inline (dataset). See CHART_CATALOGUE.md',
     });
   }
-
-  if (chart.dataset !== undefined) {
-    validateChartDataset(chart.kind, chart.dataset, ctx, ['dataset']);
-  }
 }
+
+/** Chart kinds pinned by implemented layout slots (D21). */
+export const pinnedChartKinds = [
+  'stacked-bar',
+  'clustered-column',
+  'line',
+  'bubble',
+] as const satisfies readonly ChartKind[];
+
+export type PinnedChartKind = (typeof pinnedChartKinds)[number];
 
 /**
  * Build a chart-block schema.
  *
  * v1 layout slots pin `kind` to a single catalogue literal (D21).
+ * Inline dataset shape is validated once at fill-plan level (fillPlanSchema).
  */
-export function chartBlock(opts?: { kind?: ChartKind }) {
-  const kindSchema = opts?.kind ? z.literal(opts.kind) : chartKindSchema;
+export function chartBlock(opts: { kind: ChartKind }) {
   return z
     .object({
-      kind: kindSchema,
+      kind: z.literal(opts.kind),
       datasetRef: z.string().min(1).optional(),
       dataset: datasetSchema.optional(),
       caption: z.string().max(120).optional(),
@@ -183,6 +189,14 @@ export function chartBlock(opts?: { kind?: ChartKind }) {
     .superRefine(validateChartBlock);
 }
 
-export const chartBlockSchema = chartBlock();
+/** Union of layout-pinned chart blocks — the only constructible chart surface at runtime. */
+export function pinnedChartBlockUnion() {
+  return z.union([
+    chartBlock({ kind: 'stacked-bar' }),
+    chartBlock({ kind: 'clustered-column' }),
+    chartBlock({ kind: 'line' }),
+    chartBlock({ kind: 'bubble' }),
+  ]);
+}
 
-export type ChartBlock = z.infer<typeof chartBlockSchema>;
+export type ChartBlock = z.infer<ReturnType<typeof pinnedChartBlockUnion>>;

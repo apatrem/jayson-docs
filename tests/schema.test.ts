@@ -113,16 +113,67 @@ describe('fillPlanSchema', () => {
     }
   });
 
-  it('rejects pie and doughnut datasets with more than eight rows', () => {
+  it('rejects unpinned chart kinds in document chart blocks', () => {
     const result = fillPlanSchema.safeParse(
       read('fixtures/invalid/fillplan-pie-too-many-rows.json'),
     );
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues.some((issue) => issue.message.includes('at most 8 rows'))).toBe(
-        true,
+      expect(
+        result.error.issues.some(
+          (issue) =>
+            issuePath(issue.path) === 'sections.0.blocks.0.chart' &&
+            issue.code === 'invalid_union',
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('reports a single validation error for a malformed inline chart dataset', () => {
+    const plan = {
+      kind: 'deck',
+      meta: {
+        templateId: 'report.master.pptx',
+        client: 'ACME',
+        date: '2026-06-04',
+        language: 'en',
+      },
+      sections: [
+        {
+          title: 'Findings',
+          slides: [
+            {
+              layoutId: 'kpi-row-chart',
+              title: 'Tier-1 candidates score better than ammonia across every demand scenario today',
+              'kpi-strip': [
+                { figure: '1', label: 'a' },
+                { figure: '2', label: 'b' },
+                { figure: '3', label: 'c' },
+              ],
+              chart: {
+                kind: 'stacked-bar',
+                dataset: {
+                  id: 'inline_bad',
+                  columns: ['industry', 'low'],
+                  rows: [[42, 'not-a-number']],
+                },
+              },
+              narrative: { kind: 'text', body: 'short narrative under sixty words.' },
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = fillPlanSchema.safeParse(plan);
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const categoryIssues = result.error.issues.filter((issue) =>
+        issue.message.includes('first column must be category labels'),
       );
+      expect(categoryIssues).toHaveLength(1);
     }
   });
 
