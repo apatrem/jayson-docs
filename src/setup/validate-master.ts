@@ -9,12 +9,19 @@ import {
   getSlideLayoutPath,
   LEGACY_SHAPE_NAME,
   loadPptxZip,
-  readChartKind,
+  readChartKindFromShape,
 } from './pptx-shape-utils.js';
 
 export interface MasterValidationResult {
   ok: boolean;
   errors: string[];
+}
+
+function countSlotOccurrences(
+  shapes: { name: string }[],
+  slotName: string,
+): number {
+  return shapes.filter((s) => s.name === slotName).length;
 }
 
 export async function validateMasterShapes(
@@ -27,8 +34,15 @@ export async function validateMasterShapes(
 
   const specSlotsBySlide = new Map<number, Set<string>>();
   for (const layout of spec.layouts) {
-    const slots = new Set(layout.slots.map((s) => s.slotName));
-    specSlotsBySlide.set(layout.sourceSlideIndex, slots);
+    const slotNames = layout.slots.map((s) => s.slotName);
+    const unique = new Set(slotNames);
+    if (unique.size !== slotNames.length) {
+      const dupes = slotNames.filter((name, idx) => slotNames.indexOf(name) !== idx);
+      errors.push(
+        `layout ${layout.layoutId} (slide ${layout.sourceSlideIndex}): duplicate slot names in spec: ${[...new Set(dupes)].join(', ')}`,
+      );
+    }
+    specSlotsBySlide.set(layout.sourceSlideIndex, unique);
   }
 
   for (const layout of spec.layouts) {
@@ -36,20 +50,37 @@ export async function validateMasterShapes(
     const shapes = await collectSlideShapes(zip, slideIndex);
 
     for (const slot of layout.slots) {
-      const found = findShapeBySlotName(shapes, slot.slotName);
-      if (found === undefined) {
+      const count = countSlotOccurrences(shapes, slot.slotName);
+      if (count === 0) {
         errors.push(
           `slide ${slideIndex} (${layout.layoutId}): missing slot shape "${slot.slotName}"`,
         );
         continue;
       }
+      if (count > 1) {
+        errors.push(
+          `slide ${slideIndex} (${layout.layoutId}): duplicate master shapes named "${slot.slotName}" (${count} found)`,
+        );
+        continue;
+      }
+
+      const found = findShapeBySlotName(shapes, slot.slotName);
+      if (found === undefined) {
+        continue;
+      }
 
       if (slot.regionKind === 'chart' && slot.chartKind !== undefined) {
-        const actualKind = await readChartKind(zip, slideIndex);
+        if (!found.isChart) {
+          errors.push(
+            `slide ${slideIndex} (${layout.layoutId}): slot "${slot.slotName}" is not a chart shape`,
+          );
+          continue;
+        }
+        const actualKind = await readChartKindFromShape(zip, found);
         if (actualKind !== slot.chartKind) {
           errors.push(
-            `slide ${slideIndex} (${layout.layoutId}): slot.chart expects chart kind ` +
-              `"${slot.chartKind}" but master has "${actualKind ?? 'none'}"`,
+            `slide ${slideIndex} (${layout.layoutId}): slot "${slot.slotName}" expects chart kind ` +
+              `"${slot.chartKind}" but shape carries "${actualKind ?? 'none'}"`,
           );
         }
       }

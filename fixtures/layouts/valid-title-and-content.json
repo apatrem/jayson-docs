@@ -11,7 +11,7 @@
       "title": "Fixture",
       "slides": [
         {
-          "layoutId": "two-columns",
+          "layoutId": "title-and-content",
           "title": "Eight word minimum title for every layout fixture test",
           "body-left": {
             "kind": "bullets",
@@ -19,15 +19,7 @@
               "Point one",
               "Point two"
             ]
-          },
-          "body-right": {
-            "kind": "bullets",
-            "items": [
-              "Point one",
-              "Point two"
-            ]
-          },
-          "source": "Source: ACME analysis, June 2026."
+          }
         }
       ]
     }

@@ -67,16 +67,19 @@
       "title": "Fixture",
       "slides": [
         {
-          "layoutId": "chart-bubble",
+          "layoutId": "chart-clustered-column",
           "title": "Eight word minimum title for every layout fixture test",
-          "chart-title": "Risk return map",
+          "chart-title": "Units by category",
           "chart": {
-            "kind": "bubble",
-            "datasetRef": "bubble"
+            "kind": "clustered-column",
+            "datasetRef": "cat"
           },
           "body-right": {
-            "kind": "text",
-            "body": "Short narrative body text for the slot."
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
           },
           "source": "Source: ACME analysis, June 2026."
         }

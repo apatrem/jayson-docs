@@ -11,8 +11,12 @@
       "title": "Fixture",
       "slides": [
         {
-          "layoutId": "two-columns",
+          "layoutId": "narrative-with-sidebar",
           "title": "Eight word minimum title for every layout fixture test",
+          "subtitle-left": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
           "body-left": {
             "kind": "bullets",
             "items": [
@@ -20,12 +24,13 @@
               "Point two"
             ]
           },
+          "subtitle-right": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
           "body-right": {
-            "kind": "bullets",
-            "items": [
-              "Point one",
-              "Point two"
-            ]
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
           },
           "source": "Source: ACME analysis, June 2026."
         }

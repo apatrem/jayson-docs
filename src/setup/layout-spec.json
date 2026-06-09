@@ -465,10 +465,10 @@
       ]
     },
     {
-      "layoutId": "chart-stacked-bar",
+      "layoutId": "chart-stacked-column",
       "tier": "common",
       "sourceSlideIndex": 7,
-      "pinnedChartKind": "stacked-bar",
+      "pinnedChartKind": "stacked-column",
       "slots": [
         {
           "slotName": "slot.title",
@@ -546,10 +546,10 @@
         {
           "slotName": "slot.chart",
           "regionKind": "chart",
-          "chartKind": "stacked-bar",
+          "chartKind": "stacked-column",
           "match": {
             "currentShapeName": "Espace réservé du contenu 1",
-            "placeholder": "chart",
+            "placeholder": "idx:1",
             "geometry": {
               "x": 0.602,
               "y": 1.775,
@@ -673,7 +673,7 @@
           "chartKind": "clustered-column",
           "match": {
             "currentShapeName": "Espace réservé du contenu 1",
-            "placeholder": "chart",
+            "placeholder": "idx:1",
             "geometry": {
               "x": 0.602,
               "y": 1.775,
@@ -797,7 +797,7 @@
           "chartKind": "line",
           "match": {
             "currentShapeName": "Espace réservé du contenu 1",
-            "placeholder": "chart",
+            "placeholder": "idx:1",
             "geometry": {
               "x": 0.602,
               "y": 1.775,
@@ -921,7 +921,7 @@
           "chartKind": "bubble",
           "match": {
             "currentShapeName": "Espace réservé du contenu 1",
-            "placeholder": "chart",
+            "placeholder": "idx:1",
             "geometry": {
               "x": 0.602,
               "y": 1.775,
@@ -990,7 +990,7 @@
           }
         },
         {
-          "slotName": "slot.body-left",
+          "slotName": "slot.body-right",
           "regionKind": "content",
           "match": {
             "currentShapeName": "Espace réservé du contenu 7",
@@ -1255,7 +1255,7 @@
           }
         },
         {
-          "slotName": "slot.subtitle-center",
+          "slotName": "slot.subtitle-right",
           "regionKind": "subtitle",
           "match": {
             "currentShapeName": "Espace réservé du texte 4",
@@ -1553,7 +1553,7 @@
           "slotName": "slot.subtitle-middle",
           "regionKind": "subtitle",
           "match": {
-            "currentShapeName": "Espace réservé du texte 2",
+            "currentShapeName": "Espace réservé du texte 6",
             "placeholder": "body",
             "masterText": "Click to edit master text styles",
             "geometry": {
@@ -1568,7 +1568,7 @@
           "slotName": "slot.body-center",
           "regionKind": "content",
           "match": {
-            "currentShapeName": "Espace réservé du contenu 3",
+            "currentShapeName": "Espace réservé du contenu 7",
             "placeholder": "idx:20",
             "masterText": "Click to edit Master text styles Second",
             "geometry": {
@@ -1724,7 +1724,7 @@
           }
         },
         {
-          "slotName": "slot.subtitle-center",
+          "slotName": "slot.subtitle-right",
           "regionKind": "subtitle",
           "match": {
             "currentShapeName": "Espace réservé du texte 4",
@@ -2350,7 +2350,7 @@
           }
         },
         {
-          "slotName": "slot.subtitle-center",
+          "slotName": "slot.subtitle-right",
           "regionKind": "subtitle",
           "match": {
             "currentShapeName": "Espace réservé du texte 4",

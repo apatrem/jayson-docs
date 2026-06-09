@@ -101,17 +101,6 @@ function collectChartReferences(plan: z.infer<typeof fillPlanBaseSchema>): Chart
     return charts;
   }
 
-  plan.sections.forEach((section, sectionIndex) => {
-    section.blocks.forEach((block, blockIndex) => {
-      if (block.type === 'chart') {
-        charts.push({
-          chart: block.chart,
-          path: ['sections', sectionIndex, 'blocks', blockIndex, 'chart'],
-        });
-      }
-    });
-  });
-
   return charts;
 }
 
@@ -143,24 +132,24 @@ export const fillPlanSchema = fillPlanBaseSchema.superRefine((plan, ctx) => {
   const datasets = plan.datasets ?? {};
 
   for (const { chart, path } of collectChartReferences(plan)) {
-    if (chart.datasetRef === undefined) {
-      if (chart.dataset !== undefined) {
-        validateChartDataset(chart.kind, chart.dataset, ctx, [...path, 'dataset']);
+    const dataset =
+      chart.dataset ??
+      (chart.datasetRef !== undefined ? datasets[chart.datasetRef] : undefined);
+
+    if (dataset === undefined) {
+      if (chart.datasetRef !== undefined) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'datasetRef'],
+          message: `datasetRef "${chart.datasetRef}" does not resolve in datasets`,
+        });
       }
       continue;
     }
 
-    const dataset = datasets[chart.datasetRef];
-    if (dataset === undefined) {
-      ctx.addIssue({
-        code: 'custom',
-        path: [...path, 'datasetRef'],
-        message: `datasetRef "${chart.datasetRef}" does not resolve in datasets`,
-      });
-      continue;
-    }
-
-    validateChartDataset(chart.kind, dataset, ctx, [...path, 'datasetRef']);
+    const datasetPath =
+      chart.dataset !== undefined ? [...path, 'dataset'] : [...path, 'datasetRef'];
+    validateChartDataset(chart.kind, dataset, ctx, datasetPath);
   }
 });
 

@@ -67,12 +67,12 @@
       "title": "Fixture",
       "slides": [
         {
-          "layoutId": "chart-bubble",
+          "layoutId": "chart-line",
           "title": "Eight word minimum title for every layout fixture test",
-          "chart-title": "Risk return map",
+          "chart-title": "Trend over time",
           "chart": {
-            "kind": "bubble",
-            "datasetRef": "bubble"
+            "kind": "line",
+            "datasetRef": "line"
           },
           "body-right": {
             "kind": "text",

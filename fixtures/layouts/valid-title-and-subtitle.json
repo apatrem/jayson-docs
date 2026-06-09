@@ -11,16 +11,13 @@
       "title": "Fixture",
       "slides": [
         {
-          "layoutId": "two-columns",
+          "layoutId": "title-and-subtitle",
           "title": "Eight word minimum title for every layout fixture test",
-          "body-left": {
-            "kind": "bullets",
-            "items": [
-              "Point one",
-              "Point two"
-            ]
+          "subtitle": {
+            "kind": "text",
+            "body": "Short subtitle for column"
           },
-          "body-right": {
+          "body-left": {
             "kind": "bullets",
             "items": [
               "Point one",

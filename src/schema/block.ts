@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { pinnedChartBlockUnion } from './chart.js';
 
 /**
  * The Closed block-type set (CONTEXT.md) — the universal vocabulary of content
@@ -36,13 +35,6 @@ const bulletsBlock = z
   })
   .strict();
 
-const chartBlock = z
-  .object({
-    type: z.literal('chart'),
-    chart: pinnedChartBlockUnion(),
-  })
-  .strict();
-
 const imageBlock = z
   .object({
     type: z.literal('image'),
@@ -55,7 +47,6 @@ export const blockSchema = z.discriminatedUnion('type', [
   headingBlock,
   paragraphBlock,
   bulletsBlock,
-  chartBlock,
   imageBlock,
 ]);
 

@@ -18,7 +18,7 @@
       "title": "Analysis",
       "slides": [
         {
-          "layoutId": "chart-stacked-bar",
+          "layoutId": "chart-stacked-column",
           "title": "Industrial demand scenarios show widening spread by sector",
           "chart-title": "2032 demand by sector (TWh)",
           "chart": { "kind": "line", "datasetRef": "demand_by_sector" },

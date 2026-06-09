@@ -11,8 +11,12 @@
       "title": "Fixture",
       "slides": [
         {
-          "layoutId": "blank",
-          "source": "Source: ACME analysis, June 2026."
+          "layoutId": "section-white",
+          "section-title": "Section One",
+          "subtitle": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          }
         }
       ]
     }
