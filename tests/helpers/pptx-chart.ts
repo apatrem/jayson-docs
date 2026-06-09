@@ -1,11 +1,25 @@
 import { readFile } from 'node:fs/promises';
 import JSZip from 'jszip';
+import {
+  activeSlidePaths,
+  readPartText,
+  relationshipTarget,
+  shapeBlockFromSlideXml,
+} from './pptx-package.js';
+
+export interface PptxBubblePoint {
+  series: string;
+  x: number;
+  y: number;
+  size: number;
+}
 
 export interface PptxChartData {
   series: string[];
   categories: string[];
   /** values[categoryIndex][seriesIndex] */
   values: number[][];
+  bubbles?: PptxBubblePoint[];
 }
 
 /**
@@ -24,11 +38,32 @@ export function parseChartXml(chartXml: string): PptxChartData {
   const series: string[] = [];
   const categories: string[] = [];
   const values: number[][] = [];
+  const bubbles: PptxBubblePoint[] = [];
 
   for (const serBlock of seriesBlocks) {
-    const seriesLabel =
-      /<c:tx>[\s\S]*?<c:v>([^<]*)<\/c:v>/.exec(serBlock)?.[1] ?? '';
+    const seriesLabel = /<c:tx>[\s\S]*?<c:v>([^<]*)<\/c:v>/.exec(serBlock)?.[1] ?? '';
     series.push(seriesLabel);
+
+    if (chartXml.includes('<c:bubbleChart>')) {
+      const points = (tag: 'xVal' | 'yVal' | 'bubbleSize'): number[] => {
+        const block = new RegExp(`<c:${tag}>([\\s\\S]*?)</c:${tag}>`).exec(serBlock)?.[1];
+        return [...(block ?? '').matchAll(/<c:pt idx="\d+"><c:v>([^<]*)<\/c:v>/g)].map((match) =>
+          Number(match[1]),
+        );
+      };
+      const xValues = points('xVal');
+      const yValues = points('yVal');
+      const sizes = points('bubbleSize');
+      xValues.forEach((x, index) => {
+        bubbles.push({
+          series: seriesLabel,
+          x,
+          y: yValues[index] ?? 0,
+          size: sizes[index] ?? 0,
+        });
+      });
+      continue;
+    }
 
     const catBlock = /<c:cat>([\s\S]*?)<\/c:cat>/.exec(serBlock)?.[1] ?? '';
     const categoryLabels = [...catBlock.matchAll(/<c:pt idx="\d+"><c:v>([^<]*)<\/c:v>/g)].map(
@@ -56,7 +91,9 @@ export function parseChartXml(chartXml: string): PptxChartData {
     });
   }
 
-  return { series, categories, values };
+  return bubbles.length > 0
+    ? { series, categories: [], values: [], bubbles }
+    : { series, categories, values };
 }
 
 /** Read chart data from the first chart part in a .pptx file. */
@@ -71,4 +108,26 @@ export async function readPptxChartData(
   }
 
   return parseChartXml(await chartFile.async('string'));
+}
+
+/** Read chart data by following a named chart shape's relationship. */
+export async function readPptxChartDataForShape(
+  filePath: string,
+  shapeName: string,
+  slideIndex = 0,
+): Promise<PptxChartData> {
+  const zip = await JSZip.loadAsync(await readFile(filePath));
+  const slidePath = (await activeSlidePaths(zip))[slideIndex];
+  if (slidePath === undefined) {
+    throw new Error(`active slide not found at index ${slideIndex}`);
+  }
+
+  const shapeBlock = shapeBlockFromSlideXml(await readPartText(zip, slidePath), shapeName);
+  const relationshipId = /<c:chart\b[^>]*r:id="([^"]+)"/.exec(shapeBlock ?? '')?.[1];
+  if (relationshipId === undefined) {
+    throw new Error(`chart relationship not found for shape: ${shapeName}`);
+  }
+
+  const chartPart = await relationshipTarget(zip, slidePath, relationshipId);
+  return parseChartXml(await readPartText(zip, chartPart));
 }

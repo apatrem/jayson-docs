@@ -93,6 +93,7 @@ These are not in this repo and you must wait for them or work around them:
 - **Do not auto-truncate, auto-shorten, or "fix" fill-plans that fail schema validation.** Reject with a clear error. See `ERROR_HANDLING.md`.
 - **Do not use Tiptap, React, Vite, Playwright, or any HTML/PDF renderer.** Outputs are `.pptx` and `.docx` only.
 - **Brand tokens come from `src/brand/brand.yaml`** — the validated mirror of the master template. Precedence: **master template > `brand.yaml` > prose docs** (D2-2); the YAML beats narrative docs, never the template it mirrors. In v1, charts data-swap into pre-authored master charts (D21), so the **master chart's styling wins** for charts.
+- **`src/setup/layout-spec.json` and the Zod layout schemas (`src/schema/**`) are contracts — do not hand-edit them in feature work.** `layout-spec.json` is the `shapes ≡ slots` source of truth (per-layout master `sourceSlideIndex` + slot names, from the Phase 2 setup). The fill pipeline *consumes* it; if the master changes, regenerate it via the setup scripts — never edit by hand.
 
 ---
 
