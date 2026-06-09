@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { execSync } from 'node:child_process';
 import JSZip from 'jszip';
 import { applySlotNames } from '../src/setup/apply-slot-names.js';
 import { validateMasterShapes, defaultPaths } from '../src/setup/validate-master.js';
@@ -17,6 +16,7 @@ import { generateLayoutSpecFromNamingTable } from '../scripts/generate-layout-sp
 
 const { masterPath, specPath } = defaultPaths();
 const root = join(masterPath, '..', '..');
+const preNamingFixturePath = join(root, 'fixtures/report.master.pre-naming.pptx');
 
 describe('shapes ≡ slots validator (Phase 3.6)', () => {
   it('layout-spec.json exists with 26 unique layoutIds', () => {
@@ -121,20 +121,11 @@ describe('shapes ≡ slots validator (Phase 3.6)', () => {
   });
 
   it('replays apply-slot-names from Phase-1 master with correct semantics', async () => {
-    const preDir = mkdtempSync(join(tmpdir(), 'jd-pre-'));
-    const preNaming = join(preDir, 'pre-naming.pptx');
-    writeFileSync(
-      preNaming,
-      execSync('git cat-file blob 7ea5553:templates/report.master.pptx', {
-        cwd: root,
-        encoding: 'buffer',
-        maxBuffer: 10 * 1024 * 1024,
-      }),
-    );
+    expect(existsSync(preNamingFixturePath)).toBe(true);
 
     const outDir = mkdtempSync(join(tmpdir(), 'jd-replay-'));
     const replayed = join(outDir, 'replayed.pptx');
-    const result = await applySlotNames(preNaming, specPath, replayed);
+    const result = await applySlotNames(preNamingFixturePath, specPath, replayed);
     expect(result.deleted).toBe(1);
 
     const validation = await validateMasterShapes(replayed, specPath);
