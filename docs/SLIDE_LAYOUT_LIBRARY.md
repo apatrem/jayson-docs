@@ -3,6 +3,8 @@
 **For:** the person designing the master `.pptx` in PowerPoint + the developer authoring the Zod schema
 **Date:** 2026-06-03
 
+> **Status (D22):** the six *seed-layout sketches* below were **superseded** by the firm's real sanitized `templates/report.master.pptx` — **26 layouts**, named and schema'd via the one-time Setup (see `docs/DECISIONS_LOG.md` D22, `src/setup/layout-spec.json`). The naming convention, reserved structural slots, density-cap model (D23), and "master is canonical" rules in this file **remain authoritative**; only the specific seed-layout inventory is historical.
+
 ---
 
 ## Why this file exists

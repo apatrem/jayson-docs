@@ -70,17 +70,12 @@ You are building the CLI and the pipeline. You are **not** building an editor, a
 
 ## 4. Open inputs you depend on
 
-These are not in this repo and you must wait for them or work around them:
-
-1. **Master templates** (Acme will provide). **v1 needs only `report.master.pptx`** (D20); the other three are post-v1:
+1. **Master templates.** The real sanitized **`templates/report.master.pptx` (26 layouts) is in-repo** (D22), with `slot.*` names applied and `src/setup/layout-spec.json` generated from it. `PLACEHOLDER-report.master.pptx` remains the only *fillable* master until Phase 5 lands, then it is retired (D22). The other three masters are still pending and post-v1 (D20):
    - `templates/commercial-proposal.master.pptx`
    - `templates/commercial-proposal.master.docx`
-   - `templates/report.master.pptx`
    - `templates/report.master.docx`
 
-   Until it lands, you may author a `PLACEHOLDER-report.master.pptx` for development. **v1 acceptance requires the real master.** DOCX masters and the other three `.pptx`/`.docx` templates are post-v1 (D20).
-
-2. **Layouts.** Only **`kpi-row-chart`** is in scope for v1 (`src/schema/layouts/kpi-row-chart.ts`). The other five seed layouts in `docs/SLIDE_LAYOUT_LIBRARY.md` and all DOCX section schemas are **post-v1** — do not implement them under the v1 brief.
+2. **Layouts.** v1 fill implements **`kpi-row-chart`** only (`src/schema/layouts/kpi-row-chart.ts`). The next step is **Phase 5** (`tasks/T-101…T-105`): making the **26 real layouts** fillable (their Zod schemas and `layout-spec.json` entries already exist from Setup Phases 1–3). The original five seed layouts in `docs/SLIDE_LAYOUT_LIBRARY.md` were **superseded by D22's 26 real layouts**. All DOCX section schemas remain **post-v1**.
 
 ---
 
