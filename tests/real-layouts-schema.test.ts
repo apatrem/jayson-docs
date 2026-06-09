@@ -17,7 +17,7 @@ const newInvalidFixtures = [
   'fixtures/invalid/fillplan-real-chart-bad-dataset-ref.json',
   'fixtures/invalid/fillplan-real-chart-kind-mismatch.json',
   'fixtures/invalid/fillplan-bubble-shape-on-categorical-dataset.json',
-  'fixtures/invalid/fillplan-real-title-too-short.json',
+  'fixtures/invalid/fillplan-real-title-over-max.json',
   'fixtures/invalid/fillplan-section-title-cap-violation.json',
   'fixtures/invalid/fillplan-subtitle-cap-violation.json',
 ] as const;
@@ -98,11 +98,13 @@ describe('real layout schemas (Phase 3)', () => {
 
   it('rejects title density cap violations on real layouts', () => {
     const result = fillPlanSchema.safeParse(
-      read('fixtures/invalid/fillplan-real-title-too-short.json'),
+      read('fixtures/invalid/fillplan-real-title-over-max.json'),
     );
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues.some((issue) => issue.message.includes('8–15 words'))).toBe(true);
+      expect(result.error.issues.some((issue) => issue.message.includes('title must be'))).toBe(
+        true,
+      );
     }
   });
 

@@ -1,0 +1,63 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-09",
+    "language": "en"
+  },
+  "datasets": {
+    "x": {
+      "id": "x",
+      "columns": [
+        "industry",
+        "low",
+        "base",
+        "high"
+      ],
+      "rows": [
+        [
+          "A",
+          1,
+          2,
+          3
+        ]
+      ]
+    }
+  },
+  "sections": [
+    {
+      "title": "Findings",
+      "slides": [
+        {
+          "layoutId": "kpi-row-chart",
+          "title": "w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16",
+          "kpi-strip": [
+            {
+              "figure": "2.4x",
+              "label": "demand vs ammonia",
+              "delta": "+140%"
+            },
+            {
+              "figure": "EUR 68/MWh",
+              "label": "LCOE target",
+              "delta": "-12%"
+            },
+            {
+              "figure": "7",
+              "label": "credible offtakers"
+            }
+          ],
+          "chart": {
+            "kind": "stacked-bar",
+            "datasetRef": "x"
+          },
+          "narrative": {
+            "kind": "text",
+            "body": "short narrative under sixty words."
+          }
+        }
+      ]
+    }
+  ]
+}

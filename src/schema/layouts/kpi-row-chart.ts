@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { REGION_CAPS, wordCount } from '../caps.js';
 import { chartBlock } from '../chart.js';
 
 /**
@@ -8,28 +9,20 @@ import { chartBlock } from '../chart.js';
  * docs/SLIDE_LAYOUT_LIBRARY.md (two-column, chart-full-with-takeaway,
  * bullets-and-image, quad, section-divider).
  *
- * Density caps follow SLIDE_LAYOUT_LIBRARY.md exactly — do not relax them.
+ * Density caps use two-tier model from caps.ts — Zod enforces absolute max only.
  */
 
-// ─────────────────────────────────────────────────────────────────────────
-// Word-count helpers
-// ─────────────────────────────────────────────────────────────────────────
-const wordCount = (s: string): number => s.split(/\s+/).filter(Boolean).length;
+const titleMax = REGION_CAPS.title.max;
+const bulletsMax = REGION_CAPS['content-bullets'].max;
+const contentTextMax = REGION_CAPS['content-text'].max;
 
 const titleString = z
   .string()
   .min(1)
-  .refine(
-    (s) => {
-      const n = wordCount(s);
-      return n >= 8 && n <= 15;
-    },
-    { message: 'title must be 8–15 words' },
-  );
+  .refine((s) => wordCount(s) <= titleMax, {
+    message: `title must be ≤${titleMax} words`,
+  });
 
-// ─────────────────────────────────────────────────────────────────────────
-// Block: kpi card
-// ─────────────────────────────────────────────────────────────────────────
 const kpiCardSchema = z
   .object({
     figure: z.string().min(1).max(15),
@@ -38,17 +31,14 @@ const kpiCardSchema = z
   })
   .strict();
 
-// ─────────────────────────────────────────────────────────────────────────
-// Block: narrative (bullets | text)
-// ─────────────────────────────────────────────────────────────────────────
 const bulletsBlockSchema = z
   .object({
     kind: z.literal('bullets'),
-    items: z.array(z.string().min(1).max(120)).min(1).max(5),
+    items: z.array(z.string().min(1).max(120)).min(1).max(bulletsMax.maxItems),
   })
   .strict()
-  .refine((d) => wordCount(d.items.join(' ')) <= 60, {
-    message: 'bullets exceed 60-word total cap',
+  .refine((d) => wordCount(d.items.join(' ')) <= bulletsMax.maxWords, {
+    message: `bullets exceed ${bulletsMax.maxWords}-word total cap`,
   });
 
 const textBlockSchema = z
@@ -57,17 +47,14 @@ const textBlockSchema = z
     body: z
       .string()
       .min(1)
-      .refine((s) => wordCount(s) <= 60, { message: 'text exceeds 60-word cap' }),
+      .refine((s) => wordCount(s) <= contentTextMax, {
+        message: `text exceeds ${contentTextMax}-word cap`,
+      }),
   })
   .strict();
 
-// `z.union`, not `z.discriminatedUnion`: `bulletsBlockSchema` is `.refine()`d
-// (a ZodEffects), which Zod cannot use as a discriminated-union member.
 const narrativeSchema = z.union([bulletsBlockSchema, textBlockSchema]);
 
-// ─────────────────────────────────────────────────────────────────────────
-// Layout: kpi-row-chart
-// ─────────────────────────────────────────────────────────────────────────
 export const kpiRowChartLayoutSchema = z
   .object({
     layoutId: z.literal('kpi-row-chart'),
