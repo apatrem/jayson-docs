@@ -1,6 +1,6 @@
 # Architecture Decisions Log — Acme jayson-docs
 
-**Date:** 2026-06-08 (updated through D22 — real template, 26-layout library, Setup Phase 1)
+**Date:** 2026-06-09 (updated through D24 — Superset worktree setup script)
 **Why this file:** so the developer and future maintainers understand what was decided, what was rejected, and why. Prevents re-litigating settled questions.
 
 ---
@@ -248,6 +248,15 @@ Every skill (Built-in and Custom) inherits a shared **Standard opener** — a *m
 **Rejected:** a single cap per region (too blunt — it either rejects acceptable-but-dense slides or permits layout-breaking overflow); **auto-truncating** over-max content (reject with a clear error, never silently "fix" — `ERROR_HANDLING.md`).
 
 **Reason:** consultants legitimately run a little long; a single hard cap forced a false choice between rejecting usable content and permitting overflow that breaks the master geometry (D19). Two tiers let the author aim for optimal while the schema still guarantees the master never visually breaks. Caps stay dual-homed (Zod + catalogue) per D22's drift test; the CLI surfaces the optimal-tier guidance as a non-blocking warning.
+
+---
+
+## D24 — Superset worktree setup runs pinned pnpm through Corepack
+
+**Decided:** commit `.superset/config.json` (`{ "setup": ["./.superset/setup.sh"] }`) and `.superset/setup.sh`, so every new Superset worktree auto-runs `COREPACK_ENABLE_DOWNLOAD_PROMPT=0 corepack pnpm install --frozen-lockfile` on creation. Superset only copies git-tracked files, and `node_modules` is gitignored, so each fresh worktree otherwise starts without dependencies and cannot run the gate (`pnpm run build && lint && test && validate`). Invoking pnpm through Corepack honours the exact `packageManager` pin (`pnpm@11.5.2`) without requiring a globally installed `pnpm` shim. Corepack is the prerequisite, supplied by the Node version in `.nvmrc` or installed separately. No teardown script: there are no external resources (DB branches, containers) to clean up, and deleting the worktree removes `node_modules`.
+**Rejected:** assuming an arbitrary global `pnpm` binary (does not enforce the repository pin and fails on otherwise valid Corepack-only machines); `corepack enable` in the setup hook (mutates global shims and can require permissions, while `corepack pnpm` works directly); a plain install without `--frozen-lockfile` (would silently mutate `pnpm-lock.yaml` — undesirable in the parallel-agent model).
+
+**Reason:** the multi-agent workflow (AGENTS.md §0) runs each agent in its own long-lived worktree folder with ephemeral per-task branches; a committed setup script makes every worktree gate-ready immediately and identically across agents (Claude, Cursor, Codex). Corepack makes the `packageManager` field authoritative, and `--frozen-lockfile` fails fast on a stale lockfile rather than mutating it. The script is idempotent (safe to re-run). Because `.superset/config.json` is committed and affects all agents, it is recorded here per AGENTS.md §0 rule 5.
 
 ---
 
