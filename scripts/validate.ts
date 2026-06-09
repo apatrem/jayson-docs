@@ -46,7 +46,7 @@ const valid: [string, string][] = [
 ];
 
 const invalid: string[] = [
-  'fixtures/invalid/fillplan-title-too-short.json',
+  'fixtures/invalid/fillplan-title-over-max.json',
   'fixtures/invalid/fillplan-too-many-kpis.json',
   'fixtures/invalid/fillplan-unknown-layout.json',
   'fixtures/invalid/fillplan-unknown-chart-kind.json',
@@ -58,7 +58,8 @@ const invalid: string[] = [
   'fixtures/invalid/fillplan-real-chart-bad-dataset-ref.json',
   'fixtures/invalid/fillplan-real-chart-kind-mismatch.json',
   'fixtures/invalid/fillplan-bubble-shape-on-categorical-dataset.json',
-  'fixtures/invalid/fillplan-real-title-too-short.json',
+  'fixtures/invalid/fillplan-real-title-over-max.json',
+  'fixtures/invalid/fillplan-source-over-max.json',
   'fixtures/invalid/fillplan-section-title-cap-violation.json',
   'fixtures/invalid/fillplan-subtitle-cap-violation.json',
   'fixtures/invalid/fillplan-both-dataset-ref-and-inline.json',

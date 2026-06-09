@@ -1,0 +1,57 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-09",
+    "language": "en"
+  },
+  "datasets": {
+    "x": {
+      "id": "x",
+      "columns": [
+        "industry",
+        "low"
+      ],
+      "rows": [
+        [
+          "A",
+          1
+        ]
+      ]
+    }
+  },
+  "sections": [
+    {
+      "title": "Findings",
+      "slides": [
+        {
+          "layoutId": "kpi-row-chart",
+          "title": "w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21",
+          "kpi-strip": [
+            {
+              "figure": "1",
+              "label": "a"
+            },
+            {
+              "figure": "2",
+              "label": "b"
+            },
+            {
+              "figure": "3",
+              "label": "c"
+            }
+          ],
+          "chart": {
+            "kind": "stacked-bar",
+            "datasetRef": "x"
+          },
+          "narrative": {
+            "kind": "text",
+            "body": "short narrative."
+          }
+        }
+      ]
+    }
+  ]
+}

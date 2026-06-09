@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { REGION_CAPS } from './caps.js';
+
+const captionMax = REGION_CAPS.caption.max;
 
 /**
  * The Closed block-type set (CONTEXT.md) — the universal vocabulary of content
@@ -39,7 +42,7 @@ const imageBlock = z
   .object({
     type: z.literal('image'),
     ref: z.string().min(1),
-    caption: z.string().max(120).optional(),
+    caption: z.string().max(captionMax).optional(),
   })
   .strict();
 

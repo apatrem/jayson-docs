@@ -17,7 +17,7 @@ const newInvalidFixtures = [
   'fixtures/invalid/fillplan-real-chart-bad-dataset-ref.json',
   'fixtures/invalid/fillplan-real-chart-kind-mismatch.json',
   'fixtures/invalid/fillplan-bubble-shape-on-categorical-dataset.json',
-  'fixtures/invalid/fillplan-real-title-too-short.json',
+  'fixtures/invalid/fillplan-real-title-over-max.json',
   'fixtures/invalid/fillplan-section-title-cap-violation.json',
   'fixtures/invalid/fillplan-subtitle-cap-violation.json',
   'fixtures/invalid/fillplan-both-dataset-ref-and-inline.json',
@@ -109,6 +109,84 @@ describe('real layout schemas (Phase 3.6)', () => {
             issue.code === 'unrecognized_keys' && issuePath(issue.path) === 'sections.0.slides.0',
         ),
       ).toBe(true);
+    }
+  });
+
+  it('rejects chart datasetRef that does not resolve for real chart layouts', () => {
+    const result = fillPlanSchema.safeParse(
+      read('fixtures/invalid/fillplan-real-chart-bad-dataset-ref.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.error.issues.some(
+          (issue) =>
+            issuePath(issue.path) === 'sections.0.slides.0.chart.datasetRef' &&
+            issue.message.includes('does not resolve in datasets'),
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('rejects chart kind mismatch on pinned real chart layouts', () => {
+    const result = fillPlanSchema.safeParse(
+      read('fixtures/invalid/fillplan-real-chart-kind-mismatch.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.error.issues.some(
+          (issue) => issuePath(issue.path) === 'sections.0.slides.0.chart.kind',
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('rejects categorical dataset shape referenced by bubble chart slot', () => {
+    const result = fillPlanSchema.safeParse(
+      read('fixtures/invalid/fillplan-bubble-shape-on-categorical-dataset.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.error.issues.some((issue) => issue.message.includes('bubble chart datasets require')),
+      ).toBe(true);
+    }
+  });
+
+  it('rejects title density cap violations on real layouts', () => {
+    const result = fillPlanSchema.safeParse(
+      read('fixtures/invalid/fillplan-real-title-over-max.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((issue) => issue.message.includes('title must be'))).toBe(
+        true,
+      );
+    }
+  });
+
+  it('rejects section-title cap violations', () => {
+    const result = fillPlanSchema.safeParse(
+      read('fixtures/invalid/fillplan-section-title-cap-violation.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.error.issues.some((issue) => issue.message.includes('section-title must be')),
+      ).toBe(true);
+    }
+  });
+
+  it('rejects subtitle cap violations', () => {
+    const result = fillPlanSchema.safeParse(
+      read('fixtures/invalid/fillplan-subtitle-cap-violation.json'),
+    );
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((issue) => issue.message.includes('subtitle must be'))).toBe(
+        true,
+      );
     }
   });
 });

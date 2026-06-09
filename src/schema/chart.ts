@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { REGION_CAPS } from './caps.js';
+
+const captionMax = REGION_CAPS.caption.max;
 
 /**
  * Reference chart kinds (CHART_CATALOGUE.md). In v1 (D21) only kinds **pinned
@@ -261,7 +264,7 @@ export function chartBlock(opts: { kind: ChartKind }) {
       kind: z.literal(opts.kind),
       datasetRef: z.string().min(1).optional(),
       dataset: datasetSchema.optional(),
-      caption: z.string().max(120).optional(),
+      caption: z.string().max(captionMax).optional(),
     })
     .strict()
     .superRefine(validateChartBlock);

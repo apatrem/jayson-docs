@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
 import { fillPlanSchema } from '@schema/index.js';
+import { collectDensityWarnings } from '@schema/density-warnings.js';
 import { loadMaster } from '../pipeline/load-master.js';
 import { fillSlide } from '../pipeline/fill-slide.js';
 import { saveOutput } from '../pipeline/save-output.js';
@@ -52,6 +53,10 @@ program
     if (!parsed.success) {
       process.stderr.write(`fill-plan validation failed:\n${parsed.error.toString()}\n`);
       process.exit(2);
+    }
+
+    for (const warning of collectDensityWarnings(parsed.data)) {
+      process.stderr.write(`${warning}\n`);
     }
 
     // Dispatch on extension.

@@ -16,12 +16,15 @@
           "body-left": {
             "kind": "bullets",
             "items": [
-              "one two three four five six seven eight nine ten eleven twelve",
-              "thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty",
-              "twentyone twentytwo twentythree twentyfour twentyfive twentysix",
-              "twentyseven twentyeight twentynine thirty thirtyone thirtytwo",
-              "thirtythree thirtyfour thirtyfive thirtysix thirtyseven thirtyeight",
-              "thirtynine forty"
+              "item one",
+              "item two",
+              "item three",
+              "item four",
+              "item five",
+              "item six",
+              "item seven",
+              "item eight",
+              "item nine"
             ]
           }
         }

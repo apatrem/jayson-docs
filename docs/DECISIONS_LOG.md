@@ -241,6 +241,16 @@ Every skill (Built-in and Custom) inherits a shared **Standard opener** — a *m
 
 ---
 
+## D23 — Density caps are two-tier: an optimal range (CLI-warned) + an absolute max (Zod-rejected)
+
+**Decided:** each text region carries **two** bounds in `src/schema/caps.ts` (the single source, mirrored by the LLM-facing catalogue per D22's drift test): an **optimal** range and an **absolute max**. Zod enforces only the **max** (reject); the CLI emits a **soft warning** (exit 0, stderr) when content is over optimal but within max. This **supersedes** the original single-cap-per-region model — the caps previously listed in `SLIDE_LAYOUT_LIBRARY.md` / `CHART_CATALOGUE.md` were the *optimal* tier. **Enforced max:** title 20 · section-title 12 · subtitle 40 · chart-title 25 · source 80 · cover-body 40 · content-text 100 · content-callout 40 words; content-bullets ≤8 items / ≤100 words; caption 200 chars. **Optimal:** title 8–15 · section-title ≤8 · subtitle ≤25 · chart-title ≤15 · source ≤40 · cover-body ≤25 · content-text ≤60 · callout ≤25 words; bullets ≤5 items / ≤60 words; caption ≤120 chars. Structural hard limits unchanged: general `bullets` block ≤7 items; pie/doughnut rows ≤8.
+
+**Rejected:** a single cap per region (too blunt — it either rejects acceptable-but-dense slides or permits layout-breaking overflow); **auto-truncating** over-max content (reject with a clear error, never silently "fix" — `ERROR_HANDLING.md`).
+
+**Reason:** consultants legitimately run a little long; a single hard cap forced a false choice between rejecting usable content and permitting overflow that breaks the master geometry (D19). Two tiers let the author aim for optimal while the schema still guarantees the master never visually breaks. Caps stay dual-homed (Zod + catalogue) per D22's drift test; the CLI surfaces the optimal-tier guidance as a non-blocking warning.
+
+---
+
 ## Open questions still to resolve
 
 - **Doc-heavy vs deck-heavy volume mix** — RESOLVED: deck-heavy. The first end-to-end slice is **report-pptx** (the delivery deck), built as a walking skeleton before the other three skills.

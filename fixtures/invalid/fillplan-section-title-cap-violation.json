@@ -3,7 +3,7 @@
   "meta": {
     "templateId": "report.master.pptx",
     "client": "ACME",
-    "date": "2026-06-08",
+    "date": "2026-06-09",
     "language": "en"
   },
   "sections": [
@@ -12,8 +12,11 @@
       "slides": [
         {
           "layoutId": "section",
-          "section-title": "This section title exceeds the eight word density cap limit",
-          "subtitle": { "kind": "text", "body": "Module 1 findings" }
+          "section-title": "w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14",
+          "subtitle": {
+            "kind": "text",
+            "body": "Module 1"
+          }
         }
       ]
     }

@@ -8,7 +8,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p: string): unknown => JSON.parse(readFileSync(resolve(root, p), 'utf-8'));
 
 const invalidFixturePaths = [
-  'fixtures/invalid/fillplan-title-too-short.json',
+  'fixtures/invalid/fillplan-title-over-max.json',
   'fixtures/invalid/fillplan-too-many-kpis.json',
   'fixtures/invalid/fillplan-unknown-layout.json',
   'fixtures/invalid/fillplan-unknown-chart-kind.json',

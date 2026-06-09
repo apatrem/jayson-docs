@@ -1,43 +1,59 @@
 import { z } from 'zod';
+import { REGION_CAPS, wordCount } from '../caps.js';
 import { chartBlock, type PinnedChartKind } from '../chart.js';
 
-/** Word-count helper — mirrors kpi-row-chart.ts. */
-export const wordCount = (s: string): number => s.split(/\s+/).filter(Boolean).length;
+export { wordCount } from '../caps.js';
 
-/** Proposed cap: title region — 8–15 words (SLIDE_LAYOUT_LIBRARY.md). */
+const titleMax = REGION_CAPS.title.max;
+const sectionTitleMax = REGION_CAPS['section-title'].max;
+const chartTitleMax = REGION_CAPS['chart-title'].max;
+const sourceMax = REGION_CAPS.source.max;
+const coverBodyMax = REGION_CAPS['cover-body'].max;
+const subtitleMax = REGION_CAPS.subtitle.max;
+const bulletsMax = REGION_CAPS['content-bullets'].max;
+const contentTextMax = REGION_CAPS['content-text'].max;
+const contentCalloutMax = REGION_CAPS['content-callout'].max;
+const captionMax = REGION_CAPS.caption.max;
+
+/** Title region — absolute max enforced; optimal 8–15 words is CLI-warned only. */
 export const titleString = z
   .string()
   .min(1)
-  .refine((s) => {
-    const n = wordCount(s);
-    return n >= 8 && n <= 15;
-  }, { message: 'title must be 8–15 words' });
+  .refine((s) => wordCount(s) <= titleMax, {
+    message: `title must be ≤${titleMax} words`,
+  });
 
-/** Proposed cap: section-title region — ≤8 words. */
+/** Section-title region — absolute max enforced. */
 export const sectionTitleString = z
   .string()
   .min(1)
-  .refine((s) => wordCount(s) <= 8, { message: 'section-title must be ≤8 words' });
+  .refine((s) => wordCount(s) <= sectionTitleMax, {
+    message: `section-title must be ≤${sectionTitleMax} words`,
+  });
 
-/** Proposed cap: chart-title region — ≤15 words (name + unit). */
+/** Chart-title region — absolute max enforced. */
 export const chartTitleString = z
   .string()
   .min(1)
-  .refine((s) => wordCount(s) <= 15, { message: 'chart-title must be ≤15 words' });
+  .refine((s) => wordCount(s) <= chartTitleMax, {
+    message: `chart-title must be ≤${chartTitleMax} words`,
+  });
 
-/** Proposed cap: source region — ≤40 words (citation line). */
+/** Source region — absolute max enforced. */
 export const sourceString = z
   .string()
   .min(1)
-  .refine((s) => wordCount(s) <= 40, { message: 'source must be ≤40 words' });
+  .refine((s) => wordCount(s) <= sourceMax, { message: `source must be ≤${sourceMax} words` });
 
-/** Proposed cap: short single-line content (e.g. cover date/role) — ≤25 words. */
+/** Cover body — absolute max enforced. */
 export const shortTextString = z
   .string()
   .min(1)
-  .refine((s) => wordCount(s) <= 25, { message: 'text must be ≤25 words' });
+  .refine((s) => wordCount(s) <= coverBodyMax, {
+    message: `text must be ≤${coverBodyMax} words`,
+  });
 
-/** Subtitle region — text or callout, ≤25 words. */
+/** Subtitle region — text or callout, absolute max enforced. */
 export const subtitleBlockSchema = z
   .discriminatedUnion('kind', [
     z
@@ -53,38 +69,44 @@ export const subtitleBlockSchema = z
       })
       .strict(),
   ])
-  .refine((d) => wordCount(d.body) <= 25, { message: 'subtitle must be ≤25 words' });
+  .refine((d) => wordCount(d.body) <= subtitleMax, {
+    message: `subtitle must be ≤${subtitleMax} words`,
+  });
 
-/** Content bullets — ≤5 items, ≤60 words total. */
+/** Content bullets — absolute max items and words enforced. */
 export const contentBulletsSchema = z
   .object({
     kind: z.literal('bullets'),
-    items: z.array(z.string().min(1).max(120)).min(1).max(5),
+    items: z.array(z.string().min(1).max(120)).min(1).max(bulletsMax.maxItems),
   })
   .strict()
-  .refine((d) => wordCount(d.items.join(' ')) <= 60, {
-    message: 'bullets exceed 60-word total cap',
+  .refine((d) => wordCount(d.items.join(' ')) <= bulletsMax.maxWords, {
+    message: `bullets exceed ${bulletsMax.maxWords}-word total cap`,
   });
 
-/** Content paragraph — ≤60 words. */
+/** Content paragraph — absolute max enforced. */
 export const contentTextSchema = z
   .object({
     kind: z.literal('text'),
     body: z
       .string()
       .min(1)
-      .refine((s) => wordCount(s) <= 60, { message: 'text exceeds 60-word cap' }),
+      .refine((s) => wordCount(s) <= contentTextMax, {
+        message: `text exceeds ${contentTextMax}-word cap`,
+      }),
   })
   .strict();
 
-/** Content callout — ≤25 words. */
+/** Content callout — absolute max enforced. */
 export const contentCalloutSchema = z
   .object({
     kind: z.literal('callout'),
     body: z
       .string()
       .min(1)
-      .refine((s) => wordCount(s) <= 25, { message: 'callout exceeds 25-word cap' }),
+      .refine((s) => wordCount(s) <= contentCalloutMax, {
+        message: `callout exceeds ${contentCalloutMax}-word cap`,
+      }),
   })
   .strict();
 
@@ -93,7 +115,7 @@ export const imageBlockSchema = z
   .object({
     kind: z.literal('image'),
     ref: z.string().min(1),
-    caption: z.string().max(120).optional(),
+    caption: z.string().max(captionMax).optional(),
   })
   .strict();
 
@@ -112,7 +134,7 @@ export const narrativeBlockSchema = z.union([contentBulletsSchema, contentTextSc
 export const coverImageSchema = z
   .object({
     ref: z.string().min(1),
-    caption: z.string().max(120).optional(),
+    caption: z.string().max(captionMax).optional(),
   })
   .strict();
 

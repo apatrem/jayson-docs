@@ -53,7 +53,7 @@ Every chart block has the form:
       ["Industry A", 120, 240, 380]
     ]
   },
-  "caption": "optional caption ≤ 120 chars"
+  "caption": "optional caption — optimal ≤120 chars (CLI-warned), max 200 chars (Zod-enforced); see D23"
 }
 ```
 
