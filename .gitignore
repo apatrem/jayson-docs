@@ -18,8 +18,9 @@ out/
 docs/REPO_REVIEW.md
 docs/REPO_REVIEW_2026-06-05.md
 
-# Composio orchestrator local config (untracked during evaluation; track it
-# later if you adopt Composio repo-wide).
+# Legacy Composio orchestrator config — engine superseded by Superset (ADR-0002
+# Update); the agent is chosen per session, not via this file. Kept local &
+# untracked; only relevant if you swap back to Composio as a fallback.
 agent-orchestrator.yaml
 
 # Real firm master templates are CONFIDENTIAL — never commit them to this PUBLIC
