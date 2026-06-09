@@ -11,7 +11,7 @@ changes. It must not.
 ## Decision
 The load-bearing spine of every repo is **`AGENTS.md`** (the cross-tool source of truth — workflow,
 rules, the gate, definition-of-done) + a **deterministic gate (build/lint/test/typecheck) enforced
-by CI required checks on a protected `main`** + **small PRs**. Planning (grill-me), navigation
+by CI required checks on a protected `main`** + **small PRs**. Planning (grill-with-docs), navigation
 (codegraph / code-review-graph), and the execution engine are **tools that plug into** that spine —
 never the spine itself.
 

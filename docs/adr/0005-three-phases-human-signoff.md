@@ -8,8 +8,9 @@ risk tiers, protected-path list, and acceptance tests. You fan out *implementati
 spec; you do **not** fan out the spec.
 
 ## Decision
-- **Phase 1 — Architect:** single agent + human, interactive (grill-me) → `docs/adr/*` and
-  `AGENTS.md` (with `CONTEXT.md` for domain language). **The human signs each ADR**; the ADRs define
+- **Phase 1 — Architect:** single agent + human, interactive (`grill-with-docs`; `grill-me` when there
+  is no domain model yet) → `docs/adr/*` and `AGENTS.md` (with `CONTEXT.md` for domain language).
+  **The human signs each ADR**; the ADRs define
   the protected contracts, recorded in `AGENTS.md`'s forbidden/protected section.
 - **Phase 2 — Plan:** single agent + human → `tasks/*.md`, each with acceptance tests, `risk`,
   `mode`, `depends-on`. **The human sign-off here is the primary control point.**

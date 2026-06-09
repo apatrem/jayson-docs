@@ -1,6 +1,6 @@
 # T-000: <title>
 
-<!-- Output of a /grill-me session. One unit of work, small enough to review. -->
+<!-- Output of Phase 2 (/agentic-workflow:plan). One unit of work, small enough to review. -->
 
 ## Objective
 <what + why, one short paragraph — no implementation prescription>
