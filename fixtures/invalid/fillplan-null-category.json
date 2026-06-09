@@ -1,0 +1,31 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "datasets": {
+    "bad_cat": {
+      "id": "bad_cat",
+      "columns": ["category", "value"],
+      "rows": [[null, 10]]
+    }
+  },
+  "sections": [
+    {
+      "title": "Analysis",
+      "slides": [
+        {
+          "layoutId": "chart-stacked-column",
+          "title": "Eight word minimum title for every layout fixture test",
+          "chart-title": "Units by category",
+          "chart": { "kind": "stacked-column", "datasetRef": "bad_cat" },
+          "body-right": { "kind": "text", "body": "Narrative beside chart." },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

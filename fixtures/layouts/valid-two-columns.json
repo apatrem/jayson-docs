@@ -8,20 +8,26 @@
   },
   "sections": [
     {
-      "title": "Comparison",
+      "title": "Fixture",
       "slides": [
         {
           "layoutId": "two-columns",
-          "title": "Two pathways differ on cost profile and delivery risk",
+          "title": "Eight word minimum title for every layout fixture test",
           "body-left": {
             "kind": "bullets",
-            "items": ["Lower capex", "Faster permitting", "Higher opex"]
+            "items": [
+              "Point one",
+              "Point two"
+            ]
           },
           "body-right": {
             "kind": "bullets",
-            "items": ["Higher upfront cost", "Longer build", "Lower opex"]
+            "items": [
+              "Point one",
+              "Point two"
+            ]
           },
-          "source": "Source: ACME project database."
+          "source": "Source: ACME analysis, June 2026."
         }
       ]
     }

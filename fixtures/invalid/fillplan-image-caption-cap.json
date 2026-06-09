@@ -1,0 +1,26 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Opening",
+      "slides": [
+        {
+          "layoutId": "cover",
+          "title": "Eight word minimum title for every layout fixture test",
+          "subtitle": { "kind": "text", "body": "Subtitle line" },
+          "body": "June 2026",
+          "image": {
+            "ref": "assets/logo.png",
+            "caption": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+          }
+        }
+      ]
+    }
+  ]
+}

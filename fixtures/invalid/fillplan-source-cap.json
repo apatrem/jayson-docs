@@ -1,0 +1,23 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Comparison",
+      "slides": [
+        {
+          "layoutId": "two-columns",
+          "title": "Eight word minimum title for every layout fixture test",
+          "body-left": { "kind": "bullets", "items": ["one"] },
+          "body-right": { "kind": "bullets", "items": ["two"] },
+          "source": "word one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix twentyseven twentyeight twentynine thirty thirtyone thirtytwo thirtythree thirtyfour thirtyfive thirtysix thirtyseven thirtyeight thirtynine forty fortyone"
+        }
+      ]
+    }
+  ]
+}

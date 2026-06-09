@@ -1,0 +1,31 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "datasets": {
+    "bad_bubble": {
+      "id": "bad_bubble",
+      "columns": ["x", "x", "y", "size"],
+      "rows": [[1, 1, 2, 3]]
+    }
+  },
+  "sections": [
+    {
+      "title": "Analysis",
+      "slides": [
+        {
+          "layoutId": "chart-bubble",
+          "title": "Eight word minimum title for every layout fixture test",
+          "chart-title": "Risk return map",
+          "chart": { "kind": "bubble", "datasetRef": "bad_bubble" },
+          "body-right": { "kind": "text", "body": "Narrative beside chart." },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

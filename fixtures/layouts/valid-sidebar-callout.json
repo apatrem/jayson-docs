@@ -8,18 +8,27 @@
   },
   "sections": [
     {
-      "title": "Highlight",
+      "title": "Fixture",
       "slides": [
         {
           "layoutId": "sidebar-callout",
-          "title": "Key takeaway on bankability thresholds for offtake contracts",
-          "subtitle-1": { "kind": "text", "body": "Sidebar headline" },
-          "subtitle-2": { "kind": "text", "body": "Supporting context line" },
-          "body": {
+          "title": "Eight word minimum title for every layout fixture test",
+          "subtitle-1": {
             "kind": "text",
-            "body": "Three counterparties meet the bankability gate under base-case assumptions."
+            "body": "Short subtitle for column"
           },
-          "source": "Source: ACME counterparty review."
+          "subtitle-2": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "source": "Source: ACME analysis, June 2026."
         }
       ]
     }

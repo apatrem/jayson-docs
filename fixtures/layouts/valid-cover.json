@@ -8,14 +8,19 @@
   },
   "sections": [
     {
-      "title": "Opening",
+      "title": "Fixture",
       "slides": [
         {
           "layoutId": "cover",
-          "title": "Market outlook for renewable hydrogen across European industrial clusters",
-          "subtitle": { "kind": "text", "body": "Annual strategy review briefing" },
+          "title": "Eight word minimum title for every layout fixture test",
+          "subtitle": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
           "body": "June 2026 · Partner presentation",
-          "image": { "ref": "assets/client-logo.png" }
+          "image": {
+            "ref": "assets/logo.png"
+          }
         }
       ]
     }

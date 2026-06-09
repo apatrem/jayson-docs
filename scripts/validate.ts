@@ -10,6 +10,7 @@ import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fillPlanSchema } from '../src/schema/index.js';
 import { validateMasterShapes, defaultPaths } from '../src/setup/validate-master.js';
+import { generateLayoutSpecFromNamingTable } from './generate-layout-spec.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
@@ -60,6 +61,18 @@ const invalid: string[] = [
   'fixtures/invalid/fillplan-real-title-too-short.json',
   'fixtures/invalid/fillplan-section-title-cap-violation.json',
   'fixtures/invalid/fillplan-subtitle-cap-violation.json',
+  'fixtures/invalid/fillplan-both-dataset-ref-and-inline.json',
+  'fixtures/invalid/fillplan-chart-in-content-slot.json',
+  'fixtures/invalid/fillplan-null-category.json',
+  'fixtures/invalid/fillplan-bubble-dup-columns.json',
+  'fixtures/invalid/fillplan-chart-title-cap.json',
+  'fixtures/invalid/fillplan-source-cap.json',
+  'fixtures/invalid/fillplan-cover-body-cap.json',
+  'fixtures/invalid/fillplan-bullets-cap.json',
+  'fixtures/invalid/fillplan-text-cap.json',
+  'fixtures/invalid/fillplan-callout-cap.json',
+  'fixtures/invalid/fillplan-image-caption-cap.json',
+  'fixtures/invalid/fillplan-chart-caption-cap.json',
 ];
 
 let ok = true;
@@ -68,6 +81,20 @@ for (const [path, label] of valid) {
 }
 for (const path of invalid) {
   ok = check(path, () => fillPlanSchema.parse(readJson(path)), false) && ok;
+}
+
+const namingTablePath = join(root, 'docs/setup/naming-table.md');
+const specPathForCheck = join(root, 'src/setup/layout-spec.json');
+if (existsSync(namingTablePath) && existsSync(specPathForCheck)) {
+  const md = readFileSync(namingTablePath, 'utf-8');
+  const generated = `${JSON.stringify(generateLayoutSpecFromNamingTable(md), null, 2)}\n`;
+  const committed = readFileSync(specPathForCheck, 'utf-8');
+  if (generated === committed) {
+    process.stdout.write('PASS  layout-spec.json matches naming table\n');
+  } else {
+    process.stderr.write('FAIL  layout-spec.json drift (run generate-layout-spec.ts)\n');
+    ok = false;
+  }
 }
 
 const { masterPath, specPath } = defaultPaths();

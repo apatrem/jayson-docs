@@ -8,6 +8,7 @@ import { z } from 'zod';
 export const chartKindSchema = z.enum([
   'bar',
   'stacked-bar',
+  'stacked-column',
   'clustered-column',
   'line',
   'area',
@@ -19,17 +20,18 @@ export const chartKindSchema = z.enum([
 ]);
 export type ChartKind = z.infer<typeof chartKindSchema>;
 
-/** Categorical chart kinds — first column categories, remaining columns numeric series. */
+/** Bar/column chart kinds — first column string categories, remaining columns numeric series. */
 export const categoricalChartKinds = [
   'bar',
   'stacked-bar',
+  'stacked-column',
   'clustered-column',
-  'line',
   'area',
 ] as const satisfies readonly ChartKind[];
 
 export type CategoricalChartKind = (typeof categoricalChartKinds)[number];
 
+export const lineChartKind = 'line' as const satisfies ChartKind;
 export const bubbleChartKind = 'bubble' as const satisfies ChartKind;
 
 const datasetRowSchema = z.array(z.union([z.string(), z.number(), z.null()]));
@@ -64,11 +66,11 @@ function validateCategoricalDataset(dataset: Dataset, ctx: z.RefinementCtx, path
 
   for (const [rowIndex, row] of dataset.rows.entries()) {
     const category = row[0];
-    if (category !== null && typeof category !== 'string') {
+    if (category === null || typeof category !== 'string') {
       ctx.addIssue({
         code: 'custom',
         path: [...path, 'rows', rowIndex, 0],
-        message: 'first column must be category labels (string)',
+        message: 'first column must be category labels (string, non-null)',
       });
     }
 
@@ -85,34 +87,93 @@ function validateCategoricalDataset(dataset: Dataset, ctx: z.RefinementCtx, path
   }
 }
 
-function validateBubbleDataset(dataset: Dataset, ctx: z.RefinementCtx, path: (string | number)[]): void {
-  const cols = dataset.columns.map((c) => c.toLowerCase());
-  const hasSeries = cols.includes('series');
-  const required = hasSeries ? ['series', 'x', 'y', 'size'] : ['x', 'y', 'size'];
-
-  for (const name of required) {
-    if (!cols.includes(name)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: [...path, 'columns'],
-        message: `bubble chart datasets require columns: ${required.join(', ')}`,
-      });
-      return;
-    }
+function validateLineDataset(dataset: Dataset, ctx: z.RefinementCtx, path: (string | number)[]): void {
+  if (dataset.columns.length < 2) {
+    ctx.addIssue({
+      code: 'custom',
+      path: [...path, 'columns'],
+      message: 'line chart datasets need ≥2 columns (x-axis + ≥1 series)',
+    });
+    return;
   }
 
+  for (const [rowIndex, row] of dataset.rows.entries()) {
+    const xValue = row[0];
+    if (xValue === null || (typeof xValue !== 'string' && typeof xValue !== 'number')) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, 'rows', rowIndex, 0],
+        message: 'line x-axis values must be string or numeric (non-null)',
+      });
+    }
+
+    for (let col = 1; col < row.length; col++) {
+      const value = row[col];
+      if (value !== null && typeof value !== 'number') {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'rows', rowIndex, col],
+          message: 'series columns must be numeric',
+        });
+      }
+    }
+  }
+}
+
+const BUBBLE_COLUMN_SETS = [
+  ['x', 'y', 'size'],
+  ['series', 'x', 'y', 'size'],
+] as const;
+
+function validateBubbleDataset(dataset: Dataset, ctx: z.RefinementCtx, path: (string | number)[]): void {
+  const cols = dataset.columns.map((c) => c.toLowerCase());
+  const uniqueCols = new Set(cols);
+  if (uniqueCols.size !== cols.length) {
+    ctx.addIssue({
+      code: 'custom',
+      path: [...path, 'columns'],
+      message: 'bubble chart datasets require unique column names',
+    });
+    return;
+  }
+
+  const matchedSet = BUBBLE_COLUMN_SETS.find(
+    (required) =>
+      required.length === cols.length && required.every((name) => cols.includes(name)),
+  );
+  if (matchedSet === undefined) {
+    ctx.addIssue({
+      code: 'custom',
+      path: [...path, 'columns'],
+      message: 'bubble chart datasets require columns: x,y,size or series,x,y,size (no extras)',
+    });
+    return;
+  }
+
+  const seriesIdx = cols.indexOf('series');
   const xIdx = cols.indexOf('x');
   const yIdx = cols.indexOf('y');
   const sizeIdx = cols.indexOf('size');
 
   for (const [rowIndex, row] of dataset.rows.entries()) {
+    if (seriesIdx >= 0) {
+      const seriesLabel = row[seriesIdx];
+      if (seriesLabel === null || typeof seriesLabel !== 'string') {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'rows', rowIndex, seriesIdx],
+          message: 'bubble series labels must be strings (non-null)',
+        });
+      }
+    }
+
     for (const idx of [xIdx, yIdx, sizeIdx]) {
       const value = row[idx];
-      if (value !== null && typeof value !== 'number') {
+      if (value === null || typeof value !== 'number') {
         ctx.addIssue({
           code: 'custom',
           path: [...path, 'rows', rowIndex, idx],
-          message: 'bubble x, y, and size values must be numeric',
+          message: 'bubble x, y, and size values must be numeric (non-null)',
         });
       }
     }
@@ -138,6 +199,11 @@ export function validateChartDataset(
     return;
   }
 
+  if (kind === lineChartKind) {
+    validateLineDataset(dataset, ctx, path);
+    return;
+  }
+
   if (isCategoricalKind(kind)) {
     validateCategoricalDataset(dataset, ctx, path);
   }
@@ -151,19 +217,31 @@ interface ChartBlockInput {
 }
 
 function validateChartBlock(chart: ChartBlockInput, ctx: z.RefinementCtx): void {
-  if (chart.datasetRef === undefined && chart.dataset === undefined) {
+  const hasRef = chart.datasetRef !== undefined;
+  const hasInline = chart.dataset !== undefined;
+
+  if (!hasRef && !hasInline) {
     ctx.addIssue({
       code: 'custom',
       path: ['datasetRef'],
       message:
         'chart must reference a dataset (datasetRef) or include one inline (dataset). See CHART_CATALOGUE.md',
     });
+    return;
+  }
+
+  if (hasRef && hasInline) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['dataset'],
+      message: 'chart must have exactly one of datasetRef or inline dataset, not both',
+    });
   }
 }
 
 /** Chart kinds pinned by implemented layout slots (D21). */
 export const pinnedChartKinds = [
-  'stacked-bar',
+  'stacked-column',
   'clustered-column',
   'line',
   'bubble',
@@ -192,7 +270,7 @@ export function chartBlock(opts: { kind: ChartKind }) {
 /** Union of layout-pinned chart blocks — the only constructible chart surface at runtime. */
 export function pinnedChartBlockUnion() {
   return z.union([
-    chartBlock({ kind: 'stacked-bar' }),
+    chartBlock({ kind: 'stacked-column' }),
     chartBlock({ kind: 'clustered-column' }),
     chartBlock({ kind: 'line' }),
     chartBlock({ kind: 'bubble' }),

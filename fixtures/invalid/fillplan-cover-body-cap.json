@@ -1,0 +1,23 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Opening",
+      "slides": [
+        {
+          "layoutId": "cover",
+          "title": "Eight word minimum title for every layout fixture test",
+          "subtitle": { "kind": "text", "body": "Subtitle line" },
+          "body": "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix",
+          "image": { "ref": "assets/logo.png" }
+        }
+      ]
+    }
+  ]
+}

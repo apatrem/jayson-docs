@@ -10,13 +10,28 @@ All charts produced are **native PowerPoint charts** — editable in PowerPoint,
 
 **v1 supports only chart kinds pinned by an implemented layout slot in the master template.** The LLM **does not choose chart type** — it picks a layout and supplies **data**; Zod pins each chart slot's `kind` to a literal.
 
-Today (the report-pptx walking skeleton) that is exactly **one** slot:
+### Canonical master (`templates/report.master.pptx`, 26 layouts — D22)
+
+The firm's real sanitized master pins **four** chart kinds (one layout each):
 
 | Layout | Slot | Pinned `kind` | Master requirement |
 |--------|------|---------------|-------------------|
-| `kpi-row-chart` | `chart` | `stacked-bar` | `templates/report.master.pptx` must contain a pre-authored **stacked-bar** chart at `slot.chart` |
+| `chart-stacked-column` | `chart` | `stacked-column` | Pre-authored **vertical stacked column** chart at `slot.chart` (slide 7) |
+| `chart-clustered-column` | `chart` | `clustered-column` | Pre-authored **clustered column** chart at `slot.chart` |
+| `chart-line` | `chart` | `line` | Pre-authored **line** chart at `slot.chart` |
+| `chart-bubble` | `chart` | `bubble` | Pre-authored **bubble** chart at `slot.chart` |
 
-**Fill route:** `pptx-automizer` swaps the dataset into that pre-authored chart. No PptxGenJS build in v1.
+**Fill route:** `pptx-automizer` swaps the dataset into the pre-authored chart. No PptxGenJS build in v1.
+
+### Transitional walking skeleton (`kpi-row-chart` — separate placeholder master)
+
+Until Phase 5 retirement, the **development placeholder** (`PLACEHOLDER-report.master.pptx`) still exercises the original single-layout walking skeleton:
+
+| Layout | Slot | Pinned `kind` | Master requirement |
+|--------|------|---------------|-------------------|
+| `kpi-row-chart` | `chart` | `stacked-bar` | Placeholder master must contain a pre-authored **stacked-bar** chart at `slot.chart` |
+
+This is **not** the same pinned kind as `chart-stacked-column` on the canonical 26-slide master (`stacked-column` = vertical columns; `stacked-bar` = horizontal bars). Do not mix them in one fill-plan.
 
 If a fill-plan's chart `kind` does not match the layout slot's pinned literal, validation **rejects** it (D21 corollary). Do not treat the reference kinds below as user-selectable in v1.
 
@@ -59,13 +74,29 @@ Vertical or horizontal bar chart.
 - Columns: first column = category labels (string); remaining columns = numeric series. Each series becomes one set of bars.
 - Pipeline (deferred build route): if the master's placeholder type is `bar`, swap data via pptx-automizer. Otherwise build with PptxGenJS (`pres.addChart(pptx.charts.BAR, ...)`).
 
-### `stacked-bar`
+### `stacked-column`
 
-Stacked bar chart.
+Vertical stacked column chart.
 
-- Same shape as `bar`. Series stack from left to right (or bottom to top for horizontal).
-- **v1:** `kpi-row-chart` pins this kind; automizer data-swap only.
-- Pipeline (deferred build route): PptxGenJS uses `barGrouping: 'stacked'`.
+- Same tabular shape as `bar` / `clustered-column`. Series stack within each category column.
+- **v1 (canonical master):** `chart-stacked-column` pins this kind; automizer data-swap only.
+- Pipeline (deferred build route): PptxGenJS uses `barDir: 'col'` + `barGrouping: 'stacked'`.
+
+### `clustered-column`
+
+Vertical clustered column chart.
+
+- Same tabular shape as `bar` / `stacked-column`. Each series is a separate column group.
+- **v1 (canonical master):** `chart-clustered-column` pins this kind; automizer data-swap only.
+- Pipeline (deferred build route): PptxGenJS uses `barDir: 'col'` + `barGrouping: 'clustered'`.
+
+### `stacked-bar` (transitional walking skeleton only)
+
+Horizontal stacked bar chart.
+
+- Same tabular shape as `bar`. Series stack left to right (horizontal bars).
+- **Transitional v1 only:** `kpi-row-chart` on the **placeholder** master pins this kind — not used on the canonical 26-slide `report.master.pptx` (`chart-stacked-column` pins `stacked-column` instead).
+- Pipeline (deferred build route): PptxGenJS uses `barDir: 'bar'` + `barGrouping: 'stacked'`.
 
 ### `line`
 

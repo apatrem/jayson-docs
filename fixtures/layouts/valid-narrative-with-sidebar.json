@@ -1,0 +1,40 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "narrative-with-sidebar",
+          "title": "Eight word minimum title for every layout fixture test",
+          "subtitle-left": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "body-left": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "subtitle-right": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "body-right": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

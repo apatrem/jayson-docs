@@ -1,0 +1,31 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Content",
+      "slides": [
+        {
+          "layoutId": "title-and-content",
+          "title": "Eight word minimum title for every layout fixture test",
+          "body-left": {
+            "kind": "bullets",
+            "items": [
+              "one two three four five six seven eight nine ten eleven twelve",
+              "thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty",
+              "twentyone twentytwo twentythree twentyfour twentyfive twentysix",
+              "twentyseven twentyeight twentynine thirty thirtyone thirtytwo",
+              "thirtythree thirtyfour thirtyfive thirtysix thirtyseven thirtyeight",
+              "thirtynine forty"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -31,7 +31,7 @@ export function resolveChartDataset(
 }
 
 /**
- * Map a tabular dataset (CHART_CATALOGUE.md bar/stacked-bar shape) to the
+ * Map a tabular dataset (CHART_CATALOGUE.md bar/stacked-column shape) to the
  * pptx-automizer ChartData structure for modify.setChartData.
  */
 export function datasetToChartData(dataset: Dataset): ChartData {

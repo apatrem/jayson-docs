@@ -1,0 +1,31 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "datasets": {
+    "line_numeric": {
+      "id": "line_numeric",
+      "columns": ["year", "value"],
+      "rows": [[2024, 10], [2025, 15], [2026, 22]]
+    }
+  },
+  "sections": [
+    {
+      "title": "Trends",
+      "slides": [
+        {
+          "layoutId": "chart-line",
+          "title": "Eight word minimum title for every layout fixture test",
+          "chart-title": "Numeric year axis",
+          "chart": { "kind": "line", "datasetRef": "line_numeric" },
+          "body-right": { "kind": "text", "body": "Growth accelerates after 2025." },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

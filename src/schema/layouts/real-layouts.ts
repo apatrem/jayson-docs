@@ -108,8 +108,8 @@ export const titleAndContentLayoutSchema = z
 // ── Chart + narrative family (D21 pinned chart kind per layoutId) ─────────────
 
 function chartLayoutSchema(
-  layoutId: 'chart-stacked-bar' | 'chart-clustered-column' | 'chart-line' | 'chart-bubble',
-  chartKind: 'stacked-bar' | 'clustered-column' | 'line' | 'bubble',
+  layoutId: 'chart-stacked-column' | 'chart-clustered-column' | 'chart-line' | 'chart-bubble',
+  chartKind: 'stacked-column' | 'clustered-column' | 'line' | 'bubble',
 ) {
   return z
     .object({
@@ -123,7 +123,10 @@ function chartLayoutSchema(
     .strict();
 }
 
-export const chartStackedBarLayoutSchema = chartLayoutSchema('chart-stacked-bar', 'stacked-bar');
+export const chartStackedColumnLayoutSchema = chartLayoutSchema(
+  'chart-stacked-column',
+  'stacked-column',
+);
 export const chartClusteredColumnLayoutSchema = chartLayoutSchema(
   'chart-clustered-column',
   'clustered-column',
@@ -171,7 +174,7 @@ const twoColumnWithSubheadsSlotsSchema = z
     title: titleString,
     'subtitle-left': subtitleBlockSchema,
     'body-left': contentBlockSchema,
-    'subtitle-center': subtitleBlockSchema,
+    'subtitle-right': subtitleBlockSchema,
     'body-right': contentBlockSchema,
     source: sourceString,
   })
@@ -250,7 +253,7 @@ export const realLayoutSchemas = [
   titleLayoutSchema,
   titleOnlyLayoutSchema,
   titleAndSubtitleLayoutSchema,
-  chartStackedBarLayoutSchema,
+  chartStackedColumnLayoutSchema,
   chartClusteredColumnLayoutSchema,
   chartLineLayoutSchema,
   chartBubbleLayoutSchema,
