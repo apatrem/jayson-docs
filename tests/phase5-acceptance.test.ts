@@ -79,7 +79,7 @@ function expectCategoryChart(
   expect(chart.values).toEqual(values);
 }
 
-describe.skip('T-101 — generic fill engine + first real layout (section)', () => {
+describe('T-101 — generic fill engine + first real layout (section)', () => {
   it('fills a section layout against the real master', async () => {
     const out = await fillFixtureToFile('fixtures/layouts/valid-section.json');
     expect(await countPresentationSlides(out)).toBe(1);
