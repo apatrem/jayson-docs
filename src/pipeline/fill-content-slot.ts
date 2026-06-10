@@ -35,14 +35,35 @@ function isBulletsBlock(value: unknown): value is { items: string[] } {
   );
 }
 
+function isTextOrCalloutBlock(
+  value: unknown,
+): value is { kind: 'text' | 'callout'; body: string } {
+  const kind = (value as { kind?: unknown }).kind;
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (kind === 'text' || kind === 'callout') &&
+    typeof (value as { body?: unknown }).body === 'string'
+  );
+}
+
+function isImageContentBlock(value: unknown): value is { kind: 'image'; ref: string } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as { kind?: unknown }).kind === 'image' &&
+    typeof (value as { ref?: unknown }).ref === 'string'
+  );
+}
+
 /**
- * Content-block slot handler. T-102 lands only what its frozen cover /
- * title-and-subtitle acceptance fixtures force through the engine — the
- * plain-string cover `body` words region and bullets; `text` / `callout` /
- * `image` content blocks are explicitly rejected, never silently skipped
- * (ERROR_HANDLING.md), until T-103 lands them.
+ * Content-block slot handler: plain string (cover `body`), bullets, text,
+ * callout, and image blocks into `body-*` / `body` content regions. Unknown
+ * block kinds are explicitly rejected — never silently skipped
+ * (ERROR_HANDLING.md).
  */
 export function fillContentSlot(
+  automizer: Automizer,
   targetSlide: ISlide,
   layoutId: string,
   slot: LayoutSlot,
@@ -66,8 +87,18 @@ export function fillContentSlot(
     return;
   }
 
+  if (isTextOrCalloutBlock(value)) {
+    setSlotText(targetSlide, slot.slotName, value.body);
+    return;
+  }
+
+  if (isImageContentBlock(value)) {
+    fillImageSlot(automizer, targetSlide, layoutId, slot, value);
+    return;
+  }
+
   throw new Error(
-    `content slot "${slot.slotName}" on layout "${layoutId}" is not yet supported for this block kind — text/callout/image content blocks land in T-103`,
+    `internal invariant violation: slot "${slot.slotName}" on layout "${layoutId}" expects a content block (string, bullets, text, callout, or image), but the schema-validated fill-plan supplied something else`,
   );
 }
 

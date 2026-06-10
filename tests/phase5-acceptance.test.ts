@@ -97,14 +97,14 @@ describe('T-101 — generic fill engine + first real layout (section)', () => {
   });
 
   it('throws the explicit not-yet-supported error for slot kinds later tasks land', () => {
-    // T-102 made `cover` fillable; chart-line now fails first on `body-right` (T-103).
+    // T-103 made `body-right` fillable; chart-line now fails first on `chart-title` (T-104).
     const parsed = fillPlanSchema.parse(readJson('fixtures/layouts/valid-chart-line.json'));
     const chartLine = parsed.kind === 'deck' ? parsed.sections[0]?.slides[0] : undefined;
     if (chartLine === undefined) {
       throw new Error('expected a chart-line slide');
     }
     expect(() => fillSlide(loadMaster(realMaster), chartLine, parsed.datasets)).toThrow(
-      /slot\.body-right.*not yet supported.*T-103/,
+      /slot\.chart-title.*T-104/,
     );
   });
 
@@ -201,7 +201,7 @@ describe('T-102 remediation — real image fill, ref hardening, multi-line text'
   });
 });
 
-describe.skip('T-103 — content-block slots (bullets / text / callout / image)', () => {
+describe('T-103 — content-block slots (bullets / text / callout / image)', () => {
   it('renders bullets as bullets and text/callout bodies as text', async () => {
     const twoColumns = await fillFixtureToFile('fixtures/layouts/valid-two-columns.json');
     const twoColumnTexts = (await readPptxShapeTextsBySlide(twoColumns))[0];
