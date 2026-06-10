@@ -2,6 +2,13 @@
 
 **Status:** accepted — supersedes the original two-point dial (`mode: solo | competitive`)
 
+> **Update (2026-06-10) — Claude-lineage model policy: Fable-first, pinned by CLI flags** (mirrors the
+> agentic-workflow ADR-0004 Update). All Claude-lineage roles run **Claude Fable 5**, pinned per spawn
+> via `claude --model claude-fable-5 --effort <level>` (the `ultrathink` prompt-prefix trick is retired —
+> effort is a first-class CLI flag, valid values `low|medium|high|xhigh|max`). **Fallback:** if Fable is
+> unavailable/rate-limited, use the **latest Opus (≥4.8) at `high`–`xhigh`** and record the actual model
+> in the review comment. The decision text below is updated in place to match.
+
 ## Context
 With several capable, *heterogeneous* agents (Claude, Codex, Cursor), two orchestration shapes
 exist: collaborative (split one task across agents, integrate) or competitive (all solve the same
@@ -34,18 +41,18 @@ The two axes bundled into the one dial:
 - **medium** — one implementer + gate, then a **dual review on every PR**: two independent reviewers of
   different lineage each post a PR comment —
   - **GPT-5.5 at `xhigh`** via the **codex** CLI (effort comes from `~/.codex/config.toml` `model_reasoning_effort = "xhigh"`), and
-  - **Claude Opus 4.8 at extra-high** via the **claude** CLI (instructed to `ultrathink`).
+  - **Claude Fable 5 at effort `high`** via the **claude** CLI (`--model claude-fable-5 --effort high`).
 
   The orchestrator then **synthesizes both** into one verdict: agreements, disagreements, and a
   deduped, severity-ranked punch-list. **Veto is blockers-only** (correctness / security /
   spec-violation / regression); nits are advisory follow-ups. Mechanics: `/agentic-workflow:review`.
 - **hard** — competitive best-of-N: N agents implement the **same** task in isolated worktrees across
-  lineages (Claude / Codex / Cursor), then a **smart merge** — an **Opus 4.8 extra-high synthesizer**
-  grafts the best of the attempts into one diff — and **then the medium dual review runs on that
-  synthesized result**.
+  lineages (Claude / Codex / Cursor — the claude worker at **Fable 5, effort `high`**), then a **smart
+  merge** — a **Fable 5 effort-`xhigh` synthesizer** grafts the best of the attempts into one diff — and
+  **then the medium dual review runs on that synthesized result**.
 
 ### Two refinements (load-bearing — do not drop)
-1. **`hard` ⊇ `medium`.** The synthesized winner of a `hard` run still gets the **full GPT-5.5 + Opus
+1. **`hard` ⊇ `medium`.** The synthesized winner of a `hard` run still gets the **full GPT-5.5 + Fable
    dual review**. A `hard` task must never receive *less* scrutiny than a `medium` one; smart-merge
    adds an authoring step on top of medium's review, it does not replace it.
 2. **smart-merge ≠ auto-merge.** "Smart merge" means *synthesizing N attempts into one best diff* — an
