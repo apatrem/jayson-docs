@@ -1,6 +1,6 @@
 # Architecture Decisions Log — Acme jayson-docs
 
-**Date:** 2026-06-09 (updated through D24 — Superset worktree setup script)
+**Date:** 2026-06-10 (updated through D25 — Anthropic pptx skill: reference + benchmark, never a component)
 **Why this file:** so the developer and future maintainers understand what was decided, what was rejected, and why. Prevents re-litigating settled questions.
 
 ---
@@ -257,6 +257,20 @@ Every skill (Built-in and Custom) inherits a shared **Standard opener** — a *m
 **Rejected:** assuming an arbitrary global `pnpm` binary (does not enforce the repository pin and fails on otherwise valid Corepack-only machines); `corepack enable` in the setup hook (mutates global shims and can require permissions, while `corepack pnpm` works directly); a plain install without `--frozen-lockfile` (would silently mutate `pnpm-lock.yaml` — undesirable in the parallel-agent model).
 
 **Reason:** the multi-agent workflow (AGENTS.md §0) runs each agent in its own long-lived worktree folder with ephemeral per-task branches; a committed setup script makes every worktree gate-ready immediately and identically across agents (Claude, Cursor, Codex). Corepack makes the `packageManager` field authoritative, and `--frozen-lockfile` fails fast on a stale lockfile rather than mutating it. The script is idempotent (safe to re-run). Because `.superset/config.json` is committed and affects all agents, it is recorded here per AGENTS.md §0 rule 5.
+
+---
+
+## D25 — Anthropic's `pptx` skill is a reference and a benchmark, never a component or a code source
+
+**Decided:** treat Anthropic's official `pptx` skill ([anthropics/skills → `skills/pptx`](https://github.com/anthropics/skills/tree/main/skills/pptx)) as **external reference material and a recurring benchmark — never a dependency, an engine, or a source of code**. Three concrete practices:
+
+1. **Output-format gate (Phase 5+, `tasks/T-106`).** The pipeline strictly validates its *input* (fill-plan vs Zod, D23 caps) but trusts its *output* — nothing checks that the emitted `.pptx` is structurally sound. Design a small post-fill gate (T-106). The skill's `scripts/office/` validation stack (ISO/IEC 29500 XSDs, relationship/content-type/slide-layout checks) is the design reference — **read for ideas, never copy** (licence below).
+2. **`pptxgenjs.md` as a pitfalls reference for the deferred D21 dynamic-chart route.** The skill's [`pptxgenjs.md`](https://github.com/anthropics/skills/blob/main/skills/pptx/pptxgenjs.md) documents hard-won silent-corruption gotchas (`#`-prefixed hex colours, 8-char hex opacity, option-object reuse across calls, unicode bullets, …). When the deferred PptxGenJS injection route (D21) is built, consult it — learn from it, do not copy text or code into this repo.
+3. **Occasional benchmark runs.** Periodically hand the same brief + master to plain Claude with the pptx skill (authorized use, inside Claude products) and compare brand fidelity, chart correctness, repeatability, and token cost against this pipeline. Today the skill loses on charts-in-templates (its template-editing workflow has no chart story) and on repeatability (per-run LLM judgment + visual fix-and-verify QA). If that gap ever narrows, record it here and revisit scope.
+
+**Rejected:** **adopting the skill as the fill engine.** Its two routes are precisely what this architecture rejects: (a) LLM hand-editing of slide XML with visual fix-and-verify QA — per-run judgment calls on layout choice, overflow, and shape deletion (vs D8 no-free-placement, D12 fixed templates, and the reject-don't-fix policy in `ERROR_HANDLING.md`); (b) free-coordinate PptxGenJS code generation, brand-by-instruction (vs D8, D19). It also requires Claude with code execution per deliverable (vs D11/D15 BYO LLM) and validates only the output *file format*, not content, density, or brand (vs D23). **Also rejected: vendoring or porting its scripts/schemas.** The skill's `LICENSE.txt` is proprietary — "All rights reserved", with explicit restrictions on extraction, copies, derivative works, and distribution. Nothing from that repo may enter this codebase. (The ECMA-376 XSDs themselves are freely published by ECMA and remain usable by an independent T-106 implementation.)
+
+**Reason:** the skill answers "can Claude produce a deck?" with per-run judgment and inspection-based QA; this product guarantees brand-true, schema-valid output *by construction* (D8, D12, D21, D22). The two validate complementary layers — the skill gates the output file format ("will PowerPoint open it?"), this codebase gates the input contract ("is the fill-plan valid against the closed library?") — which is exactly why its format-level checks are worth mirroring independently (T-106) while its generation model stays rejected. Recording this here prevents re-litigating "why not just use the official skill?" and keeps the licence boundary explicit for every agent working this repo.
 
 ---
 
