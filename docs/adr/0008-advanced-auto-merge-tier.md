@@ -10,7 +10,7 @@ recorded here in full so the design is preserved and ready, not reinvented.
 
 **Orthogonal to the effort dial (ADR-0004).** This ADR governs the *one dangerous action* — moving
 `main` — not how much effort a task spends authoring/reviewing. The effort tier (`low | medium | hard`)
-and the auto-merge tier are **independent knobs**: a `hard` task's **smart-merge** (an Opus synthesizer
+and the auto-merge tier are **independent knobs**: a `hard` task's **smart-merge** (a Fable 5 synthesizer
 grafting N attempts into one diff — an *authoring* step) produces a PR that, **by default, a human still
 merges** (ADR-0003). **smart-merge ≠ auto-merge.** Auto-merge below is what a repo *separately* opts into;
 it can then apply to any effort tier whose result clears the code-computed checks.
@@ -31,9 +31,9 @@ computed by **plain code, never an LLM call** (the LLM emits structured findings
 **contracts and the gate itself** so an agent can't weaken its own judge.
 
 **Synthesis + cross-lineage review (the `hard` tier's mechanics — ADR-0004).** For best-of-N, the
-**smart-merge synthesizer (Opus 4.8, extra-high)** grafts the best of the N attempts into one final
+**smart-merge synthesizer (Fable 5, effort `xhigh` — ADR-0004 Update)** grafts the best of the N attempts into one final
 diff. That synthesized result then gets the **medium dual review** (`hard` ⊇ `medium`): two independent,
-cross-lineage skeptics — **GPT-5.5 at `xhigh`** and **Opus 4.8 at extra-high/ultrathink** — each post a
+cross-lineage skeptics — **GPT-5.5 at `xhigh`** and **Fable 5 at effort `high`** — each post a
 PR comment, and the orchestrator synthesizes both (`/agentic-workflow:review`). Reviewer veto is
 **blockers-only** (correctness / security / spec-violation / regression); nits are non-blocking
 follow-ups. A cheap pre-screen (Cursor) can kill obvious breakage first. Synthesis is an *authoring*
@@ -41,7 +41,7 @@ step (**smart-merge ≠ auto-merge**); whether the resulting PR auto-merges is t
 
 **Failure / queue / quota.** Synthesis fails the gate or reviewer raises a blocker → **repair once**
 (feed the failure back), then `needs-human`. **Worker** rate-limited → degrade and continue;
-**reviewer** rate-limited → that task `needs-human`; **synthesizer (Opus)** rate-limited → **pause
+**reviewer** rate-limited → that task `needs-human`; **synthesizer (Fable; Opus ≥4.8 fallback)** rate-limited → **pause
 the queue at a resumable checkpoint** and notify. **Sequential** queue by default (each task starts
 from the new `main`); opt-in parallel only for `parallel-safe` tasks with disjoint file sets. Near
 the token budget, auto-downgrade remaining tasks down the effort ladder (`hard`→`medium`→`low`).

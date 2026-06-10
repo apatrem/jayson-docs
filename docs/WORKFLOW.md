@@ -11,8 +11,10 @@ idea → **`/agentic-workflow:architect`** (grill-with-docs → ADRs + `CONTEXT.
 ## Effort/review dial — `mode: low | medium | hard` (default `low`; prefer low, justify higher)
 One dial, two axes (authoring depth × review rigor); set per task, default `low` (ADR-0004).
 - **low** *(default, ~90%)* — 1 implementer + deterministic gate + 1 adversarial reviewer.
-- **medium** — 1 implementer + gate + an independent **dual review** on every PR: **GPT-5.5 @ xhigh** (codex) **and** **Opus 4.8 @ ultrathink** (claude-code), each posts a PR comment; orchestrator synthesizes (agreements / disagreements / deduped severity-ranked punch-list). Blockers-only veto. → `/agentic-workflow:review`.
-- **hard** — competitive best-of-N across lineages → **smart-merge** (an Opus 4.8 synthesizer grafts the best attempts into one diff) → **then the medium dual review** on that result (**hard ⊇ medium**).
+- **medium** — 1 implementer + gate + an independent **dual review** on every PR: **GPT-5.5 @ xhigh** (codex) **and** **Claude Fable 5 @ effort `high`** (claude-code), each posts a PR comment; orchestrator synthesizes (agreements / disagreements / deduped severity-ranked punch-list). Blockers-only veto. → `/agentic-workflow:review`.
+- **hard** — competitive best-of-N across lineages → **smart-merge** (a **Fable 5 @ effort `xhigh`** synthesizer grafts the best attempts into one diff) → **then the medium dual review** on that result (**hard ⊇ medium**).
+
+**Claude-lineage model policy (ADR-0004 Update):** **Fable-first** — pin via CLI flags (`claude --model claude-fable-5 --effort medium|high|xhigh` per role); if Fable is unavailable, fall back to the **latest Opus (≥4.8) at `high`–`xhigh`**.
 
 **smart-merge ≠ auto-merge:** smart-merge synthesizes N attempts into one diff; the PR **merge stays human** by default (ADR-0003). Auto-merge is the separate, orthogonal advanced tier (ADR-0008) — `hard` does *not* imply it.
 
