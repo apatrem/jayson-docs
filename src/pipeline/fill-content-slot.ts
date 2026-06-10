@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { realpathSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, dirname, extname, isAbsolute, relative, resolve } from 'node:path';
@@ -38,11 +39,11 @@ function isBulletsBlock(value: unknown): value is { items: string[] } {
 function isTextOrCalloutBlock(
   value: unknown,
 ): value is { kind: 'text' | 'callout'; body: string } {
-  const kind = (value as { kind?: unknown }).kind;
   return (
     typeof value === 'object' &&
     value !== null &&
-    (kind === 'text' || kind === 'callout') &&
+    ((value as { kind?: unknown }).kind === 'text' ||
+      (value as { kind?: unknown }).kind === 'callout') &&
     typeof (value as { body?: unknown }).body === 'string'
   );
 }
@@ -134,6 +135,32 @@ function resolveImageRef(ref: string, slotName: string, layoutId: string): strin
   return real;
 }
 
+/** Per-automizer dedupe: one archive part per resolved source path. */
+const loadedImageArchiveNames = new WeakMap<Automizer, Map<string, string>>();
+
+/** Load media once and return the slugified `ppt/media/` archive filename. */
+function ensureImageMediaLoaded(automizer: Automizer, resolvedPath: string): string {
+  let byPath = loadedImageArchiveNames.get(automizer);
+  if (byPath === undefined) {
+    byPath = new Map();
+    loadedImageArchiveNames.set(automizer, byPath);
+  }
+
+  const existing = byPath.get(resolvedPath);
+  if (existing !== undefined) {
+    return existing;
+  }
+
+  const relativePath = relative(realpathSync(process.cwd()), resolvedPath);
+  const hash = createHash('sha256').update(relativePath).digest('hex').slice(0, 12);
+  const fileName = basename(resolvedPath);
+  const prefix = `${hash}-`;
+  automizer.loadMedia(fileName, dirname(resolvedPath), prefix);
+  const archiveName = slugifyMediaName(prefix + fileName);
+  byPath.set(resolvedPath, archiveName);
+  return archiveName;
+}
+
 /** Append an image relationship to the slide's rels root and return its rId. */
 function appendImageRelation(relsRoot: XmlNode, target: string): string {
   const relations = relsRoot.getElementsByTagName('Relationship');
@@ -190,9 +217,7 @@ export function fillImageSlot(
   }
 
   const imagePath = resolveImageRef(image.ref, slot.slotName, layoutId);
-  // T-103 seam (multi-image decks): dedupe loads + uniquify basename collisions here.
-  const mediaName = slugifyMediaName(basename(imagePath));
-  automizer.loadMedia(basename(imagePath), dirname(imagePath));
+  const mediaName = ensureImageMediaLoaded(automizer, imagePath);
   targetSlide.modifyElement(slot.slotName, (element: XmlNode, relsRoot?: XmlNode) => {
     // relsRoot is always supplied for generic shapes; modify callbacks may not throw.
     if (relsRoot !== undefined)
