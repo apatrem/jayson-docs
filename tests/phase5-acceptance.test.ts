@@ -93,12 +93,15 @@ describe('T-101 — generic fill engine + first real layout (section)', () => {
   });
 
   it('throws the explicit not-yet-supported error for slot kinds later tasks land', () => {
-    const parsed = fillPlanSchema.parse(readJson('fixtures/layouts/valid-cover.json'));
-    const cover = parsed.kind === 'deck' ? parsed.sections[0]?.slides[0] : undefined;
-    if (cover === undefined) {
-      throw new Error('expected a cover slide');
+    // T-102 made `cover` fillable; chart layouts keep unimplemented kinds until T-104.
+    const parsed = fillPlanSchema.parse(readJson('fixtures/layouts/valid-chart-line.json'));
+    const chartLine = parsed.kind === 'deck' ? parsed.sections[0]?.slides[0] : undefined;
+    if (chartLine === undefined) {
+      throw new Error('expected a chart-line slide');
     }
-    expect(() => fillSlide(loadMaster(realMaster), cover)).toThrow(/not yet supported in T-101/);
+    expect(() => fillSlide(loadMaster(realMaster), chartLine, parsed.datasets)).toThrow(
+      /not yet supported/,
+    );
   });
 
   it('classifies an unknown layoutId as a MasterError', () => {
@@ -107,7 +110,7 @@ describe('T-101 — generic fill engine + first real layout (section)', () => {
   });
 });
 
-describe.skip('T-102 — generic text slots (title / subtitle / source)', () => {
+describe('T-102 — generic text slots (title / subtitle / source)', () => {
   it('fills string and text-block slots with exact fixture values', async () => {
     const cover = await fillFixtureToFile('fixtures/layouts/valid-cover.json');
     const coverTexts = (await readPptxShapeTextsBySlide(cover))[0];
