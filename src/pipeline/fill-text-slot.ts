@@ -16,13 +16,16 @@ function isBodyBlock(value: unknown): value is { body: string } {
 /**
  * The real master's slot placeholders hold empty paragraphs (no `<a:r>` run),
  * so `modify.setText` — which only rewrites an existing first run — is a
- * silent no-op there. Build the single text run instead; run/paragraph
- * properties stay empty so the placeholder inherits the master's styling.
+ * silent no-op there. Build the runs instead, one paragraph per input line (a
+ * literal `\n` inside one `<a:t>` is not a DrawingML line break); paragraph
+ * properties stay empty so the master's styling stays authoritative.
  */
 export function setSlotText(targetSlide: ISlide, slotName: string, text: string): void {
   targetSlide.modifyElement(
     slotName,
-    modify.setMultiText([{ paragraph: {}, textRuns: [{ text }] }]),
+    modify.setMultiText(
+      text.split('\n').map((line) => ({ paragraph: {}, textRuns: [{ text: line }] })),
+    ),
   );
 }
 
