@@ -27,6 +27,15 @@ export class ChartDataError extends Error {
   }
 }
 
+export class ImageRefError extends Error {
+  readonly code = 'image-ref' as const;
+
+  constructor(message: string) {
+    super(message);
+    this.name = 'ImageRefError';
+  }
+}
+
 export class SaveError extends Error {
   readonly code = 'save' as const;
 
@@ -38,11 +47,12 @@ export class SaveError extends Error {
 
 export function isPipelineError(
   error: unknown,
-): error is MasterError | ShapeNameError | ChartDataError | SaveError {
+): error is MasterError | ShapeNameError | ChartDataError | ImageRefError | SaveError {
   return (
     error instanceof MasterError ||
     error instanceof ShapeNameError ||
     error instanceof ChartDataError ||
+    error instanceof ImageRefError ||
     error instanceof SaveError
   );
 }

@@ -8,7 +8,7 @@ import type { LayoutSlot, LayoutSpec } from '../setup/types.js';
 import { MasterError } from './errors.js';
 import { MASTER_TEMPLATE_ALIAS } from './load-master.js';
 import { fillChartSlot } from './fill-chart-slot.js';
-import { fillContentSlot } from './fill-content-slot.js';
+import { fillContentSlot, fillImageSlot } from './fill-content-slot.js';
 import { fillTextSlot } from './fill-text-slot.js';
 
 /**
@@ -35,6 +35,7 @@ function loadLayoutSpec(): LayoutSpec {
  * (ERROR_HANDLING.md).
  */
 function fillSlot(
+  automizer: Automizer,
   targetSlide: ISlide,
   layoutId: string,
   slot: LayoutSlot,
@@ -50,8 +51,10 @@ function fillSlot(
       fillTextSlot(targetSlide, layoutId, slot, value);
       return;
     case 'content':
-    case 'image':
       fillContentSlot(targetSlide, layoutId, slot, value);
+      return;
+    case 'image':
+      fillImageSlot(automizer, targetSlide, layoutId, slot, value);
       return;
     case 'chart':
       fillChartSlot(targetSlide, layoutId, slot, value, datasets);
@@ -98,7 +101,7 @@ export function fillRealLayout(
   automizer.addSlide(MASTER_TEMPLATE_ALIAS, layout.sourceSlideIndex, (targetSlide) => {
     for (const slot of layout.slots) {
       const valueKey = slot.slotName.replace(/^slot\./, '');
-      fillSlot(targetSlide, layout.layoutId, slot, values[valueKey], datasets);
+      fillSlot(automizer, targetSlide, layout.layoutId, slot, values[valueKey], datasets);
     }
   });
 }

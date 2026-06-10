@@ -1,19 +1,23 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
 import { fillPlanSchema } from '../src/schema/index.js';
 import { REGION_CAPS } from '../src/schema/caps.js';
 import type { Slide } from '../src/schema/slide.js';
-import type { LayoutSpec } from '../src/setup/types.js';
-import { MasterError } from '../src/pipeline/errors.js';
+import type { LayoutSlot, LayoutSpec } from '../src/setup/types.js';
+import { ImageRefError, MasterError, ShapeNameError } from '../src/pipeline/errors.js';
 import { loadMaster } from '../src/pipeline/load-master.js';
+import { fillImageSlot } from '../src/pipeline/fill-content-slot.js';
 import { fillSlide } from '../src/pipeline/fill-slide.js';
 import { saveOutput } from '../src/pipeline/save-output.js';
 import { readPptxChartDataForShape, type PptxChartData } from './helpers/pptx-chart.js';
 import { readPptxImageBytesForShape } from './helpers/pptx-image.js';
+import { activeSlidePaths, readPartText } from './helpers/pptx-package.js';
 import {
   countPresentationSlides,
   readPptxShapeTextsBySlide,
@@ -93,12 +97,15 @@ describe('T-101 — generic fill engine + first real layout (section)', () => {
   });
 
   it('throws the explicit not-yet-supported error for slot kinds later tasks land', () => {
-    const parsed = fillPlanSchema.parse(readJson('fixtures/layouts/valid-cover.json'));
-    const cover = parsed.kind === 'deck' ? parsed.sections[0]?.slides[0] : undefined;
-    if (cover === undefined) {
-      throw new Error('expected a cover slide');
+    // T-102 made `cover` fillable; chart-line now fails first on `body-right` (T-103).
+    const parsed = fillPlanSchema.parse(readJson('fixtures/layouts/valid-chart-line.json'));
+    const chartLine = parsed.kind === 'deck' ? parsed.sections[0]?.slides[0] : undefined;
+    if (chartLine === undefined) {
+      throw new Error('expected a chart-line slide');
     }
-    expect(() => fillSlide(loadMaster(realMaster), cover)).toThrow(/not yet supported in T-101/);
+    expect(() => fillSlide(loadMaster(realMaster), chartLine, parsed.datasets)).toThrow(
+      /slot\.body-right.*not yet supported.*T-103/,
+    );
   });
 
   it('classifies an unknown layoutId as a MasterError', () => {
@@ -107,7 +114,7 @@ describe('T-101 — generic fill engine + first real layout (section)', () => {
   });
 });
 
-describe.skip('T-102 — generic text slots (title / subtitle / source)', () => {
+describe('T-102 — generic text slots (title / subtitle / source)', () => {
   it('fills string and text-block slots with exact fixture values', async () => {
     const cover = await fillFixtureToFile('fixtures/layouts/valid-cover.json');
     const coverTexts = (await readPptxShapeTextsBySlide(cover))[0];
@@ -134,6 +141,63 @@ describe.skip('T-102 — generic text slots (title / subtitle / source)', () => 
     const out = await fillPlanToFile(plan);
     const texts = (await readPptxShapeTextsBySlide(out))[0];
     expect(texts?.get('slot.subtitle')).toBe('Decision required this week');
+  });
+});
+
+// NOT frozen — PR #26 remediation: proves the image fill is real, refs hardened.
+describe('T-102 remediation — real image fill, ref hardening, multi-line text', () => {
+  const imageSlot: LayoutSlot = {
+    slotName: 'slot.image',
+    regionKind: 'image',
+    match: { currentShapeName: 'slot.image' },
+  };
+  const fillImage = (image: unknown) => () =>
+    // Caption/ref validation throws before any automizer/slide use.
+    fillImageSlot(undefined as never, undefined as never, 'cover', imageSlot, image);
+
+  it('embeds the cover image via a real slide relation, with no orphaned rels-root Target', async () => {
+    const out = await fillFixtureToFile('fixtures/layouts/valid-cover.json');
+    const imageBytes = Buffer.from(await readPptxImageBytesForShape(out, 'slot.image'));
+    expect(imageBytes).toEqual(readFileSync(join(root, 'fixtures/assets/test-logo.svg')));
+
+    const zip = await JSZip.loadAsync(await readFile(out));
+    const slidePath = (await activeSlidePaths(zip))[0] ?? '';
+    const relsPath = `${dirname(slidePath)}/_rels/${basename(slidePath)}.rels`;
+    expect(await readPartText(zip, relsPath)).not.toMatch(/<Relationships[^>]*Target=/);
+  });
+
+  it('rejects captions (ShapeNameError) and unsafe or missing refs (ImageRefError)', () => {
+    const withCaption = { ref: 'fixtures/assets/test-logo.svg', caption: 'No caption shape' };
+    expect(fillImage(withCaption)).toThrow(ShapeNameError);
+    expect(fillImage(withCaption)).toThrow(/slot\.image\.caption/);
+
+    expect(fillImage({ ref: join(root, 'fixtures/assets/test-logo.svg') })).toThrow(ImageRefError);
+    expect(fillImage({ ref: 'fixtures/assets/does-not-exist.png' })).toThrow(ImageRefError);
+
+    const outside = mkdtempSync(join(tmpdir(), 'jayson-docs-outside-'));
+    const base = mkdtempSync(join(tmpdir(), 'jayson-docs-base-'));
+    writeFileSync(join(outside, 'secret.png'), 'outside-cwd');
+    symlinkSync(join(outside, 'secret.png'), join(base, 'link.png'));
+    const cwd = process.cwd();
+    process.chdir(base);
+    try {
+      const escapes = /escapes the working directory/;
+      expect(fillImage({ ref: join('..', basename(outside), 'secret.png') })).toThrow(escapes);
+      expect(fillImage({ ref: 'link.png' })).toThrow(escapes);
+    } finally {
+      process.chdir(cwd);
+    }
+  });
+
+  it('splits a multi-line source into one paragraph per line', async () => {
+    const plan = structuredClone(rawDeck('fixtures/layouts/valid-title-and-subtitle.json'));
+    Object.assign(plan.sections[0]?.slides[0] ?? {}, {
+      source: 'Source: ACME analysis, June 2026.\nNote: provisional figures.',
+    });
+
+    const xml = await readPptxShapeXml(await fillPlanToFile(plan), 'slot.source');
+    expect([...xml.matchAll(/<a:p[ >]/g)]).toHaveLength(2);
+    expect(xml).not.toMatch(/<a:t[^>]*>[^<]*\n/);
   });
 });
 
