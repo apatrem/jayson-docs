@@ -27,7 +27,7 @@ Using T-101's generic engine, fill the shared **word/text region** slots — `ti
 
 ## Meta
 
-- mode: low
+- mode: medium # bumped 2026-06-10 — dual review applied
 - risk: low
 - depends-on: T-101
 - parallel-safe: no # shares the generic dispatcher and acceptance file; land before T-103
