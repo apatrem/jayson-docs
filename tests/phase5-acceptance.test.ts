@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -83,6 +83,40 @@ function expectCategoryChart(
   expect(chart.series).toEqual(series);
   expect(chart.categories).toEqual(categories);
   expect(chart.values).toEqual(values);
+}
+
+function textRunsFromShapeXml(shapeXml: string): string[] {
+  return [...shapeXml.matchAll(/<a:t(?:[^>]*)>([^<]*)<\/a:t>/g)].map((match) => match[1] ?? '');
+}
+
+function countBulletParagraphs(shapeXml: string): number {
+  return [...shapeXml.matchAll(/<a:bu(?:Char|AutoNum)\b/g)].length;
+}
+
+async function expectBulletsInShape(
+  filePath: string,
+  shapeName: string,
+  items: string[],
+): Promise<void> {
+  const xml = await readPptxShapeXml(filePath, shapeName);
+  expect(textRunsFromShapeXml(xml)).toEqual(items);
+  expect(countBulletParagraphs(xml)).toBe(items.length);
+}
+
+function bulletsItems(slide: Record<string, unknown>, key: string): string[] {
+  const block = slide[key] as { items?: string[] } | undefined;
+  if (block?.items === undefined) {
+    throw new Error(`fixture slide missing bullets at ${key}`);
+  }
+  return block.items;
+}
+
+function textBody(slide: Record<string, unknown>, key: string): string {
+  const block = slide[key] as { body?: string } | undefined;
+  if (block?.body === undefined) {
+    throw new Error(`fixture slide missing text body at ${key}`);
+  }
+  return block.body;
 }
 
 describe('T-101 — generic fill engine + first real layout (section)', () => {
@@ -203,18 +237,78 @@ describe('T-102 remediation — real image fill, ref hardening, multi-line text'
 
 describe('T-103 — content-block slots (bullets / text / callout / image)', () => {
   it('renders bullets as bullets and text/callout bodies as text', async () => {
+    const twoColumnsFixture = fixtureSlide('fixtures/layouts/valid-two-columns.json');
     const twoColumns = await fillFixtureToFile('fixtures/layouts/valid-two-columns.json');
-    const twoColumnTexts = (await readPptxShapeTextsBySlide(twoColumns))[0];
-    expect(twoColumnTexts?.get('slot.body-left')).toContain('Point one');
-    expect(twoColumnTexts?.get('slot.body-left')).toContain('Point two');
-    expect(twoColumnTexts?.get('slot.body-right')).toContain('Point one');
+    await expectBulletsInShape(twoColumns, 'slot.body-left', bulletsItems(twoColumnsFixture, 'body-left'));
+    await expectBulletsInShape(
+      twoColumns,
+      'slot.body-right',
+      bulletsItems(twoColumnsFixture, 'body-right'),
+    );
 
-    const leftXml = await readPptxShapeXml(twoColumns, 'slot.body-left');
-    expect([...leftXml.matchAll(/<a:bu(?:Char|AutoNum)\b/g)]).toHaveLength(2);
+    const sidebarFixture = fixtureSlide('fixtures/layouts/valid-narrative-with-sidebar.json');
+    const sidebarPlan = structuredClone(rawDeck('fixtures/layouts/valid-narrative-with-sidebar.json'));
+    const sidebarSlide = sidebarPlan.sections[0]?.slides[0];
+    if (sidebarSlide === undefined) {
+      throw new Error('missing narrative-with-sidebar fixture slide');
+    }
+    sidebarSlide['body-right'] = {
+      kind: 'callout',
+      body: textBody(sidebarFixture, 'body-right'),
+    };
 
-    const sidebar = await fillFixtureToFile('fixtures/layouts/valid-narrative-with-sidebar.json');
+    const sidebar = await fillPlanToFile(sidebarPlan);
+    await expectBulletsInShape(
+      sidebar,
+      'slot.body-left',
+      bulletsItems(sidebarFixture, 'body-left'),
+    );
     const sidebarTexts = (await readPptxShapeTextsBySlide(sidebar))[0];
-    expect(sidebarTexts?.get('slot.body-right')).toBe('Short narrative body text for the slot.');
+    expect(sidebarTexts?.get('slot.body-right')).toBe(textBody(sidebarFixture, 'body-right'));
+  });
+
+  it('embeds distinct body images that share a basename without colliding media parts', async () => {
+    const imageRoot = mkdtempSync(join(tmpdir(), 'jayson-docs-img-'));
+    const dirA = join(imageRoot, 'a');
+    const dirB = join(imageRoot, 'b');
+    mkdirSync(dirA, { recursive: true });
+    mkdirSync(dirB, { recursive: true });
+    const bytesA = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/></svg>');
+    const bytesB = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="blue"/></svg>');
+    writeFileSync(join(dirA, 'logo.svg'), bytesA);
+    writeFileSync(join(dirB, 'logo.svg'), bytesB);
+
+    const cwd = process.cwd();
+    process.chdir(imageRoot);
+    try {
+      const out = await fillPlanToFile({
+        kind: 'deck',
+        meta: {
+          templateId: 'report.master.pptx',
+          client: 'ACME',
+          date: '2026-06-08',
+          language: 'en',
+        },
+        sections: [
+          {
+            title: 'Fixture',
+            slides: [
+              {
+                layoutId: 'two-columns',
+                title: 'Eight word minimum title for every layout fixture test',
+                'body-left': { kind: 'image', ref: 'a/logo.svg' },
+                'body-right': { kind: 'image', ref: 'b/logo.svg' },
+                source: 'Source: ACME analysis, June 2026.',
+              },
+            ],
+          },
+        ],
+      });
+      expect(Buffer.from(await readPptxImageBytesForShape(out, 'slot.body-left'))).toEqual(bytesA);
+      expect(Buffer.from(await readPptxImageBytesForShape(out, 'slot.body-right'))).toEqual(bytesB);
+    } finally {
+      process.chdir(cwd);
+    }
   });
 
   it('replaces the named cover image with the referenced fixture asset', async () => {
