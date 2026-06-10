@@ -21,6 +21,6 @@
 ## Meta
 - mode: low             # low (default) | medium | hard — effort/review dial (ADR-0004); prefer low, justify higher
                         #   low    = 1 implementer + gate + 1 adversarial reviewer
-                        #   medium = + independent dual review on the PR (GPT-5.5 xhigh + Opus 4.8 ultrathink → synthesis)
+                        #   medium = + independent dual review on the PR (GPT-5.5 xhigh + Opus 4.8 xhigh → synthesis)
                         #   hard   = competitive best-of-N + Opus smart-merge, THEN the medium dual review (hard ⊇ medium)
 - size budget: < 300 changed lines (split or stack if larger)
