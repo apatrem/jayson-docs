@@ -18,7 +18,7 @@
     {
       "name": "report-pptx",
       "path": "report-pptx/SKILL.md",
-      "description": "Generate an Acme delivery / steering-committee deck as PowerPoint (.pptx). v1: kpi-row-chart only (D20)."
+      "description": "Generate an Acme delivery / steering-committee deck as PowerPoint (.pptx). v1: all 26 layouts on report.master.pptx (D20)."
     },
     {
       "name": "report-docx",

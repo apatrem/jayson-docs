@@ -15,35 +15,29 @@ description: |
 
 # Skill — report-pptx
 
-> **v1 scope (D20):** this is the **only implemented skill** in v1. The
-> **v1 fill route** is layout **`kpi-row-chart` only** against
-> **`templates/PLACEHOLDER-report.master.pptx`** (carries kpi-strip/chart slot
-> shapes). Other layouts in `SLIDE_LAYOUT_LIBRARY.md` are post-v1. The canonical
-> **`templates/report.master.pptx`** (26 real layouts, schema/setup-complete) is
-> **not yet fillable** — the pipeline implements `kpi-row-chart` only; wiring
-> the 26-layout master is **Phase 5**. Do **not** run fill against the canonical
-> master (e.g. `--template templates/report.master.pptx` with
-> `fixtures/valid-fill-plan.json` fails: missing `slot.kpi-strip.card1.figure`).
-> Charts: **data-swap only** (D21) — do not choose chart type.
+> **v1 scope (D20):** this is the **only implemented skill** in v1. The fill
+> route uses all **26 layouts** on **`templates/report.master.pptx`**. Read
+> **`layout-catalogue.json`** (D16/D22) to pick layouts and fill slots. **Prefer
+> `common` tier layouts; justify any `less-common` choice.** Charts: **data-swap
+> only** (D21) — each layout pins its chart `kind`; supply data, never geometry.
+> DOCX deliverables and dynamic chart build remain post-v1.
 
 ## 0. Purpose
 
 Produce an **Acme project-delivery `.pptx`** — slides shown to the client during
-or at the end of an engagement. In v1 the CLI fills the **`kpi-row-chart`**
-layout only, using **`templates/PLACEHOLDER-report.master.pptx`** on disk (logical
-template id in the fill-plan remains `"report.master.pptx"`).
+or at the end of an engagement. The CLI fills any of the **26 real layouts** on
+**`templates/report.master.pptx`**, guided by the Layout catalogue.
 
 ## 1. Hard rules
 
 - You never lay out slides, pick coordinates, choose fonts or colours.
-- In v1 you use **`layoutId: "kpi-row-chart"` only** — do not pick other layouts
-  (`two-column`, `quad`, etc.) until they are implemented post-v1.
-- You honour every density cap — enforced by Zod; violations are rejected.
+- You **read `layout-catalogue.json`** to pick a `layoutId` and fill only the
+  catalogue's slot keys. **Prefer `common` tier;** if you pick `less-common`,
+  state why in your reasoning.
+- You honour every density cap in the catalogue's `caps` — enforced by Zod;
+  violations are rejected.
 - **Chart type is not your choice.** Each layout pins its `chart` slot to one
-  literal `kind` (D21). On the **transitional** `kpi-row-chart` layout that is
-  `kind: "stacked-bar"`; on the canonical master use the layout's pinned kind
-  (e.g. `chart-stacked-column` → `"stacked-column"`). Supply **data**
-  (`datasetRef` or inline `dataset`) only.
+  literal `kind` (D21). Supply **data** (`datasetRef` or inline `dataset`) only.
 - If you are missing information for a required slot, ask one short question.
   Never invent client-specific content.
 - If the CLI returns a validation error, surface it **verbatim** — do not silently
@@ -51,15 +45,14 @@ template id in the fill-plan remains `"report.master.pptx"`).
 
 ## 2. Read first
 
-1. `docs/SLIDE_LAYOUT_LIBRARY.md` — `kpi-row-chart` slots and density caps.
-2. `CHART_CATALOGUE.md` — pinned chart kinds per layout (`stacked-column` on the
-   canonical master; `stacked-bar` on the transitional `kpi-row-chart` only) and
-   dataset shape.
-3. `src/schema/layouts/kpi-row-chart.ts` — the Zod source of truth for v1.
-4. `src/schema/index.ts` — `fillPlanSchema` envelope.
+1. **`layout-catalogue.json`** — all 26 `layoutId`s, tiers, usage notes,
+   per-slot `regions` maps, and density `caps`.
+2. `docs/SLIDE_LAYOUT_LIBRARY.md` — naming convention and density-cap model.
+3. `CHART_CATALOGUE.md` — pinned chart kinds per layout and dataset shape.
+4. `src/schema/index.ts` — `fillPlanSchema` envelope (layout schemas are the
+   per-`layoutId` contracts).
 5. `src/brand/brand.yaml` — brand tokens (do not override layout or chart type).
-6. `fixtures/worked-example-brief.md` + `fixtures/valid-fill-plan.json` — worked
-   example (brief → fill-plan → CLI → `.pptx`).
+6. `fixtures/valid-real-multi-layout-plan.json` — multi-layout worked example.
 
 ## 3. Two drivers (same fill-plan, same CLI)
 
@@ -72,11 +65,11 @@ file (or pipe via stdin), and invoke the CLI. **No LLM API call lives in the app
 ### Driver B — Human runs the CLI directly
 
 A consultant (or you) may skip the LLM step and run the CLI on an already-valid
-fill-plan — e.g. `fixtures/valid-fill-plan.json` or a hand-edited plan. The CLI
-path is identical; only who authors the JSON differs.
+fill-plan — e.g. `fixtures/valid-real-multi-layout-plan.json` or a hand-edited
+plan. The CLI path is identical; only who authors the JSON differs.
 
 Both drivers must produce the same result: a brand-correct `.pptx` with named
-shapes filled and a native editable chart carrying the fill-plan data.
+shapes filled and native editable charts carrying the fill-plan data.
 
 ## 4. Workflow (BYO LLM)
 
@@ -86,13 +79,11 @@ For a delivery deck, ask for:
 
 - **Client name & meeting type** (steering committee? final readout? internal
   review?).
-- **Headline finding / recommendation** — the one-sentence punchline (8–15 words
-  for the action title).
-- **Key metrics & chart data** — figures for the KPI strip (3–5 cards) and the
-  chart dataset for the layout's pinned kind (category column + numeric series
-  columns for bar/column charts).
-- **Narrative bullets** — supporting points for the slide (≤5 bullets, ≤60 words
-  total).
+- **Deck structure** — cover, section breaks, key slides (charts, comparisons,
+  narratives).
+- **Headline findings** — action titles (8–15 words each).
+- **Chart data** — datasets for each chart layout you plan to use.
+- **Narrative content** — bullets, callouts, and source citations per slide.
 - **Audience** and **date of the meeting**.
 
 ### Step B — Produce the fill-plan
@@ -100,22 +91,27 @@ For a delivery deck, ask for:
 Build a JSON matching `fillPlanSchema`:
 
 - `kind` = `"deck"`
-- `meta.templateId` = `"report.master.pptx"` (logical id — always this string;
-  the on-disk file for v1 fill is the placeholder; see Step D).
+- `meta.templateId` = `"report.master.pptx"` (logical id — always this string).
 - `meta.client`, `meta.date`, `meta.language` as standard.
-- `sections[]` — each `{ title, slides: [...] }`. In v1 each section's slides use
-  **`kpi-row-chart` only** (multiple sections/slides are fine; same layout).
+- `sections[]` — each `{ title, slides: [...] }`. Each slide uses a `layoutId`
+  from the catalogue; fill only keys that layout's slots (see `regions`).
 - `datasets` — keyed datasets referenced by `chart.datasetRef`.
-- Each `kpi-row-chart` slide must include: `title`, `kpi-strip` (3–5 cards),
-  `chart`, `narrative`.
+
+**Layout selection (D16):**
+
+1. Open `layout-catalogue.json`.
+2. Match the slide's purpose to a layout's `usage` note.
+3. Prefer `tier: "common"`; use `less-common` only when the common set lacks a fit
+   (e.g. white-background cover, high-contrast variant).
+4. Fill every non-footer slot listed in `regions`.
 
 **Chart block (data-swap — D21):**
 
 ```jsonc
 {
-  "kind": "stacked-bar",           // transitional kpi-row-chart only — must match layout literal
+  "kind": "stacked-column",        // must match the layout's pinned kind exactly
   "datasetRef": "my_dataset_key",  // OR inline "dataset": { ... }
-  "caption": "optional ≤ 120 chars"
+  "caption": "optional ≤ 120chars"
 }
 ```
 
@@ -133,13 +129,9 @@ Save to `tmp/jayson-docs-fillplan-<timestamp>.json` (project-relative — **neve
 
 ### Step D — Invoke the CLI
 
-**v1 fill** — always point `--template` at the placeholder (the only master with
-`kpi-row-chart` slot shapes today). Do **not** use `templates/report.master.pptx`
-for fill until Phase 5 implements the 26-layout pipeline.
-
 ```bash
 npx jayson-docs fill \
-  --template templates/PLACEHOLDER-report.master.pptx \
+  --template templates/report.master.pptx \
   --plan tmp/jayson-docs-fillplan-<timestamp>.json \
   --out out/<client-shortname>-deck.pptx
 ```
@@ -148,7 +140,7 @@ npx jayson-docs fill \
 
 ```bash
 ./jayson-docs fill \
-  --template templates/PLACEHOLDER-report.master.pptx \
+  --template templates/report.master.pptx \
   --plan tmp/jayson-docs-fillplan-<timestamp>.json \
   --out out/<client-shortname>-deck.pptx
 ```
@@ -162,7 +154,7 @@ distribution time — D14/D15).
 
 ```bash
 npx jayson-docs fill \
-  --template templates/PLACEHOLDER-report.master.pptx \
+  --template templates/report.master.pptx \
   --plan - \
   --out out/<client-shortname>-deck.pptx < tmp/jayson-docs-fillplan-<timestamp>.json
 ```
@@ -177,17 +169,17 @@ Flag any data the consultant still needs to supply.
 ## 5. Human-run CLI (Driver B)
 
 When the fill-plan already exists (hand-authored, exported, or from
-`fixtures/valid-fill-plan.json`):
+`fixtures/valid-real-multi-layout-plan.json`):
 
 ```bash
 pnpm run fill -- fill \
-  --template templates/PLACEHOLDER-report.master.pptx \
-  --plan fixtures/valid-fill-plan.json \
+  --template templates/report.master.pptx \
+  --plan fixtures/valid-real-multi-layout-plan.json \
   --out out/teg-steering-deck.pptx
 ```
 
-See `fixtures/worked-example-brief.md` for the representative brief, expected
-fill-plan fields, and what to verify in the output `.pptx`.
+See `fixtures/worked-example-brief.md` for a representative brief and what to
+verify in the output `.pptx`.
 
 ## 6. CLI validation errors (surface verbatim)
 
@@ -210,14 +202,13 @@ Other CLI exits (see `ERROR_HANDLING.md`):
 
 ## 7. Failure modes
 
-- **Master template missing** (`templates/PLACEHOLDER-report.master.pptx` for v1
-  fill): tell the consultant; do not proceed. Canonical
-  `templates/report.master.pptx` is for setup/validation only until Phase 5.
+- **Master template missing** (`templates/report.master.pptx`): tell the
+  consultant; do not proceed.
 - **Schema validation failure**: surface the Zod error verbatim; fix once, re-run;
   then ask.
 - **Chart kind mismatch**: each layout's `chart.kind` must match its pinned
-  literal exactly (`kpi-row-chart` → `"stacked-bar"`; `chart-stacked-column` →
-  `"stacked-column"`, etc.) — you cannot substitute another chart type.
+  literal exactly (e.g. `chart-stacked-column` → `"stacked-column"`) — you
+  cannot substitute another chart type.
 - **Bad `datasetRef`**: must resolve to a key in the fill-plan's `datasets` map.
-- **Unknown layout**: only `kpi-row-chart` is valid in v1.
+- **Unknown layout**: only `layoutId`s in the catalogue are valid.
 - **Unknown keys**: fill-plan objects are `.strict()` — extra keys are rejected.

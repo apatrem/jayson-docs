@@ -3,7 +3,7 @@
 **For:** the person designing the master `.pptx` in PowerPoint + the developer authoring the Zod schema
 **Date:** 2026-06-03
 
-> **Status (D22):** the six *seed-layout sketches* below were **superseded** by the firm's real sanitized `templates/report.master.pptx` — **26 layouts**, named and schema'd via the one-time Setup (see `docs/DECISIONS_LOG.md` D22, `src/setup/layout-spec.json`). The naming convention, reserved structural slots, density-cap model (D23), and "master is canonical" rules in this file **remain authoritative**; only the specific seed-layout inventory is historical.
+> **Status (D22):** the six *seed-layout sketches* below were **superseded** by the firm's real sanitized `templates/report.master.pptx` — **26 layouts**, named and schema'd via the one-time Setup (see `docs/DECISIONS_LOG.md` D22, `src/setup/layout-spec.json`, `skills/report-pptx/layout-catalogue.json`). The naming convention, reserved structural slots, density-cap model (D23), and "master is canonical" rules in this file **remain authoritative**; only the specific seed-layout inventory is historical. **Phase 5 complete:** all 26 layouts fill via the CLI; DOCX and dynamic chart build remain post-v1 (D20/D21).
 
 ---
 
@@ -105,7 +105,7 @@ The Zod schema enforces this table. The LLM cannot put an `image` block in a `ch
 | `image` / `visual` | `image` (with optional caption) |
 | `section-title` | `section-title` (large divider text, ≤8 words) |
 
-**Chart kinds in v1 (D21):** only kinds **pinned by an implemented layout slot** and **pre-authored in the master** count. The v1 walking skeleton pins `stacked-bar` on `kpi-row-chart`'s `chart` slot. The full kind list in `CHART_CATALOGUE.md` is a **reference catalogue** for when additional layouts/masters add more pinned slots — not a user-selectable menu in v1.
+**Chart kinds in v1 (D21):** only kinds **pinned by a layout slot** and **pre-authored in the master** count. The 26-layout `report.master.pptx` pins `stacked-column`, `clustered-column`, `line`, and `bubble` on their respective chart layouts. The full kind list in `CHART_CATALOGUE.md` is a **reference catalogue** for when additional layouts/masters add more pinned slots — not a user-selectable menu. Dynamic chart build (PptxGenJS) and DOCX charts remain post-v1.
 
 ---
 

@@ -20,11 +20,12 @@ Each skill points at a specific master template under `templates/` and shares th
 
 ## v1 scope (D20)
 
-**Only `report-pptx` is implemented in v1** — and only the **`kpi-row-chart`**
-layout on `templates/report.master.pptx`. The other three skills are markdown
-playbooks for post-v1; each carries a status banner. Charts: data-swap into a
-pre-authored `stacked-bar` at `slot.chart` only (D21) — the LLM does not choose
-chart type.
+**Only `report-pptx` is implemented in v1** — all **26 layouts** on
+`templates/report.master.pptx`, guided by `report-pptx/layout-catalogue.json`
+(D16/D22). The other three skills are markdown playbooks for post-v1; each
+carries a status banner. Charts: data-swap into pre-authored master charts at
+`slot.chart` only (D21) — the LLM does not choose chart type. DOCX deliverables,
+dynamic chart build, Setup automation, and layout sharing remain post-v1.
 
 ## Delivery (BYO LLM; Cowork plugin optional)
 
