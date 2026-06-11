@@ -1,4 +1,4 @@
-import type { ChartData } from 'pptx-automizer';
+import type { ChartBubble, ChartData } from 'pptx-automizer';
 import type { ChartBlock, Dataset } from '@schema/chart.js';
 import { ChartDataError } from './errors.js';
 
@@ -68,5 +68,75 @@ export function datasetToChartData(dataset: Dataset): ChartData {
 
       return { label: String(categoryLabel), values };
     }),
+  };
+}
+
+/**
+ * Map a bubble dataset (CHART_CATALOGUE.md x/y/size shape) to the pptx-automizer
+ * ChartData structure for modify.setChartBubbles.
+ */
+export function datasetToBubbleChartData(dataset: Dataset): ChartData {
+  const columnNames = dataset.columns.map((column) => column.toLowerCase());
+  const seriesIdx = columnNames.indexOf('series');
+  const xIdx = columnNames.indexOf('x');
+  const yIdx = columnNames.indexOf('y');
+  const sizeIdx = columnNames.indexOf('size');
+
+  if (xIdx < 0 || yIdx < 0 || sizeIdx < 0) {
+    throw new ChartDataError('bubble dataset must have x, y, and size columns');
+  }
+
+  const readBubble = (row: (string | number | null)[], rowIndex: number): ChartBubble => {
+    const x = row[xIdx];
+    const y = row[yIdx];
+    const size = row[sizeIdx];
+    if (x === null || typeof x !== 'number') {
+      throw new ChartDataError(`dataset row ${rowIndex}: x must be a number`);
+    }
+    if (y === null || typeof y !== 'number') {
+      throw new ChartDataError(`dataset row ${rowIndex}: y must be a number`);
+    }
+    if (size === null || typeof size !== 'number') {
+      throw new ChartDataError(`dataset row ${rowIndex}: size must be a number`);
+    }
+    return { x, y, size };
+  };
+
+  if (seriesIdx >= 0) {
+    const seriesLabels: string[] = [];
+    for (const row of dataset.rows) {
+      const label = row[seriesIdx];
+      if (label === null || typeof label !== 'string') {
+        throw new ChartDataError('bubble series labels must be strings');
+      }
+      if (!seriesLabels.includes(label)) {
+        seriesLabels.push(label);
+      }
+    }
+
+    return {
+      series: seriesLabels.map((label) => ({ label })),
+      categories: dataset.rows.map((row, rowIndex) => {
+        const rowSeries = row[seriesIdx];
+        if (rowSeries === null || typeof rowSeries !== 'string') {
+          throw new ChartDataError(`dataset row ${rowIndex}: series label must be a string`);
+        }
+        const bubble = readBubble(row, rowIndex);
+        return {
+          label: String(rowIndex + 1),
+          values: seriesLabels.map((seriesLabel) =>
+            seriesLabel === rowSeries ? bubble : { x: null, y: null, size: 0 },
+          ),
+        };
+      }),
+    };
+  }
+
+  return {
+    series: [{ label: dataset.title ?? 'Series 1' }],
+    categories: dataset.rows.map((row, rowIndex) => ({
+      label: String(rowIndex + 1),
+      values: [readBubble(row, rowIndex)],
+    })),
   };
 }

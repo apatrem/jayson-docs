@@ -33,9 +33,7 @@ export function setSlotText(targetSlide: ISlide, slotName: string, text: string)
  * Fills one text region slot on a copied master slide.
  *
  * T-102 implements the shared word/text region kinds (`title`,
- * `section-title`, `subtitle`, `source`); `chart-title` is explicitly
- * rejected — never silently skipped (ERROR_HANDLING.md) — until T-104
- * verifies it with the chart-bearing layouts.
+ * `section-title`, `subtitle`, `source`, `chart-title`).
  */
 export function fillTextSlot(
   targetSlide: ISlide,
@@ -64,10 +62,15 @@ export function fillTextSlot(
       setSlotText(targetSlide, slot.slotName, value.body);
       return;
     }
-    case 'chart-title':
-      throw new Error(
-        `text slot "${slot.slotName}" (${slot.regionKind}) on layout "${layoutId}" is not yet supported — verified with the chart-bearing layouts in T-104`,
-      );
+    case 'chart-title': {
+      if (typeof value !== 'string') {
+        throw new Error(
+          `internal invariant violation: slot "${slot.slotName}" on layout "${layoutId}" expects a string value, but the schema-validated fill-plan supplied something else`,
+        );
+      }
+      setSlotText(targetSlide, slot.slotName, value);
+      return;
+    }
     default:
       throw new Error(`slot "${slot.slotName}" (${slot.regionKind}) is not a text slot`);
   }
