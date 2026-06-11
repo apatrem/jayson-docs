@@ -1,0 +1,399 @@
+{
+  "caps": {
+    "title": {
+      "unit": "words",
+      "optimal": {
+        "kind": "word-range",
+        "min": 8,
+        "max": 15
+      },
+      "max": 20
+    },
+    "section-title": {
+      "unit": "words",
+      "optimal": {
+        "kind": "word-max",
+        "max": 8
+      },
+      "max": 12
+    },
+    "subtitle": {
+      "unit": "words",
+      "optimal": {
+        "kind": "word-max",
+        "max": 25
+      },
+      "max": 40
+    },
+    "chart-title": {
+      "unit": "words",
+      "optimal": {
+        "kind": "word-max",
+        "max": 15
+      },
+      "max": 25
+    },
+    "source": {
+      "unit": "words",
+      "optimal": {
+        "kind": "word-max",
+        "max": 40
+      },
+      "max": 80
+    },
+    "cover-body": {
+      "unit": "words",
+      "optimal": {
+        "kind": "word-max",
+        "max": 25
+      },
+      "max": 40
+    },
+    "content-bullets": {
+      "unit": "items",
+      "optimal": {
+        "kind": "bullet-set",
+        "maxItems": 5,
+        "maxWords": 60
+      },
+      "max": {
+        "maxItems": 8,
+        "maxWords": 100
+      }
+    },
+    "content-text": {
+      "unit": "words",
+      "optimal": {
+        "kind": "word-max",
+        "max": 60
+      },
+      "max": 100
+    },
+    "content-callout": {
+      "unit": "words",
+      "optimal": {
+        "kind": "word-max",
+        "max": 25
+      },
+      "max": 40
+    },
+    "caption": {
+      "unit": "chars",
+      "optimal": {
+        "kind": "char-max",
+        "max": 120
+      },
+      "max": 200
+    },
+    "pie-doughnut-rows": {
+      "unit": "items",
+      "optimal": {
+        "kind": "bullet-set",
+        "maxItems": 8,
+        "maxWords": 8
+      },
+      "max": {
+        "maxItems": 8,
+        "maxWords": 8
+      }
+    }
+  },
+  "layouts": [
+    {
+      "layoutId": "cover",
+      "tier": "common",
+      "usage": "Pick when opening the deck — client name, engagement title, date, and logo.",
+      "regions": {
+        "slot.image": "top-right; client or project logo image",
+        "slot.title": "upper-left; main deck title (8–15 words)",
+        "slot.subtitle": "below title; short supporting line",
+        "slot.body": "lower-left; date, presenter, or role line"
+      }
+    },
+    {
+      "layoutId": "section",
+      "tier": "common",
+      "usage": "Pick when starting a new chapter or major topic break.",
+      "regions": {
+        "slot.section-title": "centre-dominant; large chapter heading (≤8 words)",
+        "slot.subtitle": "below section title; optional context line"
+      }
+    },
+    {
+      "layoutId": "agenda",
+      "tier": "common",
+      "usage": "Pick when listing the meeting outline or table of contents.",
+      "regions": {
+        "slot.title": "top; agenda heading (e.g. \"Agenda\" or \"Contents\")",
+        "slot.body-left": "main area; bullet list of topics or sections"
+      }
+    },
+    {
+      "layoutId": "title",
+      "tier": "common",
+      "usage": "Pick for a standard content slide — action title plus full-width body.",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.body-left": "full-width body below title; bullets, text, or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "title-only",
+      "tier": "common",
+      "usage": "Pick when the slide needs only a headline — no body content.",
+      "regions": {
+        "slot.title": "centre; single action title (8–15 words)",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "title-and-subtitle",
+      "tier": "common",
+      "usage": "Pick when a subtitle line sits between the action title and body.",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.subtitle": "below title; short subtitle or framing line",
+        "slot.body-left": "main area below subtitle; bullets, text, or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "chart-stacked-column",
+      "tier": "common",
+      "usage": "Pick when showing part-to-whole composition over categories with a narrative aside.",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.chart-title": "above chart; chart name and unit line",
+        "slot.chart": "left half; pre-authored stacked-column chart (data-swap only)",
+        "slot.body-right": "right half; narrative bullets or text beside the chart",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "pinnedChartKind": "stacked-column"
+    },
+    {
+      "layoutId": "chart-clustered-column",
+      "tier": "common",
+      "usage": "Pick when comparing series side-by-side across categories with a narrative aside.",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.chart-title": "above chart; chart name and unit line",
+        "slot.chart": "left half; pre-authored clustered-column chart (data-swap only)",
+        "slot.body-right": "right half; narrative bullets or text beside the chart",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "pinnedChartKind": "clustered-column"
+    },
+    {
+      "layoutId": "chart-line",
+      "tier": "common",
+      "usage": "Pick when showing a trend or time series with a narrative aside.",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.chart-title": "above chart; chart name and unit line",
+        "slot.chart": "left half; pre-authored line chart (data-swap only)",
+        "slot.body-right": "right half; narrative bullets or text beside the chart",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "pinnedChartKind": "line"
+    },
+    {
+      "layoutId": "chart-bubble",
+      "tier": "common",
+      "usage": "Pick when plotting x/y/size triples (e.g. risk–return maps) with a narrative aside.",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.chart-title": "above chart; chart name and unit line",
+        "slot.chart": "left half; pre-authored bubble chart (data-swap only)",
+        "slot.body-right": "right half; narrative bullets or text beside the chart",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "pinnedChartKind": "bubble"
+    },
+    {
+      "layoutId": "two-columns",
+      "tier": "common",
+      "usage": "Pick when comparing two parallel points, lists, or blocks side by side.",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.body-left": "left column; bullets, text, callout, or image",
+        "slot.body-right": "right column; bullets, text, callout, or image",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "narrative-with-sidebar",
+      "tier": "common",
+      "usage": "Pick when a wide main narrative sits beside a narrow accent column (Contrast 1).",
+      "regions": {
+        "slot.title": "top-left; action title spanning the wide column",
+        "slot.subtitle-left": "above left body; column subhead",
+        "slot.body-left": "wide left column; main narrative content",
+        "slot.subtitle-right": "above right body; sidebar subhead",
+        "slot.body-right": "narrow right column; accent bullets or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "two-column-with-subheads",
+      "tier": "common",
+      "usage": "Pick for equal two-column comparison with a subtitle row per column (Contrast 2).",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.subtitle-left": "above left column; column subhead",
+        "slot.body-left": "left column; bullets, text, or callout",
+        "slot.subtitle-right": "above right column; column subhead",
+        "slot.body-right": "right column; bullets, text, or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "sidebar-callout",
+      "tier": "common",
+      "usage": "Pick when a left sidebar title frames a wide content pane (Contrast 4).",
+      "regions": {
+        "slot.title": "left sidebar; vertical accent title",
+        "slot.subtitle-1": "left sidebar below title; first subtitle line",
+        "slot.subtitle-2": "above main pane; content-area subhead",
+        "slot.body": "wide right pane; main bullets, text, or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "three-columns-and-subtitles",
+      "tier": "common",
+      "usage": "Pick when comparing three parallel columns each with its own subhead.",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.subtitle-left": "above left column; column subhead",
+        "slot.body-left": "left column; bullets, text, or callout",
+        "slot.subtitle-middle": "above centre column; column subhead",
+        "slot.body-center": "centre column; bullets, text, or callout",
+        "slot.subtitle-right": "above right column; column subhead",
+        "slot.body-right": "right column; bullets, text, or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "title-and-content",
+      "tier": "common",
+      "usage": "Pick for a minimal title plus single full-width body — no footer source strip.",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.body-left": "full-width body below title; bullets, text, or callout"
+      }
+    },
+    {
+      "layoutId": "two-columns-and-subtitles",
+      "tier": "less-common",
+      "usage": "Pick for two-column comparison with subheads on a white-background variant (less-common).",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.subtitle-left": "above left column; column subhead",
+        "slot.body-left": "left column; bullets, text, or callout",
+        "slot.subtitle-right": "above right column; column subhead",
+        "slot.body-right": "right column; bullets, text, or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "blank",
+      "tier": "less-common",
+      "usage": "Pick when the consultant will add custom content manually — optional source citation in the footer.",
+      "regions": {
+        "slot.source": "footer centre; optional source citation strip"
+      }
+    },
+    {
+      "layoutId": "cover-white",
+      "tier": "less-common",
+      "usage": "Pick for a cover slide on the white-background variant (less-common).",
+      "regions": {
+        "slot.title": "upper area; main deck title (8–15 words)",
+        "slot.subtitle": "below title; short supporting line",
+        "slot.body": "lower area; date, presenter, or role line",
+        "slot.image": "logo image area"
+      }
+    },
+    {
+      "layoutId": "section-white",
+      "tier": "less-common",
+      "usage": "Pick for a chapter break on the white-background variant (less-common).",
+      "regions": {
+        "slot.section-title": "centre-dominant; large chapter heading (≤8 words)",
+        "slot.subtitle": "below section title; optional context line"
+      }
+    },
+    {
+      "layoutId": "agenda-white",
+      "tier": "less-common",
+      "usage": "Pick for an agenda slide on the white-background variant (less-common).",
+      "regions": {
+        "slot.title": "top; agenda heading (e.g. \"Agenda\" or \"Contents\")",
+        "slot.body-left": "main area; bullet list of topics or sections"
+      }
+    },
+    {
+      "layoutId": "sidebar-callout-inverse",
+      "tier": "less-common",
+      "usage": "Pick for sidebar-callout on the inverse colour variant (less-common).",
+      "regions": {
+        "slot.title": "left sidebar; vertical accent title",
+        "slot.subtitle-1": "left sidebar below title; first subtitle line",
+        "slot.subtitle-2": "above main pane; content-area subhead",
+        "slot.body": "wide right pane; main bullets, text, or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "narrative-with-sidebar-hc",
+      "tier": "less-common",
+      "usage": "Pick for narrative-with-sidebar on the high-contrast variant (less-common).",
+      "regions": {
+        "slot.title": "top-left; action title spanning the wide column",
+        "slot.subtitle-left": "above left body; column subhead",
+        "slot.body-left": "wide left column; main narrative content",
+        "slot.subtitle-right": "above right body; sidebar subhead",
+        "slot.body-right": "narrow right column; accent bullets or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "two-column-with-subheads-hc",
+      "tier": "less-common",
+      "usage": "Pick for two-column-with-subheads on the high-contrast variant (less-common).",
+      "regions": {
+        "slot.title": "top band; action title (8–15 words)",
+        "slot.subtitle-left": "above left column; column subhead",
+        "slot.body-left": "left column; bullets, text, or callout",
+        "slot.subtitle-right": "above right column; column subhead",
+        "slot.body-right": "right column; bullets, text, or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "sidebar-callout-hc",
+      "tier": "less-common",
+      "usage": "Pick for sidebar-callout on the high-contrast variant (less-common).",
+      "regions": {
+        "slot.title": "left sidebar; vertical accent title",
+        "slot.subtitle-1": "left sidebar below title; first subtitle line",
+        "slot.subtitle-2": "above main pane; content-area subhead",
+        "slot.body": "wide right pane; main bullets, text, or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "sidebar-callout-hc-inverse",
+      "tier": "less-common",
+      "usage": "Pick for sidebar-callout on the high-contrast inverse variant (less-common).",
+      "regions": {
+        "slot.title": "left sidebar; vertical accent title",
+        "slot.subtitle-1": "left sidebar below title; first subtitle line",
+        "slot.subtitle-2": "above main pane; content-area subhead",
+        "slot.body": "wide right pane; main bullets, text, or callout",
+        "slot.source": "footer centre; source citation strip"
+      }
+    }
+  ]
+}

@@ -16,8 +16,9 @@ description: |
 # Skill — commercial-proposal-docx
 
 > **Status: post-v1 (D20).** The DOCX pipeline is **not implemented** in v1. If
-> triggered before M4 lands, explain that only **`report-pptx`** (`kpi-row-chart`)
-> is available today. **DOCX charts are post-v1** (D21).
+> triggered before M4 lands, explain that only **`report-pptx`** (all **26
+> layouts** on `report.master.pptx`) is available today. **DOCX charts are
+> post-v1** (D21).
 
 ## 0. Purpose
 

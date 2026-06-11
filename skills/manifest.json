@@ -18,7 +18,7 @@
     {
       "name": "report-pptx",
       "path": "report-pptx/SKILL.md",
-      "description": "Generate an Acme delivery / steering-committee deck as PowerPoint (.pptx). v1: kpi-row-chart only (D20)."
+      "description": "Generate an Acme delivery / steering-committee deck as PowerPoint (.pptx). v1: all 26 layouts on report.master.pptx (D20)."
     },
     {
       "name": "report-docx",
@@ -28,8 +28,10 @@
   ],
   "cli": {
     "binary": "jayson-docs",
-    "install": "pnpm install --frozen-lockfile && pnpm link --global",
-    "subcommands": ["fill"]
+    "install": "pnpm install --frozen-lockfile",
+    "devInvoke": "pnpm run fill -- fill --template … --plan … --out …",
+    "subcommands": ["fill"],
+    "_note": "jayson-docs binary ships at distribution time (D14); until then use devInvoke"
   },
   "_note": "Optional Cowork packaging (D15): the product is a portable skills pack + app driven by any agentic LLM (BYO LLM). If publishing a Cowork plugin, verify this manifest via the cowork-plugin-management:create-cowork-plugin skill."
 }

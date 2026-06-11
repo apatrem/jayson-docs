@@ -20,11 +20,12 @@ Each skill points at a specific master template under `templates/` and shares th
 
 ## v1 scope (D20)
 
-**Only `report-pptx` is implemented in v1** — and only the **`kpi-row-chart`**
-layout on `templates/report.master.pptx`. The other three skills are markdown
-playbooks for post-v1; each carries a status banner. Charts: data-swap into a
-pre-authored `stacked-bar` at `slot.chart` only (D21) — the LLM does not choose
-chart type.
+**Only `report-pptx` is implemented in v1** — all **26 layouts** on
+`templates/report.master.pptx`, guided by `report-pptx/layout-catalogue.json`
+(D16/D22). The other three skills are markdown playbooks for post-v1; each
+carries a status banner. Charts: data-swap into pre-authored master charts at
+`slot.chart` only (D21) — the LLM does not choose chart type. DOCX deliverables,
+dynamic chart build, Setup automation, and layout sharing remain post-v1.
 
 ## Delivery (BYO LLM; Cowork plugin optional)
 
@@ -37,10 +38,11 @@ Skills write the fill-plan to a **project-relative** temp path (e.g.
 resolve identically on macOS and Windows. The CLI also accepts `--plan -` to read
 the fill-plan from **stdin**, avoiding a temp file altogether.
 
-**Invoking the app.** Skills call the bundled `./jayson-docs` binary that ships
-**inside the pack** (invoked by relative path — no global install; D14/D15).
-During local development from the repo, before the binary is built, use
-`npx jayson-docs fill …` instead.
+**Invoking the app.** During local development from the repo, use
+`pnpm run fill -- fill --template … --plan … --out …` (or
+`npx tsx src/cli/generate.ts fill …`). When the skills pack ships a signed
+`./jayson-docs` binary (D14 — not yet available), invoke it by relative path
+inside the pack.
 
 ## Hard rules (mirror `AGENTS.md` §5)
 
