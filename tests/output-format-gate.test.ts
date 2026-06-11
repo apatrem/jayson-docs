@@ -70,12 +70,18 @@ async function firstSlideRelsPath(filePath: string): Promise<string> {
 }
 
 describe('T-106 — CI output-format regression guard for emitted .pptx', () => {
-  it.each(fixturePaths)('passes the gate for fixture-driven output: %s', async (fixturePath) => {
-    const outputPath = await tryFillFixtureToFile(fixturePath);
-    if (outputPath !== undefined) {
+  it.for(fixturePaths)(
+    'passes the gate for fixture-driven output: %s',
+    async (fixturePath, { skip }) => {
+      const outputPath = await tryFillFixtureToFile(fixturePath);
+      if (outputPath === undefined) {
+        // visible skip: layout not fillable yet (pending T-104); shrinks as Phase 5 lands
+        skip();
+        return;
+      }
       await assertOutputFormatGate(outputPath);
-    }
-  });
+    },
+  );
 
   it('accepts TargetMode="External" hyperlink relationships', async () => {
     const outputPath = await fillFixtureToFile('fixtures/layouts/valid-title-and-subtitle.json');
