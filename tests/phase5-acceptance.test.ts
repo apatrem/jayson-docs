@@ -130,16 +130,9 @@ describe('T-101 — generic fill engine + first real layout (section)', () => {
     expect(slides[0]?.get('slot.subtitle')).toBe('Short subtitle for column');
   });
 
-  it('throws the explicit not-yet-supported error for slot kinds later tasks land', () => {
-    // T-103 made `body-right` fillable; chart-line now fails first on `chart-title` (T-104).
-    const parsed = fillPlanSchema.parse(readJson('fixtures/layouts/valid-chart-line.json'));
-    const chartLine = parsed.kind === 'deck' ? parsed.sections[0]?.slides[0] : undefined;
-    if (chartLine === undefined) {
-      throw new Error('expected a chart-line slide');
-    }
-    expect(() => fillSlide(loadMaster(realMaster), chartLine, parsed.datasets)).toThrow(
-      /slot\.chart-title.*T-104/,
-    );
+  it('routes chart-bearing layouts through the generic engine (T-104)', async () => {
+    const out = await fillFixtureToFile('fixtures/layouts/valid-chart-line.json');
+    expect(await countPresentationSlides(out)).toBe(1);
   });
 
   it('classifies an unknown layoutId as a MasterError', () => {
@@ -344,7 +337,7 @@ describe('T-103 — content-block slots (bullets / text / callout / image)', () 
   });
 });
 
-describe.skip('T-104 — chart-slot data-swap (all four real chart kinds)', () => {
+describe('T-104 — chart-slot data-swap (all four real chart kinds)', () => {
   it('round-trips stacked and clustered column datasets', async () => {
     for (const fixture of [
       'fixtures/layouts/valid-chart-stacked-column.json',
