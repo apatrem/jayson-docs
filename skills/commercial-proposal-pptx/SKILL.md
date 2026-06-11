@@ -14,9 +14,10 @@ description: |
 
 # Skill — commercial-proposal-pptx
 
-> **Status: post-v1 (D20).** Only **`report-pptx`** + **`kpi-row-chart`** is
-> implemented in v1. If triggered before this skill's pipeline lands, point the
-> consultant to `report-pptx` or explain the post-v1 status.
+> **Status: post-v1 (D20).** Only **`report-pptx`** (all **26 layouts** on
+> `templates/report.master.pptx`) is implemented in v1. If triggered before this
+> skill's pipeline lands, point the consultant to `report-pptx` or explain the
+> post-v1 status.
 
 ## 0. Purpose
 
@@ -81,8 +82,8 @@ Build a JSON object matching `fillPlanSchema` from `src/schema/index.ts`:
 
 *Post-v1:* pick layouts from the closed enum as they are implemented. A standard
 commercial proposal may use section-divider, two-column, chart-full-with-takeaway,
-kpi-row-chart, quad, etc. — **none of these except `kpi-row-chart` on
-`report.master.pptx` are available in v1** (see `report-pptx`).
+kpi-row-chart, quad, etc. — **none of these are available in v1** (only
+`report-pptx` on `report.master.pptx`; see `report-pptx`).
 
 ### Step C — Write the fill-plan to a temp file
 
