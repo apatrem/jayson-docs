@@ -97,8 +97,9 @@ async function expectBulletsInShape(
   filePath: string,
   shapeName: string,
   items: string[],
+  slideIndex = 0,
 ): Promise<void> {
-  const xml = await readPptxShapeXml(filePath, shapeName);
+  const xml = await readPptxShapeXml(filePath, shapeName, slideIndex);
   expect(textRunsFromShapeXml(xml)).toEqual(items);
   expect(countBulletParagraphs(xml)).toBe(items.length);
 }
@@ -449,6 +450,7 @@ describe('T-105 — layout catalogue, report-pptx skill, and CLI e2e', () => {
         tier: string;
         usage: string;
         regions: Record<string, string>;
+        pinnedChartKind?: string;
       }[];
     };
 
@@ -461,6 +463,12 @@ describe('T-105 — layout catalogue, report-pptx skill, and CLI e2e', () => {
       const entry = catalogue.layouts.find(({ layoutId }) => layoutId === layout.layoutId);
       expect(entry?.tier).toBe(layout.tier);
       expect(entry?.usage.trim().length).toBeGreaterThan(0);
+      expect(entry?.pinnedChartKind).toBe(layout.pinnedChartKind);
+      const specSlotNames = layout.slots
+        .filter(({ regionKind }) => regionKind !== 'footer')
+        .map(({ slotName }) => slotName)
+        .sort();
+      expect(Object.keys(entry?.regions ?? {}).sort()).toEqual(specSlotNames);
       for (const slot of layout.slots.filter(({ regionKind }) => regionKind !== 'footer')) {
         expect(entry?.regions[slot.slotName]?.trim().length).toBeGreaterThan(0);
       }
@@ -479,6 +487,7 @@ describe('T-105 — layout catalogue, report-pptx skill, and CLI e2e', () => {
 
   it('fills a representative multi-layout deck through the CLI', async () => {
     const fixturePath = join(root, 'fixtures/valid-real-multi-layout-plan.json');
+    const plan = rawDeck('fixtures/valid-real-multi-layout-plan.json');
     const outputPath = join(mkdtempSync(join(tmpdir(), 'jayson-docs-p5-cli-')), 'filled.pptx');
 
     execFileSync(
@@ -500,12 +509,48 @@ describe('T-105 — layout catalogue, report-pptx skill, and CLI e2e', () => {
     expect(existsSync(outputPath)).toBe(true);
     expect(await countPresentationSlides(outputPath)).toBe(4);
     const slides = await readPptxShapeTextsBySlide(outputPath);
-    expect(slides[0]?.get('slot.title')).toBe(
-      'Executive review of the transformation programme and next steps',
+    const deckSlides = plan.sections.flatMap(({ slides: sectionSlides }) => sectionSlides);
+
+    const cover = deckSlides[0] ?? {};
+    expect(slides[0]?.get('slot.title')).toBe(cover.title);
+    expect(slides[0]?.get('slot.subtitle')).toBe(
+      (cover.subtitle as { body: string }).body,
     );
-    expect(slides[1]?.get('slot.section-title')).toBe('Performance update');
-    expect(slides[2]?.get('slot.body-left')).toContain('Point one');
-    expect(slides[3]?.get('slot.chart-title')).toBe('Units by category');
+    expect(slides[0]?.get('slot.body')).toBe(cover.body);
+    expect(Buffer.from(await readPptxImageBytesForShape(outputPath, 'slot.image', 0))).toEqual(
+      readFileSync(join(root, 'fixtures/assets/test-logo.svg')),
+    );
+
+    const section = deckSlides[1] ?? {};
+    expect(slides[1]?.get('slot.section-title')).toBe(section['section-title']);
+    expect(slides[1]?.get('slot.subtitle')).toBe(
+      (section.subtitle as { body: string }).body,
+    );
+
+    const twoColumns = deckSlides[2] ?? {};
+    expect(slides[2]?.get('slot.title')).toBe(twoColumns.title);
+    await expectBulletsInShape(
+      outputPath,
+      'slot.body-left',
+      bulletsItems(twoColumns, 'body-left'),
+      2,
+    );
+    await expectBulletsInShape(
+      outputPath,
+      'slot.body-right',
+      bulletsItems(twoColumns, 'body-right'),
+      2,
+    );
+    expect(slides[2]?.get('slot.source')).toBe(twoColumns.source);
+
+    const chartSlide = deckSlides[3] ?? {};
+    expect(slides[3]?.get('slot.title')).toBe(chartSlide.title);
+    expect(slides[3]?.get('slot.chart-title')).toBe(chartSlide['chart-title']);
+    const chartBodyRightXml = await readPptxShapeXml(outputPath, 'slot.body-right', 3);
+    expect(textRunsFromShapeXml(chartBodyRightXml)).toEqual(
+      bulletsItems(chartSlide, 'body-right'),
+    );
+    expect(slides[3]?.get('slot.source')).toBe(chartSlide.source);
     expectCategoryChart(
       await readPptxChartDataForShape(outputPath, 'slot.chart', 3),
       ['series_a'],

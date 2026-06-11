@@ -46,7 +46,7 @@
           },
           "body-right": {
             "kind": "bullets",
-            "items": ["Point one", "Point two"]
+            "items": ["Right column alpha", "Right column beta"]
           },
           "source": "Source: ACME analysis, June 2026."
         },
@@ -60,7 +60,7 @@
           },
           "body-right": {
             "kind": "bullets",
-            "items": ["Point one", "Point two"]
+            "items": ["Chart narrative one", "Chart narrative two"]
           },
           "source": "Source: ACME analysis, June 2026."
         }
