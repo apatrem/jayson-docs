@@ -107,8 +107,7 @@
         "slot.image": "top-right; client or project logo image",
         "slot.title": "upper-left; main deck title (8–15 words)",
         "slot.subtitle": "below title; short supporting line",
-        "slot.body": "lower-left; date, presenter, or role line",
-        "slot.bogus": "bogus"
+        "slot.body": "lower-left; date, presenter, or role line"
       }
     },
     {
@@ -196,7 +195,7 @@
         "slot.body-right": "right half; narrative bullets or text beside the chart",
         "slot.source": "footer centre; source citation strip"
       },
-      "pinnedChartKind": "stacked-column"
+      "pinnedChartKind": "line"
     },
     {
       "layoutId": "chart-bubble",
