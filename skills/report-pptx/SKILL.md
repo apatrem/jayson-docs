@@ -32,10 +32,13 @@ or at the end of an engagement. The CLI fills any of the **26 real layouts** on
 
 - You never lay out slides, pick coordinates, choose fonts or colours.
 - You **read `layout-catalogue.json`** to pick a `layoutId` and fill only the
-  catalogue's slot keys. **Prefer `common` tier;** if you pick `less-common`,
-  state why in your reasoning.
-- You honour every density cap in the catalogue's `caps` — enforced by Zod;
-  violations are rejected.
+  catalogue's slot keys. **Fill-plan keys drop the `slot.` prefix** — e.g.
+  catalogue `slot.title` → fill-plan `"title"`, `slot.body-left` →
+  `"body-left"`. **Prefer `common` tier;** if you pick `less-common`, state why
+  in your reasoning.
+- Aim for each region's **optimal** density in the catalogue's `caps` (the CLI
+  soft-warns when you exceed optimal but stay within max — exit 0); **max** is
+  the hard ceiling Zod rejects.
 - **Chart type is not your choice.** Each layout pins its `chart` slot to one
   literal `kind` (D21). Supply **data** (`datasetRef` or inline `dataset`) only.
 - If you are missing information for a required slot, ask one short question.
@@ -95,6 +98,10 @@ Build a JSON matching `fillPlanSchema`:
 - `meta.client`, `meta.date`, `meta.language` as standard.
 - `sections[]` — each `{ title, slides: [...] }`. Each slide uses a `layoutId`
   from the catalogue; fill only keys that layout's slots (see `regions`).
+- **Fill-plan key rule:** the JSON key is the catalogue region key **without**
+  the `slot.` prefix (`slot.title` → `"title"`, `slot.chart-title` →
+  `"chart-title"`, etc.). The schema is `.strict()` — do not emit `slot.*`
+  keys.
 - `datasets` — keyed datasets referenced by `chart.datasetRef`.
 
 **Layout selection (D16):**
@@ -103,7 +110,8 @@ Build a JSON matching `fillPlanSchema`:
 2. Match the slide's purpose to a layout's `usage` note.
 3. Prefer `tier: "common"`; use `less-common` only when the common set lacks a fit
    (e.g. white-background cover, high-contrast variant).
-4. Fill every non-footer slot listed in `regions`.
+4. Fill every non-footer slot listed in `regions`, using the **un-prefixed**
+   fill-plan key for each (`slot.foo` → `"foo"`).
 
 **Chart block (data-swap — D21):**
 
@@ -111,7 +119,7 @@ Build a JSON matching `fillPlanSchema`:
 {
   "kind": "stacked-column",        // must match the layout's pinned kind exactly
   "datasetRef": "my_dataset_key",  // OR inline "dataset": { ... }
-  "caption": "optional ≤ 120chars"
+  "caption": "optional ≤ 120 chars (optimal; hard max 200)"
 }
 ```
 
@@ -129,14 +137,20 @@ Save to `tmp/jayson-docs-fillplan-<timestamp>.json` (project-relative — **neve
 
 ### Step D — Invoke the CLI
 
+During local dev from the repo (the working contract today):
+
 ```bash
-npx jayson-docs fill \
+pnpm run fill -- fill \
   --template templates/report.master.pptx \
   --plan tmp/jayson-docs-fillplan-<timestamp>.json \
   --out out/<client-shortname>-deck.pptx
 ```
 
-**Production packaging** (when the skills pack ships the binary):
+(`pnpm run fill -- fill …` — note `fill` twice: once for pnpm, once for the CLI.)
+Alternatively: `npx tsx src/cli/generate.ts fill --template … --plan … --out …`.
+
+**Future bundled binary (D14 — not shipped yet):** when the skills pack ships a
+signed `./jayson-docs` binary, invoke it by relative path:
 
 ```bash
 ./jayson-docs fill \
@@ -145,15 +159,13 @@ npx jayson-docs fill \
   --out out/<client-shortname>-deck.pptx
 ```
 
-During local dev from the repo, use `pnpm run fill -- fill …` (note the `fill`
-subcommand twice — once for pnpm, once for the CLI) or `npx tsx src/cli/generate.ts
-fill …` instead of `./jayson-docs` (the binary ships inside the skills pack at
-distribution time — D14/D15).
+Do **not** use `npx jayson-docs` today — the package is private, unpublished,
+and has no `bin` entry.
 
 **Stdin** (no temp file):
 
 ```bash
-npx jayson-docs fill \
+pnpm run fill -- fill \
   --template templates/report.master.pptx \
   --plan - \
   --out out/<client-shortname>-deck.pptx < tmp/jayson-docs-fillplan-<timestamp>.json

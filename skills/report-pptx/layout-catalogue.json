@@ -107,7 +107,8 @@
         "slot.image": "top-right; client or project logo image",
         "slot.title": "upper-left; main deck title (8–15 words)",
         "slot.subtitle": "below title; short supporting line",
-        "slot.body": "lower-left; date, presenter, or role line"
+        "slot.body": "lower-left; date, presenter, or role line",
+        "slot.bogus": "bogus"
       }
     },
     {
@@ -195,7 +196,7 @@
         "slot.body-right": "right half; narrative bullets or text beside the chart",
         "slot.source": "footer centre; source citation strip"
       },
-      "pinnedChartKind": "line"
+      "pinnedChartKind": "stacked-column"
     },
     {
       "layoutId": "chart-bubble",
@@ -299,7 +300,7 @@
     {
       "layoutId": "blank",
       "tier": "less-common",
-      "usage": "Pick when the consultant will add custom content manually — footer only.",
+      "usage": "Pick when the consultant will add custom content manually — optional source citation in the footer.",
       "regions": {
         "slot.source": "footer centre; optional source citation strip"
       }
