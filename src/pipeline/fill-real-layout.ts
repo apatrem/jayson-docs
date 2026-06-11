@@ -51,7 +51,7 @@ function fillSlot(
       fillTextSlot(targetSlide, layoutId, slot, value);
       return;
     case 'content':
-      fillContentSlot(targetSlide, layoutId, slot, value);
+      fillContentSlot(automizer, targetSlide, layoutId, slot, value);
       return;
     case 'image':
       fillImageSlot(automizer, targetSlide, layoutId, slot, value);
