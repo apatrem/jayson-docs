@@ -103,32 +103,32 @@ export function datasetToBubbleChartData(dataset: Dataset): ChartData {
   };
 
   if (seriesIdx >= 0) {
-    const seriesLabels: string[] = [];
-    for (const row of dataset.rows) {
+    const seriesOrder: string[] = [];
+    const pointsBySeries = new Map<string, ChartBubble[]>();
+
+    dataset.rows.forEach((row, rowIndex) => {
       const label = row[seriesIdx];
       if (label === null || typeof label !== 'string') {
-        throw new ChartDataError('bubble series labels must be strings');
+        throw new ChartDataError(`dataset row ${rowIndex}: series label must be a string`);
       }
-      if (!seriesLabels.includes(label)) {
-        seriesLabels.push(label);
+      if (!pointsBySeries.has(label)) {
+        seriesOrder.push(label);
+        pointsBySeries.set(label, []);
       }
-    }
+      pointsBySeries.get(label)?.push(readBubble(row, rowIndex));
+    });
+
+    const maxPoints = Math.max(...seriesOrder.map((label) => pointsBySeries.get(label)?.length ?? 0));
 
     return {
-      series: seriesLabels.map((label) => ({ label })),
-      categories: dataset.rows.map((row, rowIndex) => {
-        const rowSeries = row[seriesIdx];
-        if (rowSeries === null || typeof rowSeries !== 'string') {
-          throw new ChartDataError(`dataset row ${rowIndex}: series label must be a string`);
-        }
-        const bubble = readBubble(row, rowIndex);
-        return {
-          label: String(rowIndex + 1),
-          values: seriesLabels.map((seriesLabel) =>
-            seriesLabel === rowSeries ? bubble : { x: null, y: null, size: 0 },
-          ),
-        };
-      }),
+      series: seriesOrder.map((label) => ({ label })),
+      categories: Array.from({ length: maxPoints }, (_, pointIndex) => ({
+        label: String(pointIndex + 1),
+        values: seriesOrder.map((label) => {
+          const point = pointsBySeries.get(label)?.[pointIndex];
+          return point ?? { x: null, y: null, size: 0 };
+        }),
+      })),
     };
   }
 

@@ -6,6 +6,7 @@ import {
   datasetToChartData,
   resolveChartDataset,
 } from './chart-data.js';
+import { compactMultiSeriesBubblePoints, ensureChartCategoryCache } from './chart-modify.js';
 
 function isChartBlock(value: unknown): value is ChartBlock {
   return (
@@ -37,10 +38,18 @@ export function fillChartSlot(
 
   if (value.kind === 'bubble') {
     const chartData = datasetToBubbleChartData(chartDataset);
-    targetSlide.modifyElement(slot.slotName, [modify.setChartBubbles(chartData)]);
+    const modifiers = [modify.setChartBubbles(chartData)];
+    if (chartDataset.columns.some((column) => column.toLowerCase() === 'series')) {
+      modifiers.push(compactMultiSeriesBubblePoints());
+    }
+    targetSlide.modifyElement(slot.slotName, modifiers);
     return;
   }
 
   const chartData = datasetToChartData(chartDataset);
-  targetSlide.modifyElement(slot.slotName, [modify.setChartData(chartData)]);
+  const categoryLabels = chartData.categories.map((category) => category.label);
+  targetSlide.modifyElement(slot.slotName, [
+    modify.setChartData(chartData),
+    ensureChartCategoryCache(categoryLabels),
+  ]);
 }
