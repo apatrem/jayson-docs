@@ -75,6 +75,27 @@ export function parseChartXml(chartXml: string): PptxChartData {
       (match) => Number(match[1]),
     );
 
+    if (categoryLabels.length === 0 && seriesValues.length > 0) {
+      if (categories.length === 0) {
+        values.push(
+          ...seriesValues.map((value) => {
+            const row = Array.from({ length: seriesBlocks.length }, () => 0);
+            row[series.length - 1] = value;
+            return row;
+          }),
+        );
+        categories.push(...seriesValues.map(() => ''));
+      } else {
+        seriesValues.forEach((value, categoryIndex) => {
+          const row = values[categoryIndex];
+          if (row !== undefined) {
+            row[series.length - 1] = value;
+          }
+        });
+      }
+      continue;
+    }
+
     if (categories.length === 0) {
       categories.push(...categoryLabels);
       values.push(
