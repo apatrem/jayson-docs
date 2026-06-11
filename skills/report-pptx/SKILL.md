@@ -140,14 +140,15 @@ Save to `tmp/jayson-docs-fillplan-<timestamp>.json` (project-relative — **neve
 During local dev from the repo (the working contract today):
 
 ```bash
-pnpm run fill -- fill \
+npx tsx src/cli/generate.ts fill \
   --template templates/report.master.pptx \
   --plan tmp/jayson-docs-fillplan-<timestamp>.json \
   --out out/<client-shortname>-deck.pptx
 ```
 
-(`pnpm run fill -- fill …` — note `fill` twice: once for pnpm, once for the CLI.)
-Alternatively: `npx tsx src/cli/generate.ts fill --template … --plan … --out …`.
+(Run `tsx` directly. Do **not** use `pnpm run fill -- fill …`: pnpm forwards the
+`--` to the program, so commander reads `--template` as an operand and the run
+fails with `error: required option '--template <path>' not specified`.)
 
 **Future bundled binary (D14 — not shipped yet):** when the skills pack ships a
 signed `./jayson-docs` binary, invoke it by relative path:
@@ -165,7 +166,7 @@ and has no `bin` entry.
 **Stdin** (no temp file):
 
 ```bash
-pnpm run fill -- fill \
+npx tsx src/cli/generate.ts fill \
   --template templates/report.master.pptx \
   --plan - \
   --out out/<client-shortname>-deck.pptx < tmp/jayson-docs-fillplan-<timestamp>.json
@@ -184,7 +185,7 @@ When the fill-plan already exists (hand-authored, exported, or from
 `fixtures/valid-real-multi-layout-plan.json`):
 
 ```bash
-pnpm run fill -- fill \
+npx tsx src/cli/generate.ts fill \
   --template templates/report.master.pptx \
   --plan fixtures/valid-real-multi-layout-plan.json \
   --out out/teg-steering-deck.pptx
