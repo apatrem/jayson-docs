@@ -1,5 +1,4 @@
 import { readFile } from 'node:fs/promises';
-import { basename, dirname, normalize, join as joinPath } from 'node:path';
 import JSZip from 'jszip';
 import {
   activeSlidePaths,
@@ -118,106 +117,6 @@ export function parseChartXml(chartXml: string): PptxChartData {
     : { series, categories, values };
 }
 
-function columnLettersToIndex(column: string): number {
-  return column.split('').reduce((index, letter) => index * 26 + (letter.charCodeAt(0) - 64), 0) - 1;
-}
-
-/** Category labels from the chart's embedded workbook when the chart XML has no `<c:cat>`. */
-async function readChartWorkbookCategoryLabels(
-  zip: JSZip,
-  chartPart: string,
-): Promise<string[]> {
-  const chartDir = dirname(chartPart);
-  const relsPath = joinPath(chartDir, '_rels', `${basename(chartPart)}.rels`);
-  const relsXml = await readPartText(zip, relsPath);
-  const xlsxTarget = [...relsXml.matchAll(/Target="([^"]+\.xlsx)"/gi)].map((match) => match[1])[0];
-  if (xlsxTarget === undefined) {
-    return [];
-  }
-
-  const xlsxPath = normalize(joinPath(chartDir, xlsxTarget));
-  const xlsxFile = zip.file(xlsxPath);
-  if (xlsxFile === null) {
-    return [];
-  }
-
-  const xlsx = await JSZip.loadAsync(await xlsxFile.async('nodebuffer'));
-  const sharedStrings: string[] = [];
-  const sharedStringsFile = xlsx.file('xl/sharedStrings.xml');
-  if (sharedStringsFile !== null) {
-    const sharedStringsXml = await sharedStringsFile.async('string');
-    for (const match of sharedStringsXml.matchAll(/<si>([\s\S]*?)<\/si>/g)) {
-      const text = match[1]?.match(/<t(?:[^>]*)>([^<]*)<\/t>/)?.[1] ?? '';
-      sharedStrings.push(text);
-    }
-  }
-
-  const sheetFile =
-    xlsx.file('xl/worksheets/sheet1.xml') ?? xlsx.file('xl/worksheets/sheet2.xml');
-  if (sheetFile === null) {
-    return [];
-  }
-
-  const sheetXml = await sheetFile.async('string');
-  const categories: string[] = [];
-  for (const rowMatch of sheetXml.matchAll(/<row r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g)) {
-    const rowNumber = Number(rowMatch[1]);
-    if (rowNumber === 1) {
-      continue;
-    }
-
-    let categoryLabel: string | undefined;
-    for (const cellMatch of (rowMatch[2] ?? '').matchAll(
-      /<c r="([A-Z]+)(\d+)"(?:\s+t="([^"]*)")?[^>]*>(?:[\s\S]*?<v>([^<]*)<\/v>)?/g,
-    )) {
-      if (columnLettersToIndex(cellMatch[1] ?? '') !== 0) {
-        continue;
-      }
-      const rawValue = cellMatch[4];
-      if (rawValue === undefined) {
-        continue;
-      }
-      categoryLabel =
-        cellMatch[3] === 's' ? (sharedStrings[Number(rawValue)] ?? rawValue) : rawValue;
-      break;
-    }
-
-    if (categoryLabel !== undefined && categoryLabel !== '') {
-      categories.push(categoryLabel);
-    }
-  }
-
-  return categories;
-}
-
-async function enrichChartDataFromWorkbook(
-  zip: JSZip,
-  chartPart: string,
-  chartXml: string,
-  chartData: PptxChartData,
-): Promise<PptxChartData> {
-  const lacksCategoryAxis =
-    !chartXml.includes('<c:bubbleChart>') && !chartXml.includes('<c:cat>');
-  const needsWorkbookCategories =
-    lacksCategoryAxis &&
-    chartData.values.length > 0 &&
-    chartData.categories.every((label) => label === '');
-
-  if (!needsWorkbookCategories) {
-    return chartData;
-  }
-
-  const workbookCategories = await readChartWorkbookCategoryLabels(zip, chartPart);
-  if (workbookCategories.length < chartData.values.length) {
-    return chartData;
-  }
-
-  return {
-    ...chartData,
-    categories: workbookCategories.slice(0, chartData.values.length),
-  };
-}
-
 /** Read chart data from the first chart part in a .pptx file. */
 export async function readPptxChartData(
   filePath: string,
@@ -251,7 +150,5 @@ export async function readPptxChartDataForShape(
   }
 
   const chartPart = await relationshipTarget(zip, slidePath, relationshipId);
-  const chartXml = await readPartText(zip, chartPart);
-  const parsed = parseChartXml(chartXml);
-  return enrichChartDataFromWorkbook(zip, chartPart, chartXml, parsed);
+  return parseChartXml(await readPartText(zip, chartPart));
 }

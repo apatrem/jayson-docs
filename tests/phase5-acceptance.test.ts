@@ -133,6 +133,12 @@ describe('T-101 — generic fill engine + first real layout (section)', () => {
   it('routes chart-bearing layouts through the generic engine (T-104)', async () => {
     const out = await fillFixtureToFile('fixtures/layouts/valid-chart-line.json');
     expect(await countPresentationSlides(out)).toBe(1);
+    expectCategoryChart(
+      await readPptxChartDataForShape(out, 'slot.chart'),
+      ['value'],
+      ['2024', '2025'],
+      [[10], [20]],
+    );
   });
 
   it('classifies an unknown layoutId as a MasterError', () => {
@@ -372,6 +378,57 @@ describe('T-104 — chart-slot data-swap (all four real chart kinds)', () => {
       [1, 2, 3],
       [4, 5, 6],
     ]);
+  });
+
+  it('round-trips multi-series bubble datasets without synthetic points', async () => {
+    const out = await fillPlanToFile({
+      kind: 'deck',
+      meta: {
+        templateId: 'report.master.pptx',
+        client: 'ACME',
+        date: '2026-06-08',
+        language: 'en',
+      },
+      datasets: {
+        bubble: {
+          id: 'bubble',
+          columns: ['series', 'x', 'y', 'size'],
+          rows: [
+            ['B', 4, 5, 6],
+            ['A', 1, 2, 3],
+            ['B', 7, 8, 9],
+          ],
+        },
+      },
+      sections: [
+        {
+          title: 'Fixture',
+          slides: [
+            {
+              layoutId: 'chart-bubble',
+              title: 'Eight word minimum title for every layout fixture test',
+              'chart-title': 'Risk return map',
+              chart: { kind: 'bubble', datasetRef: 'bubble' },
+              'body-right': { kind: 'text', body: 'Short narrative body text for the slot.' },
+              source: 'Source: ACME analysis, June 2026.',
+            },
+          ],
+        },
+      ],
+    });
+
+    const chart = await readPptxChartDataForShape(out, 'slot.chart');
+    expect(chart.series).toEqual(['B', 'A']);
+    expect(chart.bubbles).toEqual([
+      { series: 'B', x: 4, y: 5, size: 6 },
+      { series: 'B', x: 7, y: 8, size: 9 },
+      { series: 'A', x: 1, y: 2, size: 3 },
+    ]);
+    for (const bubble of chart.bubbles ?? []) {
+      expect(Number.isFinite(bubble.x)).toBe(true);
+      expect(Number.isFinite(bubble.y)).toBe(true);
+      expect(bubble.size).toBeGreaterThan(0);
+    }
   });
 
   it('keeps schema rejection for a chart kind that mismatches its slot', () => {
