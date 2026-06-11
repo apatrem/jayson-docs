@@ -1,0 +1,70 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "datasets": {
+    "cat": {
+      "id": "cat",
+      "columns": ["category", "series_a"],
+      "rows": [["A", 10], ["B", 20]]
+    }
+  },
+  "sections": [
+    {
+      "title": "Executive review",
+      "slides": [
+        {
+          "layoutId": "cover",
+          "title": "Executive review of the transformation programme and next steps",
+          "subtitle": {
+            "kind": "text",
+            "body": "Steering committee readout"
+          },
+          "body": "June 2026 · ACME Consulting",
+          "image": {
+            "ref": "fixtures/assets/test-logo.svg"
+          }
+        },
+        {
+          "layoutId": "section",
+          "section-title": "Performance update",
+          "subtitle": {
+            "kind": "text",
+            "body": "Q2 results and outlook"
+          }
+        },
+        {
+          "layoutId": "two-columns",
+          "title": "Key findings drive the recommended next actions",
+          "body-left": {
+            "kind": "bullets",
+            "items": ["Point one", "Point two"]
+          },
+          "body-right": {
+            "kind": "bullets",
+            "items": ["Point one", "Point two"]
+          },
+          "source": "Source: ACME analysis, June 2026."
+        },
+        {
+          "layoutId": "chart-stacked-column",
+          "title": "Category mix shows steady improvement across units",
+          "chart-title": "Units by category",
+          "chart": {
+            "kind": "stacked-column",
+            "datasetRef": "cat"
+          },
+          "body-right": {
+            "kind": "bullets",
+            "items": ["Point one", "Point two"]
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

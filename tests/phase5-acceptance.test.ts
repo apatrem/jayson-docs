@@ -439,7 +439,7 @@ describe('T-104 — chart-slot data-swap (all four real chart kinds)', () => {
   });
 });
 
-describe.skip('T-105 — layout catalogue, report-pptx skill, and CLI e2e', () => {
+describe('T-105 — layout catalogue, report-pptx skill, and CLI e2e', () => {
   it('publishes a 26-layout catalogue that mirrors layout-spec and density caps', () => {
     const spec = readJson('src/setup/layout-spec.json') as LayoutSpec;
     const catalogue = readJson('skills/report-pptx/layout-catalogue.json') as {
