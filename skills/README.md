@@ -39,8 +39,9 @@ resolve identically on macOS and Windows. The CLI also accepts `--plan -` to rea
 the fill-plan from **stdin**, avoiding a temp file altogether.
 
 **Invoking the app.** During local development from the repo, use
-`pnpm run fill -- fill --template … --plan … --out …` (or
-`npx tsx src/cli/generate.ts fill …`). When the skills pack ships a signed
+`npx tsx src/cli/generate.ts fill --template … --plan … --out …`
+(not `pnpm run fill -- fill …` — pnpm forwards the `--`, breaking arg parsing).
+When the skills pack ships a signed
 `./jayson-docs` binary (D14 — not yet available), invoke it by relative path
 inside the pack.
 

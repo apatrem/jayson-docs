@@ -29,7 +29,7 @@
   "cli": {
     "binary": "jayson-docs",
     "install": "pnpm install --frozen-lockfile",
-    "devInvoke": "pnpm run fill -- fill --template … --plan … --out …",
+    "devInvoke": "npx tsx src/cli/generate.ts fill --template … --plan … --out …",
     "subcommands": ["fill"],
     "_note": "jayson-docs binary ships at distribution time (D14); until then use devInvoke"
   },
