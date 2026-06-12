@@ -6,29 +6,32 @@
 
 The saved `.pptx` retains the master's slide XML parts (and their pre-authored charts / embeddings / media) that `removeExistingSlides: true` drops from `presentation.xml` but **leaves orphaned in the package** (already noted at `tests/helpers/pptx-shapes.ts:52`). A 4-layout plan ships **30** `ppt/slides/slideN.xml` parts for **4** visible slides; the `climate-change-explainer.pptx` deck carries **26** orphan parts (~600 KB of invisible bloat) behind its 16 visible slides. Invisible to the viewer, but bloats every deck and risks strict-validator "repair" prompts. Strip every slide part (and now-unreferenced charts / embeddings / rels / media) not reachable from `presentation.xml`, so on-disk slide parts == the `sldIdLst`.
 
+**Implementation constraint (§5, D7, D25):** cleanup must be **`pptx-automizer`-native** (or an upstream fix in that library). Runtime **JSZip package surgery** and **relationship-graph parsing in the pipeline are forbidden** — only stack libs touch OOXML (§5); D7 rejects runtime Office parsing; D25 requires a new decision covering D7, failure classification, and atomic save/rename before any runtime post-save pass. **Prefer** an automizer-supported cleanup option; **if none exists**, this task is **BLOCKED** behind a new decision/ADR (cite D25's precedent) — do not implement ad-hoc zip surgery.
+
 ## Acceptance criteria (must be machine-checkable)
 
 - [ ] For `fixtures/valid-real-multi-layout-plan.json` (4 layouts), the saved `.pptx` has exactly **4** `ppt/slides/slideN.xml` parts (== `sldId` count) and **no** orphaned chart/embedding parts → `tests/` (count parts vs `sldIdLst`).
 - [ ] Visible slides, their charts, and brand are unchanged — existing pipeline/output-format-gate tests stay green.
-- [ ] File size materially smaller on the multi-layout fixture.
+- [ ] File size on the 4-layout fixture is **≥ 30% smaller** than the pre-fix baseline (concrete threshold alongside the part-count check).
+- [ ] Cleanup uses **`pptx-automizer` only** — no runtime JSZip/relationship-graph surgery in `src/pipeline/`.
 - [ ] gate green: `pnpm run build && pnpm run lint && pnpm run test && pnpm run validate`
 
 ## Files likely involved
 
-- `src/pipeline/` — post-save cleanup (or a `pptx-automizer` 0.8.1 option if one exists).
+- `src/pipeline/` — automizer-native cleanup (or blocked pending new ADR).
 - `tests/helpers/pptx-shapes.ts` (the comment documenting the orphan behaviour); `tests/`.
 
 ## Out of scope
 
-- D26 / D27 work.
+- D26 / D27 work. A new ADR if automizer lacks cleanup support (blocked state).
 
 ## Risks / do-not-touch
 
-- Remove **only** parts truly unreachable from `presentation.xml` (walk the rels graph); never drop a part a visible slide references. `pptx-automizer` is the OOXML tool (§5); if manual zip surgery is needed, stay inside the `jszip` already in deps. Do not change visible output.
+- Remove **only** parts truly unreachable from `presentation.xml`; never drop a part a visible slide references. **Do not** implement runtime JSZip surgery or relationship-graph parsing (§5, D7). If automizer cannot clean orphans, **stop and open a new decision** (D25 precedent) — do not work around with zip tools. Do not change visible output.
 
 ## Meta
 
-- mode: low # bounded bug fix
+- mode: low # bounded bug fix; may block on automizer capability / new ADR
 - depends-on: —
 - parallel-safe: yes
 - size budget: < 300 changed lines
