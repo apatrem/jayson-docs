@@ -4,19 +4,19 @@
 
 ## Objective
 
-On top of the `table` region-kind (T-210) and the authored `table-generic` slide (T-211), **consume** the Setup-generated Zod schema and catalogue entry for **`table-generic`**: column count/order/identity pinned in the layout schema; fill-plan supplies **row values only**. Add valid + invalid fixtures and end-to-end fill test (rows swapped into the master table inside its fixed frame).
+On top of the `table` region-kind (T-210) and the authored `table-generic` slide (T-211), **consume** the Setup-authored Zod schema and catalogue entry for **`table-generic`**: column count/order/identity pinned in the layout schema; fill-plan supplies **row values only**. Add valid + invalid fixtures and end-to-end fill test (rows swapped into the master table inside its fixed frame).
 
 ## Acceptance criteria (must be machine-checkable)
 
 - [ ] `table-generic` fills end-to-end → `tests/`: assert cell values + row count for `fixtures/layouts/valid-table-generic.json`.
 - [ ] Schema **pins columns**; fill-plan `table` block has **no `columns` key**; a test proves master column count/widths are **unchanged** after fill.
 - [ ] Over-max rows / bad cells rejected with exit 2 (never truncated).
-- [ ] Schema + catalogue entry **consumed from T-211 Setup generation**; drift test green.
+- [ ] Schema + catalogue entry **consumed from T-211 Setup authorship** — no ad-hoc edits under `src/schema/layouts/` (§5).
 - [ ] gate green: `pnpm run build && pnpm run lint && pnpm run test && pnpm run validate`
 
 ## Files likely involved
 
-- `src/schema/layouts/` — **read-only consumption** of Setup-generated `table-generic` schema.
+- `src/schema/layouts/` — **read-only consumption** of Setup-authored `table-generic` schema (frozen; §5).
 - `skills/report-pptx/layout-catalogue.json`; `fixtures/layouts/valid-table-generic.json`; `fixtures/invalid/table-generic-*.json`.
 - `tests/`.
 

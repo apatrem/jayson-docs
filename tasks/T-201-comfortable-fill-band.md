@@ -9,9 +9,10 @@ Add the **comfortable-fill band** — D26's two-sided, per-(layout, region) fill
 ## Acceptance criteria (must be machine-checkable)
 
 - [ ] `src/schema/caps.ts` exposes a `ComfortableFillBand` type (`lower`/`upper` in the region's unit) documented as D26 → covered by `tests/density-caps.test.ts` (or a `comfortable-fill` sibling).
-- [ ] A Setup deriver computes per-(layout, region) bands for **eligible region kinds only** (`title`, `subtitle`, `section-title`, `chart-title`, `source`, `cover-body`, `content-text`, `content-bullets`, `content-callout` — not `chart`/`image`/`footer`) via `lines = ⌊(h_in×72)/(pt×1.2)⌋`, `charsPerLine = ⌊(w_in×72)/(pt×0.5)⌋`; prose words ≈ `(lines×charsPerLine)/6`; bullet items ≈ `lines/1.3`; `band = [~0.55,0.85]×capacity`; hybrid font sourcing (explicit `sz` → placeholder/layout/master cascade → per-kind default from the 8/12/18/22 palette) → unit test asserts bands for ≥2 boxes of differing footprint differ correctly.
+- [ ] A Setup deriver computes per-(layout, region) bands for **eligible body region kinds only** — `content-text`, `content-bullets`, `content-callout` (multi-line body/content regions; **excludes** heading/label kinds: `title`, `section-title`, `subtitle`, `chart-title`, `source`, `cover-body`, and non-text `chart`/`image`/`footer`) via `lines = ⌊(h_in×72)/(pt×1.2)⌋`, `charsPerLine = ⌊(w_in×72)/(pt×0.5)⌋`; prose words ≈ `(lines×charsPerLine)/6`; bullet items ≈ `lines/1.3`; `band = [~0.55,0.85]×capacity`; **clamp** each band within its kind's D23 `[optimal … max]` (invariant — band never advertises a target Zod `max` would reject); hybrid font sourcing (explicit `sz` → placeholder/layout/master cascade → **pinned kind→pt default table** for eligible body kinds, derived from the master's `bodyStyle`) → unit test asserts bands for ≥2 body boxes of differing footprint differ correctly.
+- [ ] **Geometry resolution:** inherited-placeholder slots (`geometry: null`) resolve from slide-layout/master placeholder during Setup; if unresolvable, **omit** the band (no entry — never `[0,0]`; never divide absent `w/h`).
 - [ ] Catalogue carries each region's band; a **drift test** asserts catalogue == deriver output (generated single-source — not dual-homed like D23's hand-set caps).
-- [ ] Calibration golden at `fixtures/golden/comfortable-fill-calibration.json` records the 2–3 reference boxes + expected bands; deriver test asserts golden match.
+- [ ] Calibration golden at `fixtures/golden/comfortable-fill-calibration.json` **enumerates each eligible body slot**, its resolved `(geometry, pt)`, and the resulting band; deriver test asserts golden match.
 - [ ] No fill-plan that passed before now fails — Zod still rejects **only** on the per-kind `max`.
 - [ ] gate green: `pnpm run build && pnpm run lint && pnpm run test && pnpm run validate`
 
@@ -29,7 +30,7 @@ Add the **comfortable-fill band** — D26's two-sided, per-(layout, region) fill
 
 ## Risks / do-not-touch
 
-- Do **not** change D23 `max` semantics or reject behaviour. `src/setup/layout-spec.json` is read-only input — regenerate via Setup, never hand-edit (§5). Calibrate the two constants (`0.5` char-width, `[0.55,0.85]` fill) **once** against 2–3 real boxes and record in the golden file above.
+- Do **not** change D23 `max` semantics or reject behaviour. Do **not** derive bands for heading/label kinds — they are intentionally sparse-in-large-boxes (D26). `src/setup/layout-spec.json` is read-only input — regenerate via Setup, never hand-edit (§5). Calibrate the two constants (`0.5` char-width, `[0.55,0.85]` fill) **once** against 2–3 real **body** boxes and record in the golden file above.
 
 ## Meta
 
