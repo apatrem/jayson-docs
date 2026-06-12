@@ -108,6 +108,25 @@
         "slot.title": "upper-left; main deck title (8–15 words)",
         "slot.subtitle": "below title; short supporting line",
         "slot.body": "lower-left; date, presenter, or role line"
+      },
+      "fillBands": {
+        "slot.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 9,
+            "upper": 14
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 0,
+            "upper": 1
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 3,
+            "upper": 4
+          }
+        }
       }
     },
     {
@@ -126,6 +145,25 @@
       "regions": {
         "slot.title": "top; agenda heading (e.g. \"Agenda\" or \"Contents\")",
         "slot.body-left": "main area; bullet list of topics or sections"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -136,6 +174,25 @@
         "slot.title": "top band; action title (8–15 words)",
         "slot.body-left": "full-width body below title; bullets, text, or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -156,6 +213,25 @@
         "slot.subtitle": "below title; short subtitle or framing line",
         "slot.body-left": "main area below subtitle; bullets, text, or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -169,7 +245,26 @@
         "slot.body-right": "right half; narrative bullets or text beside the chart",
         "slot.source": "footer centre; source citation strip"
       },
-      "pinnedChartKind": "stacked-column"
+      "pinnedChartKind": "stacked-column",
+      "fillBands": {
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
+      }
     },
     {
       "layoutId": "chart-clustered-column",
@@ -182,7 +277,26 @@
         "slot.body-right": "right half; narrative bullets or text beside the chart",
         "slot.source": "footer centre; source citation strip"
       },
-      "pinnedChartKind": "clustered-column"
+      "pinnedChartKind": "clustered-column",
+      "fillBands": {
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
+      }
     },
     {
       "layoutId": "chart-line",
@@ -195,7 +309,26 @@
         "slot.body-right": "right half; narrative bullets or text beside the chart",
         "slot.source": "footer centre; source citation strip"
       },
-      "pinnedChartKind": "line"
+      "pinnedChartKind": "line",
+      "fillBands": {
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
+      }
     },
     {
       "layoutId": "chart-bubble",
@@ -208,7 +341,26 @@
         "slot.body-right": "right half; narrative bullets or text beside the chart",
         "slot.source": "footer centre; source citation strip"
       },
-      "pinnedChartKind": "bubble"
+      "pinnedChartKind": "bubble",
+      "fillBands": {
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
+      }
     },
     {
       "layoutId": "two-columns",
@@ -219,6 +371,42 @@
         "slot.body-left": "left column; bullets, text, callout, or image",
         "slot.body-right": "right column; bullets, text, callout, or image",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        },
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -232,6 +420,42 @@
         "slot.subtitle-right": "above right body; sidebar subhead",
         "slot.body-right": "narrow right column; accent bullets or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        },
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 73,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 30,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -245,6 +469,42 @@
         "slot.subtitle-right": "above right column; column subhead",
         "slot.body-right": "right column; bullets, text, or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        },
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -257,6 +517,25 @@
         "slot.subtitle-2": "above main pane; content-area subhead",
         "slot.body": "wide right pane; main bullets, text, or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -272,6 +551,59 @@
         "slot.subtitle-right": "above right column; column subhead",
         "slot.body-right": "right column; bullets, text, or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        },
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        },
+        "slot.body-center": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -281,6 +613,25 @@
       "regions": {
         "slot.title": "top band; action title (8–15 words)",
         "slot.body-left": "full-width body below title; bullets, text, or callout"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -294,6 +645,42 @@
         "slot.subtitle-right": "above right column; column subhead",
         "slot.body-right": "right column; bullets, text, or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        },
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -313,6 +700,25 @@
         "slot.subtitle": "below title; short supporting line",
         "slot.body": "lower area; date, presenter, or role line",
         "slot.image": "logo image area"
+      },
+      "fillBands": {
+        "slot.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 9,
+            "upper": 14
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 0,
+            "upper": 1
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 3,
+            "upper": 4
+          }
+        }
       }
     },
     {
@@ -331,6 +737,25 @@
       "regions": {
         "slot.title": "top; agenda heading (e.g. \"Agenda\" or \"Contents\")",
         "slot.body-left": "main area; bullet list of topics or sections"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -343,6 +768,25 @@
         "slot.subtitle-2": "above main pane; content-area subhead",
         "slot.body": "wide right pane; main bullets, text, or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -356,6 +800,42 @@
         "slot.subtitle-right": "above right body; sidebar subhead",
         "slot.body-right": "narrow right column; accent bullets or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        },
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 73,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 32,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -369,6 +849,42 @@
         "slot.subtitle-right": "above right column; column subhead",
         "slot.body-right": "right column; bullets, text, or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body-left": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        },
+        "slot.body-right": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -381,6 +897,25 @@
         "slot.subtitle-2": "above main pane; content-area subhead",
         "slot.body": "wide right pane; main bullets, text, or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     },
     {
@@ -393,6 +928,25 @@
         "slot.subtitle-2": "above main pane; content-area subhead",
         "slot.body": "wide right pane; main bullets, text, or callout",
         "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 100,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 8,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 40
+          }
+        }
       }
     }
   ]

@@ -1,0 +1,44 @@
+{
+  "description": "D26 calibration golden — 3 body boxes (full-width, narrow sidebar, cover strip) with resolved geometry, font pt, and derived bands.",
+  "constants": {
+    "charWidthPt": 0.5,
+    "lineHeightFactor": 1.2,
+    "fillFractionLower": 0.55,
+    "fillFractionUpper": 0.85
+  },
+  "entries": [
+    {
+      "layoutId": "title",
+      "slotName": "slot.body-left",
+      "geometry": { "x": 0.602, "y": 1.231, "w": 12.128, "h": 5.59 },
+      "fontPt": 12,
+      "bands": {
+        "content-text": { "unit": "words", "lower": 100, "upper": 100 },
+        "content-bullets": { "unit": "items", "lower": 8, "upper": 8 },
+        "content-callout": { "unit": "words", "lower": 40, "upper": 40 }
+      }
+    },
+    {
+      "layoutId": "narrative-with-sidebar",
+      "slotName": "slot.body-right",
+      "geometry": { "x": 10.053, "y": 1.746, "w": 2.678, "h": 5.075 },
+      "fontPt": 12,
+      "bands": {
+        "content-text": { "unit": "words", "lower": 73, "upper": 100 },
+        "content-bullets": { "unit": "items", "lower": 8, "upper": 8 },
+        "content-callout": { "unit": "words", "lower": 30, "upper": 40 }
+      }
+    },
+    {
+      "layoutId": "cover",
+      "slotName": "slot.body",
+      "geometry": { "x": 0.6, "y": 3.855, "w": 4.389, "h": 0.446 },
+      "fontPt": 12,
+      "bands": {
+        "content-text": { "unit": "words", "lower": 9, "upper": 14 },
+        "content-bullets": { "unit": "items", "lower": 0, "upper": 1 },
+        "content-callout": { "unit": "words", "lower": 3, "upper": 4 }
+      }
+    }
+  ]
+}
