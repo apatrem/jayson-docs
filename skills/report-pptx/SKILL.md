@@ -30,15 +30,19 @@ or at the end of an engagement. The CLI fills any of the **26 real layouts** on
 
 ## 1. Hard rules
 
-- You never lay out slides, pick coordinates, choose fonts or colours.
+- You never lay out slides, pick coordinates, choose fonts or colours. **Font size
+  is master-canonical** — it is baked into the template and **never chosen at
+  runtime** (D26 / D2-2). To answer "how much text fits?", **match content volume
+  to a layout's fill-band** (see §4) — not by picking a font size.
 - You **read `layout-catalogue.json`** to pick a `layoutId` and fill only the
   catalogue's slot keys. **Fill-plan keys drop the `slot.` prefix** — e.g.
   catalogue `slot.title` → fill-plan `"title"`, `slot.body-left` →
   `"body-left"`. **Prefer `common` tier;** if you pick `less-common`, state why
   in your reasoning.
-- Aim for each region's **optimal** density in the catalogue's `caps` (the CLI
-  soft-warns when you exceed optimal but stay within max — exit 0); **max** is
-  the hard ceiling Zod rejects.
+- Aim for each region's **comfortable-fill band** (`fillBands` in the catalogue —
+  D26) when selecting a layout; stay within each region kind's **optimal** density
+  in `caps` when authoring (the CLI soft-warns when you exceed optimal but stay
+  within max — exit 0); **max** is the hard ceiling Zod rejects.
 - **Chart type is not your choice.** Each layout pins its `chart` slot to one
   literal `kind` (D21). Supply **data** (`datasetRef` or inline `dataset`) only.
 - If you are missing information for a required slot, ask one short question.
@@ -49,8 +53,10 @@ or at the end of an engagement. The CLI fills any of the **26 real layouts** on
 ## 2. Read first
 
 1. **`layout-catalogue.json`** — all 26 `layoutId`s, tiers, usage notes,
-   per-slot `regions` maps, and density `caps`.
-2. `docs/SLIDE_LAYOUT_LIBRARY.md` — naming convention and density-cap model.
+   per-slot `regions` maps, density `caps`, and per-box **`fillBands`** (D26
+   comfortable-fill targets keyed by slot and cap-kind).
+2. `docs/SLIDE_LAYOUT_LIBRARY.md` — naming convention and the three-tier density
+   model (`fillBands` / optimal / max).
 3. `CHART_CATALOGUE.md` — pinned chart kinds per layout and dataset shape.
 4. `src/schema/index.ts` — `fillPlanSchema` envelope (layout schemas are the
    per-`layoutId` contracts).
@@ -104,13 +110,22 @@ Build a JSON matching `fillPlanSchema`:
   keys.
 - `datasets` — keyed datasets referenced by `chart.datasetRef`.
 
-**Layout selection (D16):**
+**Layout selection (D16 + D26):**
 
 1. Open `layout-catalogue.json`.
 2. Match the slide's purpose to a layout's `usage` note.
-3. Prefer `tier: "common"`; use `less-common` only when the common set lacks a fit
+3. **Match content volume to a layout's fill-band:** for each body/content region
+   you will fill, read that layout's `fillBands` entry for the slot (e.g.
+   `slot.body-left`) and cap-kind you plan to use (`content-text`,
+   `content-bullets`, or `content-callout`). Each band is `{ unit, lower, upper
+   }`. Estimate your draft content volume in that unit (words, items, or chars)
+   and prefer the layout whose band **best fits** — content near the middle of
+   `[lower … upper]` reads comfortably in that box. When two layouts serve the
+   same purpose, pick the one whose band envelope matches your volume; do not
+   pad or truncate to force a poor fit.
+4. Prefer `tier: "common"`; use `less-common` only when the common set lacks a fit
    (e.g. white-background cover, high-contrast variant).
-4. Fill every non-footer slot listed in `regions`, using the **un-prefixed**
+5. Fill every non-footer slot listed in `regions`, using the **un-prefixed**
    fill-plan key for each (`slot.foo` → `"foo"`).
 
 **Chart block (data-swap — D21):**
