@@ -1,10 +1,13 @@
 import {
   REGION_CAPS,
   formatDensityWarning,
+  formatFillBandWarning,
   isWithinOptimalWords,
   wordCount,
+  type ComfortableFillBand,
   type RegionKey,
 } from './caps.js';
+import { lookupFillBand, type BodyCapKind } from './fill-band-catalogue.js';
 import type { FillPlan } from './index.js'; // type-only — no runtime cycle
 import type { Slide } from './slide.js';
 
@@ -59,6 +62,61 @@ function isContentBlock(value: unknown): value is ContentBlock {
   return typeof record.kind === 'string';
 }
 
+function capKindFromBlock(block: ContentBlock): BodyCapKind | undefined {
+  switch (block.kind) {
+    case 'text':
+      return 'content-text';
+    case 'bullets':
+      return 'content-bullets';
+    case 'callout':
+      return 'content-callout';
+    default:
+      return undefined;
+  }
+}
+
+function measureForBand(block: ContentBlock, band: ComfortableFillBand): number | undefined {
+  if (band.unit === 'items') {
+    return block.kind === 'bullets' ? block.items.length : undefined;
+  }
+  if (block.kind === 'text' || block.kind === 'callout') {
+    return wordCount(block.body);
+  }
+  if (block.kind === 'bullets') {
+    return wordCount(block.items.join(' '));
+  }
+  return undefined;
+}
+
+function warnFillBand(
+  layoutId: string,
+  region: string,
+  block: ContentBlock,
+  warnings: string[],
+): boolean {
+  const capKind = capKindFromBlock(block);
+  if (capKind === undefined) {
+    return false;
+  }
+  const band = lookupFillBand(layoutId, region, capKind);
+  if (band === undefined) {
+    return false;
+  }
+  const measured = measureForBand(block, band);
+  if (measured === undefined) {
+    return true;
+  }
+  if (measured < band.lower) {
+    warnings.push(formatFillBandWarning(layoutId, region, 'under-fill', measured, band));
+    return true;
+  }
+  if (measured > band.upper) {
+    warnings.push(formatFillBandWarning(layoutId, region, 'over-fill', measured, band));
+    return true;
+  }
+  return true;
+}
+
 function warnWordField(field: string, text: string, region: RegionKey, warnings: string[]): void {
   const cap = REGION_CAPS[region];
   if (cap.unit !== 'words') {
@@ -99,7 +157,16 @@ function warnBullets(field: string, items: string[], warnings: string[]): void {
   }
 }
 
-function warnContentBlock(field: string, block: ContentBlock, warnings: string[]): void {
+function warnContentBlock(
+  layoutId: string,
+  field: string,
+  block: ContentBlock,
+  warnings: string[],
+): void {
+  if (warnFillBand(layoutId, field, block, warnings)) {
+    return;
+  }
+
   switch (block.kind) {
     case 'bullets':
       warnBullets(field, block.items, warnings);
@@ -187,12 +254,12 @@ function walkSlide(slide: Slide, warnings: string[]): void {
     }
 
     if (CONTENT_KEYS.has(key) && isContentBlock(value)) {
-      warnContentBlock(key, value, warnings);
+      warnContentBlock(layoutId, key, value, warnings);
       continue;
     }
 
     if (key === 'body' && isContentBlock(value)) {
-      warnContentBlock('body', value, warnings);
+      warnContentBlock(layoutId, 'body', value, warnings);
       continue;
     }
 

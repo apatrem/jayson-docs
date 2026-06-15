@@ -1,15 +1,46 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fillPlanSchema } from '../src/schema/index.js';
 import { collectDensityWarnings } from '../src/schema/density-warnings.js';
-import { REGION_CAPS } from '../src/schema/caps.js';
+import { REGION_CAPS, formatFillBandWarning } from '../src/schema/caps.js';
+import * as fillBandCatalogue from '../src/schema/fill-band-catalogue.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p: string): unknown => JSON.parse(readFileSync(resolve(root, p), 'utf-8'));
+
+function words(n: number): string {
+  return Array.from({ length: n }, (_, i) => `w${i + 1}`).join(' ');
+}
+
+function runCli(fixturePath: string, template = join(root, 'templates/report.master.pptx')): ReturnType<typeof spawnSync> {
+  const outputDir = mkdtempSync(join(tmpdir(), 'jayson-docs-density-'));
+  const outputPath = join(outputDir, 'filled.pptx');
+
+  return spawnSync(
+    process.execPath,
+    [
+      join(root, 'node_modules/tsx/dist/cli.mjs'),
+      join(root, 'src/cli/generate.ts'),
+      'fill',
+      '--template',
+      template,
+      '--plan',
+      fixturePath,
+      '--out',
+      outputPath,
+    ],
+    { cwd: root, encoding: 'utf-8' },
+  );
+}
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  fillBandCatalogue.resetFillBandCatalogueCache();
+});
 
 describe('two-tier density caps (Phase 3.5)', () => {
   it('accepts over-optimal but under-max source (Zod enforces max only)', () => {
@@ -59,25 +90,7 @@ describe('two-tier density caps (Phase 3.5)', () => {
 
   it('CLI exits 0 and prints soft warning for over-optimal title (pipeline-supported layout)', () => {
     const fixturePath = join(root, 'fixtures/valid/fillplan-over-optimal-title.json');
-    const masterPath = join(root, 'templates/PLACEHOLDER-report.master.pptx');
-    const outputDir = mkdtempSync(join(tmpdir(), 'jayson-docs-density-'));
-    const outputPath = join(outputDir, 'filled.pptx');
-
-    const result = spawnSync(
-      process.execPath,
-      [
-        join(root, 'node_modules/tsx/dist/cli.mjs'),
-        join(root, 'src/cli/generate.ts'),
-        'fill',
-        '--template',
-        masterPath,
-        '--plan',
-        fixturePath,
-        '--out',
-        outputPath,
-      ],
-      { cwd: root, encoding: 'utf-8' },
-    );
+    const result = runCli(fixturePath, join(root, 'templates/PLACEHOLDER-report.master.pptx'));
 
     expect(result.status).toBe(0);
     expect(result.stderr).toContain('warning: title is 16 words (optimal 8–15, max 20)');
@@ -85,25 +98,7 @@ describe('two-tier density caps (Phase 3.5)', () => {
 
   it('CLI exits non-zero for source over absolute max', () => {
     const fixturePath = join(root, 'fixtures/invalid/fillplan-source-over-max.json');
-    const masterPath = join(root, 'templates/PLACEHOLDER-report.master.pptx');
-    const outputDir = mkdtempSync(join(tmpdir(), 'jayson-docs-density-'));
-    const outputPath = join(outputDir, 'filled.pptx');
-
-    const result = spawnSync(
-      process.execPath,
-      [
-        join(root, 'node_modules/tsx/dist/cli.mjs'),
-        join(root, 'src/cli/generate.ts'),
-        'fill',
-        '--template',
-        masterPath,
-        '--plan',
-        fixturePath,
-        '--out',
-        outputPath,
-      ],
-      { cwd: root, encoding: 'utf-8' },
-    );
+    const result = runCli(fixturePath);
 
     expect(result.status).toBe(2);
     expect(result.stderr).toContain('fill-plan validation failed');
@@ -131,5 +126,97 @@ describe('two-tier density caps (Phase 3.5)', () => {
         `warning: subtitle-left is 30 words (optimal ≤${REGION_CAPS.subtitle.optimal.max}, max ${REGION_CAPS.subtitle.max})`,
       );
     }
+  });
+});
+
+describe('D26 two-sided fill-band soft-warnings (T-202)', () => {
+  it('emits an under-fill warning when body content is below band.lower', () => {
+    const plan = structuredClone(read('fixtures/layouts/valid-title.json')) as {
+      sections: { slides: Record<string, unknown>[] }[];
+    };
+    const slide = plan.sections[0]?.slides[0];
+    expect(slide).toBeDefined();
+    if (!slide) return;
+    slide['body-left'] = { kind: 'text', body: words(10) };
+
+    const parsed = fillPlanSchema.parse(plan);
+    const warnings = collectDensityWarnings(parsed);
+    expect(warnings).toEqual([
+      formatFillBandWarning('title', 'body-left', 'under-fill', 10, {
+        unit: 'words',
+        lower: 60,
+        upper: 100,
+      }),
+    ]);
+  });
+
+  it('emits an over-fill warning when body content is above band.upper', () => {
+    vi.spyOn(fillBandCatalogue, 'lookupFillBand').mockReturnValue({
+      unit: 'words',
+      lower: 60,
+      upper: 80,
+    });
+
+    const plan = structuredClone(read('fixtures/layouts/valid-title.json')) as {
+      sections: { slides: Record<string, unknown>[] }[];
+    };
+    const slide = plan.sections[0]?.slides[0];
+    expect(slide).toBeDefined();
+    if (!slide) return;
+    slide['body-left'] = { kind: 'text', body: words(85) };
+
+    const parsed = fillPlanSchema.parse(plan);
+    const warnings = collectDensityWarnings(parsed);
+    expect(warnings).toEqual([
+      formatFillBandWarning('title', 'body-left', 'over-fill', 85, {
+        unit: 'words',
+        lower: 60,
+        upper: 80,
+      }),
+    ]);
+  });
+
+  it('does not emit D26 warnings for heading/label regions without bands', () => {
+    const parsed = fillPlanSchema.parse(read('fixtures/layouts/valid-title-only.json'));
+    const warnings = collectDensityWarnings(parsed);
+    expect(warnings).toEqual([]);
+    expect(warnings.some((w) => w.includes('fill-band'))).toBe(false);
+  });
+
+  it('suppresses D23 optimal warnings when a D26 per-box band exists (dedup)', () => {
+    const plan = structuredClone(read('fixtures/layouts/valid-title.json')) as {
+      sections: { slides: Record<string, unknown>[] }[];
+    };
+    const slide = plan.sections[0]?.slides[0];
+    expect(slide).toBeDefined();
+    if (!slide) return;
+    slide['body-left'] = { kind: 'text', body: words(70) };
+
+    const parsed = fillPlanSchema.parse(plan);
+    const warnings = collectDensityWarnings(parsed);
+    expect(warnings).toEqual([]);
+  });
+
+  it('CLI exits 0 and prints stderr under-fill warning without touching stdout', () => {
+    const outputDir = mkdtempSync(join(tmpdir(), 'jayson-docs-fill-band-'));
+    const fixturePath = join(outputDir, 'under-fill.json');
+    const plan = structuredClone(read('fixtures/layouts/valid-title.json')) as {
+      sections: { slides: Record<string, unknown>[] }[];
+    };
+    plan.sections[0]!.slides[0]!['body-left'] = { kind: 'text', body: words(10) };
+    writeFileSync(fixturePath, JSON.stringify(plan));
+
+    const result = runCli(fixturePath);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toContain(
+      'warning: slide "title" body-left under-fill: 10 words (fill-band 60–100)',
+    );
+  });
+
+  it('still rejects over-max content with exit 2 (D23 max unchanged)', () => {
+    const result = runCli(join(root, 'fixtures/invalid/fillplan-text-cap.json'));
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain('fill-plan validation failed');
   });
 });
