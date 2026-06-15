@@ -191,6 +191,10 @@ function d23OptimalValue(capKind: EligibleBodyCapKind): number {
   return cap.optimal.maxItems;
 }
 
+// Bands equal D23 [optimal … max] for boxes whose physical capacity exceeds the kind's cap
+// (all 26 current layouts' body boxes); they differentiate (sub-cap bands) for smaller boxes —
+// the D27 archetype cells (matrix/process/KPI/feature-grid/sub-slots), where per-box fill
+// guidance matters. Uniform bands on today's catalogue are expected, not a bug.
 function clampBand(
   band: ComfortableFillBand,
   capKind: EligibleBodyCapKind,

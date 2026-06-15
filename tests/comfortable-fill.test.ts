@@ -41,6 +41,18 @@ describe('D26 comfortable-fill bands (T-201)', () => {
     expect(compact.upper).toBeLessThan(wide.lower);
   });
 
+  it('differentiates sub-cap bands for a synthetic small box (D27 matrix/process cell)', () => {
+    // No current layout slot is this small; D27 archetypes (matrix cells, process/KPI/funnel/
+    // feature-grid boxes, sub-slotted cells) will. Proves the deriver emits real sub-cap bands,
+    // not just D23 [optimal, max], when physical capacity is below the kind cap.
+    const d27Cell = deriveBandForKind({ x: 0, y: 0, w: 2.5, h: 1.5 }, 12, 'content-text');
+    expect(d27Cell.lower).toBeGreaterThan(0);
+    expect(d27Cell.lower).toBeLessThanOrEqual(d27Cell.upper);
+    expect(d27Cell.upper).toBeLessThan(100);
+    expect(d27Cell.lower).toBeLessThan(60);
+    expect(d27Cell).toEqual({ unit: 'words', lower: 19, upper: 29 });
+  });
+
   it('never advertises a band upper above the D23 max', () => {
     const maxByKind = {
       'content-text': 100,
