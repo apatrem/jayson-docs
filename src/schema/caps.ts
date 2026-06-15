@@ -164,3 +164,13 @@ export function formatDensityWarning(
   const maxLabel = formatMaxLabel(region);
   return `warning: ${field} is ${measured} ${unit} (optimal ${optimal}, max ${maxLabel})`;
 }
+
+export function formatFillBandWarning(
+  layoutId: string,
+  region: string,
+  direction: 'under-fill' | 'over-fill',
+  measured: number,
+  band: ComfortableFillBand,
+): string {
+  return `warning: slide "${layoutId}" ${region} ${direction}: ${measured} ${band.unit} (fill-band ${band.lower}–${band.upper})`;
+}
