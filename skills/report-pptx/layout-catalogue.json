@@ -108,25 +108,6 @@
         "slot.title": "upper-left; main deck title (8–15 words)",
         "slot.subtitle": "below title; short supporting line",
         "slot.body": "lower-left; date, presenter, or role line"
-      },
-      "fillBands": {
-        "slot.body": {
-          "content-text": {
-            "unit": "words",
-            "lower": 9,
-            "upper": 14
-          },
-          "content-bullets": {
-            "unit": "items",
-            "lower": 0,
-            "upper": 1
-          },
-          "content-callout": {
-            "unit": "words",
-            "lower": 3,
-            "upper": 4
-          }
-        }
       }
     },
     {
@@ -150,17 +131,17 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -179,17 +160,17 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -218,17 +199,17 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -250,17 +231,17 @@
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -282,17 +263,17 @@
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -314,17 +295,17 @@
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -346,17 +327,17 @@
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -376,34 +357,34 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         },
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -425,34 +406,34 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         },
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 73,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 30,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -474,34 +455,34 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         },
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -522,17 +503,17 @@
         "slot.body": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -556,51 +537,51 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         },
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         },
         "slot.body-center": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -618,17 +599,17 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -650,34 +631,34 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         },
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -700,25 +681,6 @@
         "slot.subtitle": "below title; short supporting line",
         "slot.body": "lower area; date, presenter, or role line",
         "slot.image": "logo image area"
-      },
-      "fillBands": {
-        "slot.body": {
-          "content-text": {
-            "unit": "words",
-            "lower": 9,
-            "upper": 14
-          },
-          "content-bullets": {
-            "unit": "items",
-            "lower": 0,
-            "upper": 1
-          },
-          "content-callout": {
-            "unit": "words",
-            "lower": 3,
-            "upper": 4
-          }
-        }
       }
     },
     {
@@ -742,17 +704,17 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -773,17 +735,17 @@
         "slot.body": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -805,34 +767,34 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         },
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 73,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 32,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -854,34 +816,34 @@
         "slot.body-left": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         },
         "slot.body-right": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -902,17 +864,17 @@
         "slot.body": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }
@@ -933,17 +895,17 @@
         "slot.body": {
           "content-text": {
             "unit": "words",
-            "lower": 100,
+            "lower": 60,
             "upper": 100
           },
           "content-bullets": {
             "unit": "items",
-            "lower": 8,
+            "lower": 5,
             "upper": 8
           },
           "content-callout": {
             "unit": "words",
-            "lower": 40,
+            "lower": 25,
             "upper": 40
           }
         }

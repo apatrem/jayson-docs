@@ -35,8 +35,10 @@ describe('D26 comfortable-fill bands (T-201)', () => {
       'content-text',
     );
     const compact = deriveBandForKind({ x: 0.6, y: 3.855, w: 4.389, h: 0.446 }, 12, 'content-text');
-    expect(wide).not.toEqual(narrow);
-    expect(compact.upper).toBeLessThan(narrow.lower);
+    expect(wide).toEqual({ unit: 'words', lower: 60, upper: 100 });
+    expect(narrow).toEqual({ unit: 'words', lower: 60, upper: 100 });
+    expect(compact).toEqual({ unit: 'words', lower: 9, upper: 14 });
+    expect(compact.upper).toBeLessThan(wide.lower);
   });
 
   it('never advertises a band upper above the D23 max', () => {
@@ -90,5 +92,16 @@ describe('D26 comfortable-fill bands (T-201)', () => {
     for (const entry of catalogue.layouts) {
       expect(entry.fillBands ?? {}).toEqual(derived[entry.layoutId] ?? {});
     }
+  });
+
+  it('does not band cover-body slots (cover / cover-white slot.body)', async () => {
+    const derived = await deriveAllFillBands();
+    expect(derived.cover?.['slot.body']).toBeUndefined();
+    expect(derived['cover-white']?.['slot.body']).toBeUndefined();
+  });
+
+  it('does not band heading regions (e.g. section slot.section-title)', async () => {
+    const derived = await deriveAllFillBands();
+    expect(derived.section?.['slot.section-title']).toBeUndefined();
   });
 });

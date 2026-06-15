@@ -34,6 +34,12 @@ export const FILL_FRACTION_UPPER = 0.85;
 export const WORDS_PER_WORD = 6;
 export const LINES_PER_BULLET_ITEM = 1.3;
 
+/** D26 excludes cover-body (shortTextString) even though layout-spec tags it regionKind:content. */
+export const BANDING_EXCLUDED_SLOTS: readonly { layoutId: string; slotName: string }[] = [
+  { layoutId: 'cover', slotName: 'slot.body' },
+  { layoutId: 'cover-white', slotName: 'slot.body' },
+];
+
 /** Pinned kind→pt defaults from master bodyStyle (D26 hybrid fallback). */
 export const BODY_KIND_DEFAULT_PT: Record<EligibleBodyCapKind, number> = {
   'content-text': 12,
@@ -177,21 +183,33 @@ function rawBand(rawLower: number, rawUpper: number, unit: 'words' | 'items'): C
   return { unit, lower: Math.floor(rawLower), upper: Math.floor(rawUpper) };
 }
 
+function d23OptimalValue(capKind: EligibleBodyCapKind): number {
+  const cap = REGION_CAPS[capKind];
+  if (cap.unit === 'words') {
+    return cap.optimal.max;
+  }
+  return cap.optimal.maxItems;
+}
+
 function clampBand(
   band: ComfortableFillBand,
   capKind: EligibleBodyCapKind,
 ): ComfortableFillBand {
   const cap = REGION_CAPS[capKind];
   let { lower, upper } = band;
+  const optimal = d23OptimalValue(capKind);
 
   if (cap.unit === 'words') {
     upper = Math.min(upper, cap.max);
+    // Lower clamped down to D23 optimal so D23-optimal content is always in-band (never {max,max}).
+    lower = Math.min(lower, optimal);
     lower = Math.min(lower, upper);
     return { unit: 'words', lower, upper };
   }
 
   if (cap.unit === 'items') {
     upper = Math.min(upper, cap.max.maxItems);
+    lower = Math.min(lower, optimal);
     lower = Math.min(lower, upper);
     return { unit: 'items', lower, upper };
   }
@@ -245,6 +263,13 @@ export async function deriveLayoutFillBands(
 
   for (const slot of layout.slots) {
     if (slot.regionKind !== 'content') {
+      continue;
+    }
+    if (
+      BANDING_EXCLUDED_SLOTS.some(
+        (excluded) => excluded.layoutId === layout.layoutId && excluded.slotName === slot.slotName,
+      )
+    ) {
       continue;
     }
     const resolved = resolveSlotGeometry(slot, shapes, used, masterShapes);
