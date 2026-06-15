@@ -172,9 +172,36 @@ The Zod schema mirrors these names exactly. The LLM emits keys matching the sche
 
 ---
 
-## Density caps — two tiers (optimal warned, max enforced)
+## Density caps — three tiers (fill-band, optimal warned, max enforced)
 
-Each text region carries **two** bounds (`src/schema/caps.ts` is the single source, mirrored by the LLM-facing catalogue per D22's drift test): an **optimal** range that the CLI soft-warns when exceeded (exits 0, stderr note) and an **absolute max** that Zod **rejects**. Aim for optimal; the max is the hard ceiling that keeps the master geometry from breaking (D19, D23).
+Each text region carries up to **three** density signals. The LLM-facing catalogue (`skills/report-pptx/layout-catalogue.json`) mirrors the schema caps and emits per-box **fill-bands** (D26).
+
+### Tier 1 — Comfortable-fill band (D26; per box, layout selection)
+
+A **comfortable-fill band** is a two-sided target (`lower..upper`) keyed by **(layout, slot, cap-kind)** — not by region kind alone. Setup derives it from each box's real geometry in `src/setup/layout-spec.json` (`x/y/w/h` in inches, D19) and its effective font size (master-canonical; never chosen at runtime). The deriver emits bands into the catalogue's `fillBands` map; `src/schema/caps.ts` holds only the `ComfortableFillBand` type.
+
+**Eligible cap-kinds** (multi-line body/content only): `content-text`, `content-bullets`, `content-callout`. **Excluded:** heading/label kinds (`title`, `section-title`, `subtitle`, `chart-title`, `source`, `cover-body`) and non-text kinds (`chart`, `image`, `footer`) — headings are intentionally sparse in large boxes.
+
+Each band entry looks like:
+
+```json
+"fillBands": {
+  "slot.body-left": {
+    "content-text": { "unit": "words", "lower": 60, "upper": 100 },
+    "content-bullets": { "unit": "items", "lower": 5, "upper": 8 }
+  }
+}
+```
+
+The `report-pptx` skill instructs the BYO LLM to **match content volume to a layout's fill-band** when picking among layouts — this is how "how much text fits in this box?" is answered without ever letting the LLM choose a font size.
+
+**Note (T-201):** for boxes whose physical capacity exceeds the kind's D23 cap, the band equals D23 `[optimal … max]` — true for all 26 current layouts' body boxes, so bands look uniform today. Bands **differentiate** (sub-cap targets) for smaller boxes — the D27 archetype cells (matrix/process/KPI/feature-grid/sub-slots), where per-box fill guidance matters. Uniform bands on today's catalogue are expected, not a bug.
+
+The CLI emits two-sided soft-warnings (exit 0, stderr) when content falls **below `lower` or above `upper`** — distinct from D23's per-kind hard `max` (Zod reject, exit 2). Where a D26 per-box band exists, it **supersedes** D23's footprint-blind `optimal` warning (at most one density warning per region).
+
+### Tier 2 — Optimal (CLI-warned, per region kind)
+
+Each text region kind carries an **optimal** range (`src/schema/caps.ts` is the single source, mirrored by the catalogue's top-level `caps` per D22's drift test). The CLI soft-warns when exceeded (exits 0, stderr note). Aim for optimal when authoring; where a D26 band applies, prefer fitting the band instead.
 
 | Region | Optimal (CLI-warned) | Max (Zod-enforced) |
 |--------|----------------------|--------------------|
@@ -191,4 +218,8 @@ Each text region carries **two** bounds (`src/schema/caps.ts` is the single sour
 
 Structural hard limits (single bound): general `bullets` block ≤7 items; pie/doughnut chart rows ≤8; `kpi-strip` holds 3–5 cards.
 
-Over **optimal** → soft warning (CLI exits 0). Over **max** → rejected with a clear error, whether the LLM or a human produced it — never auto-truncated or "fixed" (`ERROR_HANDLING.md`).
+### Tier 3 — Max (Zod-enforced, per region kind)
+
+An **absolute max** that Zod **rejects**. The max is the hard ceiling that keeps the master geometry from breaking (D19, D23).
+
+Over **optimal** → soft warning (CLI exits 0), unless a D26 band supersedes it for that region. Over **max** → rejected with a clear error, whether the LLM or a human produced it — never auto-truncated or "fixed" (`ERROR_HANDLING.md`).
