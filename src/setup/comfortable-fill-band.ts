@@ -15,6 +15,7 @@ import {
   matchShape,
   type ExtractedShape,
 } from './pptx-shape-utils.js';
+import { acceptedCapKindsForSlot } from './slot-accepted-cap-kinds.js';
 import type { LayoutSpec, LayoutSpecEntry, LayoutSlot, ShapeGeometry } from './types.js';
 
 /** D26 cap-kinds eligible for per-box fill bands (fill-time block type picks the band). */
@@ -52,7 +53,8 @@ const MASTER_OTHER_STYLE_PT = 18;
 
 export interface ResolvedSlotGeometry {
   geometry: ShapeGeometry;
-  fontPt: number;
+  /** Cascade-resolved pt (explicit sz → placeholder/layout/master); undefined when unresolvable. */
+  fontPt: number | undefined;
 }
 
 export type LayoutFillBands = Record<string, Partial<Record<EligibleBodyCapKind, ComfortableFillBand>>>;
@@ -159,9 +161,8 @@ export function resolveSlotGeometry(
 
   const fontPt =
     shape !== undefined
-      ? (fontPtFromShapeBlock(shape.shapeBlock, shape.placeholderType) ??
-        BODY_KIND_DEFAULT_PT['content-text'])
-      : BODY_KIND_DEFAULT_PT['content-text'];
+      ? fontPtFromShapeBlock(shape.shapeBlock, shape.placeholderType)
+      : undefined;
   return { geometry, fontPt };
 }
 
@@ -174,13 +175,24 @@ async function loadMasterShapes(zip: JSZip): Promise<ExtractedShape[]> {
 }
 
 function lineCapacity(geometry: ShapeGeometry, fontPt: number): { lines: number; charsPerLine: number } {
-  const lines = Math.floor((geometry.h * 72) / (fontPt * LINE_HEIGHT_FACTOR));
-  const charsPerLine = Math.floor((geometry.w * 72) / (fontPt * CHAR_WIDTH_PT));
+  const rawLines = Math.floor((geometry.h * 72) / (fontPt * LINE_HEIGHT_FACTOR));
+  const rawChars = Math.floor((geometry.w * 72) / (fontPt * CHAR_WIDTH_PT));
+  // D27 archetype cells may be shorter than one line at the resolved pt; floor capacity
+  // so we never emit a degenerate {0,0} band (D26 omits absent geometry, not zero targets).
+  const lines = Math.max(1, rawLines);
+  const charsPerLine = Math.max(1, rawChars);
   return { lines, charsPerLine };
 }
 
 function rawBand(rawLower: number, rawUpper: number, unit: 'words' | 'items'): ComfortableFillBand {
-  return { unit, lower: Math.floor(rawLower), upper: Math.floor(rawUpper) };
+  const upper = Math.floor(rawUpper);
+  if (upper <= 0) {
+    // Sub-line boxes can round to zero before clamp; never emit {0,0} (D26 / D27 small cells).
+    return { unit, lower: 1, upper: 1 };
+  }
+  let lower = Math.max(1, Math.floor(rawLower));
+  lower = Math.min(lower, upper);
+  return { unit, lower, upper };
 }
 
 function d23OptimalValue(capKind: EligibleBodyCapKind): number {
@@ -223,37 +235,40 @@ function clampBand(
 
 export function deriveBandForKind(
   geometry: ShapeGeometry,
-  fontPt: number,
+  fontPt: number | undefined,
   capKind: EligibleBodyCapKind,
 ): ComfortableFillBand {
-  const effectivePt =
-    capKind === 'content-callout' ? BODY_KIND_DEFAULT_PT['content-callout'] : fontPt;
+  const effectivePt = fontPt ?? BODY_KIND_DEFAULT_PT[capKind];
   const { lines, charsPerLine } = lineCapacity(geometry, effectivePt);
 
   if (capKind === 'content-bullets') {
-    const capacity = lines / LINES_PER_BULLET_ITEM;
+    const rawCapacity = lines / LINES_PER_BULLET_ITEM;
+    const capacity = Math.max(1, rawCapacity);
     return clampBand(
       rawBand(capacity * FILL_FRACTION_LOWER, capacity * FILL_FRACTION_UPPER, 'items'),
       capKind,
     );
   }
 
-  const capacity = (lines * charsPerLine) / WORDS_PER_WORD;
+  const rawCapacity = (lines * charsPerLine) / WORDS_PER_WORD;
+  const capacity = Math.max(1, rawCapacity);
   return clampBand(
     rawBand(capacity * FILL_FRACTION_LOWER, capacity * FILL_FRACTION_UPPER, 'words'),
     capKind,
   );
 }
 
-export function deriveBandsForSlot(resolved: ResolvedSlotGeometry): Record<
-  EligibleBodyCapKind,
-  ComfortableFillBand
-> {
-  return {
-    'content-text': deriveBandForKind(resolved.geometry, resolved.fontPt, 'content-text'),
-    'content-bullets': deriveBandForKind(resolved.geometry, resolved.fontPt, 'content-bullets'),
-    'content-callout': deriveBandForKind(resolved.geometry, resolved.fontPt, 'content-callout'),
-  };
+export function deriveBandsForSlot(
+  layoutId: string,
+  slotName: string,
+  resolved: ResolvedSlotGeometry,
+): Partial<Record<EligibleBodyCapKind, ComfortableFillBand>> {
+  const accepted = acceptedCapKindsForSlot(layoutId, slotName);
+  const bands: Partial<Record<EligibleBodyCapKind, ComfortableFillBand>> = {};
+  for (const capKind of accepted) {
+    bands[capKind] = deriveBandForKind(resolved.geometry, resolved.fontPt, capKind);
+  }
+  return bands;
 }
 
 export async function deriveLayoutFillBands(
@@ -284,7 +299,7 @@ export async function deriveLayoutFillBands(
     if (shape !== undefined) {
       used.add(shape);
     }
-    bands[slot.slotName] = deriveBandsForSlot(resolved);
+    bands[slot.slotName] = deriveBandsForSlot(layout.layoutId, slot.slotName, resolved);
   }
 
   return bands;

@@ -4,6 +4,7 @@ import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ComfortableFillBand } from '../src/schema/caps.js';
 import {
+  BANDING_EXCLUDED_SLOTS,
   deriveAllFillBands,
   deriveBandForKind,
   deriveBandsForSlot,
@@ -11,10 +12,32 @@ import {
   loadLayoutSpec,
   resolveSlotGeometry,
 } from '../src/setup/comfortable-fill-band.js';
+import { acceptedCapKindsForSlot } from '../src/setup/slot-accepted-cap-kinds.js';
 import { collectSlideShapes, loadPptxZip, extractShapesFromXml } from '../src/setup/pptx-shape-utils.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (p: string): unknown => JSON.parse(readFileSync(join(root, p), 'utf-8'));
+
+function eligibleSlotKeys(spec = loadLayoutSpec()): string[] {
+  const keys: string[] = [];
+  for (const layout of spec.layouts) {
+    for (const slot of layout.slots) {
+      if (slot.regionKind !== 'content') {
+        continue;
+      }
+      if (
+        BANDING_EXCLUDED_SLOTS.some(
+          (excluded) =>
+            excluded.layoutId === layout.layoutId && excluded.slotName === slot.slotName,
+        )
+      ) {
+        continue;
+      }
+      keys.push(`${layout.layoutId}/${slot.slotName}`);
+    }
+  }
+  return keys.sort();
+}
 
 describe('D26 comfortable-fill bands (T-201)', () => {
   it('exports ComfortableFillBand type with lower/upper in the region unit', () => {
@@ -42,15 +65,27 @@ describe('D26 comfortable-fill bands (T-201)', () => {
   });
 
   it('differentiates sub-cap bands for a synthetic small box (D27 matrix/process cell)', () => {
-    // No current layout slot is this small; D27 archetypes (matrix cells, process/KPI/funnel/
-    // feature-grid boxes, sub-slotted cells) will. Proves the deriver emits real sub-cap bands,
-    // not just D23 [optimal, max], when physical capacity is below the kind cap.
     const d27Cell = deriveBandForKind({ x: 0, y: 0, w: 2.5, h: 1.5 }, 12, 'content-text');
     expect(d27Cell.lower).toBeGreaterThan(0);
     expect(d27Cell.lower).toBeLessThanOrEqual(d27Cell.upper);
     expect(d27Cell.upper).toBeLessThan(100);
     expect(d27Cell.lower).toBeLessThan(60);
     expect(d27Cell).toEqual({ unit: 'words', lower: 19, upper: 29 });
+  });
+
+  it('content-callout bands change with effective font size (D26 font cascade)', () => {
+    const box = { x: 0, y: 0, w: 2.5, h: 1.5 };
+    const at12 = deriveBandForKind(box, 12, 'content-callout');
+    const at30 = deriveBandForKind(box, 30, 'content-callout');
+    expect(at12).not.toEqual(at30);
+    expect(at12).toEqual({ unit: 'words', lower: 19, upper: 29 });
+    expect(at30).toEqual({ unit: 'words', lower: 3, upper: 5 });
+  });
+
+  it('never emits a degenerate {0,0} band when line capacity would be zero', () => {
+    const tiny = deriveBandForKind({ x: 0, y: 0, w: 0.1, h: 0.1 }, 12, 'content-text');
+    expect(tiny.lower).toBeGreaterThan(0);
+    expect(tiny.upper).toBeGreaterThan(0);
   });
 
   it('never advertises a band upper above the D23 max', () => {
@@ -74,6 +109,7 @@ describe('D26 comfortable-fill bands (T-201)', () => {
         geometry: { x: number; y: number; w: number; h: number };
         fontPt: number;
         bands: Record<string, ComfortableFillBand>;
+        calibrationRepresentative?: boolean;
       }[];
     };
     const spec = loadLayoutSpec();
@@ -84,16 +120,31 @@ describe('D26 comfortable-fill bands (T-201)', () => {
         ? []
         : extractShapesFromXml(await masterFile.async('string'), 'ppt/slideMasters/slideMaster1.xml');
 
-    for (const entry of golden.entries) {
+    const calibrationEntries = golden.entries.filter((e) => e.calibrationRepresentative);
+    expect(calibrationEntries).toHaveLength(3);
+
+    for (const entry of calibrationEntries) {
       const layout = spec.layouts.find((l) => l.layoutId === entry.layoutId);
       const slot = layout?.slots.find((s) => s.slotName === entry.slotName);
       expect(slot).toBeDefined();
       if (!slot) continue;
       const shapes = await collectSlideShapes(zip, layout?.sourceSlideIndex ?? 0);
       const resolved = resolveSlotGeometry(slot, shapes, new Set(), masterShapes);
-      expect(resolved).toEqual({ geometry: entry.geometry, fontPt: entry.fontPt });
-      expect(deriveBandsForSlot(resolved!)).toEqual(entry.bands);
+      expect(resolved?.geometry).toEqual(entry.geometry);
+      expect(resolved?.fontPt ?? 12).toBe(entry.fontPt);
+      expect(deriveBandsForSlot(entry.layoutId, entry.slotName, resolved!)).toEqual(entry.bands);
     }
+  });
+
+  it('golden enumerates every eligible body slot (no missing or extra)', () => {
+    const golden = readJson('fixtures/golden/comfortable-fill-calibration.json') as {
+      entries: { layoutId: string; slotName: string }[];
+    };
+    const goldenKeys = golden.entries
+      .map((e) => `${e.layoutId}/${e.slotName}`)
+      .sort();
+    expect(goldenKeys).toEqual(eligibleSlotKeys());
+    expect(goldenKeys).toHaveLength(28);
   });
 
   it('keeps layout-catalogue fillBands in sync with the deriver (drift guard)', async () => {
@@ -103,6 +154,21 @@ describe('D26 comfortable-fill bands (T-201)', () => {
     const derived = await deriveAllFillBands();
     for (const entry of catalogue.layouts) {
       expect(entry.fillBands ?? {}).toEqual(derived[entry.layoutId] ?? {});
+    }
+  });
+
+  it('advertises bands only for block kinds each slot schema accepts', async () => {
+    const derived = await deriveAllFillBands();
+    for (const [layoutId, slotBands] of Object.entries(derived)) {
+      for (const [slotName, bands] of Object.entries(slotBands)) {
+        const accepted = acceptedCapKindsForSlot(layoutId, slotName);
+        expect(Object.keys(bands).sort()).toEqual([...accepted].sort());
+        for (const capKind of ELIGIBLE_BODY_CAP_KINDS) {
+          if (!accepted.includes(capKind)) {
+            expect(bands[capKind]).toBeUndefined();
+          }
+        }
+      }
     }
   });
 
