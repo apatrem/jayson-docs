@@ -31,7 +31,7 @@ Replace the `kpi-row-chart`-only dispatch in `fillSlide` with a generic, **layou
 
 ## Meta
 
-- mode: medium # low | medium | hard — the core pipeline seam; defines the engine API T-102/103/104 depend on (ADR-0004)
+- mode: medium # low | medium | hard — the core pipeline seam; defines the engine API T-102/103/104 depend on (AW-0004)
 - risk: medium # shared dispatch and missing-shape behavior affect every later layout
 - depends-on: —
 - parallel-safe: no # foundation — must land before T-102/T-103/T-104

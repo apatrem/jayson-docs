@@ -19,8 +19,10 @@
 - <protected contract this task must not change>
 
 ## Meta
-- mode: low             # low (default) | medium | hard — effort/review dial (ADR-0004); prefer low, justify higher
-                        #   low    = 1 implementer + gate + 1 adversarial reviewer (Fable 5 @ medium)
-                        #   medium = + independent dual review on the PR (GPT-5.5 xhigh + Fable 5 high → synthesis)
-                        #   hard   = competitive best-of-N + smart-merge (Fable 5 @ xhigh), THEN the medium dual review (hard ⊇ medium)
+- mode: low             # low (default) | medium | hard — effort/review dial (AW-0004); prefer low, justify higher
+                        #   low    = 1 implementer + gate + 1 adversarial reviewer
+                        #   medium = + independent cross-lineage dual review on the PR → synthesis
+                        #   hard   = best-of-N over 2 lineages + smart-merge, THEN the dual review w/ ≥1 structurally-clean lens (hard ⊇ medium)
+                        #   (which model runs each role/tier: docs/MODELS.md)
+                        #   note: mode is a FLOOR — protected/destructive surface forces ≥ medium (AW-0004)
 - size budget: < 300 changed lines (split or stack if larger)

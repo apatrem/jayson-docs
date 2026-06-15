@@ -28,7 +28,7 @@ Extend M3's `kpi-row-chart` chart data-swap to the **real master charts**: `stac
 
 ## Meta
 
-- mode: medium # OOXML chart data-swap is fiddly; bubble has a distinct x/y/size shape (ADR-0004)
+- mode: medium # OOXML chart data-swap is fiddly; bubble has a distinct x/y/size shape (AW-0004)
 - risk: low
 - depends-on: T-101, T-102, T-103
 - parallel-safe: no # shares the generic dispatcher and acceptance file

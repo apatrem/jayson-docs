@@ -1,12 +1,14 @@
 # AGENTS.md — Handoff Brief for the Implementing Coding Agent
 
+`agentic-workflow-baseline: 0011` — this repo adopts the agentic-workflow baseline (AW-0001…AW-0011) **by reference** (see `docs/adr/0001-adopt-agentic-workflow-baseline-by-reference.md`). Workflow conventions are cited below by their `AW-NNNN` labels, not re-hosted here; their canonical text lives in the agentic-workflow repo.
+
 You are the autonomous coding agent (Claude Code, or equivalent) building this system. Read this file in full before touching code.
 
 ---
 
 ## 0. Multi-agent workflow — read before you commit
 
-This repo is worked by **several agents in parallel** (Claude, Cursor, Codex, …). `main` is **integration-only** — protected; PR + green CI required; a human merges. The model is **long-lived worktree folders, ephemeral per-task branches**: a fresh branch per task, cut from `origin/main` and deleted after merge. (**Superset** — the engine — runs each agent in its own git worktree the same way; ADR-0002 Update.)
+This repo is worked by **several agents in parallel** (Claude, Cursor, Codex, …). `main` is **integration-only** — protected; PR + green CI required; a human merges. The model is **long-lived worktree folders, ephemeral per-task branches**: a fresh branch per task, cut from `origin/main` and deleted after merge. (**Superset** — the engine — runs each agent in its own git worktree the same way; AW-0002.)
 
 ```
 ~/Documents/jayson-docs           # main — integration only; a human merges here
@@ -22,8 +24,11 @@ This repo is worked by **several agents in parallel** (Claude, Cursor, Codex, �
 3. **Ship via PR.** Open a pull request to `main`; another agent reviews it (this is the "challenge each other" step); the human merges. CI must be green.
 4. **CI gates everything** (`.github/workflows/ci.yml` — build + lint + test + validate). A clean `git` merge is **not** proof of correctness; CI is. Two agents editing nearby lines can merge "cleanly" into broken or duplicated content — CI and review catch that.
 5. **`docs/DECISIONS_LOG.md` is the shared source of intent.** Read it first; record any cross-cutting decision there *before* diverging, so parallel agents converge instead of collide.
-6. **Effort/review dial — `mode: low | medium | hard`, default `low` (prefer low, justify higher).** The routine ~90% path is `low`: one implementer — **Cursor Composer** by default (chosen per session in Superset; the orchestrator role stays `claude-code` — `docs/adr/0002-buy-engine-build-conventions.md`) — + the gate + one adversarial reviewer. `medium` adds an independent dual review on the PR (GPT-5.5 xhigh + Claude Fable 5 effort-`high` → synthesis; `/agentic-workflow:review`). `hard` runs competitive best-of-N across lineages → a Fable 5 effort-`xhigh` smart-merge → then the medium dual review (`hard ⊇ medium`). Claude-lineage model policy is Fable-first with latest-Opus (≥4.8, `high`–`xhigh`) fallback (ADR-0004 Update). Agent biases for best-of-N: `ROLES.md`. Effort dial: `docs/adr/0004-effort-solo-default.md`.
-7. **Process model:** one page in `docs/WORKFLOW.md`; workflow ADRs in `docs/adr/`.
+6. **Effort/review dial — `mode: low | medium | hard`, default `low` (prefer low, justify higher) — AW-0004.** The routine ~90% path is `low`: one implementer (chosen per session in Superset; the orchestrator role stays `claude-code` — AW-0002) + the gate + one adversarial reviewer. `medium` adds an independent cross-lineage dual review on the PR (`/agentic-workflow:review`). `hard` runs competitive best-of-N across lineages → a smart-merge → then the medium dual review (`hard ⊇ medium`). **Model policy is by reference: AW-0004 + the baseline `docs/MODELS.md`** (the living model→role→tier table) — this repo keeps **no local `MODELS.md`** and names no models inline, so picks churn in one place. Agent biases for best-of-N: `ROLES.md`.
+   - **`mode` is a floor, not a ceiling (AW-0004).** A change touching **protected/destructive surface** runs at **≥ `medium`** regardless of the declared mode: destructive filesystem ops (`rm -rf`, in-place rewrites), the gate/CI config, lockfiles/dependency manifests, migrations/schema/data-shape changes, auth/secrets/security boundaries, public API/contract changes. Bump the tier and record *"escalated by risk floor"* in the task and PR.
+   - **Post-review remediation & escalation loop (AW-0010).** The remediator is the tier's implementer (fresh spawn on the same branch, prompt = the synthesis punch-list, commit-don't-push); default re-check is a cheap targeted re-verify; excess findings escalate one tier + a full re-review; capped at 3 rounds → route to `needs-human` (AW-0006), never to `main`.
+   - **Minimalism lens + `SHORTCUT` markers (AW-0011).** Each deliberate corner cut carries an inline `// SHORTCUT(<ceiling>): <upgrade path>` marker; the reviewer (not the cheap author) enforces this; the code is the ledger — `grep -rn 'SHORTCUT('` is the running inventory (no committed `DEBT.md`). Advisory, blockers-only veto stands.
+7. **Process model:** one page in `docs/WORKFLOW.md`; the workflow conventions are the agentic-workflow baseline, adopted **by reference** (AW-0001…AW-0011; see `docs/adr/0001-adopt-agentic-workflow-baseline-by-reference.md`). Local **domain** ADRs (none yet) start at `docs/adr/0002`.
 
 Starting a task (from your worktree folder):
 
