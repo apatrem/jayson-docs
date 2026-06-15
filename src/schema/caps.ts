@@ -52,6 +52,13 @@ export interface BulletRegionCap {
 
 export type RegionCap = WordRegionCap | CharRegionCap | BulletRegionCap;
 
+/** D26 — per-box comfortable-fill target beneath D23 caps (values live in the catalogue). */
+export interface ComfortableFillBand {
+  unit: Extract<CapUnit, 'words' | 'items'>;
+  lower: number;
+  upper: number;
+}
+
 export const REGION_CAPS = {
   title: {
     unit: 'words',
