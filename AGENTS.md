@@ -137,5 +137,6 @@ Then stop. v2 (additional layouts, additional templates, MinerU upstream) waits 
 - **Gate (one command):** `pnpm run build && pnpm run lint && pnpm run test && pnpm run validate`. The green gate is the bar; a clean merge is not. `main` is **protected** — PR + green CI required to merge.
 - **Small PRs.** Routine work < 300 changed lines; split or stack anything larger. Separate a mechanical change from a behaviour change.
 - **Branching** — see §0: long-lived worktree folders, ephemeral per-task branches (`agent/<tool>/<task-id>`, deleted after merge).
+- **Package manager — pnpm (AW-0009 is the convention; the local fact is here).** This existing repo **migrated to pnpm on 2026-06-09**; it routinely runs **many parallel worktrees** (the existing-repo concurrency trigger AW-0009 names), so the per-worktree install cost applies. The gate above is the canonical pnpm command; the lockfile is `pnpm-lock.yaml`.
 - **Sparse review.** Ask a reviewer (Codex/Claude) for **blockers only** — correctness, security, missing tests, broken boundaries; ≤10 findings, ranked by severity. Lint/format handles style. `hard`-tier best-of-N biases: `ROLES.md`.
 - **Lessons → guardrails.** Every recurring agent mistake becomes a test, a lint rule, or a line in this file — never just a mental note.
