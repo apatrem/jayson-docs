@@ -36,7 +36,7 @@ The pipeline strictly validates its _input_ (fill-plan vs Zod, D23 caps) but tru
 
 ## Meta
 
-- mode: low # additive CI test; no contract changes (ADR-0004)
+- mode: low # additive CI test; no contract changes (AW-0004)
 - risk: low
 - depends-on: T-101 (generic engine produces the outputs under test)
 - parallel-safe: yes # new test file only

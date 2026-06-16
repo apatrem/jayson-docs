@@ -34,7 +34,7 @@ Add the **comfortable-fill band** — D26's two-sided, per-(layout, region) fill
 
 ## Meta
 
-- mode: medium # core density-model addition; defines the band API T-202/T-203/T-211 consume (ADR-0004)
+- mode: medium # core density-model addition; defines the band API T-202/T-203/T-211 consume (AW-0004)
 - depends-on: —
 - parallel-safe: no # foundation for the rest of D26 and for the new-layout bands
 - size budget: < 300 changed lines
