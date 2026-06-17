@@ -38,7 +38,7 @@ The adopted baseline (one-line gloss each; read the canonical text under
 - **AW-0004** — effort/review dial: three tiers (`low | medium | hard`), default `low`; the declared `mode` is a **floor** that protected/destructive surface raises.
 - **AW-0005** — three phases; humans gate planning; competition only in implementation.
 - **AW-0006** — fail to a human, never to `main`; sandboxed workers (`needs-human`).
-- **AW-0007** — packaging: a plugin with a central engine; per-repo is decisions + config only. (This ADR exists because of AW-0007 — adopt by reference, not copy.)
+- **AW-0007** — packaging: a plugin with a central engine, **portable across CLIs (Claude Code, Cursor, Codex)**; per-repo is decisions + config only, and the pack's **process skills are delivered globally by the plugin, never vendored** into a consuming repo. (This ADR exists because of AW-0007 — adopt by reference, not copy.)
 - **AW-0008** — the optional advanced auto-merge tier; **off by default** here.
 - **AW-0009** — package manager: pnpm via Corepack. (This repo's pnpm migration *fact* lives in `AGENTS.md`; the *convention* is AW-0009.)
 - **AW-0010** — post-review remediation & escalation loop: the remediator is the tier's implementer; excess findings escalate a tier + re-review; capped at 3 rounds → `needs-human`.
@@ -49,8 +49,8 @@ This repo keeps **no local `MODELS.md`** — the living model→role→tier tabl
 baseline's, revisited there; the durable principle is AW-0004. (jayson-editor is
 the same: no local MODELS.md.)
 
-`agentic-workflow-baseline: 0011` — the highest `AW-NNNN` adopted. Bump it when
-this repo adopts a newer baseline ADR.
+`agentic-workflow-baseline: v0.3.7` — the agentic-workflow **pack version** adopted
+(covering AW-0001…AW-0011). Bump it when this repo resyncs to a newer pack release.
 
 ## Consequences
 
@@ -63,3 +63,7 @@ this repo adopts a newer baseline ADR.
 - `AGENTS.md` cites baseline conventions by `AW-NNNN` instead of carrying local
   copies; model picks are by reference (AW-0004 + baseline `docs/MODELS.md`), so
   there is no inline model policy to drift.
+- The pack's **process skills** (`/agentic-workflow:review`, `:run`, …) come from the
+  globally-installed plugin (AW-0007) — this repo vendors **none**. The local
+  `skills/` folder is the **product deliverable** (BYO-LLM playbooks; `docs/DECISIONS_LOG.md`
+  D6/D15), not pack skills, and stays.
