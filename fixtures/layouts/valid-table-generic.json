@@ -1,0 +1,44 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "table-generic",
+          "title": "Eight word minimum title for every layout fixture test",
+          "table": {
+            "kind": "table",
+            "columns": [
+              "Criterion",
+              "Option A",
+              "Option B",
+              "Status"
+            ],
+            "rows": [
+              [
+                "Cost",
+                "High",
+                "Low",
+                "Amber"
+              ],
+              [
+                "Speed",
+                "Fast",
+                "Slow",
+                "Green"
+              ]
+            ]
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

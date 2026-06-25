@@ -59,6 +59,12 @@ function fillSlot(
     case 'chart':
       fillChartSlot(targetSlide, layoutId, slot, value, datasets);
       return;
+    case 'table':
+      // T-211 authors the table archetype slides + Setup schema; the fill
+      // mechanism (column pinning, RAG enum) is T-210/T-213a-c.
+      throw new MasterError(
+        `slot "${slot.slotName}" on layout "${layoutId}" is a table region — table fill is not yet implemented (see T-210/T-213)`,
+      );
     case 'footer':
       // Master-owned, auto-filled per D22 — intentionally untouched; supplied values fail loudly.
       if (value === undefined) {

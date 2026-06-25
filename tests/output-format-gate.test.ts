@@ -22,6 +22,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const fixturePaths = [
   ...readdirSync(join(root, 'fixtures/layouts'))
     .filter((name) => name.startsWith('valid-') && name.endsWith('.json'))
+    // Table archetypes (D27 / T-211) carry a `table` region whose fill mechanism
+    // is T-210/T-213 — they validate as fill-plans but cannot be rendered yet.
+    .filter((name) => !name.startsWith('valid-table-'))
     .map((name) => join('fixtures/layouts', name)),
   'fixtures/valid-fill-plan.json',
 ].sort();

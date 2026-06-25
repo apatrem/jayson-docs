@@ -144,7 +144,7 @@ describe('D26 comfortable-fill bands (T-201)', () => {
       .map((e) => `${e.layoutId}/${e.slotName}`)
       .sort();
     expect(goldenKeys).toEqual(eligibleSlotKeys());
-    expect(goldenKeys).toHaveLength(28);
+    expect(goldenKeys).toHaveLength(99);
   });
 
   it('keeps layout-catalogue fillBands in sync with the deriver (drift guard)', async () => {

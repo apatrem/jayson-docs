@@ -1,0 +1,96 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "roadmap-5",
+          "title": "Eight word minimum title for every layout fixture test",
+          "phase.1.caption": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "phase.1.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "phase.1.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "phase.2.caption": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "phase.2.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "phase.2.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "phase.3.caption": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "phase.3.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "phase.3.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "phase.4.caption": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "phase.4.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "phase.4.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "phase.5.caption": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "phase.5.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "phase.5.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

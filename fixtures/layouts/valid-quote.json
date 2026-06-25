@@ -1,0 +1,29 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "quote",
+          "title": "Eight word minimum title for every layout fixture test",
+          "quote": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "attribution": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

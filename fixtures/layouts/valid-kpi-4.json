@@ -1,0 +1,69 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "kpi-4",
+          "title": "Eight word minimum title for every layout fixture test",
+          "kpi.1.value": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "kpi.1.label": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "kpi.1.body": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "kpi.2.value": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "kpi.2.label": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "kpi.2.body": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "kpi.3.value": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "kpi.3.label": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "kpi.3.body": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "kpi.4.value": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "kpi.4.label": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "kpi.4.body": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

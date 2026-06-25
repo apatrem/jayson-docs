@@ -890,6 +890,1657 @@
           }
         }
       }
+    },
+    {
+      "layoutId": "big-number",
+      "tier": "common",
+      "usage": "Pick to land a single hero statistic — one number that anchors the slide, with a short supporting caption (KPI collapsed to one metric).",
+      "regions": {
+        "slot.title": "top; action title framing the figure",
+        "slot.big-number": "centre; the hero statistic, large (Futura, accent-2 green)",
+        "slot.caption": "below the number; short supporting caption",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.big-number": {
+          "content-text": {
+            "unit": "words",
+            "lower": 1,
+            "upper": 2
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 1,
+            "upper": 1
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 1,
+            "upper": 2
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "process-3",
+      "tier": "common",
+      "usage": "Pick for a horizontal 3-step process (pentagon-start + chevrons).",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.process-step.1.title": "process step 1; title",
+        "slot.process-step.1.body": "process step 1; body",
+        "slot.process-step.2.title": "process step 2; title",
+        "slot.process-step.2.body": "process step 2; body",
+        "slot.process-step.3.title": "process step 3; title",
+        "slot.process-step.3.body": "process step 3; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.process-step.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 60,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.process-step.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 60,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.process-step.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 60,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "process-4",
+      "tier": "common",
+      "usage": "Pick for a horizontal 4-step process (pentagon-start + chevrons).",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.process-step.1.title": "process step 1; title",
+        "slot.process-step.1.body": "process step 1; body",
+        "slot.process-step.2.title": "process step 2; title",
+        "slot.process-step.2.body": "process step 2; body",
+        "slot.process-step.3.title": "process step 3; title",
+        "slot.process-step.3.body": "process step 3; body",
+        "slot.process-step.4.title": "process step 4; title",
+        "slot.process-step.4.body": "process step 4; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.process-step.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 59,
+            "upper": 91
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.process-step.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 59,
+            "upper": 91
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.process-step.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 59,
+            "upper": 91
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.process-step.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 59,
+            "upper": 91
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "process-5",
+      "tier": "common",
+      "usage": "Pick for a horizontal 5-step process (pentagon-start + chevrons).",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.process-step.1.title": "process step 1; title",
+        "slot.process-step.1.body": "process step 1; body",
+        "slot.process-step.2.title": "process step 2; title",
+        "slot.process-step.2.body": "process step 2; body",
+        "slot.process-step.3.title": "process step 3; title",
+        "slot.process-step.3.body": "process step 3; body",
+        "slot.process-step.4.title": "process step 4; title",
+        "slot.process-step.4.body": "process step 4; body",
+        "slot.process-step.5.title": "process step 5; title",
+        "slot.process-step.5.body": "process step 5; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.process-step.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 47,
+            "upper": 72
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.process-step.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 47,
+            "upper": 72
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.process-step.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 47,
+            "upper": 72
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.process-step.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 47,
+            "upper": 72
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.process-step.5.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 47,
+            "upper": 72
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-3",
+      "tier": "common",
+      "usage": "Pick for 3 KPI metrics in a divider-bar stat band.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.kpi.1.value": "KPI 1; value",
+        "slot.kpi.1.label": "KPI 1; label",
+        "slot.kpi.1.body": "KPI 1; body",
+        "slot.kpi.2.value": "KPI 2; value",
+        "slot.kpi.2.label": "KPI 2; label",
+        "slot.kpi.2.body": "KPI 2; body",
+        "slot.kpi.3.value": "KPI 3; value",
+        "slot.kpi.3.label": "KPI 3; label",
+        "slot.kpi.3.body": "KPI 3; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.kpi.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 52,
+            "upper": 81
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.kpi.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 52,
+            "upper": 81
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.kpi.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 52,
+            "upper": 81
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-4",
+      "tier": "common",
+      "usage": "Pick for 4 KPI metrics in a divider-bar stat band.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.kpi.1.value": "KPI 1; value",
+        "slot.kpi.1.label": "KPI 1; label",
+        "slot.kpi.1.body": "KPI 1; body",
+        "slot.kpi.2.value": "KPI 2; value",
+        "slot.kpi.2.label": "KPI 2; label",
+        "slot.kpi.2.body": "KPI 2; body",
+        "slot.kpi.3.value": "KPI 3; value",
+        "slot.kpi.3.label": "KPI 3; label",
+        "slot.kpi.3.body": "KPI 3; body",
+        "slot.kpi.4.value": "KPI 4; value",
+        "slot.kpi.4.label": "KPI 4; label",
+        "slot.kpi.4.body": "KPI 4; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.kpi.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 38,
+            "upper": 58
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.kpi.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 38,
+            "upper": 58
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.kpi.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 38,
+            "upper": 58
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.kpi.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 38,
+            "upper": 58
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-5",
+      "tier": "common",
+      "usage": "Pick for 5 KPI metrics in a divider-bar stat band.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.kpi.1.value": "KPI 1; value",
+        "slot.kpi.1.label": "KPI 1; label",
+        "slot.kpi.1.body": "KPI 1; body",
+        "slot.kpi.2.value": "KPI 2; value",
+        "slot.kpi.2.label": "KPI 2; label",
+        "slot.kpi.2.body": "KPI 2; body",
+        "slot.kpi.3.value": "KPI 3; value",
+        "slot.kpi.3.label": "KPI 3; label",
+        "slot.kpi.3.body": "KPI 3; body",
+        "slot.kpi.4.value": "KPI 4; value",
+        "slot.kpi.4.label": "KPI 4; label",
+        "slot.kpi.4.body": "KPI 4; body",
+        "slot.kpi.5.value": "KPI 5; value",
+        "slot.kpi.5.label": "KPI 5; label",
+        "slot.kpi.5.body": "KPI 5; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.kpi.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 29,
+            "upper": 46
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.kpi.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 29,
+            "upper": 46
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.kpi.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 29,
+            "upper": 46
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.kpi.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 29,
+            "upper": 46
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.kpi.5.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 29,
+            "upper": 46
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-3",
+      "tier": "common",
+      "usage": "Pick for a 3-stage funnel (synthetic — no corpus reference).",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.funnel-stage.1.title": "funnel stage 1; title",
+        "slot.funnel-stage.1.body": "funnel stage 1; body",
+        "slot.funnel-stage.2.title": "funnel stage 2; title",
+        "slot.funnel-stage.2.body": "funnel stage 2; body",
+        "slot.funnel-stage.3.title": "funnel stage 3; title",
+        "slot.funnel-stage.3.body": "funnel stage 3; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.funnel-stage.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 33,
+            "upper": 51
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 2,
+            "upper": 4
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.funnel-stage.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 33,
+            "upper": 51
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 2,
+            "upper": 4
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.funnel-stage.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 33,
+            "upper": 51
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 2,
+            "upper": 4
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-4",
+      "tier": "common",
+      "usage": "Pick for a 4-stage funnel (synthetic — no corpus reference).",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.funnel-stage.1.title": "funnel stage 1; title",
+        "slot.funnel-stage.1.body": "funnel stage 1; body",
+        "slot.funnel-stage.2.title": "funnel stage 2; title",
+        "slot.funnel-stage.2.body": "funnel stage 2; body",
+        "slot.funnel-stage.3.title": "funnel stage 3; title",
+        "slot.funnel-stage.3.body": "funnel stage 3; body",
+        "slot.funnel-stage.4.title": "funnel stage 4; title",
+        "slot.funnel-stage.4.body": "funnel stage 4; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.funnel-stage.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 23,
+            "upper": 36
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 2,
+            "upper": 3
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 23,
+            "upper": 36
+          }
+        },
+        "slot.funnel-stage.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 23,
+            "upper": 36
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 2,
+            "upper": 3
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 23,
+            "upper": 36
+          }
+        },
+        "slot.funnel-stage.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 23,
+            "upper": 36
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 2,
+            "upper": 3
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 23,
+            "upper": 36
+          }
+        },
+        "slot.funnel-stage.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 23,
+            "upper": 36
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 2,
+            "upper": 3
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 23,
+            "upper": 36
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-5",
+      "tier": "common",
+      "usage": "Pick for a 5-stage funnel (synthetic — no corpus reference).",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.funnel-stage.1.title": "funnel stage 1; title",
+        "slot.funnel-stage.1.body": "funnel stage 1; body",
+        "slot.funnel-stage.2.title": "funnel stage 2; title",
+        "slot.funnel-stage.2.body": "funnel stage 2; body",
+        "slot.funnel-stage.3.title": "funnel stage 3; title",
+        "slot.funnel-stage.3.body": "funnel stage 3; body",
+        "slot.funnel-stage.4.title": "funnel stage 4; title",
+        "slot.funnel-stage.4.body": "funnel stage 4; body",
+        "slot.funnel-stage.5.title": "funnel stage 5; title",
+        "slot.funnel-stage.5.body": "funnel stage 5; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.funnel-stage.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 19,
+            "upper": 29
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 1,
+            "upper": 2
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 19,
+            "upper": 29
+          }
+        },
+        "slot.funnel-stage.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 19,
+            "upper": 29
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 1,
+            "upper": 2
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 19,
+            "upper": 29
+          }
+        },
+        "slot.funnel-stage.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 19,
+            "upper": 29
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 1,
+            "upper": 2
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 19,
+            "upper": 29
+          }
+        },
+        "slot.funnel-stage.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 19,
+            "upper": 29
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 1,
+            "upper": 2
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 19,
+            "upper": 29
+          }
+        },
+        "slot.funnel-stage.5.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 19,
+            "upper": 29
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 1,
+            "upper": 2
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 19,
+            "upper": 29
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-3",
+      "tier": "common",
+      "usage": "Pick for 3 feature/offering cards with coloured headers.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.feature.1.title": "feature 1; title",
+        "slot.feature.1.body": "feature 1; body",
+        "slot.feature.2.title": "feature 2; title",
+        "slot.feature.2.body": "feature 2; body",
+        "slot.feature.3.title": "feature 3; title",
+        "slot.feature.3.body": "feature 3; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.feature.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 60,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.feature.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 60,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.feature.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 60,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-4",
+      "tier": "common",
+      "usage": "Pick for 4 feature/offering cards with coloured headers.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.feature.1.title": "feature 1; title",
+        "slot.feature.1.body": "feature 1; body",
+        "slot.feature.2.title": "feature 2; title",
+        "slot.feature.2.body": "feature 2; body",
+        "slot.feature.3.title": "feature 3; title",
+        "slot.feature.3.body": "feature 3; body",
+        "slot.feature.4.title": "feature 4; title",
+        "slot.feature.4.body": "feature 4; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.feature.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 51,
+            "upper": 79
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.feature.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 51,
+            "upper": 79
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.feature.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 51,
+            "upper": 79
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.feature.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 51,
+            "upper": 79
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-5",
+      "tier": "common",
+      "usage": "Pick for 5 feature/offering cards with coloured headers.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.feature.1.title": "feature 1; title",
+        "slot.feature.1.body": "feature 1; body",
+        "slot.feature.2.title": "feature 2; title",
+        "slot.feature.2.body": "feature 2; body",
+        "slot.feature.3.title": "feature 3; title",
+        "slot.feature.3.body": "feature 3; body",
+        "slot.feature.4.title": "feature 4; title",
+        "slot.feature.4.body": "feature 4; body",
+        "slot.feature.5.title": "feature 5; title",
+        "slot.feature.5.body": "feature 5; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.feature.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 62
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.feature.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 62
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.feature.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 62
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.feature.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 62
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.feature.5.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 40,
+            "upper": 62
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-3",
+      "tier": "common",
+      "usage": "Pick for a 3-phase roadmap timeline with phase markers.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.phase.1.caption": "phase 1; caption",
+        "slot.phase.1.title": "phase 1; title",
+        "slot.phase.1.body": "phase 1; body",
+        "slot.phase.2.caption": "phase 2; caption",
+        "slot.phase.2.title": "phase 2; title",
+        "slot.phase.2.body": "phase 2; body",
+        "slot.phase.3.caption": "phase 3; caption",
+        "slot.phase.3.title": "phase 3; title",
+        "slot.phase.3.body": "phase 3; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.phase.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 60,
+            "upper": 97
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.phase.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 60,
+            "upper": 97
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.phase.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 60,
+            "upper": 97
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-4",
+      "tier": "common",
+      "usage": "Pick for a 4-phase roadmap timeline with phase markers.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.phase.1.caption": "phase 1; caption",
+        "slot.phase.1.title": "phase 1; title",
+        "slot.phase.1.body": "phase 1; body",
+        "slot.phase.2.caption": "phase 2; caption",
+        "slot.phase.2.title": "phase 2; title",
+        "slot.phase.2.body": "phase 2; body",
+        "slot.phase.3.caption": "phase 3; caption",
+        "slot.phase.3.title": "phase 3; title",
+        "slot.phase.3.body": "phase 3; body",
+        "slot.phase.4.caption": "phase 4; caption",
+        "slot.phase.4.title": "phase 4; title",
+        "slot.phase.4.body": "phase 4; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.phase.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 45,
+            "upper": 70
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.phase.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 45,
+            "upper": 70
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.phase.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 45,
+            "upper": 70
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.phase.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 45,
+            "upper": 70
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-5",
+      "tier": "common",
+      "usage": "Pick for a 5-phase roadmap timeline with phase markers.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.phase.1.caption": "phase 1; caption",
+        "slot.phase.1.title": "phase 1; title",
+        "slot.phase.1.body": "phase 1; body",
+        "slot.phase.2.caption": "phase 2; caption",
+        "slot.phase.2.title": "phase 2; title",
+        "slot.phase.2.body": "phase 2; body",
+        "slot.phase.3.caption": "phase 3; caption",
+        "slot.phase.3.title": "phase 3; title",
+        "slot.phase.3.body": "phase 3; body",
+        "slot.phase.4.caption": "phase 4; caption",
+        "slot.phase.4.title": "phase 4; title",
+        "slot.phase.4.body": "phase 4; body",
+        "slot.phase.5.caption": "phase 5; caption",
+        "slot.phase.5.title": "phase 5; title",
+        "slot.phase.5.body": "phase 5; body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.phase.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 35,
+            "upper": 55
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.phase.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 35,
+            "upper": 55
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.phase.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 35,
+            "upper": 55
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.phase.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 35,
+            "upper": 55
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.phase.5.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 35,
+            "upper": 55
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "value-chain",
+      "tier": "common",
+      "usage": "Pick to show a horizontal value chain — upstream source → stage nodes → downstream customer, with a narrative band.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.value-chain.source": "left; upstream source label",
+        "slot.value-chain.stage.1.title": "value-chain stage 1 title",
+        "slot.value-chain.stage.2.title": "value-chain stage 2 title",
+        "slot.value-chain.stage.3.title": "value-chain stage 3 title",
+        "slot.value-chain.stage.4.title": "value-chain stage 4 title",
+        "slot.value-chain.stage.5.title": "value-chain stage 5 title",
+        "slot.value-chain.customer": "right; downstream customer label",
+        "slot.value-chain.body": "below the chain; value-chain narrative",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.value-chain.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 60,
+            "upper": 100
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 5,
+            "upper": 8
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "gantt",
+      "tier": "common",
+      "usage": "Pick for a workplan timeline — time-grid header with workstream lanes and task bars.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.gantt.lane.1.label": "workstream 1 label",
+        "slot.gantt.lane.1.body": "workstream 1 body",
+        "slot.gantt.lane.2.label": "workstream 2 label",
+        "slot.gantt.lane.2.body": "workstream 2 body",
+        "slot.gantt.lane.3.label": "workstream 3 label",
+        "slot.gantt.lane.3.body": "workstream 3 body",
+        "slot.gantt.lane.4.label": "workstream 4 label",
+        "slot.gantt.lane.4.body": "workstream 4 body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.gantt.lane.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 11,
+            "upper": 18
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 1,
+            "upper": 1
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 11,
+            "upper": 18
+          }
+        },
+        "slot.gantt.lane.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 11,
+            "upper": 18
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 1,
+            "upper": 1
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 11,
+            "upper": 18
+          }
+        },
+        "slot.gantt.lane.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 11,
+            "upper": 18
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 1,
+            "upper": 1
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 11,
+            "upper": 18
+          }
+        },
+        "slot.gantt.lane.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 11,
+            "upper": 18
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 1,
+            "upper": 1
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 11,
+            "upper": 18
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "matrix-2x2",
+      "tier": "common",
+      "usage": "Pick for a 2×2 matrix — two labelled axes and four quadrants of content.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.matrix.axis-x": "horizontal axis label",
+        "slot.matrix.axis-y": "vertical axis label",
+        "slot.matrix.quadrant.1.title": "quadrant 1 title",
+        "slot.matrix.quadrant.1.body": "quadrant 1 body",
+        "slot.matrix.quadrant.2.title": "quadrant 2 title",
+        "slot.matrix.quadrant.2.body": "quadrant 2 body",
+        "slot.matrix.quadrant.3.title": "quadrant 3 title",
+        "slot.matrix.quadrant.3.body": "quadrant 3 body",
+        "slot.matrix.quadrant.4.title": "quadrant 4 title",
+        "slot.matrix.quadrant.4.body": "quadrant 4 body",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.matrix.quadrant.1.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 42,
+            "upper": 65
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 3,
+            "upper": 5
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.matrix.quadrant.2.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 42,
+            "upper": 65
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 3,
+            "upper": 5
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.matrix.quadrant.3.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 42,
+            "upper": 65
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 3,
+            "upper": 5
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        },
+        "slot.matrix.quadrant.4.body": {
+          "content-text": {
+            "unit": "words",
+            "lower": 42,
+            "upper": 65
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 3,
+            "upper": 5
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "matrix-9box",
+      "tier": "common",
+      "usage": "Pick for a 3×3 nine-box — two labelled axes and nine graded cells.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.matrix.axis-x": "horizontal axis label",
+        "slot.matrix.axis-y": "vertical axis label",
+        "slot.matrix.cell.1.title": "9-box cell 1 title",
+        "slot.matrix.cell.2.title": "9-box cell 2 title",
+        "slot.matrix.cell.3.title": "9-box cell 3 title",
+        "slot.matrix.cell.4.title": "9-box cell 4 title",
+        "slot.matrix.cell.5.title": "9-box cell 5 title",
+        "slot.matrix.cell.6.title": "9-box cell 6 title",
+        "slot.matrix.cell.7.title": "9-box cell 7 title",
+        "slot.matrix.cell.8.title": "9-box cell 8 title",
+        "slot.matrix.cell.9.title": "9-box cell 9 title",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "quote",
+      "tier": "common",
+      "usage": "Pick for a full-slide pull-quote with attribution.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.quote": "centre; pull-quote text",
+        "slot.attribution": "below quote; speaker attribution",
+        "slot.source": "footer centre; source citation strip"
+      },
+      "fillBands": {
+        "slot.quote": {
+          "content-text": {
+            "unit": "words",
+            "lower": 30,
+            "upper": 46
+          },
+          "content-bullets": {
+            "unit": "items",
+            "lower": 2,
+            "upper": 3
+          },
+          "content-callout": {
+            "unit": "words",
+            "lower": 25,
+            "upper": 40
+          }
+        }
+      }
+    },
+    {
+      "layoutId": "table-rag",
+      "tier": "common",
+      "usage": "Pick for a status table with a RAG (red/amber/green) column; status-enum contract → T-213a.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.table": "centre; table region — columns pinned at fill",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "table-comparison",
+      "tier": "common",
+      "usage": "Pick for an options × criteria comparison table; contract → T-213b.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.table": "centre; table region — columns pinned at fill",
+        "slot.source": "footer centre; source citation strip"
+      }
+    },
+    {
+      "layoutId": "table-generic",
+      "tier": "common",
+      "usage": "Pick for a plain data table; contract → T-213c.",
+      "regions": {
+        "slot.title": "top; action title",
+        "slot.table": "centre; table region — columns pinned at fill",
+        "slot.source": "footer centre; source citation strip"
+      }
     }
   ]
 }

@@ -2688,6 +2688,3650 @@
           }
         }
       ]
+    },
+    {
+      "layoutId": "big-number",
+      "tier": "common",
+      "sourceSlideIndex": 27,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.big-number",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.big-number",
+            "geometry": {
+              "x": 1,
+              "y": 2.35,
+              "w": 11.33,
+              "h": 1.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.caption",
+            "geometry": {
+              "x": 1,
+              "y": 4.25,
+              "w": 11.33,
+              "h": 1.3
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "process-3",
+      "tier": "common",
+      "sourceSlideIndex": 28,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.1.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 1.7,
+              "w": 3.923,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.55,
+              "w": 3.923,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.2.title",
+            "geometry": {
+              "x": 4.643,
+              "y": 1.7,
+              "w": 3.923,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.2.body",
+            "geometry": {
+              "x": 4.643,
+              "y": 2.55,
+              "w": 3.923,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.3.title",
+            "geometry": {
+              "x": 8.687,
+              "y": 1.7,
+              "w": 3.923,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.3.body",
+            "geometry": {
+              "x": 8.687,
+              "y": 2.55,
+              "w": 3.923,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "process-4",
+      "tier": "common",
+      "sourceSlideIndex": 29,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.1.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 1.7,
+              "w": 2.913,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.55,
+              "w": 2.913,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.2.title",
+            "geometry": {
+              "x": 3.633,
+              "y": 1.7,
+              "w": 2.913,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.2.body",
+            "geometry": {
+              "x": 3.633,
+              "y": 2.55,
+              "w": 2.913,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.3.title",
+            "geometry": {
+              "x": 6.665,
+              "y": 1.7,
+              "w": 2.913,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.3.body",
+            "geometry": {
+              "x": 6.665,
+              "y": 2.55,
+              "w": 2.913,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.4.title",
+            "geometry": {
+              "x": 9.697,
+              "y": 1.7,
+              "w": 2.913,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.4.body",
+            "geometry": {
+              "x": 9.697,
+              "y": 2.55,
+              "w": 2.913,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "process-5",
+      "tier": "common",
+      "sourceSlideIndex": 30,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.1.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 1.7,
+              "w": 2.306,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.55,
+              "w": 2.306,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.2.title",
+            "geometry": {
+              "x": 3.026,
+              "y": 1.7,
+              "w": 2.306,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.2.body",
+            "geometry": {
+              "x": 3.026,
+              "y": 2.55,
+              "w": 2.306,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.3.title",
+            "geometry": {
+              "x": 5.452,
+              "y": 1.7,
+              "w": 2.306,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.3.body",
+            "geometry": {
+              "x": 5.452,
+              "y": 2.55,
+              "w": 2.306,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.4.title",
+            "geometry": {
+              "x": 7.878,
+              "y": 1.7,
+              "w": 2.306,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.4.body",
+            "geometry": {
+              "x": 7.878,
+              "y": 2.55,
+              "w": 2.306,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.5.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.process-step.5.title",
+            "geometry": {
+              "x": 10.304,
+              "y": 1.7,
+              "w": 2.306,
+              "h": 0.62
+            }
+          }
+        },
+        {
+          "slotName": "slot.process-step.5.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.process-step.5.body",
+            "geometry": {
+              "x": 10.304,
+              "y": 2.55,
+              "w": 2.306,
+              "h": 3.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "kpi-3",
+      "tier": "common",
+      "sourceSlideIndex": 31,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.1.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.1.value",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.1,
+              "w": 3.743,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.1.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.1.label",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.05,
+              "w": 3.743,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.6,
+              "w": 3.743,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.2.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.2.value",
+            "geometry": {
+              "x": 4.643,
+              "y": 2.1,
+              "w": 3.743,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.2.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.2.label",
+            "geometry": {
+              "x": 4.643,
+              "y": 3.05,
+              "w": 3.743,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.2.body",
+            "geometry": {
+              "x": 4.643,
+              "y": 3.6,
+              "w": 3.743,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.3.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.3.value",
+            "geometry": {
+              "x": 8.687,
+              "y": 2.1,
+              "w": 3.743,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.3.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.3.label",
+            "geometry": {
+              "x": 8.687,
+              "y": 3.05,
+              "w": 3.743,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.3.body",
+            "geometry": {
+              "x": 8.687,
+              "y": 3.6,
+              "w": 3.743,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "kpi-4",
+      "tier": "common",
+      "sourceSlideIndex": 32,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.1.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.1.value",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.1,
+              "w": 2.733,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.1.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.1.label",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.05,
+              "w": 2.733,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.6,
+              "w": 2.733,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.2.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.2.value",
+            "geometry": {
+              "x": 3.633,
+              "y": 2.1,
+              "w": 2.733,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.2.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.2.label",
+            "geometry": {
+              "x": 3.633,
+              "y": 3.05,
+              "w": 2.733,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.2.body",
+            "geometry": {
+              "x": 3.633,
+              "y": 3.6,
+              "w": 2.733,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.3.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.3.value",
+            "geometry": {
+              "x": 6.665,
+              "y": 2.1,
+              "w": 2.733,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.3.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.3.label",
+            "geometry": {
+              "x": 6.665,
+              "y": 3.05,
+              "w": 2.733,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.3.body",
+            "geometry": {
+              "x": 6.665,
+              "y": 3.6,
+              "w": 2.733,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.4.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.4.value",
+            "geometry": {
+              "x": 9.697,
+              "y": 2.1,
+              "w": 2.733,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.4.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.4.label",
+            "geometry": {
+              "x": 9.697,
+              "y": 3.05,
+              "w": 2.733,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.4.body",
+            "geometry": {
+              "x": 9.697,
+              "y": 3.6,
+              "w": 2.733,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "kpi-5",
+      "tier": "common",
+      "sourceSlideIndex": 33,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.1.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.1.value",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.1,
+              "w": 2.126,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.1.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.1.label",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.05,
+              "w": 2.126,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.6,
+              "w": 2.126,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.2.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.2.value",
+            "geometry": {
+              "x": 3.026,
+              "y": 2.1,
+              "w": 2.126,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.2.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.2.label",
+            "geometry": {
+              "x": 3.026,
+              "y": 3.05,
+              "w": 2.126,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.2.body",
+            "geometry": {
+              "x": 3.026,
+              "y": 3.6,
+              "w": 2.126,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.3.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.3.value",
+            "geometry": {
+              "x": 5.452,
+              "y": 2.1,
+              "w": 2.126,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.3.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.3.label",
+            "geometry": {
+              "x": 5.452,
+              "y": 3.05,
+              "w": 2.126,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.3.body",
+            "geometry": {
+              "x": 5.452,
+              "y": 3.6,
+              "w": 2.126,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.4.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.4.value",
+            "geometry": {
+              "x": 7.878,
+              "y": 2.1,
+              "w": 2.126,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.4.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.4.label",
+            "geometry": {
+              "x": 7.878,
+              "y": 3.05,
+              "w": 2.126,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.4.body",
+            "geometry": {
+              "x": 7.878,
+              "y": 3.6,
+              "w": 2.126,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.5.value",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.5.value",
+            "geometry": {
+              "x": 10.304,
+              "y": 2.1,
+              "w": 2.126,
+              "h": 0.95
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.5.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.kpi.5.label",
+            "geometry": {
+              "x": 10.304,
+              "y": 3.05,
+              "w": 2.126,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.kpi.5.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.kpi.5.body",
+            "geometry": {
+              "x": 10.304,
+              "y": 3.6,
+              "w": 2.126,
+              "h": 2.7
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "funnel-3",
+      "tier": "common",
+      "sourceSlideIndex": 34,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.1.title",
+            "geometry": {
+              "x": 0.7,
+              "y": 1.6,
+              "w": 7.4,
+              "h": 1.52
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.1.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 1.6,
+              "w": 4.4,
+              "h": 1.52
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.2.title",
+            "geometry": {
+              "x": 1.181,
+              "y": 3.3,
+              "w": 6.438,
+              "h": 1.52
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.2.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 3.3,
+              "w": 4.4,
+              "h": 1.52
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.3.title",
+            "geometry": {
+              "x": 1.662,
+              "y": 5,
+              "w": 5.476,
+              "h": 1.52
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.3.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 5,
+              "w": 4.4,
+              "h": 1.52
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "funnel-4",
+      "tier": "common",
+      "sourceSlideIndex": 35,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.1.title",
+            "geometry": {
+              "x": 0.7,
+              "y": 1.6,
+              "w": 7.4,
+              "h": 1.095
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.1.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 1.6,
+              "w": 4.4,
+              "h": 1.095
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.2.title",
+            "geometry": {
+              "x": 1.181,
+              "y": 2.875,
+              "w": 6.438,
+              "h": 1.095
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.2.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 2.875,
+              "w": 4.4,
+              "h": 1.095
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.3.title",
+            "geometry": {
+              "x": 1.662,
+              "y": 4.15,
+              "w": 5.476,
+              "h": 1.095
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.3.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 4.15,
+              "w": 4.4,
+              "h": 1.095
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.4.title",
+            "geometry": {
+              "x": 2.143,
+              "y": 5.425,
+              "w": 4.514,
+              "h": 1.095
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.4.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 5.425,
+              "w": 4.4,
+              "h": 1.095
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "funnel-5",
+      "tier": "common",
+      "sourceSlideIndex": 36,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.1.title",
+            "geometry": {
+              "x": 0.7,
+              "y": 1.6,
+              "w": 7.4,
+              "h": 0.84
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.1.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 1.6,
+              "w": 4.4,
+              "h": 0.84
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.2.title",
+            "geometry": {
+              "x": 1.181,
+              "y": 2.62,
+              "w": 6.438,
+              "h": 0.84
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.2.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 2.62,
+              "w": 4.4,
+              "h": 0.84
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.3.title",
+            "geometry": {
+              "x": 1.662,
+              "y": 3.64,
+              "w": 5.476,
+              "h": 0.84
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.3.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 3.64,
+              "w": 4.4,
+              "h": 0.84
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.4.title",
+            "geometry": {
+              "x": 2.143,
+              "y": 4.66,
+              "w": 4.514,
+              "h": 0.84
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.4.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 4.66,
+              "w": 4.4,
+              "h": 0.84
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.5.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.5.title",
+            "geometry": {
+              "x": 2.624,
+              "y": 5.68,
+              "w": 3.552,
+              "h": 0.84
+            }
+          }
+        },
+        {
+          "slotName": "slot.funnel-stage.5.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.funnel-stage.5.body",
+            "geometry": {
+              "x": 8.3,
+              "y": 5.68,
+              "w": 4.4,
+              "h": 0.84
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "feature-grid-3",
+      "tier": "common",
+      "sourceSlideIndex": 37,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.1.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.25,
+              "w": 3.793,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.9,
+              "w": 3.793,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.2.title",
+            "geometry": {
+              "x": 4.643,
+              "y": 2.25,
+              "w": 3.793,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.2.body",
+            "geometry": {
+              "x": 4.643,
+              "y": 2.9,
+              "w": 3.793,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.3.title",
+            "geometry": {
+              "x": 8.687,
+              "y": 2.25,
+              "w": 3.793,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.3.body",
+            "geometry": {
+              "x": 8.687,
+              "y": 2.9,
+              "w": 3.793,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "feature-grid-4",
+      "tier": "common",
+      "sourceSlideIndex": 38,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.1.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.25,
+              "w": 2.783,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.9,
+              "w": 2.783,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.2.title",
+            "geometry": {
+              "x": 3.633,
+              "y": 2.25,
+              "w": 2.783,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.2.body",
+            "geometry": {
+              "x": 3.633,
+              "y": 2.9,
+              "w": 2.783,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.3.title",
+            "geometry": {
+              "x": 6.665,
+              "y": 2.25,
+              "w": 2.783,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.3.body",
+            "geometry": {
+              "x": 6.665,
+              "y": 2.9,
+              "w": 2.783,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.4.title",
+            "geometry": {
+              "x": 9.697,
+              "y": 2.25,
+              "w": 2.783,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.4.body",
+            "geometry": {
+              "x": 9.697,
+              "y": 2.9,
+              "w": 2.783,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "feature-grid-5",
+      "tier": "common",
+      "sourceSlideIndex": 39,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.1.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.25,
+              "w": 2.176,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.9,
+              "w": 2.176,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.2.title",
+            "geometry": {
+              "x": 3.026,
+              "y": 2.25,
+              "w": 2.176,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.2.body",
+            "geometry": {
+              "x": 3.026,
+              "y": 2.9,
+              "w": 2.176,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.3.title",
+            "geometry": {
+              "x": 5.452,
+              "y": 2.25,
+              "w": 2.176,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.3.body",
+            "geometry": {
+              "x": 5.452,
+              "y": 2.9,
+              "w": 2.176,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.4.title",
+            "geometry": {
+              "x": 7.878,
+              "y": 2.25,
+              "w": 2.176,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.4.body",
+            "geometry": {
+              "x": 7.878,
+              "y": 2.9,
+              "w": 2.176,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.5.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.feature.5.title",
+            "geometry": {
+              "x": 10.304,
+              "y": 2.25,
+              "w": 2.176,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.feature.5.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.feature.5.body",
+            "geometry": {
+              "x": 10.304,
+              "y": 2.9,
+              "w": 2.176,
+              "h": 3.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "roadmap-3",
+      "tier": "common",
+      "sourceSlideIndex": 40,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.1.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.1.caption",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.35,
+              "w": 3.843,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.1.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.75,
+              "w": 3.843,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.35,
+              "w": 3.843,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.2.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.2.caption",
+            "geometry": {
+              "x": 4.643,
+              "y": 2.35,
+              "w": 3.843,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.2.title",
+            "geometry": {
+              "x": 4.643,
+              "y": 2.75,
+              "w": 3.843,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.2.body",
+            "geometry": {
+              "x": 4.643,
+              "y": 3.35,
+              "w": 3.843,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.3.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.3.caption",
+            "geometry": {
+              "x": 8.687,
+              "y": 2.35,
+              "w": 3.843,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.3.title",
+            "geometry": {
+              "x": 8.687,
+              "y": 2.75,
+              "w": 3.843,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.3.body",
+            "geometry": {
+              "x": 8.687,
+              "y": 3.35,
+              "w": 3.843,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "roadmap-4",
+      "tier": "common",
+      "sourceSlideIndex": 41,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.1.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.1.caption",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.35,
+              "w": 2.833,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.1.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.75,
+              "w": 2.833,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.35,
+              "w": 2.833,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.2.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.2.caption",
+            "geometry": {
+              "x": 3.633,
+              "y": 2.35,
+              "w": 2.833,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.2.title",
+            "geometry": {
+              "x": 3.633,
+              "y": 2.75,
+              "w": 2.833,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.2.body",
+            "geometry": {
+              "x": 3.633,
+              "y": 3.35,
+              "w": 2.833,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.3.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.3.caption",
+            "geometry": {
+              "x": 6.665,
+              "y": 2.35,
+              "w": 2.833,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.3.title",
+            "geometry": {
+              "x": 6.665,
+              "y": 2.75,
+              "w": 2.833,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.3.body",
+            "geometry": {
+              "x": 6.665,
+              "y": 3.35,
+              "w": 2.833,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.4.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.4.caption",
+            "geometry": {
+              "x": 9.697,
+              "y": 2.35,
+              "w": 2.833,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.4.title",
+            "geometry": {
+              "x": 9.697,
+              "y": 2.75,
+              "w": 2.833,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.4.body",
+            "geometry": {
+              "x": 9.697,
+              "y": 3.35,
+              "w": 2.833,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "roadmap-5",
+      "tier": "common",
+      "sourceSlideIndex": 42,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.1.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.1.caption",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.35,
+              "w": 2.226,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.1.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.75,
+              "w": 2.226,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.35,
+              "w": 2.226,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.2.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.2.caption",
+            "geometry": {
+              "x": 3.026,
+              "y": 2.35,
+              "w": 2.226,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.2.title",
+            "geometry": {
+              "x": 3.026,
+              "y": 2.75,
+              "w": 2.226,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.2.body",
+            "geometry": {
+              "x": 3.026,
+              "y": 3.35,
+              "w": 2.226,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.3.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.3.caption",
+            "geometry": {
+              "x": 5.452,
+              "y": 2.35,
+              "w": 2.226,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.3.title",
+            "geometry": {
+              "x": 5.452,
+              "y": 2.75,
+              "w": 2.226,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.3.body",
+            "geometry": {
+              "x": 5.452,
+              "y": 3.35,
+              "w": 2.226,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.4.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.4.caption",
+            "geometry": {
+              "x": 7.878,
+              "y": 2.35,
+              "w": 2.226,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.4.title",
+            "geometry": {
+              "x": 7.878,
+              "y": 2.75,
+              "w": 2.226,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.4.body",
+            "geometry": {
+              "x": 7.878,
+              "y": 3.35,
+              "w": 2.226,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.5.caption",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.5.caption",
+            "geometry": {
+              "x": 10.304,
+              "y": 2.35,
+              "w": 2.226,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.5.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.phase.5.title",
+            "geometry": {
+              "x": 10.304,
+              "y": 2.75,
+              "w": 2.226,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.phase.5.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.phase.5.body",
+            "geometry": {
+              "x": 10.304,
+              "y": 3.35,
+              "w": 2.226,
+              "h": 3.1
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "value-chain",
+      "tier": "common",
+      "sourceSlideIndex": 43,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.value-chain.source",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.value-chain.source",
+            "geometry": {
+              "x": 0.6,
+              "y": 1.7,
+              "w": 1.7,
+              "h": 0.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.value-chain.stage.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.value-chain.stage.1.title",
+            "geometry": {
+              "x": 2.5,
+              "y": 1.7,
+              "w": 1.55,
+              "h": 0.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.value-chain.stage.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.value-chain.stage.2.title",
+            "geometry": {
+              "x": 4.12,
+              "y": 1.7,
+              "w": 1.55,
+              "h": 0.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.value-chain.stage.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.value-chain.stage.3.title",
+            "geometry": {
+              "x": 5.74,
+              "y": 1.7,
+              "w": 1.55,
+              "h": 0.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.value-chain.stage.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.value-chain.stage.4.title",
+            "geometry": {
+              "x": 7.36,
+              "y": 1.7,
+              "w": 1.55,
+              "h": 0.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.value-chain.stage.5.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.value-chain.stage.5.title",
+            "geometry": {
+              "x": 8.98,
+              "y": 1.7,
+              "w": 1.55,
+              "h": 0.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.value-chain.customer",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.value-chain.customer",
+            "geometry": {
+              "x": 11,
+              "y": 1.7,
+              "w": 1.7,
+              "h": 0.9
+            }
+          }
+        },
+        {
+          "slotName": "slot.value-chain.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.value-chain.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.05,
+              "w": 12.13,
+              "h": 3.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "gantt",
+      "tier": "common",
+      "sourceSlideIndex": 44,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.gantt.lane.1.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.gantt.lane.1.label",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.1,
+              "w": 3,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.gantt.lane.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.gantt.lane.1.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 2.6,
+              "w": 3,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.gantt.lane.2.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.gantt.lane.2.label",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.2,
+              "w": 3,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.gantt.lane.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.gantt.lane.2.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 3.7,
+              "w": 3,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.gantt.lane.3.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.gantt.lane.3.label",
+            "geometry": {
+              "x": 0.6,
+              "y": 4.3,
+              "w": 3,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.gantt.lane.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.gantt.lane.3.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 4.8,
+              "w": 3,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.gantt.lane.4.label",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.gantt.lane.4.label",
+            "geometry": {
+              "x": 0.6,
+              "y": 5.4,
+              "w": 3,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.gantt.lane.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.gantt.lane.4.body",
+            "geometry": {
+              "x": 0.6,
+              "y": 5.9,
+              "w": 3,
+              "h": 0.5
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "matrix-2x2",
+      "tier": "common",
+      "sourceSlideIndex": 45,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.axis-x",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.axis-x",
+            "geometry": {
+              "x": 4,
+              "y": 6.4,
+              "w": 8.3,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.axis-y",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.axis-y",
+            "geometry": {
+              "x": 3,
+              "y": 1.7,
+              "w": 0.9,
+              "h": 4.6
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.quadrant.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.quadrant.1.title",
+            "geometry": {
+              "x": 4.1,
+              "y": 1.8,
+              "w": 3.95,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.quadrant.1.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.matrix.quadrant.1.body",
+            "geometry": {
+              "x": 4.1,
+              "y": 2.25,
+              "w": 3.95,
+              "h": 1.65
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.quadrant.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.quadrant.2.title",
+            "geometry": {
+              "x": 8.25,
+              "y": 1.8,
+              "w": 3.95,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.quadrant.2.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.matrix.quadrant.2.body",
+            "geometry": {
+              "x": 8.25,
+              "y": 2.25,
+              "w": 3.95,
+              "h": 1.65
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.quadrant.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.quadrant.3.title",
+            "geometry": {
+              "x": 4.1,
+              "y": 4.1,
+              "w": 3.95,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.quadrant.3.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.matrix.quadrant.3.body",
+            "geometry": {
+              "x": 4.1,
+              "y": 4.55,
+              "w": 3.95,
+              "h": 1.65
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.quadrant.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.quadrant.4.title",
+            "geometry": {
+              "x": 8.25,
+              "y": 4.1,
+              "w": 3.95,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.quadrant.4.body",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.matrix.quadrant.4.body",
+            "geometry": {
+              "x": 8.25,
+              "y": 4.55,
+              "w": 3.95,
+              "h": 1.65
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "matrix-9box",
+      "tier": "common",
+      "sourceSlideIndex": 46,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.axis-x",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.axis-x",
+            "geometry": {
+              "x": 4,
+              "y": 6.4,
+              "w": 8.3,
+              "h": 0.4
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.axis-y",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.axis-y",
+            "geometry": {
+              "x": 3,
+              "y": 1.7,
+              "w": 0.9,
+              "h": 4.6
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.cell.1.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.cell.1.title",
+            "geometry": {
+              "x": 4.06,
+              "y": 1.76,
+              "w": 2.647,
+              "h": 1.413
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.cell.2.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.cell.2.title",
+            "geometry": {
+              "x": 6.827,
+              "y": 1.76,
+              "w": 2.647,
+              "h": 1.413
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.cell.3.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.cell.3.title",
+            "geometry": {
+              "x": 9.594,
+              "y": 1.76,
+              "w": 2.647,
+              "h": 1.413
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.cell.4.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.cell.4.title",
+            "geometry": {
+              "x": 4.06,
+              "y": 3.293,
+              "w": 2.647,
+              "h": 1.413
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.cell.5.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.cell.5.title",
+            "geometry": {
+              "x": 6.827,
+              "y": 3.293,
+              "w": 2.647,
+              "h": 1.413
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.cell.6.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.cell.6.title",
+            "geometry": {
+              "x": 9.594,
+              "y": 3.293,
+              "w": 2.647,
+              "h": 1.413
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.cell.7.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.cell.7.title",
+            "geometry": {
+              "x": 4.06,
+              "y": 4.826,
+              "w": 2.647,
+              "h": 1.413
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.cell.8.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.cell.8.title",
+            "geometry": {
+              "x": 6.827,
+              "y": 4.826,
+              "w": 2.647,
+              "h": 1.413
+            }
+          }
+        },
+        {
+          "slotName": "slot.matrix.cell.9.title",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.matrix.cell.9.title",
+            "geometry": {
+              "x": 9.594,
+              "y": 4.826,
+              "w": 2.647,
+              "h": 1.413
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "quote",
+      "tier": "common",
+      "sourceSlideIndex": 47,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.quote",
+          "regionKind": "content",
+          "match": {
+            "currentShapeName": "slot.quote",
+            "geometry": {
+              "x": 1.6,
+              "y": 2.3,
+              "w": 10.1,
+              "h": 2.6
+            }
+          }
+        },
+        {
+          "slotName": "slot.attribution",
+          "regionKind": "subtitle",
+          "match": {
+            "currentShapeName": "slot.attribution",
+            "geometry": {
+              "x": 1.6,
+              "y": 5.1,
+              "w": 10.1,
+              "h": 0.6
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "table-rag",
+      "tier": "common",
+      "sourceSlideIndex": 48,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.table",
+          "regionKind": "table",
+          "match": {
+            "currentShapeName": "slot.table",
+            "geometry": {
+              "x": 0.6,
+              "y": 1.5,
+              "w": 12.13,
+              "h": 5
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "table-comparison",
+      "tier": "common",
+      "sourceSlideIndex": 49,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.table",
+          "regionKind": "table",
+          "match": {
+            "currentShapeName": "slot.table",
+            "geometry": {
+              "x": 0.6,
+              "y": 1.5,
+              "w": 12.13,
+              "h": 5
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layoutId": "table-generic",
+      "tier": "common",
+      "sourceSlideIndex": 50,
+      "slots": [
+        {
+          "slotName": "slot.title",
+          "regionKind": "title",
+          "match": {
+            "currentShapeName": "slot.title",
+            "geometry": {
+              "x": 0.6,
+              "y": 0.38,
+              "w": 12.13,
+              "h": 0.69
+            }
+          }
+        },
+        {
+          "slotName": "slot.table",
+          "regionKind": "table",
+          "match": {
+            "currentShapeName": "slot.table",
+            "geometry": {
+              "x": 0.6,
+              "y": 1.5,
+              "w": 12.13,
+              "h": 5
+            }
+          }
+        },
+        {
+          "slotName": "slot.footer-page",
+          "regionKind": "footer",
+          "match": {
+            "currentShapeName": "slot.footer-page",
+            "placeholder": "sldNum",
+            "masterText": "‹N°›",
+            "geometry": {
+              "x": 12.376,
+              "y": 7.185,
+              "w": 0.354,
+              "h": 0.12
+            }
+          }
+        },
+        {
+          "slotName": "slot.source",
+          "regionKind": "source",
+          "match": {
+            "currentShapeName": "slot.source",
+            "placeholder": "idx:18",
+            "masterText": "Source: 1.",
+            "geometry": {
+              "x": 1.35,
+              "y": 7.185,
+              "w": 9.411,
+              "h": 0.276
+            }
+          }
+        }
+      ]
     }
   ],
   "deletions": [

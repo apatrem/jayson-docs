@@ -209,7 +209,82 @@ const slides: Record<string, Record<string, unknown>> = {
     body: bullets,
     source,
   },
+  'big-number': {
+    layoutId: 'big-number',
+    title,
+    'big-number': { kind: 'text', body: '€43M' },
+    caption: subtitle,
+    source,
+  },
 };
+
+// N-up sub-slotted families (process / kpi / funnel / feature-grid / roadmap).
+const nupFamilies = [
+  { prefix: 'process-step', family: 'process', fields: [{ sub: 'title', value: subtitle }, { sub: 'body', value: bullets }] },
+  { prefix: 'kpi', family: 'kpi', fields: [{ sub: 'value', value: subtitle }, { sub: 'label', value: subtitle }, { sub: 'body', value: text }] },
+  { prefix: 'funnel-stage', family: 'funnel', fields: [{ sub: 'title', value: subtitle }, { sub: 'body', value: text }] },
+  { prefix: 'feature', family: 'feature-grid', fields: [{ sub: 'title', value: subtitle }, { sub: 'body', value: bullets }] },
+  { prefix: 'phase', family: 'roadmap', fields: [{ sub: 'caption', value: subtitle }, { sub: 'title', value: subtitle }, { sub: 'body', value: bullets }] },
+];
+for (const { prefix, family, fields } of nupFamilies) {
+  for (const n of [3, 4, 5]) {
+    const id = `${family}-${n}`;
+    const slot: Record<string, unknown> = { layoutId: id, title };
+    for (let i = 1; i <= n; i += 1) {
+      for (const f of fields) {
+        slot[`${prefix}.${i}.${f.sub}`] = f.value;
+      }
+    }
+    slot.source = source;
+    slides[id] = slot;
+  }
+}
+
+slides['value-chain'] = (() => {
+  const s: Record<string, unknown> = { layoutId: 'value-chain', title, 'value-chain.source': subtitle };
+  for (let i = 1; i <= 5; i += 1) s[`value-chain.stage.${i}.title`] = subtitle;
+  s['value-chain.customer'] = subtitle;
+  s['value-chain.body'] = bullets;
+  s.source = source;
+  return s;
+})();
+slides.gantt = (() => {
+  const s: Record<string, unknown> = { layoutId: 'gantt', title };
+  for (let i = 1; i <= 4; i += 1) {
+    s[`gantt.lane.${i}.label`] = subtitle;
+    s[`gantt.lane.${i}.body`] = text;
+  }
+  s.source = source;
+  return s;
+})();
+slides['matrix-2x2'] = (() => {
+  const s: Record<string, unknown> = { layoutId: 'matrix-2x2', title, 'matrix.axis-x': subtitle, 'matrix.axis-y': subtitle };
+  for (let i = 1; i <= 4; i += 1) {
+    s[`matrix.quadrant.${i}.title`] = subtitle;
+    s[`matrix.quadrant.${i}.body`] = bullets;
+  }
+  s.source = source;
+  return s;
+})();
+slides['matrix-9box'] = (() => {
+  const s: Record<string, unknown> = { layoutId: 'matrix-9box', title, 'matrix.axis-x': subtitle, 'matrix.axis-y': subtitle };
+  for (let i = 1; i <= 9; i += 1) s[`matrix.cell.${i}.title`] = subtitle;
+  s.source = source;
+  return s;
+})();
+slides.quote = { layoutId: 'quote', title, quote: text, attribution: subtitle, source };
+
+const tableBlock = {
+  kind: 'table' as const,
+  columns: ['Criterion', 'Option A', 'Option B', 'Status'],
+  rows: [
+    ['Cost', 'High', 'Low', 'Amber'],
+    ['Speed', 'Fast', 'Slow', 'Green'],
+  ],
+};
+slides['table-rag'] = { layoutId: 'table-rag', title, table: tableBlock, source };
+slides['table-comparison'] = { layoutId: 'table-comparison', title, table: tableBlock, source };
+slides['table-generic'] = { layoutId: 'table-generic', title, table: tableBlock, source };
 
 for (const id of REAL_LAYOUT_IDS) {
   const slide = slides[id];

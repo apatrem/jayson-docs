@@ -9,6 +9,7 @@ export type RegionKind =
   | 'chart-title'
   | 'content'
   | 'chart'
+  | 'table'
   | 'image'
   | 'source'
   | 'footer';

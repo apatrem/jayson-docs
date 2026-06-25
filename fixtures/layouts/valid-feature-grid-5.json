@@ -1,0 +1,76 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "feature-grid-5",
+          "title": "Eight word minimum title for every layout fixture test",
+          "feature.1.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "feature.1.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "feature.2.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "feature.2.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "feature.3.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "feature.3.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "feature.4.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "feature.4.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "feature.5.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "feature.5.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

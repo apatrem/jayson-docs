@@ -1,0 +1,29 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "big-number",
+          "title": "Eight word minimum title for every layout fixture test",
+          "big-number": {
+            "kind": "text",
+            "body": "€43M"
+          },
+          "caption": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

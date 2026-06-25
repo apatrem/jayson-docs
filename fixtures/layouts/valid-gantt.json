@@ -1,0 +1,53 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "gantt",
+          "title": "Eight word minimum title for every layout fixture test",
+          "gantt.lane.1.label": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "gantt.lane.1.body": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "gantt.lane.2.label": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "gantt.lane.2.body": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "gantt.lane.3.label": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "gantt.lane.3.body": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "gantt.lane.4.label": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "gantt.lane.4.body": {
+            "kind": "text",
+            "body": "Short narrative body text for the slot."
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

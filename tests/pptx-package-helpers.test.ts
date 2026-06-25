@@ -10,7 +10,7 @@ const master = join(root, 'templates/report.master.pptx');
 describe('PPTX acceptance-test helpers', () => {
   it('reads only active slides in presentation order', async () => {
     const slides = await readPptxShapeTextsBySlide(master);
-    expect(slides).toHaveLength(26);
+    expect(slides).toHaveLength(50);
     expect(slides[0]?.has('slot.title')).toBe(true);
     expect(slides[1]?.has('slot.section-title')).toBe(true);
   });
