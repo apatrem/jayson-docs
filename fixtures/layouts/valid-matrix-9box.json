@@ -1,0 +1,65 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "matrix-9box",
+          "title": "Eight word minimum title for every layout fixture test",
+          "matrix.axis-x": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "matrix.axis-y": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "matrix.cell.1.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "matrix.cell.2.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "matrix.cell.3.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "matrix.cell.4.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "matrix.cell.5.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "matrix.cell.6.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "matrix.cell.7.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "matrix.cell.8.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "matrix.cell.9.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

@@ -142,3 +142,16 @@ export const coverImageSchema = z
 export function pinnedChartSlot(kind: PinnedChartKind) {
   return chartBlock({ kind });
 }
+
+/**
+ * Table region (D27 / T-211) — a pinned grid of header columns + string rows.
+ * Generic across table-rag / -comparison / -generic for now; T-213a-c refine
+ * per-variant contracts (RAG status enum, comparison columns).
+ */
+export const tableBlockSchema = z
+  .object({
+    kind: z.literal('table'),
+    columns: z.array(z.string().min(1)).min(1),
+    rows: z.array(z.array(z.string().min(1)).min(1)).min(1),
+  })
+  .strict();

@@ -37,10 +37,10 @@ const newInvalidFixtures = [
 const issuePath = (path: (string | number | symbol)[]): string => path.join('.');
 
 describe('real layout schemas (Phase 3.6)', () => {
-  it('registers exactly 26 real layouts matching REAL_LAYOUT_IDS', () => {
-    expect(realLayoutSchemas).toHaveLength(26);
-    expect(REAL_LAYOUT_IDS).toHaveLength(26);
-    expect(new Set(REAL_LAYOUT_IDS).size).toBe(26);
+  it('registers exactly 50 real layouts matching REAL_LAYOUT_IDS', () => {
+    expect(realLayoutSchemas).toHaveLength(50);
+    expect(REAL_LAYOUT_IDS).toHaveLength(50);
+    expect(new Set(REAL_LAYOUT_IDS).size).toBe(50);
     expect(REAL_LAYOUT_IDS).toContain('chart-stacked-column');
   });
 

@@ -18,6 +18,7 @@ const FILLABLE_REGIONS = new Set([
   'chart-title',
   'content',
   'chart',
+  'table',
   'image',
   'source',
 ]);
@@ -37,6 +38,7 @@ type SchemaBlockFamily =
   | 'content-block'
   | 'narrative-block'
   | 'pinned-chart'
+  | 'table-block'
   | 'cover-image'
   | 'image-block';
 
@@ -94,7 +96,7 @@ function classifySchemaField(field: ZodTypeAny): SchemaBlockFamily {
   if (type === 'object') {
     const shape = objectShape(field);
     if ('kind' in shape) {
-      return 'pinned-chart';
+      return literalValues(field).includes('table') ? 'table-block' : 'pinned-chart';
     }
     if ('ref' in shape) {
       return 'cover-image';
@@ -143,6 +145,8 @@ function expectedBlockFamily(
       return 'subtitle-block';
     case 'chart':
       return 'pinned-chart';
+    case 'table':
+      return 'table-block';
     case 'image':
       return slotKeyName === 'image' ? 'cover-image' : 'image-block';
     case 'content':
@@ -175,7 +179,7 @@ function chartKindLiteral(field: ZodTypeAny): string {
 }
 
 describe('layout-spec ↔ schema contract (Phase 3.6)', () => {
-  it('lists the same 26 layoutIds', () => {
+  it('lists the same 50 layoutIds', () => {
     const specIds = spec.layouts.map((l) => l.layoutId).sort();
     const schemaIds = [...REAL_LAYOUT_IDS].sort();
     expect(specIds).toEqual(schemaIds);

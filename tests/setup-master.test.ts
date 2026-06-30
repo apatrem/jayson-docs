@@ -19,13 +19,13 @@ const root = join(masterPath, '..', '..');
 const preNamingFixturePath = join(root, 'fixtures/report.master.pre-naming.pptx');
 
 describe('shapes ≡ slots validator (Phase 3.6)', () => {
-  it('layout-spec.json exists with 26 unique layoutIds', () => {
+  it('layout-spec.json exists with 50 unique layoutIds', () => {
     const spec = JSON.parse(readFileSync(specPath, 'utf-8')) as {
       layouts: { layoutId: string }[];
     };
-    expect(spec.layouts).toHaveLength(26);
+    expect(spec.layouts).toHaveLength(50);
     const ids = spec.layouts.map((l) => l.layoutId);
-    expect(new Set(ids).size).toBe(26);
+    expect(new Set(ids).size).toBe(50);
     expect(ids).toContain('chart-stacked-column');
     expect(ids).toContain('sidebar-callout-inverse');
     expect(ids).toContain('sidebar-callout-hc-inverse');

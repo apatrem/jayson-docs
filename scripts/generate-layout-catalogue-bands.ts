@@ -119,7 +119,7 @@ goldenEntries.sort((a, b) =>
 
 const golden = {
   description:
-    'D26 calibration golden — all 28 eligible body slots with resolved geometry, font pt, and derived bands; 3 flagged calibrationRepresentative.',
+    'D26 calibration golden — all 99 eligible body slots with resolved geometry, font pt, and derived bands; 3 flagged calibrationRepresentative.',
   constants: {
     charWidthPt: CHAR_WIDTH_PT,
     lineHeightFactor: LINE_HEIGHT_FACTOR,

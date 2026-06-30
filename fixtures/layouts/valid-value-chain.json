@@ -1,0 +1,56 @@
+{
+  "kind": "deck",
+  "meta": {
+    "templateId": "report.master.pptx",
+    "client": "ACME",
+    "date": "2026-06-08",
+    "language": "en"
+  },
+  "sections": [
+    {
+      "title": "Fixture",
+      "slides": [
+        {
+          "layoutId": "value-chain",
+          "title": "Eight word minimum title for every layout fixture test",
+          "value-chain.source": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "value-chain.stage.1.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "value-chain.stage.2.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "value-chain.stage.3.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "value-chain.stage.4.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "value-chain.stage.5.title": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "value-chain.customer": {
+            "kind": "text",
+            "body": "Short subtitle for column"
+          },
+          "value-chain.body": {
+            "kind": "bullets",
+            "items": [
+              "Point one",
+              "Point two"
+            ]
+          },
+          "source": "Source: ACME analysis, June 2026."
+        }
+      ]
+    }
+  ]
+}

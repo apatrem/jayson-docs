@@ -535,6 +535,554 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | ZoneTexte 30 | — | ©Year Acme | x=10.840 y=7.185 w=1.350 h=0.135 | slot.footer-copyright | footer | Copyright line — deterministic from brand/master |
 | ZoneTexte 4 | — | ACME_logo | x=3.877 y=7.165 w=0.667 h=0.310 | slot.footer-logo | footer | Acme logo — deterministic from brand/master |
 
+### Slide 27 — `big-number`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Big number |
+| Proposed `layoutId` | `big-number` |
+| Naming rationale | New archetype (D27, T-211) — single hero statistic with a supporting caption. Synthetic-adjacent: the deck corpus shows big numbers only as a collapsed KPI column (one centred metric), so this is KPI-1. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.big-number | — | — | x=1.0 y=2.35 w=11.33 h=1.7 | slot.big-number | content | Hero statistic — centred (Arial, accent-2 green) |
+| slot.caption | — | — | x=1.0 y=4.25 w=11.33 h=1.3 | slot.caption | subtitle | Caption beneath the figure |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.120 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.350 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 28 — `process-3`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Process |
+| Proposed `layoutId` | `process-3` |
+| Naming rationale | New archetype (D27, T-211) — horizontal 3-step process; pentagon-start + chevrons + numbered badges (deck-corpus signature). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.process-step.1.title | — | — | x=0.6 y=1.7 w=3.923 h=0.62 | slot.process-step.1.title | subtitle | Step 1 chevron label |
+| slot.process-step.1.body | — | — | x=0.6 y=2.55 w=3.923 h=3.9 | slot.process-step.1.body | content | Step 1 body |
+| slot.process-step.2.title | — | — | x=4.643 y=1.7 w=3.923 h=0.62 | slot.process-step.2.title | subtitle | Step 2 chevron label |
+| slot.process-step.2.body | — | — | x=4.643 y=2.55 w=3.923 h=3.9 | slot.process-step.2.body | content | Step 2 body |
+| slot.process-step.3.title | — | — | x=8.687 y=1.7 w=3.923 h=0.62 | slot.process-step.3.title | subtitle | Step 3 chevron label |
+| slot.process-step.3.body | — | — | x=8.687 y=2.55 w=3.923 h=3.9 | slot.process-step.3.body | content | Step 3 body |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 29 — `process-4`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Process |
+| Proposed `layoutId` | `process-4` |
+| Naming rationale | New archetype (D27, T-211) — horizontal 4-step process; pentagon-start + chevrons + numbered badges (deck-corpus signature). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.process-step.1.title | — | — | x=0.6 y=1.7 w=2.913 h=0.62 | slot.process-step.1.title | subtitle | Step 1 chevron label |
+| slot.process-step.1.body | — | — | x=0.6 y=2.55 w=2.913 h=3.9 | slot.process-step.1.body | content | Step 1 body |
+| slot.process-step.2.title | — | — | x=3.633 y=1.7 w=2.913 h=0.62 | slot.process-step.2.title | subtitle | Step 2 chevron label |
+| slot.process-step.2.body | — | — | x=3.633 y=2.55 w=2.913 h=3.9 | slot.process-step.2.body | content | Step 2 body |
+| slot.process-step.3.title | — | — | x=6.665 y=1.7 w=2.913 h=0.62 | slot.process-step.3.title | subtitle | Step 3 chevron label |
+| slot.process-step.3.body | — | — | x=6.665 y=2.55 w=2.913 h=3.9 | slot.process-step.3.body | content | Step 3 body |
+| slot.process-step.4.title | — | — | x=9.697 y=1.7 w=2.913 h=0.62 | slot.process-step.4.title | subtitle | Step 4 chevron label |
+| slot.process-step.4.body | — | — | x=9.697 y=2.55 w=2.913 h=3.9 | slot.process-step.4.body | content | Step 4 body |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 30 — `process-5`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Process |
+| Proposed `layoutId` | `process-5` |
+| Naming rationale | New archetype (D27, T-211) — horizontal 5-step process; pentagon-start + chevrons + numbered badges (deck-corpus signature). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.process-step.1.title | — | — | x=0.6 y=1.7 w=2.306 h=0.62 | slot.process-step.1.title | subtitle | Step 1 chevron label |
+| slot.process-step.1.body | — | — | x=0.6 y=2.55 w=2.306 h=3.9 | slot.process-step.1.body | content | Step 1 body |
+| slot.process-step.2.title | — | — | x=3.026 y=1.7 w=2.306 h=0.62 | slot.process-step.2.title | subtitle | Step 2 chevron label |
+| slot.process-step.2.body | — | — | x=3.026 y=2.55 w=2.306 h=3.9 | slot.process-step.2.body | content | Step 2 body |
+| slot.process-step.3.title | — | — | x=5.452 y=1.7 w=2.306 h=0.62 | slot.process-step.3.title | subtitle | Step 3 chevron label |
+| slot.process-step.3.body | — | — | x=5.452 y=2.55 w=2.306 h=3.9 | slot.process-step.3.body | content | Step 3 body |
+| slot.process-step.4.title | — | — | x=7.878 y=1.7 w=2.306 h=0.62 | slot.process-step.4.title | subtitle | Step 4 chevron label |
+| slot.process-step.4.body | — | — | x=7.878 y=2.55 w=2.306 h=3.9 | slot.process-step.4.body | content | Step 4 body |
+| slot.process-step.5.title | — | — | x=10.304 y=1.7 w=2.306 h=0.62 | slot.process-step.5.title | subtitle | Step 5 chevron label |
+| slot.process-step.5.body | — | — | x=10.304 y=2.55 w=2.306 h=3.9 | slot.process-step.5.body | content | Step 5 body |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 31 — `kpi-3`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | KPI row |
+| Proposed `layoutId` | `kpi-3` |
+| Naming rationale | New archetype (D27, T-211) — 3 KPI metrics as a divider-bar stat band (big number / label / detail). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.kpi.1.value | — | — | x=0.6 y=2.1 w=3.743 h=0.95 | slot.kpi.1.value | subtitle | KPI 1 headline figure |
+| slot.kpi.1.label | — | — | x=0.6 y=3.05 w=3.743 h=0.5 | slot.kpi.1.label | subtitle | KPI 1 label |
+| slot.kpi.1.body | — | — | x=0.6 y=3.6 w=3.743 h=2.7 | slot.kpi.1.body | content | KPI 1 supporting detail |
+| slot.kpi.2.value | — | — | x=4.643 y=2.1 w=3.743 h=0.95 | slot.kpi.2.value | subtitle | KPI 2 headline figure |
+| slot.kpi.2.label | — | — | x=4.643 y=3.05 w=3.743 h=0.5 | slot.kpi.2.label | subtitle | KPI 2 label |
+| slot.kpi.2.body | — | — | x=4.643 y=3.6 w=3.743 h=2.7 | slot.kpi.2.body | content | KPI 2 supporting detail |
+| slot.kpi.3.value | — | — | x=8.687 y=2.1 w=3.743 h=0.95 | slot.kpi.3.value | subtitle | KPI 3 headline figure |
+| slot.kpi.3.label | — | — | x=8.687 y=3.05 w=3.743 h=0.5 | slot.kpi.3.label | subtitle | KPI 3 label |
+| slot.kpi.3.body | — | — | x=8.687 y=3.6 w=3.743 h=2.7 | slot.kpi.3.body | content | KPI 3 supporting detail |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 32 — `kpi-4`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | KPI row |
+| Proposed `layoutId` | `kpi-4` |
+| Naming rationale | New archetype (D27, T-211) — 4 KPI metrics as a divider-bar stat band (big number / label / detail). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.kpi.1.value | — | — | x=0.6 y=2.1 w=2.733 h=0.95 | slot.kpi.1.value | subtitle | KPI 1 headline figure |
+| slot.kpi.1.label | — | — | x=0.6 y=3.05 w=2.733 h=0.5 | slot.kpi.1.label | subtitle | KPI 1 label |
+| slot.kpi.1.body | — | — | x=0.6 y=3.6 w=2.733 h=2.7 | slot.kpi.1.body | content | KPI 1 supporting detail |
+| slot.kpi.2.value | — | — | x=3.633 y=2.1 w=2.733 h=0.95 | slot.kpi.2.value | subtitle | KPI 2 headline figure |
+| slot.kpi.2.label | — | — | x=3.633 y=3.05 w=2.733 h=0.5 | slot.kpi.2.label | subtitle | KPI 2 label |
+| slot.kpi.2.body | — | — | x=3.633 y=3.6 w=2.733 h=2.7 | slot.kpi.2.body | content | KPI 2 supporting detail |
+| slot.kpi.3.value | — | — | x=6.665 y=2.1 w=2.733 h=0.95 | slot.kpi.3.value | subtitle | KPI 3 headline figure |
+| slot.kpi.3.label | — | — | x=6.665 y=3.05 w=2.733 h=0.5 | slot.kpi.3.label | subtitle | KPI 3 label |
+| slot.kpi.3.body | — | — | x=6.665 y=3.6 w=2.733 h=2.7 | slot.kpi.3.body | content | KPI 3 supporting detail |
+| slot.kpi.4.value | — | — | x=9.697 y=2.1 w=2.733 h=0.95 | slot.kpi.4.value | subtitle | KPI 4 headline figure |
+| slot.kpi.4.label | — | — | x=9.697 y=3.05 w=2.733 h=0.5 | slot.kpi.4.label | subtitle | KPI 4 label |
+| slot.kpi.4.body | — | — | x=9.697 y=3.6 w=2.733 h=2.7 | slot.kpi.4.body | content | KPI 4 supporting detail |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 33 — `kpi-5`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | KPI row |
+| Proposed `layoutId` | `kpi-5` |
+| Naming rationale | New archetype (D27, T-211) — 5 KPI metrics as a divider-bar stat band (big number / label / detail). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.kpi.1.value | — | — | x=0.6 y=2.1 w=2.126 h=0.95 | slot.kpi.1.value | subtitle | KPI 1 headline figure |
+| slot.kpi.1.label | — | — | x=0.6 y=3.05 w=2.126 h=0.5 | slot.kpi.1.label | subtitle | KPI 1 label |
+| slot.kpi.1.body | — | — | x=0.6 y=3.6 w=2.126 h=2.7 | slot.kpi.1.body | content | KPI 1 supporting detail |
+| slot.kpi.2.value | — | — | x=3.026 y=2.1 w=2.126 h=0.95 | slot.kpi.2.value | subtitle | KPI 2 headline figure |
+| slot.kpi.2.label | — | — | x=3.026 y=3.05 w=2.126 h=0.5 | slot.kpi.2.label | subtitle | KPI 2 label |
+| slot.kpi.2.body | — | — | x=3.026 y=3.6 w=2.126 h=2.7 | slot.kpi.2.body | content | KPI 2 supporting detail |
+| slot.kpi.3.value | — | — | x=5.452 y=2.1 w=2.126 h=0.95 | slot.kpi.3.value | subtitle | KPI 3 headline figure |
+| slot.kpi.3.label | — | — | x=5.452 y=3.05 w=2.126 h=0.5 | slot.kpi.3.label | subtitle | KPI 3 label |
+| slot.kpi.3.body | — | — | x=5.452 y=3.6 w=2.126 h=2.7 | slot.kpi.3.body | content | KPI 3 supporting detail |
+| slot.kpi.4.value | — | — | x=7.878 y=2.1 w=2.126 h=0.95 | slot.kpi.4.value | subtitle | KPI 4 headline figure |
+| slot.kpi.4.label | — | — | x=7.878 y=3.05 w=2.126 h=0.5 | slot.kpi.4.label | subtitle | KPI 4 label |
+| slot.kpi.4.body | — | — | x=7.878 y=3.6 w=2.126 h=2.7 | slot.kpi.4.body | content | KPI 4 supporting detail |
+| slot.kpi.5.value | — | — | x=10.304 y=2.1 w=2.126 h=0.95 | slot.kpi.5.value | subtitle | KPI 5 headline figure |
+| slot.kpi.5.label | — | — | x=10.304 y=3.05 w=2.126 h=0.5 | slot.kpi.5.label | subtitle | KPI 5 label |
+| slot.kpi.5.body | — | — | x=10.304 y=3.6 w=2.126 h=2.7 | slot.kpi.5.body | content | KPI 5 supporting detail |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 34 — `funnel-3`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Funnel |
+| Proposed `layoutId` | `funnel-3` |
+| Naming rationale | New archetype (D27, T-211) — SYNTHETIC (3-stage narrowing bars). Zero corpus reference; flagged for brand sign-off scrutiny. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.funnel-stage.1.title | — | — | x=0.7 y=1.6 w=7.4 h=1.52 | slot.funnel-stage.1.title | subtitle | Funnel stage 1 label (synthetic) |
+| slot.funnel-stage.1.body | — | — | x=8.3 y=1.6 w=4.4 h=1.52 | slot.funnel-stage.1.body | content | Funnel stage 1 detail |
+| slot.funnel-stage.2.title | — | — | x=1.181 y=3.3 w=6.438 h=1.52 | slot.funnel-stage.2.title | subtitle | Funnel stage 2 label (synthetic) |
+| slot.funnel-stage.2.body | — | — | x=8.3 y=3.3 w=4.4 h=1.52 | slot.funnel-stage.2.body | content | Funnel stage 2 detail |
+| slot.funnel-stage.3.title | — | — | x=1.662 y=5.0 w=5.476 h=1.52 | slot.funnel-stage.3.title | subtitle | Funnel stage 3 label (synthetic) |
+| slot.funnel-stage.3.body | — | — | x=8.3 y=5.0 w=4.4 h=1.52 | slot.funnel-stage.3.body | content | Funnel stage 3 detail |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 35 — `funnel-4`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Funnel |
+| Proposed `layoutId` | `funnel-4` |
+| Naming rationale | New archetype (D27, T-211) — SYNTHETIC (4-stage narrowing bars). Zero corpus reference; flagged for brand sign-off scrutiny. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.funnel-stage.1.title | — | — | x=0.7 y=1.6 w=7.4 h=1.095 | slot.funnel-stage.1.title | subtitle | Funnel stage 1 label (synthetic) |
+| slot.funnel-stage.1.body | — | — | x=8.3 y=1.6 w=4.4 h=1.095 | slot.funnel-stage.1.body | content | Funnel stage 1 detail |
+| slot.funnel-stage.2.title | — | — | x=1.181 y=2.875 w=6.438 h=1.095 | slot.funnel-stage.2.title | subtitle | Funnel stage 2 label (synthetic) |
+| slot.funnel-stage.2.body | — | — | x=8.3 y=2.875 w=4.4 h=1.095 | slot.funnel-stage.2.body | content | Funnel stage 2 detail |
+| slot.funnel-stage.3.title | — | — | x=1.662 y=4.15 w=5.476 h=1.095 | slot.funnel-stage.3.title | subtitle | Funnel stage 3 label (synthetic) |
+| slot.funnel-stage.3.body | — | — | x=8.3 y=4.15 w=4.4 h=1.095 | slot.funnel-stage.3.body | content | Funnel stage 3 detail |
+| slot.funnel-stage.4.title | — | — | x=2.143 y=5.425 w=4.514 h=1.095 | slot.funnel-stage.4.title | subtitle | Funnel stage 4 label (synthetic) |
+| slot.funnel-stage.4.body | — | — | x=8.3 y=5.425 w=4.4 h=1.095 | slot.funnel-stage.4.body | content | Funnel stage 4 detail |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 36 — `funnel-5`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Funnel |
+| Proposed `layoutId` | `funnel-5` |
+| Naming rationale | New archetype (D27, T-211) — SYNTHETIC (5-stage narrowing bars). Zero corpus reference; flagged for brand sign-off scrutiny. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.funnel-stage.1.title | — | — | x=0.7 y=1.6 w=7.4 h=0.84 | slot.funnel-stage.1.title | subtitle | Funnel stage 1 label (synthetic) |
+| slot.funnel-stage.1.body | — | — | x=8.3 y=1.6 w=4.4 h=0.84 | slot.funnel-stage.1.body | content | Funnel stage 1 detail |
+| slot.funnel-stage.2.title | — | — | x=1.181 y=2.62 w=6.438 h=0.84 | slot.funnel-stage.2.title | subtitle | Funnel stage 2 label (synthetic) |
+| slot.funnel-stage.2.body | — | — | x=8.3 y=2.62 w=4.4 h=0.84 | slot.funnel-stage.2.body | content | Funnel stage 2 detail |
+| slot.funnel-stage.3.title | — | — | x=1.662 y=3.64 w=5.476 h=0.84 | slot.funnel-stage.3.title | subtitle | Funnel stage 3 label (synthetic) |
+| slot.funnel-stage.3.body | — | — | x=8.3 y=3.64 w=4.4 h=0.84 | slot.funnel-stage.3.body | content | Funnel stage 3 detail |
+| slot.funnel-stage.4.title | — | — | x=2.143 y=4.66 w=4.514 h=0.84 | slot.funnel-stage.4.title | subtitle | Funnel stage 4 label (synthetic) |
+| slot.funnel-stage.4.body | — | — | x=8.3 y=4.66 w=4.4 h=0.84 | slot.funnel-stage.4.body | content | Funnel stage 4 detail |
+| slot.funnel-stage.5.title | — | — | x=2.624 y=5.68 w=3.552 h=0.84 | slot.funnel-stage.5.title | subtitle | Funnel stage 5 label (synthetic) |
+| slot.funnel-stage.5.body | — | — | x=8.3 y=5.68 w=4.4 h=0.84 | slot.funnel-stage.5.body | content | Funnel stage 5 detail |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 37 — `feature-grid-3`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Feature grid |
+| Proposed `layoutId` | `feature-grid-3` |
+| Naming rationale | New archetype (D27, T-211) — 3 feature cards: coloured header bar + body (deck column-card pattern). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.feature.1.title | — | — | x=0.6 y=2.25 w=3.793 h=0.5 | slot.feature.1.title | subtitle | Feature 1 header |
+| slot.feature.1.body | — | — | x=0.6 y=2.9 w=3.793 h=3.5 | slot.feature.1.body | content | Feature 1 body |
+| slot.feature.2.title | — | — | x=4.643 y=2.25 w=3.793 h=0.5 | slot.feature.2.title | subtitle | Feature 2 header |
+| slot.feature.2.body | — | — | x=4.643 y=2.9 w=3.793 h=3.5 | slot.feature.2.body | content | Feature 2 body |
+| slot.feature.3.title | — | — | x=8.687 y=2.25 w=3.793 h=0.5 | slot.feature.3.title | subtitle | Feature 3 header |
+| slot.feature.3.body | — | — | x=8.687 y=2.9 w=3.793 h=3.5 | slot.feature.3.body | content | Feature 3 body |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 38 — `feature-grid-4`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Feature grid |
+| Proposed `layoutId` | `feature-grid-4` |
+| Naming rationale | New archetype (D27, T-211) — 4 feature cards: coloured header bar + body (deck column-card pattern). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.feature.1.title | — | — | x=0.6 y=2.25 w=2.783 h=0.5 | slot.feature.1.title | subtitle | Feature 1 header |
+| slot.feature.1.body | — | — | x=0.6 y=2.9 w=2.783 h=3.5 | slot.feature.1.body | content | Feature 1 body |
+| slot.feature.2.title | — | — | x=3.633 y=2.25 w=2.783 h=0.5 | slot.feature.2.title | subtitle | Feature 2 header |
+| slot.feature.2.body | — | — | x=3.633 y=2.9 w=2.783 h=3.5 | slot.feature.2.body | content | Feature 2 body |
+| slot.feature.3.title | — | — | x=6.665 y=2.25 w=2.783 h=0.5 | slot.feature.3.title | subtitle | Feature 3 header |
+| slot.feature.3.body | — | — | x=6.665 y=2.9 w=2.783 h=3.5 | slot.feature.3.body | content | Feature 3 body |
+| slot.feature.4.title | — | — | x=9.697 y=2.25 w=2.783 h=0.5 | slot.feature.4.title | subtitle | Feature 4 header |
+| slot.feature.4.body | — | — | x=9.697 y=2.9 w=2.783 h=3.5 | slot.feature.4.body | content | Feature 4 body |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 39 — `feature-grid-5`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Feature grid |
+| Proposed `layoutId` | `feature-grid-5` |
+| Naming rationale | New archetype (D27, T-211) — 5 feature cards: coloured header bar + body (deck column-card pattern). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.feature.1.title | — | — | x=0.6 y=2.25 w=2.176 h=0.5 | slot.feature.1.title | subtitle | Feature 1 header |
+| slot.feature.1.body | — | — | x=0.6 y=2.9 w=2.176 h=3.5 | slot.feature.1.body | content | Feature 1 body |
+| slot.feature.2.title | — | — | x=3.026 y=2.25 w=2.176 h=0.5 | slot.feature.2.title | subtitle | Feature 2 header |
+| slot.feature.2.body | — | — | x=3.026 y=2.9 w=2.176 h=3.5 | slot.feature.2.body | content | Feature 2 body |
+| slot.feature.3.title | — | — | x=5.452 y=2.25 w=2.176 h=0.5 | slot.feature.3.title | subtitle | Feature 3 header |
+| slot.feature.3.body | — | — | x=5.452 y=2.9 w=2.176 h=3.5 | slot.feature.3.body | content | Feature 3 body |
+| slot.feature.4.title | — | — | x=7.878 y=2.25 w=2.176 h=0.5 | slot.feature.4.title | subtitle | Feature 4 header |
+| slot.feature.4.body | — | — | x=7.878 y=2.9 w=2.176 h=3.5 | slot.feature.4.body | content | Feature 4 body |
+| slot.feature.5.title | — | — | x=10.304 y=2.25 w=2.176 h=0.5 | slot.feature.5.title | subtitle | Feature 5 header |
+| slot.feature.5.body | — | — | x=10.304 y=2.9 w=2.176 h=3.5 | slot.feature.5.body | content | Feature 5 body |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 40 — `roadmap-3`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Roadmap |
+| Proposed `layoutId` | `roadmap-3` |
+| Naming rationale | New archetype (D27, T-211) — 3-phase roadmap: timeline rule + numbered phase markers, timeframe + body per phase. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.phase.1.caption | — | — | x=0.6 y=2.35 w=3.843 h=0.4 | slot.phase.1.caption | subtitle | Phase 1 timeframe |
+| slot.phase.1.title | — | — | x=0.6 y=2.75 w=3.843 h=0.5 | slot.phase.1.title | subtitle | Phase 1 title |
+| slot.phase.1.body | — | — | x=0.6 y=3.35 w=3.843 h=3.1 | slot.phase.1.body | content | Phase 1 body |
+| slot.phase.2.caption | — | — | x=4.643 y=2.35 w=3.843 h=0.4 | slot.phase.2.caption | subtitle | Phase 2 timeframe |
+| slot.phase.2.title | — | — | x=4.643 y=2.75 w=3.843 h=0.5 | slot.phase.2.title | subtitle | Phase 2 title |
+| slot.phase.2.body | — | — | x=4.643 y=3.35 w=3.843 h=3.1 | slot.phase.2.body | content | Phase 2 body |
+| slot.phase.3.caption | — | — | x=8.687 y=2.35 w=3.843 h=0.4 | slot.phase.3.caption | subtitle | Phase 3 timeframe |
+| slot.phase.3.title | — | — | x=8.687 y=2.75 w=3.843 h=0.5 | slot.phase.3.title | subtitle | Phase 3 title |
+| slot.phase.3.body | — | — | x=8.687 y=3.35 w=3.843 h=3.1 | slot.phase.3.body | content | Phase 3 body |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 41 — `roadmap-4`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Roadmap |
+| Proposed `layoutId` | `roadmap-4` |
+| Naming rationale | New archetype (D27, T-211) — 4-phase roadmap: timeline rule + numbered phase markers, timeframe + body per phase. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.phase.1.caption | — | — | x=0.6 y=2.35 w=2.833 h=0.4 | slot.phase.1.caption | subtitle | Phase 1 timeframe |
+| slot.phase.1.title | — | — | x=0.6 y=2.75 w=2.833 h=0.5 | slot.phase.1.title | subtitle | Phase 1 title |
+| slot.phase.1.body | — | — | x=0.6 y=3.35 w=2.833 h=3.1 | slot.phase.1.body | content | Phase 1 body |
+| slot.phase.2.caption | — | — | x=3.633 y=2.35 w=2.833 h=0.4 | slot.phase.2.caption | subtitle | Phase 2 timeframe |
+| slot.phase.2.title | — | — | x=3.633 y=2.75 w=2.833 h=0.5 | slot.phase.2.title | subtitle | Phase 2 title |
+| slot.phase.2.body | — | — | x=3.633 y=3.35 w=2.833 h=3.1 | slot.phase.2.body | content | Phase 2 body |
+| slot.phase.3.caption | — | — | x=6.665 y=2.35 w=2.833 h=0.4 | slot.phase.3.caption | subtitle | Phase 3 timeframe |
+| slot.phase.3.title | — | — | x=6.665 y=2.75 w=2.833 h=0.5 | slot.phase.3.title | subtitle | Phase 3 title |
+| slot.phase.3.body | — | — | x=6.665 y=3.35 w=2.833 h=3.1 | slot.phase.3.body | content | Phase 3 body |
+| slot.phase.4.caption | — | — | x=9.697 y=2.35 w=2.833 h=0.4 | slot.phase.4.caption | subtitle | Phase 4 timeframe |
+| slot.phase.4.title | — | — | x=9.697 y=2.75 w=2.833 h=0.5 | slot.phase.4.title | subtitle | Phase 4 title |
+| slot.phase.4.body | — | — | x=9.697 y=3.35 w=2.833 h=3.1 | slot.phase.4.body | content | Phase 4 body |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 42 — `roadmap-5`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Roadmap |
+| Proposed `layoutId` | `roadmap-5` |
+| Naming rationale | New archetype (D27, T-211) — 5-phase roadmap: timeline rule + numbered phase markers, timeframe + body per phase. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.phase.1.caption | — | — | x=0.6 y=2.35 w=2.226 h=0.4 | slot.phase.1.caption | subtitle | Phase 1 timeframe |
+| slot.phase.1.title | — | — | x=0.6 y=2.75 w=2.226 h=0.5 | slot.phase.1.title | subtitle | Phase 1 title |
+| slot.phase.1.body | — | — | x=0.6 y=3.35 w=2.226 h=3.1 | slot.phase.1.body | content | Phase 1 body |
+| slot.phase.2.caption | — | — | x=3.026 y=2.35 w=2.226 h=0.4 | slot.phase.2.caption | subtitle | Phase 2 timeframe |
+| slot.phase.2.title | — | — | x=3.026 y=2.75 w=2.226 h=0.5 | slot.phase.2.title | subtitle | Phase 2 title |
+| slot.phase.2.body | — | — | x=3.026 y=3.35 w=2.226 h=3.1 | slot.phase.2.body | content | Phase 2 body |
+| slot.phase.3.caption | — | — | x=5.452 y=2.35 w=2.226 h=0.4 | slot.phase.3.caption | subtitle | Phase 3 timeframe |
+| slot.phase.3.title | — | — | x=5.452 y=2.75 w=2.226 h=0.5 | slot.phase.3.title | subtitle | Phase 3 title |
+| slot.phase.3.body | — | — | x=5.452 y=3.35 w=2.226 h=3.1 | slot.phase.3.body | content | Phase 3 body |
+| slot.phase.4.caption | — | — | x=7.878 y=2.35 w=2.226 h=0.4 | slot.phase.4.caption | subtitle | Phase 4 timeframe |
+| slot.phase.4.title | — | — | x=7.878 y=2.75 w=2.226 h=0.5 | slot.phase.4.title | subtitle | Phase 4 title |
+| slot.phase.4.body | — | — | x=7.878 y=3.35 w=2.226 h=3.1 | slot.phase.4.body | content | Phase 4 body |
+| slot.phase.5.caption | — | — | x=10.304 y=2.35 w=2.226 h=0.4 | slot.phase.5.caption | subtitle | Phase 5 timeframe |
+| slot.phase.5.title | — | — | x=10.304 y=2.75 w=2.226 h=0.5 | slot.phase.5.title | subtitle | Phase 5 title |
+| slot.phase.5.body | — | — | x=10.304 y=3.35 w=2.226 h=3.1 | slot.phase.5.body | content | Phase 5 body |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 43 — `value-chain`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Value chain |
+| Proposed `layoutId` | `value-chain` |
+| Naming rationale | New archetype (D27, T-211) — source → 5 stage nodes → customer; the most-used pattern in the deck corpus. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.value-chain.source | — | — | x=0.6 y=1.7 w=1.7 h=0.9 | slot.value-chain.source | subtitle | Upstream source label |
+| slot.value-chain.stage.1.title | — | — | x=2.5 y=1.7 w=1.55 h=0.9 | slot.value-chain.stage.1.title | subtitle | Value-chain stage 1 |
+| slot.value-chain.stage.2.title | — | — | x=4.12 y=1.7 w=1.55 h=0.9 | slot.value-chain.stage.2.title | subtitle | Value-chain stage 2 |
+| slot.value-chain.stage.3.title | — | — | x=5.74 y=1.7 w=1.55 h=0.9 | slot.value-chain.stage.3.title | subtitle | Value-chain stage 3 |
+| slot.value-chain.stage.4.title | — | — | x=7.36 y=1.7 w=1.55 h=0.9 | slot.value-chain.stage.4.title | subtitle | Value-chain stage 4 |
+| slot.value-chain.stage.5.title | — | — | x=8.98 y=1.7 w=1.55 h=0.9 | slot.value-chain.stage.5.title | subtitle | Value-chain stage 5 |
+| slot.value-chain.customer | — | — | x=11.0 y=1.7 w=1.7 h=0.9 | slot.value-chain.customer | subtitle | Downstream customer label |
+| slot.value-chain.body | — | — | x=0.6 y=3.05 w=12.13 h=3.4 | slot.value-chain.body | content | Value-chain narrative |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 44 — `gantt`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Gantt |
+| Proposed `layoutId` | `gantt` |
+| Naming rationale | New archetype (D27, T-211) — time-grid header + 4 workstream lanes with task bars; distinct from the phase-card roadmap. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.gantt.lane.1.label | — | — | x=0.6 y=2.1 w=3.0 h=0.5 | slot.gantt.lane.1.label | subtitle | Gantt lane 1 label |
+| slot.gantt.lane.1.body | — | — | x=0.6 y=2.6 w=3.0 h=0.5 | slot.gantt.lane.1.body | content | Gantt lane 1 tasks |
+| slot.gantt.lane.2.label | — | — | x=0.6 y=3.2 w=3.0 h=0.5 | slot.gantt.lane.2.label | subtitle | Gantt lane 2 label |
+| slot.gantt.lane.2.body | — | — | x=0.6 y=3.7 w=3.0 h=0.5 | slot.gantt.lane.2.body | content | Gantt lane 2 tasks |
+| slot.gantt.lane.3.label | — | — | x=0.6 y=4.3 w=3.0 h=0.5 | slot.gantt.lane.3.label | subtitle | Gantt lane 3 label |
+| slot.gantt.lane.3.body | — | — | x=0.6 y=4.8 w=3.0 h=0.5 | slot.gantt.lane.3.body | content | Gantt lane 3 tasks |
+| slot.gantt.lane.4.label | — | — | x=0.6 y=5.4 w=3.0 h=0.5 | slot.gantt.lane.4.label | subtitle | Gantt lane 4 label |
+| slot.gantt.lane.4.body | — | — | x=0.6 y=5.9 w=3.0 h=0.5 | slot.gantt.lane.4.body | content | Gantt lane 4 tasks |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 45 — `matrix-2x2`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Matrix 2x2 |
+| Proposed `layoutId` | `matrix-2x2` |
+| Naming rationale | New archetype (D27, T-211) — 2×2 quadrant matrix with two axis labels (bubble/quadrant pattern). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.matrix.axis-x | — | — | x=4.0 y=6.4 w=8.3 h=0.4 | slot.matrix.axis-x | subtitle | Horizontal axis label |
+| slot.matrix.axis-y | — | — | x=3.0 y=1.7 w=0.9 h=4.6 | slot.matrix.axis-y | subtitle | Vertical axis label |
+| slot.matrix.quadrant.1.title | — | — | x=4.1 y=1.8 w=3.95 h=0.4 | slot.matrix.quadrant.1.title | subtitle | Quadrant 1 title |
+| slot.matrix.quadrant.1.body | — | — | x=4.1 y=2.25 w=3.95 h=1.65 | slot.matrix.quadrant.1.body | content | Quadrant 1 body |
+| slot.matrix.quadrant.2.title | — | — | x=8.25 y=1.8 w=3.95 h=0.4 | slot.matrix.quadrant.2.title | subtitle | Quadrant 2 title |
+| slot.matrix.quadrant.2.body | — | — | x=8.25 y=2.25 w=3.95 h=1.65 | slot.matrix.quadrant.2.body | content | Quadrant 2 body |
+| slot.matrix.quadrant.3.title | — | — | x=4.1 y=4.1 w=3.95 h=0.4 | slot.matrix.quadrant.3.title | subtitle | Quadrant 3 title |
+| slot.matrix.quadrant.3.body | — | — | x=4.1 y=4.55 w=3.95 h=1.65 | slot.matrix.quadrant.3.body | content | Quadrant 3 body |
+| slot.matrix.quadrant.4.title | — | — | x=8.25 y=4.1 w=3.95 h=0.4 | slot.matrix.quadrant.4.title | subtitle | Quadrant 4 title |
+| slot.matrix.quadrant.4.body | — | — | x=8.25 y=4.55 w=3.95 h=1.65 | slot.matrix.quadrant.4.body | content | Quadrant 4 body |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 46 — `matrix-9box`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Matrix 9-box |
+| Proposed `layoutId` | `matrix-9box` |
+| Naming rationale | New archetype (D27, T-211) — 3×3 nine-box grid with two axis labels (optional matrix variant). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.matrix.axis-x | — | — | x=4.0 y=6.4 w=8.3 h=0.4 | slot.matrix.axis-x | subtitle | Horizontal axis label |
+| slot.matrix.axis-y | — | — | x=3.0 y=1.7 w=0.9 h=4.6 | slot.matrix.axis-y | subtitle | Vertical axis label |
+| slot.matrix.cell.1.title | — | — | x=4.06 y=1.76 w=2.647 h=1.413 | slot.matrix.cell.1.title | subtitle | 9-box cell 1 |
+| slot.matrix.cell.2.title | — | — | x=6.827 y=1.76 w=2.647 h=1.413 | slot.matrix.cell.2.title | subtitle | 9-box cell 2 |
+| slot.matrix.cell.3.title | — | — | x=9.594 y=1.76 w=2.647 h=1.413 | slot.matrix.cell.3.title | subtitle | 9-box cell 3 |
+| slot.matrix.cell.4.title | — | — | x=4.06 y=3.293 w=2.647 h=1.413 | slot.matrix.cell.4.title | subtitle | 9-box cell 4 |
+| slot.matrix.cell.5.title | — | — | x=6.827 y=3.293 w=2.647 h=1.413 | slot.matrix.cell.5.title | subtitle | 9-box cell 5 |
+| slot.matrix.cell.6.title | — | — | x=9.594 y=3.293 w=2.647 h=1.413 | slot.matrix.cell.6.title | subtitle | 9-box cell 6 |
+| slot.matrix.cell.7.title | — | — | x=4.06 y=4.826 w=2.647 h=1.413 | slot.matrix.cell.7.title | subtitle | 9-box cell 7 |
+| slot.matrix.cell.8.title | — | — | x=6.827 y=4.826 w=2.647 h=1.413 | slot.matrix.cell.8.title | subtitle | 9-box cell 8 |
+| slot.matrix.cell.9.title | — | — | x=9.594 y=4.826 w=2.647 h=1.413 | slot.matrix.cell.9.title | subtitle | 9-box cell 9 |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 47 — `quote`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Quote |
+| Proposed `layoutId` | `quote` |
+| Naming rationale | New archetype (D27, T-211) — full-slide pull-quote + attribution (speech-bubble callout scaled to centre). |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.quote | — | — | x=1.6 y=2.3 w=10.1 h=2.6 | slot.quote | content | Pull-quote text |
+| slot.attribution | — | — | x=1.6 y=5.1 w=10.1 h=0.6 | slot.attribution | subtitle | Attribution line |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 48 — `table-rag`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Table RAG |
+| Proposed `layoutId` | `table-rag` |
+| Naming rationale | New archetype (D27, T-211) — table with a RAG status column; status-enum fill contract → T-213a. Brand theme has no RAG-red token — flag at sign-off. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.table | — | — | x=0.6 y=1.5 w=12.13 h=5.0 | slot.table | table | Table region (rag) — columns pinned at fill (T-210/T-213) |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 49 — `table-comparison`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Table comparison |
+| Proposed `layoutId` | `table-comparison` |
+| Naming rationale | New archetype (D27, T-211) — options × criteria comparison table; fill contract → T-213b. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.table | — | — | x=0.6 y=1.5 w=12.13 h=5.0 | slot.table | table | Table region (comparison) — columns pinned at fill (T-210/T-213) |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
+### Slide 50 — `table-generic`
+
+| Field | Value |
+|-------|-------|
+| Firm layout name | Table generic |
+| Proposed `layoutId` | `table-generic` |
+| Naming rationale | New archetype (D27, T-211) — plain data table; fill contract → T-213c. |
+| Usage tier | `common` |
+
+| Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
+|----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
+| slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
+| slot.table | — | — | x=0.6 y=1.5 w=12.13 h=5.0 | slot.table | table | Table region (generic) — columns pinned at fill (T-210/T-213) |
+| slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.12 | slot.footer-page | footer | Pagination — pipeline auto-applies |
+| slot.source | idx:18 | Source: 1. | x=1.35 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
+
 ## Deletions (artifacts — not slots)
 
 | Slide | Current `cNvPr` name | Master text | Reason |

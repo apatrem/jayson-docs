@@ -27,6 +27,7 @@ const REGION_KINDS = new Set<string>([
   'chart-title',
   'content',
   'chart',
+  'table',
   'image',
   'source',
   'footer',
@@ -131,8 +132,8 @@ function parseNamingTable(md: string): LayoutSpec {
     const dupes = layoutIds.filter((id, idx) => layoutIds.indexOf(id) !== idx);
     throw new Error(`duplicate layoutIds: ${[...new Set(dupes)].join(', ')}`);
   }
-  if (layouts.length !== 26) {
-    throw new Error(`expected 26 layouts, got ${layouts.length}`);
+  if (layouts.length !== 50) {
+    throw new Error(`expected 50 layouts, got ${layouts.length}`);
   }
 
   return { templateId: 'report.master.pptx', layouts };

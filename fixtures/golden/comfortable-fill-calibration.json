@@ -1,5 +1,5 @@
 {
-  "description": "D26 calibration golden — all 28 eligible body slots with resolved geometry, font pt, and derived bands; 3 flagged calibrationRepresentative.",
+  "description": "D26 calibration golden — all 99 eligible body slots with resolved geometry, font pt, and derived bands; 3 flagged calibrationRepresentative.",
   "constants": {
     "charWidthPt": 0.5,
     "lineHeightFactor": 1.2,
@@ -67,6 +67,34 @@
           "unit": "words",
           "lower": 25,
           "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "big-number",
+      "slotName": "slot.big-number",
+      "geometry": {
+        "x": 1,
+        "y": 2.35,
+        "w": 11.33,
+        "h": 1.7
+      },
+      "fontPt": 80,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 1,
+          "upper": 2
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 1,
+          "upper": 1
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 1,
+          "upper": 2
         }
       }
     },
@@ -159,6 +187,1238 @@
           "unit": "items",
           "lower": 5,
           "upper": 8
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-3",
+      "slotName": "slot.feature.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 2.9,
+        "w": 3.793,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 60,
+          "upper": 100
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-3",
+      "slotName": "slot.feature.2.body",
+      "geometry": {
+        "x": 4.643,
+        "y": 2.9,
+        "w": 3.793,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 60,
+          "upper": 100
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-3",
+      "slotName": "slot.feature.3.body",
+      "geometry": {
+        "x": 8.687,
+        "y": 2.9,
+        "w": 3.793,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 60,
+          "upper": 100
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-4",
+      "slotName": "slot.feature.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 2.9,
+        "w": 2.783,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 51,
+          "upper": 79
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-4",
+      "slotName": "slot.feature.2.body",
+      "geometry": {
+        "x": 3.633,
+        "y": 2.9,
+        "w": 2.783,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 51,
+          "upper": 79
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-4",
+      "slotName": "slot.feature.3.body",
+      "geometry": {
+        "x": 6.665,
+        "y": 2.9,
+        "w": 2.783,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 51,
+          "upper": 79
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-4",
+      "slotName": "slot.feature.4.body",
+      "geometry": {
+        "x": 9.697,
+        "y": 2.9,
+        "w": 2.783,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 51,
+          "upper": 79
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-5",
+      "slotName": "slot.feature.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 2.9,
+        "w": 2.176,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 40,
+          "upper": 62
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-5",
+      "slotName": "slot.feature.2.body",
+      "geometry": {
+        "x": 3.026,
+        "y": 2.9,
+        "w": 2.176,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 40,
+          "upper": 62
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-5",
+      "slotName": "slot.feature.3.body",
+      "geometry": {
+        "x": 5.452,
+        "y": 2.9,
+        "w": 2.176,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 40,
+          "upper": 62
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-5",
+      "slotName": "slot.feature.4.body",
+      "geometry": {
+        "x": 7.878,
+        "y": 2.9,
+        "w": 2.176,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 40,
+          "upper": 62
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "feature-grid-5",
+      "slotName": "slot.feature.5.body",
+      "geometry": {
+        "x": 10.304,
+        "y": 2.9,
+        "w": 2.176,
+        "h": 3.5
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 40,
+          "upper": 62
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-3",
+      "slotName": "slot.funnel-stage.1.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 1.6,
+        "w": 4.4,
+        "h": 1.52
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 33,
+          "upper": 51
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 2,
+          "upper": 4
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-3",
+      "slotName": "slot.funnel-stage.2.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 3.3,
+        "w": 4.4,
+        "h": 1.52
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 33,
+          "upper": 51
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 2,
+          "upper": 4
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-3",
+      "slotName": "slot.funnel-stage.3.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 5,
+        "w": 4.4,
+        "h": 1.52
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 33,
+          "upper": 51
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 2,
+          "upper": 4
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-4",
+      "slotName": "slot.funnel-stage.1.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 1.6,
+        "w": 4.4,
+        "h": 1.095
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 23,
+          "upper": 36
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 2,
+          "upper": 3
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 23,
+          "upper": 36
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-4",
+      "slotName": "slot.funnel-stage.2.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 2.875,
+        "w": 4.4,
+        "h": 1.095
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 23,
+          "upper": 36
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 2,
+          "upper": 3
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 23,
+          "upper": 36
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-4",
+      "slotName": "slot.funnel-stage.3.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 4.15,
+        "w": 4.4,
+        "h": 1.095
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 23,
+          "upper": 36
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 2,
+          "upper": 3
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 23,
+          "upper": 36
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-4",
+      "slotName": "slot.funnel-stage.4.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 5.425,
+        "w": 4.4,
+        "h": 1.095
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 23,
+          "upper": 36
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 2,
+          "upper": 3
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 23,
+          "upper": 36
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-5",
+      "slotName": "slot.funnel-stage.1.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 1.6,
+        "w": 4.4,
+        "h": 0.84
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 19,
+          "upper": 29
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 1,
+          "upper": 2
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 19,
+          "upper": 29
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-5",
+      "slotName": "slot.funnel-stage.2.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 2.62,
+        "w": 4.4,
+        "h": 0.84
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 19,
+          "upper": 29
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 1,
+          "upper": 2
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 19,
+          "upper": 29
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-5",
+      "slotName": "slot.funnel-stage.3.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 3.64,
+        "w": 4.4,
+        "h": 0.84
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 19,
+          "upper": 29
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 1,
+          "upper": 2
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 19,
+          "upper": 29
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-5",
+      "slotName": "slot.funnel-stage.4.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 4.66,
+        "w": 4.4,
+        "h": 0.84
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 19,
+          "upper": 29
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 1,
+          "upper": 2
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 19,
+          "upper": 29
+        }
+      }
+    },
+    {
+      "layoutId": "funnel-5",
+      "slotName": "slot.funnel-stage.5.body",
+      "geometry": {
+        "x": 8.3,
+        "y": 5.68,
+        "w": 4.4,
+        "h": 0.84
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 19,
+          "upper": 29
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 1,
+          "upper": 2
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 19,
+          "upper": 29
+        }
+      }
+    },
+    {
+      "layoutId": "gantt",
+      "slotName": "slot.gantt.lane.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 2.6,
+        "w": 3,
+        "h": 0.5
+      },
+      "fontPt": 10,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 11,
+          "upper": 18
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 1,
+          "upper": 1
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 11,
+          "upper": 18
+        }
+      }
+    },
+    {
+      "layoutId": "gantt",
+      "slotName": "slot.gantt.lane.2.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 3.7,
+        "w": 3,
+        "h": 0.5
+      },
+      "fontPt": 10,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 11,
+          "upper": 18
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 1,
+          "upper": 1
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 11,
+          "upper": 18
+        }
+      }
+    },
+    {
+      "layoutId": "gantt",
+      "slotName": "slot.gantt.lane.3.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 4.8,
+        "w": 3,
+        "h": 0.5
+      },
+      "fontPt": 10,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 11,
+          "upper": 18
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 1,
+          "upper": 1
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 11,
+          "upper": 18
+        }
+      }
+    },
+    {
+      "layoutId": "gantt",
+      "slotName": "slot.gantt.lane.4.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 5.9,
+        "w": 3,
+        "h": 0.5
+      },
+      "fontPt": 10,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 11,
+          "upper": 18
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 1,
+          "upper": 1
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 11,
+          "upper": 18
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-3",
+      "slotName": "slot.kpi.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 3.6,
+        "w": 3.743,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 52,
+          "upper": 81
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-3",
+      "slotName": "slot.kpi.2.body",
+      "geometry": {
+        "x": 4.643,
+        "y": 3.6,
+        "w": 3.743,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 52,
+          "upper": 81
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-3",
+      "slotName": "slot.kpi.3.body",
+      "geometry": {
+        "x": 8.687,
+        "y": 3.6,
+        "w": 3.743,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 52,
+          "upper": 81
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-4",
+      "slotName": "slot.kpi.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 3.6,
+        "w": 2.733,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 38,
+          "upper": 58
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-4",
+      "slotName": "slot.kpi.2.body",
+      "geometry": {
+        "x": 3.633,
+        "y": 3.6,
+        "w": 2.733,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 38,
+          "upper": 58
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-4",
+      "slotName": "slot.kpi.3.body",
+      "geometry": {
+        "x": 6.665,
+        "y": 3.6,
+        "w": 2.733,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 38,
+          "upper": 58
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-4",
+      "slotName": "slot.kpi.4.body",
+      "geometry": {
+        "x": 9.697,
+        "y": 3.6,
+        "w": 2.733,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 38,
+          "upper": 58
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-5",
+      "slotName": "slot.kpi.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 3.6,
+        "w": 2.126,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 29,
+          "upper": 46
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-5",
+      "slotName": "slot.kpi.2.body",
+      "geometry": {
+        "x": 3.026,
+        "y": 3.6,
+        "w": 2.126,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 29,
+          "upper": 46
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-5",
+      "slotName": "slot.kpi.3.body",
+      "geometry": {
+        "x": 5.452,
+        "y": 3.6,
+        "w": 2.126,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 29,
+          "upper": 46
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-5",
+      "slotName": "slot.kpi.4.body",
+      "geometry": {
+        "x": 7.878,
+        "y": 3.6,
+        "w": 2.126,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 29,
+          "upper": 46
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "kpi-5",
+      "slotName": "slot.kpi.5.body",
+      "geometry": {
+        "x": 10.304,
+        "y": 3.6,
+        "w": 2.126,
+        "h": 2.7
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 29,
+          "upper": 46
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "matrix-2x2",
+      "slotName": "slot.matrix.quadrant.1.body",
+      "geometry": {
+        "x": 4.1,
+        "y": 2.25,
+        "w": 3.95,
+        "h": 1.65
+      },
+      "fontPt": 11,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 42,
+          "upper": 65
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 3,
+          "upper": 5
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "matrix-2x2",
+      "slotName": "slot.matrix.quadrant.2.body",
+      "geometry": {
+        "x": 8.25,
+        "y": 2.25,
+        "w": 3.95,
+        "h": 1.65
+      },
+      "fontPt": 11,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 42,
+          "upper": 65
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 3,
+          "upper": 5
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "matrix-2x2",
+      "slotName": "slot.matrix.quadrant.3.body",
+      "geometry": {
+        "x": 4.1,
+        "y": 4.55,
+        "w": 3.95,
+        "h": 1.65
+      },
+      "fontPt": 11,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 42,
+          "upper": 65
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 3,
+          "upper": 5
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "matrix-2x2",
+      "slotName": "slot.matrix.quadrant.4.body",
+      "geometry": {
+        "x": 8.25,
+        "y": 4.55,
+        "w": 3.95,
+        "h": 1.65
+      },
+      "fontPt": 11,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 42,
+          "upper": 65
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 3,
+          "upper": 5
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
         }
       }
     },
@@ -262,6 +1522,706 @@
           "unit": "words",
           "lower": 60,
           "upper": 100
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-3",
+      "slotName": "slot.process-step.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 2.55,
+        "w": 3.923,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 60,
+          "upper": 100
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-3",
+      "slotName": "slot.process-step.2.body",
+      "geometry": {
+        "x": 4.643,
+        "y": 2.55,
+        "w": 3.923,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 60,
+          "upper": 100
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-3",
+      "slotName": "slot.process-step.3.body",
+      "geometry": {
+        "x": 8.687,
+        "y": 2.55,
+        "w": 3.923,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 60,
+          "upper": 100
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-4",
+      "slotName": "slot.process-step.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 2.55,
+        "w": 2.913,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 59,
+          "upper": 91
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-4",
+      "slotName": "slot.process-step.2.body",
+      "geometry": {
+        "x": 3.633,
+        "y": 2.55,
+        "w": 2.913,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 59,
+          "upper": 91
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-4",
+      "slotName": "slot.process-step.3.body",
+      "geometry": {
+        "x": 6.665,
+        "y": 2.55,
+        "w": 2.913,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 59,
+          "upper": 91
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-4",
+      "slotName": "slot.process-step.4.body",
+      "geometry": {
+        "x": 9.697,
+        "y": 2.55,
+        "w": 2.913,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 59,
+          "upper": 91
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-5",
+      "slotName": "slot.process-step.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 2.55,
+        "w": 2.306,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 47,
+          "upper": 72
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-5",
+      "slotName": "slot.process-step.2.body",
+      "geometry": {
+        "x": 3.026,
+        "y": 2.55,
+        "w": 2.306,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 47,
+          "upper": 72
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-5",
+      "slotName": "slot.process-step.3.body",
+      "geometry": {
+        "x": 5.452,
+        "y": 2.55,
+        "w": 2.306,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 47,
+          "upper": 72
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-5",
+      "slotName": "slot.process-step.4.body",
+      "geometry": {
+        "x": 7.878,
+        "y": 2.55,
+        "w": 2.306,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 47,
+          "upper": 72
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "process-5",
+      "slotName": "slot.process-step.5.body",
+      "geometry": {
+        "x": 10.304,
+        "y": 2.55,
+        "w": 2.306,
+        "h": 3.9
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 47,
+          "upper": 72
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "quote",
+      "slotName": "slot.quote",
+      "geometry": {
+        "x": 1.6,
+        "y": 2.3,
+        "w": 10.1,
+        "h": 2.6
+      },
+      "fontPt": 26,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 30,
+          "upper": 46
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 2,
+          "upper": 3
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-3",
+      "slotName": "slot.phase.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 3.35,
+        "w": 3.843,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 60,
+          "upper": 97
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-3",
+      "slotName": "slot.phase.2.body",
+      "geometry": {
+        "x": 4.643,
+        "y": 3.35,
+        "w": 3.843,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 60,
+          "upper": 97
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-3",
+      "slotName": "slot.phase.3.body",
+      "geometry": {
+        "x": 8.687,
+        "y": 3.35,
+        "w": 3.843,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 60,
+          "upper": 97
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-4",
+      "slotName": "slot.phase.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 3.35,
+        "w": 2.833,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 45,
+          "upper": 70
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-4",
+      "slotName": "slot.phase.2.body",
+      "geometry": {
+        "x": 3.633,
+        "y": 3.35,
+        "w": 2.833,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 45,
+          "upper": 70
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-4",
+      "slotName": "slot.phase.3.body",
+      "geometry": {
+        "x": 6.665,
+        "y": 3.35,
+        "w": 2.833,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 45,
+          "upper": 70
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-4",
+      "slotName": "slot.phase.4.body",
+      "geometry": {
+        "x": 9.697,
+        "y": 3.35,
+        "w": 2.833,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 45,
+          "upper": 70
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-5",
+      "slotName": "slot.phase.1.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 3.35,
+        "w": 2.226,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 35,
+          "upper": 55
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-5",
+      "slotName": "slot.phase.2.body",
+      "geometry": {
+        "x": 3.026,
+        "y": 3.35,
+        "w": 2.226,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 35,
+          "upper": 55
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-5",
+      "slotName": "slot.phase.3.body",
+      "geometry": {
+        "x": 5.452,
+        "y": 3.35,
+        "w": 2.226,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 35,
+          "upper": 55
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-5",
+      "slotName": "slot.phase.4.body",
+      "geometry": {
+        "x": 7.878,
+        "y": 3.35,
+        "w": 2.226,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 35,
+          "upper": 55
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "roadmap-5",
+      "slotName": "slot.phase.5.body",
+      "geometry": {
+        "x": 10.304,
+        "y": 3.35,
+        "w": 2.226,
+        "h": 3.1
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 35,
+          "upper": 55
         },
         "content-bullets": {
           "unit": "items",
@@ -761,6 +2721,34 @@
         "y": 1.663,
         "w": 5.906,
         "h": 5.158
+      },
+      "fontPt": 12,
+      "bands": {
+        "content-text": {
+          "unit": "words",
+          "lower": 60,
+          "upper": 100
+        },
+        "content-bullets": {
+          "unit": "items",
+          "lower": 5,
+          "upper": 8
+        },
+        "content-callout": {
+          "unit": "words",
+          "lower": 25,
+          "upper": 40
+        }
+      }
+    },
+    {
+      "layoutId": "value-chain",
+      "slotName": "slot.value-chain.body",
+      "geometry": {
+        "x": 0.6,
+        "y": 3.05,
+        "w": 12.13,
+        "h": 3.4
       },
       "fontPt": 12,
       "bands": {
