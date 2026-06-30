@@ -897,7 +897,7 @@
       "usage": "Pick to land a single hero statistic — one number that anchors the slide, with a short supporting caption (KPI collapsed to one metric).",
       "regions": {
         "slot.title": "top; action title framing the figure",
-        "slot.big-number": "centre; the hero statistic, large (Futura, accent-2 green)",
+        "slot.big-number": "centre; the hero statistic, large (Arial, accent-2 green)",
         "slot.caption": "below the number; short supporting caption",
         "slot.source": "footer centre; source citation strip"
       },

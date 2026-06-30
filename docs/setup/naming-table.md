@@ -547,7 +547,7 @@ The `chart-bubble` layout (slide 10) pins a pre-authored **bubble** chart. Bubbl
 | Current `cNvPr` name | Placeholder | Master placeholder text | Geometry (in) | Proposed slot | Region kind | Notes |
 |----------------------|-------------|-------------------------|---------------|---------------|-------------|-------|
 | slot.title | — | — | x=0.6 y=0.38 w=12.13 h=0.69 | slot.title | title | Action title |
-| slot.big-number | — | — | x=1.0 y=2.35 w=11.33 h=1.7 | slot.big-number | content | Hero statistic — centred (Futura, accent-2 green) |
+| slot.big-number | — | — | x=1.0 y=2.35 w=11.33 h=1.7 | slot.big-number | content | Hero statistic — centred (Arial, accent-2 green) |
 | slot.caption | — | — | x=1.0 y=4.25 w=11.33 h=1.3 | slot.caption | subtitle | Caption beneath the figure |
 | slot.footer-page | sldNum | ‹N°› | x=12.376 y=7.185 w=0.354 h=0.120 | slot.footer-page | footer | Pagination — pipeline auto-applies |
 | slot.source | idx:18 | Source: 1. | x=1.350 y=7.185 w=9.411 h=0.276 | slot.source | source | Source citations — slide instance (idx 18) |
